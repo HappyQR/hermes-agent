@@ -1,6 +1,7 @@
 import type { ReadableAtom } from 'nanostores'
 import type { ReactNode } from 'react'
 
+import type { Translations } from '@/i18n'
 import type { InterfaceTier } from '@/store/interface-mode'
 
 // ── `sidebar.sections` — sections a plugin adds to the sidebar (Hermes Studio) ─
@@ -14,8 +15,9 @@ export const SIDEBAR_SECTIONS_AREA = 'sidebar.sections'
 
 /** Payload of a `sidebar.sections` render contribution. */
 export interface SidebarSectionContribution {
-  /** Header title, read on every paint so it follows the app language. */
-  title: () => string
+  /** Header title, read on every paint with the app's live translations
+   *  (`t => t.common.bots`), so it follows the language. */
+  title: (t: Translations) => string
   /** Start folded until the user opens it (their choice then persists). */
   defaultCollapsed?: boolean
   /** How many rows the section holds — shown in the header while folded. */

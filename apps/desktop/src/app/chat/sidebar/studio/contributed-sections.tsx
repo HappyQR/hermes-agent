@@ -4,6 +4,7 @@ import { useSyncExternalStore } from 'react'
 
 import { ContribBoundary, ContribRender } from '@/contrib/react/boundary'
 import { useContributions } from '@/contrib/react/use-contributions'
+import { useI18n } from '@/i18n'
 import { getRuntimeI18nLocale, subscribeRuntimeI18nLocale } from '@/i18n/runtime'
 import { SIDEBAR_SECTIONS_AREA, type SidebarSectionContribution } from '@/sdk/sidebar-sections'
 import { $showsAdvancedChrome } from '@/store/interface-mode'
@@ -19,6 +20,7 @@ interface ContributedSectionProps {
 }
 
 function ContributedSection({ id, data, render }: ContributedSectionProps) {
+  const { t } = useI18n()
   const count = useStore(data.count ?? NO_COUNT)
 
   return (
@@ -26,7 +28,7 @@ function ContributedSection({ id, data, render }: ContributedSectionProps) {
       count={count}
       defaultCollapsed={data.defaultCollapsed}
       id={`contrib:${id}`}
-      title={data.title()}
+      title={data.title(t)}
       tools={
         data.tools ? (
           <ContribBoundary id={`${id}:tools`} variant="chip">
@@ -49,9 +51,8 @@ function ContributedSection({ id, data, render }: ContributedSectionProps) {
  * plugin, behind their own error boundaries.
  */
 export function SidebarContributedSections() {
-  // Titles are read on paint, often through the runtime translator (plugin
-  // catalogues, translateNow), which settles a beat after React's locale:
-  // repaint when it does.
+  // A title may also come from a plugin's own catalogue (the runtime
+  // translator), which settles a beat after React's locale: repaint then too.
   useSyncExternalStore(subscribeRuntimeI18nLocale, getRuntimeI18nLocale)
   const items = useContributions(SIDEBAR_SECTIONS_AREA)
   const advanced = useStore($showsAdvancedChrome)

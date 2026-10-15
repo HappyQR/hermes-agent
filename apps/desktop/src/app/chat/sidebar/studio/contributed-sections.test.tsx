@@ -29,7 +29,7 @@ describe('SidebarContributedSections', () => {
     const data: SidebarSectionContribution = {
       count: atom(3),
       defaultCollapsed: true,
-      title: () => 'Bots',
+      title: t => t.common.bots,
       tools: () => <button type="button">New bot</button>
     }
 

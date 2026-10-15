@@ -29,7 +29,6 @@ import {
   type SidebarSectionContribution,
   StudioIcon,
   Tip,
-  translateNow,
   useI18n,
   useValue
 } from '@hermes/plugin-sdk'
@@ -306,7 +305,7 @@ export function botsSidebarSectionContribution() {
   const data: SidebarSectionContribution = {
     count: $botsSidebarCount,
     defaultCollapsed: true,
-    title: () => translateNow('common.bots'),
+    title: t => t.common.bots,
     tools: BotsSidebarTools
   }
 
