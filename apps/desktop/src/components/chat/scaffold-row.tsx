@@ -32,18 +32,29 @@ export const SCAFFOLD_GLYPH_CLASS = 'grid size-3.5 shrink-0 place-items-center'
  */
 export function ScaffoldRow({
   children,
+  icon,
   onToggle,
   open = false,
   trailing
 }: {
   children: ReactNode
+  /** Optional leading glyph (Hermes Studio: brain for thinking, wrench for a
+   *  tool run), in the shared glyph cell so labels keep one left edge. */
+  icon?: ReactNode
   onToggle?: () => void
   open?: boolean
   trailing?: ReactNode
 }) {
   return (
     <DisclosureRow onToggle={onToggle} open={open} trailing={trailing}>
-      <span className="flex min-w-0 items-center gap-1.5">{children}</span>
+      <span className="flex min-w-0 items-center gap-1.5">
+        {icon && (
+          <span className={SCAFFOLD_GLYPH_CLASS} data-slot="scaffold-icon">
+            {icon}
+          </span>
+        )}
+        {children}
+      </span>
     </DisclosureRow>
   )
 }

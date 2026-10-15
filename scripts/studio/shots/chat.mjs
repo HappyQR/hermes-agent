@@ -77,6 +77,34 @@ export default {
     await escape(page, sleep)
   },
 
+  // The prompt's hover actions, then its inline edit (note, Cancel, Send).
+  async edit(page, { openSession, shot, sleep }) {
+    await openSession(page, '分组重构')
+    const bubble = page.locator('[data-role="user"]').first()
+    await bubble.hover()
+    await sleep(500)
+    await shot(page, 'prompt-hover')
+    const pencil = page.locator('[data-slot="aui_user-actions"] button').first()
+    if (await pencil.count()) {
+      await pencil.click()
+      await sleep(700)
+    }
+    await shot(page, 'edit')
+    await escape(page, sleep)
+  },
+
+  // The reply's ⋯ menu.
+  async 'reply-more'(page, { openSession, shot, sleep }) {
+    await openSession(page, '分组重构')
+    const more = page.locator('[data-slot="aui_msg-actions"] button[aria-haspopup="menu"]').last()
+    if (await more.count()) {
+      await more.click()
+      await sleep(500)
+    }
+    await shot(page, 'reply-more')
+    await escape(page, sleep)
+  },
+
   // The empty state (greeting, hero composer, starters).
   async empty(page, { newChat, shot, sleep }) {
     await newChat(page)

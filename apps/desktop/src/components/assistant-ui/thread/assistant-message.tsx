@@ -17,6 +17,7 @@ import { useComposerScope } from '@/app/chat/composer/scope'
 import { useSessionView } from '@/app/chat/session-view'
 import { SETTINGS_ROUTE } from '@/app/routes'
 import { dispatchedTo } from '@/components/assistant-ui/thread/agent-delivery'
+import { StudioAssistantFooter } from '@/components/assistant-ui/thread/assistant-footer-studio'
 import { ChangedFilesCard } from '@/components/assistant-ui/thread/changed-files-card'
 import {
   contentHasVisibleText,
@@ -91,7 +92,7 @@ const EMPTY_PARTS: readonly unknown[] = []
 // constant MESSAGE_PARTS_COMPONENTS, so nothing per-message is captured here.
 const MESSAGE_PARTS = <MessagePrimitive.Parts components={MESSAGE_PARTS_COMPONENTS} />
 
-interface MessageActionProps {
+export interface MessageActionProps {
   messageId: string
   /** Lazy accessor — reads the live message text at action time. Passing the
    *  text itself as a prop forces the whole footer to re-render on every
@@ -345,13 +346,14 @@ const AssistantMessageBody: FC<AssistantMessageProps & { collapsedNotice?: null 
           {hasVisibleText &&
             responseTail &&
             (!isInterim || (responseIds.length > 0 && responseIds.at(-1) === messageId)) && (
-              <AssistantFooter
+              <StudioAssistantFooter
                 durationS={turnDurationS}
                 fullResponseAvailable={fullResponseAvailable}
                 getFullResponseText={getFullResponseText}
                 getMessageText={getMessageText}
                 messageId={messageId}
                 onBranchInNewChat={onBranchInNewChat}
+                ReadAloud={ReadAloudButton}
               />
             )}
           {/* Last thing in the turn — under the action bar, the way Cursor ends a
@@ -1200,7 +1202,8 @@ const ReadAloudButton: FC<{
   )
 }
 
-const AssistantFooter: FC<MessageActionProps & { durationS?: number }> = ({ durationS, ...props }) => {
+/** Upstream's footer, kept compiling for merges; Hermes Studio mounts `StudioAssistantFooter`. */
+export const AssistantFooter: FC<MessageActionProps & { durationS?: number }> = ({ durationS, ...props }) => {
   return (
     <div className="flex min-h-6 flex-col items-end gap-1 pr-(--message-text-indent) pl-(--message-text-indent)">
       <BranchPickerPrimitive.Root

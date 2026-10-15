@@ -34,6 +34,16 @@ export const arStudioChat: StudioChatTranslations = {
     placeholderBusy: combo => `أضف سياقًا، أو اضغط ${combo} لإرساله في الجولة التالية`,
     placeholderHero: 'امنح Hermes مهمة — / للأوامر، @ للإشارة إلى الملفات'
   },
+  transcript: {
+    editAndRerun: 'تعديل وإعادة التشغيل',
+    editRerunNote: 'يُرسل من هنا — تُحذف الرسائل اللاحقة في هذه المحادثة',
+    previousVersion: 'الإصدار السابق',
+    nextVersion: 'الإصدار التالي',
+    exportMarkdown: 'تصدير بتنسيق Markdown…',
+    exportFileName: 'رد Hermes.md',
+    exported: name => `تم حفظ ${name}`,
+    exportFailed: 'تعذّر تصدير الرد'
+  },
   tray: {
     label: 'النشاط',
     hide: 'إخفاء النشاط',

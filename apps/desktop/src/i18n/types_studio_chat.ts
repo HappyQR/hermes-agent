@@ -2,7 +2,23 @@
 export interface StudioChatTranslations {
   contextUsage: string
   composer: StudioChatComposerTranslations
+  transcript: StudioChatTranscriptTranslations
   tray: StudioChatTrayTranslations
+}
+
+/** Messages, their actions, cards and decisions in the transcript. */
+export interface StudioChatTranscriptTranslations {
+  /** The user bubble's edit action (the bubble itself is "Edit message"). */
+  editAndRerun: string
+  /** Under the inline edit: what sending an edit does (later messages go). */
+  editRerunNote: string
+  previousVersion: string
+  nextVersion: string
+  exportMarkdown: string
+  /** Suggested file name for "Export as Markdown…". */
+  exportFileName: string
+  exported: (name: string) => string
+  exportFailed: string
 }
 
 /** The composer card: "+" menu additions, pills, context gauge, send options, voice hints. */

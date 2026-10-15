@@ -34,6 +34,16 @@ export const zhHantStudioChat: StudioChatTranslations = {
     placeholderBusy: combo => `補充上下文，或按 ${combo} 排入下一回合`,
     placeholderHero: '交給 Hermes 一個任務，/ 使用指令，@ 引用檔案'
   },
+  transcript: {
+    editAndRerun: '編輯並重新執行',
+    editRerunNote: '傳送後從這裡重新執行，之後的訊息會被移除',
+    previousVersion: '上一個版本',
+    nextVersion: '下一個版本',
+    exportMarkdown: '匯出為 Markdown…',
+    exportFileName: 'Hermes 回覆.md',
+    exported: name => `已儲存 ${name}`,
+    exportFailed: '無法匯出回覆'
+  },
   tray: {
     label: '活動',
     hide: '收起活動匣',

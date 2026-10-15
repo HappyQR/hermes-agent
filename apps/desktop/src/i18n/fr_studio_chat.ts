@@ -34,6 +34,16 @@ export const frStudioChat: StudioChatTranslations = {
     placeholderBusy: combo => `Ajoutez du contexte, ou ${combo} pour l’envoyer au prochain tour`,
     placeholderHero: 'Confiez une tâche à Hermes — / pour les commandes, @ pour citer des fichiers'
   },
+  transcript: {
+    editAndRerun: 'Modifier et relancer',
+    editRerunNote: 'Envoi à partir d’ici — les messages suivants de ce chat sont supprimés',
+    previousVersion: 'Version précédente',
+    nextVersion: 'Version suivante',
+    exportMarkdown: 'Exporter en Markdown…',
+    exportFileName: 'Réponse Hermes.md',
+    exported: name => `${name} enregistré`,
+    exportFailed: 'Impossible d’exporter la réponse'
+  },
   tray: {
     label: 'Activité',
     hide: 'Masquer l’activité',

@@ -34,6 +34,16 @@ export const jaStudioChat: StudioChatTranslations = {
     placeholderBusy: combo => `コンテキストを追加するか、${combo} で次のターンに予約`,
     placeholderHero: 'Hermes にタスクを — / でコマンド、@ でファイルを参照'
   },
+  transcript: {
+    editAndRerun: '編集して再実行',
+    editRerunNote: 'ここから送信します。このチャットの以降のメッセージは削除されます',
+    previousVersion: '前のバージョン',
+    nextVersion: '次のバージョン',
+    exportMarkdown: 'Markdown として書き出す…',
+    exportFileName: 'Hermes の返信.md',
+    exported: name => `${name} を保存しました`,
+    exportFailed: '返信を書き出せませんでした'
+  },
   tray: {
     label: 'アクティビティ',
     hide: 'アクティビティを隠す',

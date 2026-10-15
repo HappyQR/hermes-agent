@@ -15,6 +15,7 @@ import { threadUserOrdinal } from '@/components/assistant-ui/thread/thread-messa
 import { MessageTimelineTimestamp } from '@/components/assistant-ui/thread/timeline-timestamp'
 import { type RestoreMessageTarget } from '@/components/assistant-ui/thread/types'
 import { useMessageReactions } from '@/components/assistant-ui/thread/use-message-reactions'
+import { UserMessageActionRow } from '@/components/assistant-ui/thread/user-actions-studio'
 import { UserMessageText } from '@/components/assistant-ui/thread/user-message-text'
 import { Codicon } from '@/components/ui/codicon'
 import { Tip } from '@/components/ui/tooltip'
@@ -256,7 +257,9 @@ interface UserBubbleActionsProps {
   showStop: boolean
 }
 
-const UserBubbleActions: FC<UserBubbleActionsProps> = ({
+/** Upstream's in-bubble hover cluster, kept compiling for merges; Hermes Studio
+ *  mounts `UserMessageActionRow` under the bubble instead. */
+export const UserBubbleActions: FC<UserBubbleActionsProps> = ({
   fullText,
   messageId,
   onCancel,
@@ -572,21 +575,19 @@ export const UserMessage: FC<{
                     </button>
                   </ActionBarPrimitive.Edit>
                 )}
-                {/* Hover cluster, bottom-right: when it was sent, then Stop or
-                    Restore. Its fill masks the last line's tail while shown. */}
-                <div className="pointer-events-none absolute right-2 bottom-2 z-10 flex items-center gap-1 rounded-md bg-(--dt-user-bubble) pl-1 opacity-0 transition-opacity group-hover/user-message:opacity-100 group-hover/user-message:transition-none group-focus-within/user-message:opacity-100">
-                  <UserBubbleActions
-                    fullText={messageText}
-                    messageId={messageId}
-                    onCancel={onCancel}
-                    onRequestRestoreConfirm={onRequestRestoreConfirm}
-                    runtimeUserOrdinal={runtimeUserOrdinal}
-                    showRestore={showRestore}
-                    showStop={showStop}
-                  />
-                </div>
               </div>
             </ReactionPicker>
+            {/* Hermes Studio: the actions sit in a row under the bubble. */}
+            <UserMessageActionRow
+              fullText={messageText}
+              messageId={messageId}
+              onCancel={onCancel}
+              onRequestRestoreConfirm={onRequestRestoreConfirm}
+              readOnly={readOnly}
+              runtimeUserOrdinal={runtimeUserOrdinal}
+              showRestore={showRestore}
+              showStop={showStop}
+            />
             {/* Below the bubble, same register as the assistant action row:
                 same emoji size, same vertical padding, right-aligned to the
                 sent bubble. Overlaying the corner read badly in practice. */}

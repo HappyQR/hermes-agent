@@ -34,6 +34,16 @@ export const deStudioChat: StudioChatTranslations = {
     placeholderBusy: combo => `Kontext ergänzen oder ${combo}, um es für den nächsten Zug einzureihen`,
     placeholderHero: 'Gib Hermes eine Aufgabe — / für Befehle, @ für Dateien'
   },
+  transcript: {
+    editAndRerun: 'Bearbeiten und neu ausführen',
+    editRerunNote: 'Sendet ab hier — spätere Nachrichten in diesem Chat werden entfernt',
+    previousVersion: 'Vorherige Version',
+    nextVersion: 'Nächste Version',
+    exportMarkdown: 'Als Markdown exportieren…',
+    exportFileName: 'Hermes-Antwort.md',
+    exported: name => `${name} gespeichert`,
+    exportFailed: 'Antwort konnte nicht exportiert werden'
+  },
   tray: {
     label: 'Aktivität',
     hide: 'Aktivität ausblenden',

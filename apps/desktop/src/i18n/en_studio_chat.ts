@@ -34,6 +34,16 @@ export const enStudioChat: StudioChatTranslations = {
     placeholderBusy: combo => `Add context, or ${combo} to queue for the next turn`,
     placeholderHero: 'Give Hermes a task — / for commands, @ to reference files'
   },
+  transcript: {
+    editAndRerun: 'Edit and rerun',
+    editRerunNote: 'Sends from here — later messages in this chat are removed',
+    previousVersion: 'Previous version',
+    nextVersion: 'Next version',
+    exportMarkdown: 'Export as Markdown…',
+    exportFileName: 'Hermes reply.md',
+    exported: name => `Saved ${name}`,
+    exportFailed: "Couldn't export the reply"
+  },
   tray: {
     label: 'Activity',
     hide: 'Hide activity',

@@ -40,6 +40,7 @@ import { DisclosureCaret } from '@/components/ui/disclosure-caret'
 import { FadeText } from '@/components/ui/fade-text'
 import { FileTypeIcon } from '@/components/ui/file-type-icon'
 import { GlyphSpinner } from '@/components/ui/glyph-spinner'
+import { StudioIcon } from '@/components/ui/studio-icon'
 import { ToolIcon } from '@/components/ui/tool-icon'
 import { useI18n } from '@/i18n'
 import { connectorCalls, mcpTargets } from '@/lib/connector-tools'
@@ -869,6 +870,7 @@ function ToolRunHeader({
   return (
     <div data-conversation-scaffold="" data-tool-summary="">
       <ScaffoldRow
+        icon={<StudioIcon name="wrench" size={15} />}
         onToggle={onToggle}
         open={open}
         trailing={<TimelineTimestamp completedAt={completedAt} timestamp={startedAt} />}

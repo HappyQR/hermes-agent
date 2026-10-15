@@ -27,6 +27,7 @@ import { formatElapsed, useElapsedSeconds, useMeasuredDuration } from '@/compone
 import { ActivityTimerText } from '@/components/chat/activity-timer-text'
 import { GeneratedImage } from '@/components/chat/generated-image-result'
 import { SCAFFOLD_LABEL_CLASS, SCAFFOLD_META_CLASS, ScaffoldRow } from '@/components/chat/scaffold-row'
+import { StudioIcon } from '@/components/ui/studio-icon'
 import { useI18n } from '@/i18n'
 import { mcpTargets, toolLabels } from '@/lib/connector-tools'
 import { generatedImageFromResult } from '@/lib/generated-images'
@@ -329,6 +330,7 @@ const ThinkingDisclosure: FC<{
       ref={enterRef}
     >
       <ScaffoldRow
+        icon={<StudioIcon name="brain" size={15} />}
         onToggle={() => setUserOpen(!open)}
         open={open}
         trailing={

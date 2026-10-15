@@ -34,6 +34,16 @@ export const ruStudioChat: StudioChatTranslations = {
     placeholderBusy: combo => `Добавьте контекст или нажмите ${combo}, чтобы отправить в следующем ходе`,
     placeholderHero: 'Дайте Hermes задачу — / для команд, @ для ссылок на файлы'
   },
+  transcript: {
+    editAndRerun: 'Изменить и перезапустить',
+    editRerunNote: 'Отправка отсюда — последующие сообщения в этом чате будут удалены',
+    previousVersion: 'Предыдущая версия',
+    nextVersion: 'Следующая версия',
+    exportMarkdown: 'Экспорт в Markdown…',
+    exportFileName: 'Ответ Hermes.md',
+    exported: name => `Сохранено: ${name}`,
+    exportFailed: 'Не удалось экспортировать ответ'
+  },
   tray: {
     label: 'Активность',
     hide: 'Скрыть активность',

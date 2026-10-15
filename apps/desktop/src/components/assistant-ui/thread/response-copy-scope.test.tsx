@@ -4,7 +4,7 @@
 // aloud must read only the current (tail) reply, with a separate
 // full-response copy that keeps the whole-tool-turn semantic the grouping
 // change (3bdd4cc5fd) delivered for background continuations.
-import { cleanup, fireEvent, render, waitFor, within } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 
 import { toChatMessages } from '@/lib/chat-messages'
@@ -62,7 +62,9 @@ it('Copy full response reads every assistant text segment in the group', async (
 
   await waitFor(() => expect(container.textContent).toContain('The deployment is verified.'))
   const actions = container.querySelector('[data-slot="aui_msg-actions"]') as HTMLElement
-  fireEvent.click(within(actions).getByRole('button', { name: /copy full response/i }))
+  // Hermes Studio: the whole-response copy lives in the footer's ⋯ menu.
+  fireEvent.keyDown(within(actions).getByRole('button', { name: /more actions/i }), { key: 'Enter' })
+  fireEvent.click(screen.getByRole('menuitem', { name: /copy full response/i }))
 
   await waitFor(() =>
     expect(clipboard.writeText).toHaveBeenLastCalledWith('Checking the deployment.\n\nThe deployment is verified.')
@@ -90,4 +92,5 @@ it('a solo reply copies its own text and offers no separate full-response button
   await waitFor(() => expect(clipboard.writeText).toHaveBeenLastCalledWith('Hello there.'))
   // The two scopes are identical on a solo reply, so only the default Copy exists.
   expect(within(actions).queryByRole('button', { name: /copy full response/i })).toBeNull()
+  expect(screen.queryByRole('menuitem', { name: /copy full response/i })).toBeNull()
 })
