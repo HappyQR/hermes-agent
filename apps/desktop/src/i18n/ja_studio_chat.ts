@@ -1,6 +1,15 @@
 // Hermes Studio copy (chat) — fork-owned so upstream locale merges stay clean.
 import type { StudioChatTranslations } from './types_studio_chat'
 
+// ツール実行の要約：「ファイル 3 件を調査」「npm test を実行中」。
+const jaRun = (verb: string, noun: string) => ({
+  present: `${verb}中`,
+  // A Latin-script target keeps a space before the particle; Japanese text does not.
+  named: (target: string, live: boolean) =>
+    `${target}${/[\x21-\x7e]$/.test(target) ? ' ' : ''}を${verb}${live ? '中' : ''}`,
+  counted: (count: number, live: boolean) => `${noun} ${count} 件を${verb}${live ? '中' : ''}`
+})
+
 export const jaStudioChat: StudioChatTranslations = {
   contextUsage: 'コンテキスト使用量',
   composer: {
@@ -66,6 +75,22 @@ export const jaStudioChat: StudioChatTranslations = {
       }
     },
     continueFrom: 'Claude Code や Codex から続ける'
+  },
+  toolRun: {
+    categories: {
+      analyze: jaRun('分析', '画像'),
+      browse: jaRun('表示', 'ページ'),
+      delegate: jaRun('委任', 'タスク'),
+      edit: jaRun('編集', 'ファイル'),
+      explore: jaRun('調査', 'ファイル'),
+      interact: jaRun('実行', 'ブラウザ操作'),
+      other: jaRun('使用', 'ツール'),
+      read: jaRun('読み込み', 'ページ'),
+      run: jaRun('実行', 'コマンド'),
+      search: jaRun('検索', 'クエリ')
+    },
+    join: clauses => clauses.join('、'),
+    moreCommands: (first, more) => `${first} ほか ${more} 件のコマンド`
   },
   transcript: {
     delegateSpawned: count => `${count} 個のサブエージェントを起動`,

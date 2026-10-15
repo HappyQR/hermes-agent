@@ -1,6 +1,6 @@
 import { stripAnsi } from '@hermes/shared/ansi'
 
-import { type ToolTitleKey, translateNow } from '@/i18n'
+import { runtimeTranslations, type ToolTitleKey, translateNow } from '@/i18n'
 import { normalizeExternalUrl } from '@/lib/external-link'
 import { isFileMediaPath, mediaKind } from '@/lib/media'
 import { summarizeShellCommand } from '@/lib/summarize-command'
@@ -1445,7 +1445,10 @@ function dynamicTitle(
         translateNow(
           'assistant.tool.titleTemplates.actionCommand',
           action,
-          withoutLeadingAction(compactPreview(summarizeShellCommand(command), 160), action)
+          withoutLeadingAction(
+            compactPreview(summarizeShellCommand(command, runtimeTranslations().studio.chat.toolRun.moreCommands), 160),
+            action
+          )
         )
       )
     }

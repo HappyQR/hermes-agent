@@ -7,6 +7,11 @@ const PIPE_TAIL_HEADS = new Set(['head', 'tail', 'wc', 'sort', 'uniq'])
 
 const basename = (head: string): string => head.split('/').pop() || head
 
+/** Words a compound command's label: its first real segment and how many follow. */
+export type MoreCommands = (first: string, more: number) => string
+
+const englishMoreCommands: MoreCommands = (first, more) => `${first} + ${more} ${more === 1 ? 'command' : 'commands'}`
+
 // Split on command-chain separators, but NOT pipe. A pipe usually belongs to
 // the segment's output plumbing (`cmd 2>&1 | tail -20`); condensed-milk strips
 // that after segmenting instead of treating it as a separate producer.
@@ -184,8 +189,9 @@ function isBoundaryEcho(segment: string): boolean {
  * If one real command survives, show it. If multiple real commands survive,
  * show a short `first command + N commands` label instead of flooding the row
  * with every probe. The full command is always still available via Copy/detail.
+ * `more` words that label — callers pass the UI language's; English otherwise.
  */
-export function summarizeShellCommand(raw: string): string {
+export function summarizeShellCommand(raw: string, more: MoreCommands = englishMoreCommands): string {
   const original = (raw ?? '').trim()
 
   if (!original) {
@@ -212,5 +218,5 @@ export function summarizeShellCommand(raw: string): string {
     return core[0]!
   }
 
-  return `${core[0]} + ${core.length - 1} ${core.length === 2 ? 'command' : 'commands'}`
+  return more(core[0]!, core.length - 1)
 }
