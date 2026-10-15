@@ -1,4 +1,3 @@
-import { Codicon } from '@/components/ui/codicon'
 import {
   ContextMenuItem,
   ContextMenuSub,
@@ -11,6 +10,8 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger
 } from '@/components/ui/dropdown-menu'
+import { StudioIcon } from '@/components/ui/studio-icon'
+import { type Translations, useI18n } from '@/i18n'
 import { triggerHaptic } from '@/lib/haptics'
 import type { SplitDir } from '@/store/session-states'
 
@@ -37,12 +38,14 @@ export const CONTEXT_SPLIT_KIT: SplitMenuKit = {
   SubTrigger: ContextMenuSubTrigger
 }
 
+type SplitMenuCopy = Translations['studio']['sidebar']['menu']
+
 // Ordered so the default (right) sits first, one hop away.
-const SPLIT_DIRS: { dir: SplitDir; icon: string; label: string }[] = [
-  { dir: 'right', icon: 'arrow-right', label: 'Right' },
-  { dir: 'bottom', icon: 'arrow-down', label: 'Down' },
-  { dir: 'left', icon: 'arrow-left', label: 'Left' },
-  { dir: 'top', icon: 'arrow-up', label: 'Up' }
+const SPLIT_DIRS: { dir: SplitDir; label: (copy: SplitMenuCopy) => string }[] = [
+  { dir: 'right', label: copy => copy.splitRight },
+  { dir: 'bottom', label: copy => copy.splitDown },
+  { dir: 'left', label: copy => copy.splitLeft },
+  { dir: 'top', label: copy => copy.splitUp }
 ]
 
 interface SplitSubmenuProps {
@@ -56,11 +59,13 @@ interface SplitSubmenuProps {
 }
 
 /**
- * "Open in split ▸": clicking the row splits right (the common case), and the
- * submenu picks any edge. Shared by session rows and page nav rows.
+ * "Open in split ▸": in a dismissable menu, clicking the row splits right (the
+ * common case); the submenu picks any edge. Shared by session rows, page nav
+ * rows and the top bar's new-session button.
  */
 export function SplitSubmenu({ close, disabled, kit, label, onSplit }: SplitSubmenuProps) {
   const { Item, Sub, SubContent, SubTrigger } = kit
+  const copy = useI18n().t.studio.sidebar.menu
 
   const split = (dir: SplitDir) => {
     triggerHaptic('selection')
@@ -71,19 +76,25 @@ export function SplitSubmenu({ close, disabled, kit, label, onSplit }: SplitSubm
     <Sub>
       <SubTrigger
         disabled={disabled}
-        onClick={() => {
-          split('right')
-          close?.()
-        }}
+        // A menu that can be dismissed takes the click as "split right"; one
+        // that can't (a context menu) lets the row open its submenu instead of
+        // splitting under a menu that stays up.
+        onClick={
+          close
+            ? () => {
+                split('right')
+                close()
+              }
+            : undefined
+        }
       >
-        <Codicon name="split-horizontal" size="0.875rem" />
+        <StudioIcon name="split" size={15} />
         <span>{label}</span>
       </SubTrigger>
       <SubContent>
-        {SPLIT_DIRS.map(({ dir, icon, label: dirLabel }) => (
+        {SPLIT_DIRS.map(({ dir, label: dirLabel }) => (
           <Item key={dir} onSelect={() => split(dir)}>
-            <Codicon name={icon} size="0.875rem" />
-            <span>{dirLabel}</span>
+            <span>{dirLabel(copy)}</span>
           </Item>
         ))}
       </SubContent>

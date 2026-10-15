@@ -24,7 +24,7 @@ import {
 // lanes apart — both render as "bb/coding-context…". Keep the tail pinned and
 // ellipsize the HEAD instead, so `…context-facts-rpc` and `…context-persona`
 // stay distinguishable. Falls back to whole-string for short labels.
-function LaneLabel({ label, title }: { label: string; title?: string }) {
+export function LaneLabel({ label, title }: { label: string; title?: string }) {
   const tailLen = Math.min(14, Math.floor(label.length / 2))
   const head = label.slice(0, label.length - tailLen)
   const tail = label.slice(label.length - tailLen)

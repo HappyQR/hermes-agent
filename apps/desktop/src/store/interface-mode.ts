@@ -108,9 +108,9 @@ const SIMPLE_POLICY: PolicyTable = {
   fileBrowserOpen: false,
   // Inline diffs are the review pane's job; the changed-files summary stays.
   hideCodeDiffs: true,
-  // Without the statusbar, multi-gateway installs still need the rail even
-  // when the active gateway has only one profile.
-  profileRailVisible: context => context.profileCount > 1 || context.connectionCount > 1,
+  // The sidebar footer's account menu switches profiles and gateways, so the
+  // rail (an Advanced opt-in) rests hidden whatever the fleet's size.
+  profileRailVisible: false,
   // A quiet "Thought for Ns" row instead of a live reasoning stream.
   reasoningCollapsedByDefault: true,
   reviewOpen: false,

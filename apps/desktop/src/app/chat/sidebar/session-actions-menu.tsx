@@ -2,14 +2,6 @@ import { useStore } from '@nanostores/react'
 import type * as React from 'react'
 import { useEffect, useRef, useState } from 'react'
 
-import { openSession } from '@/app/open-session'
-import {
-  closeAllTreeTabs,
-  closeOtherTreeTabs,
-  closeTreeTabsToRight,
-  reloadTreePane,
-  treeTabCloseTargets
-} from '@/components/pane-shell/tree/store'
 import {
   type ActionItemSpec,
   ActionsContextMenu,
@@ -18,29 +10,17 @@ import {
   renderActionItem
 } from '@/components/ui/actions-menu'
 import { Button } from '@/components/ui/button'
-import { Codicon } from '@/components/ui/codicon'
-import { ColorSwatches } from '@/components/ui/color-swatches'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { CopyButton } from '@/components/ui/copy-button'
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { renameSession } from '@/hermes'
 import { useI18n } from '@/i18n'
 import { triggerHaptic } from '@/lib/haptics'
-import { ArchiveOff } from '@/lib/icons'
 import { isSubmitEnter } from '@/lib/ime'
-import { PROFILE_SWATCHES } from '@/lib/profile-color'
-import { exportSession } from '@/lib/session-export'
 import { activeGateway } from '@/store/gateway'
 import { notify, notifyError } from '@/store/notifications'
-import {
-  $projectTree,
-  applyRenamedSessionTitle,
-  moveSessionToProject,
-  projectIdForCwd,
-  projectRootCwd,
-  refreshProjectTree
-} from '@/store/projects'
+import { applyRenamedSessionTitle } from '@/store/projects'
 import {
   $activeSessionId,
   $connection,
@@ -49,15 +29,25 @@ import {
   $unreadFinishedSessionIds,
   applySessionTitle,
   markSessionRead,
-  sessionMatchesStoredId,
-  sessionPinId
+  sessionMatchesStoredId
 } from '@/store/session'
-import { $sessionColorOverrides, setSessionColorOverride } from '@/store/session-color'
-import { $sessionStates, $sessionTiles, closeAllOpenSessionTiles } from '@/store/session-states'
+import { $sessionStates, $sessionTiles, openSessionTile } from '@/store/session-states'
 import { ackStoredSessionId } from '@/store/session-unread'
-import { canOpenSessionInTerminal, canOpenSessionWindow, openSessionInTerminal } from '@/store/windows'
 
+import { SheetBody, SheetFooter, SheetHeader } from '../../overlays/studio/sheet-header'
 import type { SessionTitleResponse } from '../../types'
+
+import {
+  buildDangerItems,
+  buildOpenItems,
+  buildTabItems,
+  clickHint,
+  menuIcon,
+  MoveToProjectSubmenu,
+  SessionColorSubmenu,
+  SessionExportSubmenu
+} from './session-actions-menu-items'
+import { SplitSubmenu } from './split-submenu'
 
 // Rename a session, preferring the gateway's session.title RPC over REST.
 //
@@ -179,75 +169,6 @@ interface SessionActions {
   onHideTabBar?: () => void
 }
 
-// The color picker inside the session menu's Appearance submenu. Its own
-// component so only an OPEN submenu subscribes to the stores (not every row's
-// menu). Reads/writes the override keyed by the DURABLE id so a color survives
-// compression; clearing falls back to the inherited project color.
-function SessionColorSwatches({ sessionId }: { sessionId: string }) {
-  const { t } = useI18n()
-  const overrides = useStore($sessionColorOverrides)
-  const session = useStore($sessions).find(s => sessionMatchesStoredId(s, sessionId))
-  const durableId = session ? sessionPinId(session) : sessionId
-
-  return (
-    <ColorSwatches
-      clearIcon="circle-slash"
-      clearLabel={t.sidebar.projects.noColor}
-      onChange={color => setSessionColorOverride(durableId, color)}
-      swatches={PROFILE_SWATCHES}
-      value={overrides[durableId] ?? null}
-    />
-  )
-}
-
-// The project list inside the session menu's "Move to project" submenu. Its own
-// component so only an OPEN submenu subscribes to the stores (same reasoning as
-// SessionColorSwatches). Re-homes the session's workspace at the target
-// project's root — the fix for a chat created in the wrong folder. The current
-// owner and folderless projects (the Home bucket) are excluded: there is
-// nothing to move into.
-function MoveToProjectItems({ kit, sessionId, profile }: { kit: MenuKit; sessionId: string; profile?: string }) {
-  const { t } = useI18n()
-  const p = t.sidebar.projects
-  const tree = useStore($projectTree)
-  const session = useStore($sessions).find(s => sessionMatchesStoredId(s, sessionId))
-  const cwd = session?.cwd?.trim() || ''
-  const currentProjectId = cwd ? projectIdForCwd(cwd) : null
-  const targets = tree.filter(node => node.id !== currentProjectId && !node.isNoProject && projectRootCwd(node))
-
-  // The flat (non-grouped) sidebar view only warms $projectTree on a
-  // background timer (PROJECT_TREE_WARM_MS in sidebar/index.tsx), so opening
-  // this submenu before that timer fires — or before the grouped view has
-  // ever been visited this run — showed "No other projects" even when
-  // projects exist. Refresh on open so the list is authoritative regardless
-  // of sidebar grouping state or timing.
-  useEffect(() => {
-    void refreshProjectTree()
-  }, [])
-
-  if (targets.length === 0) {
-    return <kit.Item disabled>{p.moveNoProjects}</kit.Item>
-  }
-
-  return (
-    <>
-      {targets.map(node => (
-        <kit.Item
-          key={node.id}
-          onSelect={() => {
-            triggerHaptic('selection')
-            moveSessionToProject(sessionId, node.id, profile)
-              .then(() => notify({ durationMs: 2_000, kind: 'success', message: p.movedTo(node.label) }))
-              .catch(err => notifyError(err, p.moveFailed))
-          }}
-        >
-          {node.label}
-        </kit.Item>
-      ))}
-    </>
-  )
-}
-
 function useSessionActions({
   sessionId,
   title,
@@ -268,6 +189,7 @@ function useSessionActions({
 }: SessionActions) {
   const { t } = useI18n()
   const r = t.sidebar.row
+  const menu = t.studio.sidebar.menu
   const [renameOpen, setRenameOpen] = useState(false)
   // The rename item opens a Dialog. When a menu closes, Radix restores focus to
   // its trigger — for a sidebar row that trigger is the row's own <button>, so
@@ -284,71 +206,13 @@ function useSessionActions({
   // The row's finished-unread dot is cleared by opening the session (main or
   // tile) — this menu item is the explicit escape hatch for the rest.
   const isUnread = useStore($unreadFinishedSessionIds).includes(sessionId)
+  const row = surface === 'row'
 
   // Already showing as a tab somewhere (a tile, or loaded in main — main IS
   // a tab): offering "Open in new tab" again is noise.
   const alreadyTabbed = sessionId === selectedStoredSessionId || tiles.some(tile => tile.storedSessionId === sessionId)
 
-  const spec = (partial: Omit<ActionItemSpec, 'onSelect'> & { onSelect: () => void }): ActionItemSpec => partial
-
-  // OPEN — where else this session can go. A tab surface IS a tab already,
-  // so it only offers the window hop (and its own Close, below).
-  const openItems: ActionItemSpec[] = [
-    ...(surface === 'row' && !alreadyTabbed
-      ? [
-          spec({
-            disabled: !sessionId,
-            icon: 'browser',
-            label: r.openInNewTab,
-            onSelect: () => {
-              triggerHaptic('selection')
-              // Stack into the MAIN zone as a tab (center dock; the strip
-              // sticky-shows on gain) — the door to the tab bar. Focuses first
-              // if the session is already on screen.
-              openSession(sessionId, () => undefined, 'tab')
-            }
-          })
-        ]
-      : []),
-    ...(canOpenSessionWindow()
-      ? [
-          spec({
-            disabled: !sessionId,
-            icon: 'link-external',
-            label: r.newWindow,
-            onSelect: () => {
-              triggerHaptic('selection')
-              openSession(sessionId, () => undefined, 'window')
-            }
-          })
-        ]
-      : []),
-    // The user's OWN terminal, not the in-app pane: resumes the session in the
-    // TUI. Hidden on a remote connection — the emulator we'd open runs on this
-    // machine while the session (and its runtime) lives on the remote host.
-    ...(canOpenSessionInTerminal() && !isRemote
-      ? [
-          spec({
-            disabled: !sessionId,
-            icon: 'terminal',
-            label: r.openInTerminal,
-            onSelect: () => {
-              triggerHaptic('selection')
-
-              // Read the row lazily: subscribing every row's menu to $sessions
-              // would re-render the whole sidebar on each session update.
-              const cwd =
-                $sessions
-                  .get()
-                  .find(s => sessionMatchesStoredId(s, sessionId))
-                  ?.cwd?.trim() || undefined
-
-              void openSessionInTerminal(sessionId, { cwd, profile })
-            }
-          })
-        ]
-      : [])
-  ]
+  const openItems = buildOpenItems({ alreadyTabbed, isRemote, menu, profile, r, row, sessionId })
 
   // IDENTITY — name/mark/reference the session. Rename is omitted (not
   // disabled) for a session whose title is not its name — a canonical Bot
@@ -356,9 +220,9 @@ function useSessionActions({
   const identityItems: ActionItemSpec[] = [
     ...(renameable
       ? [
-          spec({
+          {
             disabled: !sessionId,
-            icon: 'edit',
+            iconNode: menuIcon('pencil'),
             label: r.rename,
             onSelect: () => {
               triggerHaptic('selection')
@@ -366,27 +230,26 @@ function useSessionActions({
               suppressCloseFocusRef.current = true
               setRenameOpen(true)
             }
-          })
+          }
         ]
       : []),
-    spec({
+    {
       disabled: !onPin,
-      icon: 'pin',
+      hint: row ? clickHint(['shift'], menu) : undefined,
+      iconNode: menuIcon('pin'),
       label: pinned ? r.unpin : r.pin,
       onSelect: () => {
         triggerHaptic('selection')
         onPin?.()
       }
-    }),
+    },
     // One read-state item, driven by BOTH unread sources: the transient
     // finished-unread dot (isUnread) and the backend watermark (unread).
     // "Mark as read" clears whichever is lit; "Mark as unread" arms the
     // persisted watermark so the dot survives restarts.
-    spec({
+    {
       disabled: !sessionId || (!onToggleUnread && !isUnread),
-      // Closed envelope = unread, open envelope = read (codicon has mail and
-      // mail-read, but no mail-unread glyph — verified against the font css).
-      icon: unread || isUnread ? 'mail-read' : 'mail',
+      iconNode: menuIcon('dot'),
       label: unread || isUnread ? r.markRead : r.markUnread,
       onSelect: () => {
         triggerHaptic('selection')
@@ -405,176 +268,59 @@ function useSessionActions({
           onToggleUnread?.()
         }
       }
-    })
-  ]
-
-  // WORK — derive/extract from the session.
-  const workItems: ActionItemSpec[] = [
-    spec({
-      disabled: !onBranch,
-      // Fork glyph to match the inline message action's GitFork icon
-      // (assistant-message.tsx). NB: this codicon font has no `git-fork`
-      // glyph (only `git-fork-private`); `repo-forked` is the fork icon.
-      icon: 'repo-forked',
-      label: r.branchFrom,
-      onSelect: () => {
-        triggerHaptic('selection')
-        onBranch?.()
-      }
-    }),
-    spec({
-      disabled: !sessionId,
-      icon: 'cloud-download',
-      label: r.export,
-      onSelect: () => {
-        triggerHaptic('selection')
-        void exportSession(sessionId, { profile, title })
-      }
-    })
-  ]
-
-  // TAB — verbs that act on the strip (tabs only; a row isn't a tab).
-  const closeTargets = surface === 'tab' && tabPaneId ? treeTabCloseTargets(tabPaneId) : null
-
-  const tabItems: ActionItemSpec[] =
-    surface === 'tab'
-      ? [
-          ...(tabPaneId
-            ? [
-                spec({
-                  icon: 'refresh',
-                  label: t.zones.reload,
-                  onSelect: () => {
-                    triggerHaptic('selection')
-                    reloadTreePane(tabPaneId)
-                  }
-                })
-              ]
-            : []),
-          ...(onClose
-            ? [
-                spec({
-                  disabled: false,
-                  icon: 'close',
-                  label: t.common.close,
-                  onSelect: () => {
-                    triggerHaptic('selection')
-                    onClose()
-                  }
-                })
-              ]
-            : []),
-          ...(tabPaneId
-            ? [
-                spec({
-                  disabled: !closeTargets?.others,
-                  icon: 'close-all',
-                  label: t.zones.closeOthers,
-                  onSelect: () => {
-                    triggerHaptic('selection')
-                    closeOtherTreeTabs(tabPaneId)
-                  }
-                }),
-                spec({
-                  disabled: !closeTargets?.right,
-                  icon: 'arrow-right',
-                  label: t.zones.closeToRight,
-                  onSelect: () => {
-                    triggerHaptic('selection')
-                    closeTreeTabsToRight(tabPaneId)
-                  }
-                }),
-                spec({
-                  disabled: !closeTargets?.all,
-                  icon: 'clear-all',
-                  label: t.zones.closeAll,
-                  onSelect: () => {
-                    triggerHaptic('selection')
-                    // Persist-close session tiles before dismissing the
-                    // remaining tree panes, or Bot Mode rehydrates them
-                    // from the shared tile bucket (#94137).
-                    closeAllOpenSessionTiles(tabPaneId)
-                    closeAllTreeTabs(tabPaneId)
-                  }
-                })
-              ]
-            : [])
-        ]
-      : []
-
-  // DANGER — put it away / destroy it (delete stays last, destructive-red).
-  const dangerItems: ActionItemSpec[] = [
-    spec({
-      disabled: !onArchive,
-      // Already archived (the Archived view): the same verb restores the row
-      // instead of re-archiving it (#98813). The wiring dispatches the shared
-      // onArchive callback to the restore path based on the row's state. No
-      // unarchive codicon exists, so the restore item carries the ArchiveOff
-      // glyph the Settings → Archived Chats restore button already uses.
-      icon: archived ? undefined : 'archive',
-      iconNode: archived ? <ArchiveOff className="size-3.5" /> : undefined,
-      label: archived ? r.unarchive : r.archive,
-      onSelect: () => {
-        triggerHaptic('selection')
-        onArchive?.()
-      }
-    }),
-    {
-      className: 'text-destructive focus:text-destructive',
-      disabled: !onDelete,
-      icon: 'trash',
-      label: t.common.delete,
-      onSelect: () => {
-        triggerHaptic('warning')
-
-        // Deleting is irreversible (the CLI path asks y/N; the desktop used to
-        // fire instantly on click). Gate it behind an explicit confirm — see
-        // #61470. The dialog owns the delete call, so every surface that routes
-        // through this menu (sidebar rows, tab menus, the chat header) gets the
-        // guard for free.
-        if (onDelete) {
-          setDeleteOpen(true)
-        }
-      },
-      variant: 'destructive'
     }
   ]
 
-  const renderItems = (kit: MenuKit) => (
+  const tabItems = surface === 'tab' ? buildTabItems({ onClose, tabPaneId, t }) : []
+
+  const dangerItems = buildDangerItems({
+    archived,
+    onArchive,
+    onDelete,
+    requestDelete: () => setDeleteOpen(true),
+    row,
+    t
+  })
+
+  // `close` dismisses a controlled dropdown after the split row's default
+  // (right) split; a context menu passes none and picks from the submenu.
+  const renderItems = (kit: MenuKit, close?: () => void) => (
     <>
       {openItems.map(item => renderActionItem(kit, item))}
-      {openItems.length > 0 && <kit.Separator />}
+      {row && (
+        <SplitSubmenu
+          close={close}
+          disabled={!sessionId}
+          kit={kit}
+          label={r.openInSplit}
+          onSplit={dir => openSessionTile(sessionId, dir)}
+        />
+      )}
+      {(openItems.length > 0 || row) && <kit.Separator />}
       {identityItems.map(item => renderActionItem(kit, item))}
-      <kit.Sub>
-        <kit.SubTrigger disabled={!sessionId}>
-          <Codicon name="symbol-color" size="0.875rem" />
-          <span>{t.sidebar.projects.menuAppearance}</span>
-        </kit.SubTrigger>
-        <kit.SubContent className="p-2">
-          <SessionColorSwatches sessionId={sessionId} />
-        </kit.SubContent>
-      </kit.Sub>
+      <SessionColorSubmenu kit={kit} sessionId={sessionId} />
       <CopyButton
         appearance={kit.copyAppearance}
         disabled={!sessionId}
         errorMessage={r.copyIdFailed}
         iconClassName="size-3.5 text-current"
-        key={r.copyId}
-        label={r.copyId}
+        key={menu.copySessionId}
+        label={menu.copySessionId}
         onCopyError={err => notifyError(err, r.copyIdFailed)}
         text={sessionId}
       />
       <kit.Separator />
-      {workItems.map(item => renderActionItem(kit, item))}
-      <kit.Sub>
-        <kit.SubTrigger disabled={!sessionId}>
-          <Codicon name="folder" size="0.875rem" />
-          <span>{t.sidebar.projects.moveToProject}</span>
-        </kit.SubTrigger>
-        <kit.SubContent>
-          <MoveToProjectItems kit={kit} profile={profile} sessionId={sessionId} />
-        </kit.SubContent>
-      </kit.Sub>
+      {renderActionItem(kit, {
+        disabled: !onBranch,
+        iconNode: menuIcon('branch'),
+        label: menu.branchFromHere,
+        onSelect: () => {
+          triggerHaptic('selection')
+          onBranch?.()
+        }
+      })}
+      <SessionExportSubmenu kit={kit} profile={profile} sessionId={sessionId} title={title} />
+      <MoveToProjectSubmenu kit={kit} profile={profile} sessionId={sessionId} />
       {tabItems.length > 0 && (
         <>
           <kit.Separator />
@@ -672,15 +418,19 @@ interface SessionActionsMenuProps
 export function SessionActionsMenu({ children, align = 'end', sideOffset = 6, ...actions }: SessionActionsMenuProps) {
   const { t } = useI18n()
   const { deleteDialog, onCloseAutoFocus, renameDialog, renderItems } = useSessionActions(actions)
+  // Controlled, so the split row's default action can dismiss the menu.
+  const [open, setOpen] = useState(false)
 
   return (
     <>
       <ActionsMenu
         align={align}
         ariaLabel={t.sidebar.row.sessionActions}
-        contentClassName="w-40"
-        items={renderItems}
+        contentClassName="min-w-56"
+        items={kit => renderItems(kit, () => setOpen(false))}
         onCloseAutoFocus={onCloseAutoFocus}
+        onOpenChange={setOpen}
+        open={open}
         sideOffset={sideOffset}
       >
         {children}
@@ -703,8 +453,8 @@ export function SessionContextMenu({ children, ...actions }: SessionContextMenuP
     <>
       <ActionsContextMenu
         ariaLabel={t.sidebar.row.sessionActions}
-        contentClassName="w-40"
-        items={renderItems}
+        contentClassName="min-w-56"
+        items={kit => renderItems(kit)}
         onCloseAutoFocus={onCloseAutoFocus}
       >
         {children}
@@ -773,36 +523,51 @@ function RenameSessionDialog({ open, onOpenChange, sessionId, currentTitle, prof
     }
   }
 
+  // The prototype's rename sheet: sheet header with the close X, one field,
+  // and Cancel / Rename in the sheet footer.
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>{r.renameTitle}</DialogTitle>
-        </DialogHeader>
-        <Input
-          autoFocus
-          disabled={submitting}
-          onChange={event => setValue(event.target.value)}
-          onKeyDown={event => {
-            if (isSubmitEnter(event)) {
-              event.preventDefault()
-              void submit()
-            } else if (event.key === 'Escape') {
-              onOpenChange(false)
-            }
-          }}
-          placeholder={r.untitledPlaceholder}
-          ref={inputRef}
-          value={value}
-        />
-        <DialogFooter>
-          <Button disabled={submitting} onClick={() => onOpenChange(false)} type="button" variant="ghost">
+      <DialogContent
+        bodyClassName="flex flex-col gap-0 p-0"
+        className="w-[min(30rem,calc(100vw-2.5rem))] max-w-none"
+        // The field, not the header's close X, takes focus on open.
+        onOpenAutoFocus={event => {
+          event.preventDefault()
+          inputRef.current?.focus()
+        }}
+        showCloseButton={false}
+      >
+        <SheetHeader closeLabel={t.common.close} inDialog onClose={() => onOpenChange(false)} title={r.renameTitle} />
+        <SheetBody className="gap-1.5 pt-0 pb-1">
+          <Input
+            aria-label={r.renameTitle}
+            autoFocus
+            className="h-8.5 text-sm"
+            disabled={submitting}
+            onChange={event => setValue(event.target.value)}
+            onKeyDown={event => {
+              if (isSubmitEnter(event)) {
+                event.preventDefault()
+                void submit()
+              } else if (event.key === 'Escape') {
+                onOpenChange(false)
+              }
+            }}
+            placeholder={r.untitledPlaceholder}
+            ref={inputRef}
+            value={value}
+          />
+          <p className="m-0 px-0.5 text-[0.71875rem] leading-[1.4] text-(--ui-text-tertiary)">{r.renameDesc}</p>
+        </SheetBody>
+        <SheetFooter>
+          <span className="flex-1" />
+          <Button disabled={submitting} onClick={() => onOpenChange(false)} type="button" variant="secondary">
             {t.common.cancel}
           </Button>
           <Button disabled={submitting} onClick={() => void submit()} type="button">
-            {t.common.save}
+            {t.studio.sidebar.menu.renameConfirm}
           </Button>
-        </DialogFooter>
+        </SheetFooter>
       </DialogContent>
     </Dialog>
   )

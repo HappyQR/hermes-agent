@@ -30,6 +30,9 @@ vi.mock('@/i18n', () => ({
   useI18n: () => ({
     t: {
       common: { cancel: 'Cancel', confirm: 'Confirm', done: 'Done', loading: 'Loading…' },
+      studio: {
+        sidebar: { projects: { newSessionHere: 'New session in this project', newWorktree: 'New worktree…' } }
+      },
       sidebar: {
         projects: {
           copyPath: 'Copy path',
@@ -67,6 +70,10 @@ vi.mock('@/store/layout', () => ({
 
 vi.mock('@/store/notifications', () => ({
   notify: vi.fn()
+}))
+
+vi.mock('@/store/coding-status', () => ({
+  openWorktreeDialog: vi.fn()
 }))
 
 vi.mock('@/store/projects', () => ({

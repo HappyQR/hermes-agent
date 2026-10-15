@@ -187,3 +187,18 @@ export function botRowOwnsWorkspace(
 
   return isActiveRosterBot(bot, focusedOwner)
 }
+
+/** Hovering a bot row telegraphs the click: pre-dial the bot so a cold open
+ *  doesn't pay the whole boot. A multi-source row warms the agent's OWN
+ *  source (feature-detected). Best-effort — never throws. */
+export function warmRosterBot(bot: RosterRow): void {
+  try {
+    if (bot.sourceScoped && typeof host.warmAgent === 'function') {
+      host.warmAgent(bot.connectionId, bot.name)
+    } else if (typeof host.warmProfile === 'function') {
+      host.warmProfile(bot.name)
+    }
+  } catch {
+    /* warm is best-effort */
+  }
+}

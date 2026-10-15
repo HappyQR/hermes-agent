@@ -1,5 +1,6 @@
 import { useStore } from '@nanostores/react'
 
+import { StudioIcon } from '@/components/ui/studio-icon'
 import { type Translations, useI18n } from '@/i18n'
 import { useStoreSelector } from '@/lib/use-session-slice'
 import { cn } from '@/lib/utils'
@@ -7,90 +8,101 @@ import { $sessionColorById, sessionColorFor } from '@/store/session-color'
 import { $sessionDotStateById, type SessionDotState } from '@/store/session-dot-state'
 import type { SessionInfo } from '@/types/hermes'
 
-// A pure lookup table: each state maps to its className, aria-label, and title.
-// No priority resolution here — $sessionDotStateById already picked one.
-// Label/title resolve from sidebar.row translations, keyed by name.
-type DotVariant = {
+// One table, one mark per state — no priority resolution here
+// ($sessionDotStateById already picked one). Labels resolve from
+// sidebar.row translations, keyed by name.
+type LeadVariant = {
   ariaLabel?: (r: Translations['sidebar']['row']) => string
-  className: string
+  /** The state's dot, for surfaces that describe a status without a session
+   *  (filter chips, profile status dots). */
+  dot: string
   role?: 'status'
   title?: (r: Translations['sidebar']['row']) => string
 }
 
-// Shared base for every active dot; idle is smaller and uses its own class.
-const DOT_BASE = 'size-1.5 rounded-full'
-
-// Three colors and one fill/hollow axis, none of it moving. Motion on a 6px
-// circle can only say "something is happening" — which the row's arc already
-// says, better — while costing a repaint per frame on every row at once. What
-// the dot is for is telling states APART, and that is a job for color and fill:
-// filled means producing, hollow means open but quiet. The two states this
-// replaces differed by 30% opacity and were, in practice, the same dot.
-const DOT_VARIANTS: Record<SessionDotState, DotVariant> = {
-  // Amber — a clarify/approval is blocking the turn. The one "act now" color,
-  // and the only state the user is required to do something about.
+// Hermes Studio's status leads (prototype HP.StatusLead): running and needs
+// input and unread read the same on every surface. A running turn is the
+// spinning accent ring — the one moving mark, so the row needs no arc of its
+// own; needs input is the amber dot with a halo, the only "act now" color;
+// unread is the accent dot; a draft is a pencil; a settled session shows
+// nothing unless it carries a color. Stalled keeps the ring, still; a
+// background process outliving the turn is a hollow muted circle.
+const LEADS: Record<SessionDotState, LeadVariant> = {
   'needs-input': {
     ariaLabel: r => r.needsInput,
-    className: `${DOT_BASE} bg-amber-500`,
+    dot: 'size-2 rounded-full bg-[var(--ui-dot-orange,var(--color-amber-500))]',
     role: 'status',
     title: r => r.waitingForAnswer
   },
-  // Accent — the turn is running. The row's arc carries the motion.
   working: {
     ariaLabel: r => r.sessionRunning,
-    className: `${DOT_BASE} bg-(--ui-accent)`,
+    dot: 'size-2 rounded-full bg-(--ui-accent)',
     role: 'status'
   },
-  // Hollow accent — still authoritatively running, but nothing has arrived for
-  // the watchdog window. Same color as working because it IS working; hollow
-  // because nothing is coming out of it right now.
   stalled: {
     ariaLabel: r => r.sessionRunning,
-    className: `${DOT_BASE} border border-(--ui-accent)`,
+    dot: 'size-2 rounded-full border border-(--ui-accent)',
     role: 'status',
     title: r => r.sessionRunning
   },
-  // Hollow muted — a terminal(background=true) process outlived the turn. An
-  // outline reads as "still open" without claiming the model is working; a
-  // filled grey dot read as finished, the opposite of what this means.
   background: {
     ariaLabel: r => r.backgroundRunning,
-    className: `${DOT_BASE} border border-(--ui-text-tertiary)`,
+    dot: 'size-2 rounded-full border-[1.5px] border-(--ui-text-tertiary)',
     role: 'status',
     title: r => r.backgroundRunning
   },
-  // Emerald — the turn finished while the user was looking elsewhere. The
-  // color is theme-derived (`--ui-success`, a success green rotated toward the
-  // accent) so eight finished dots can't sit in the sidebar fighting a palette
-  // they don't belong to. Under a green accent it stays emerald.
   unread: {
     ariaLabel: r => r.finishedUnread,
-    className: `${DOT_BASE} bg-(--ui-success)`,
+    dot: 'size-2 rounded-full bg-(--ui-accent)',
     role: 'status',
     title: r => r.finishedUnread
   },
-  // Hollow grey, the faintest ink the app has — nothing has ever run here. It
-  // shares the outline with `background` because both mean "open, not
-  // producing", and sits a shade dimmer because a draft is the one state that
-  // has yet to do anything at all.
   draft: {
     ariaLabel: r => r.draftSession,
-    className: `${DOT_BASE} border border-(--ui-text-quaternary)`,
+    dot: 'size-2 rounded-full border border-(--ui-text-quaternary)',
     title: r => r.draftSession
   },
-  // Settled: the project color when there is one, else the faintest filled
-  // grey. Every session shows SOME mark — a row with nothing in the lead slot
-  // reads as broken next to its neighbours, so "no color" falls back to the
-  // quietest ink rather than to an invisible dot.
   idle: {
-    className: 'size-1 rounded-full bg-(--ui-text-quaternary)'
+    dot: 'size-1.5 rounded-full'
   }
 }
 
 /** The dot a state paints, for surfaces that describe a status rather than
- *  render a session — the sidebar's status filter, say. Idle carries no color
- *  of its own (it inherits the project's), so callers supply one. */
-export const sessionDotClassName = (state: SessionDotState): string => DOT_VARIANTS[state].className
+ *  render a session — the status filter, the profile status dots. Idle carries
+ *  no color of its own (it inherits the project's), so callers supply one. */
+export const sessionDotClassName = (state: SessionDotState): string => LEADS[state].dot
+
+/** The mark itself (decorative; the wrapper carries the accessible name). */
+function LeadMark({ color, state }: { color: null | string; state: SessionDotState }) {
+  switch (state) {
+    case 'working':
+      return <span className="studio-ring-run size-3.5" />
+
+    case 'stalled':
+      return <span className="studio-ring-run size-3.5 animate-none" />
+
+    case 'needs-input':
+      return (
+        <span
+          className={cn(
+            LEADS['needs-input'].dot,
+            'shadow-[0_0_0_3px_color-mix(in_srgb,var(--ui-dot-orange,var(--color-amber-500))_22%,transparent)]'
+          )}
+        />
+      )
+
+    case 'draft':
+      return <StudioIcon className="text-(--ui-text-tertiary)" name="pencil" size={12} />
+
+    case 'idle':
+      // Nothing to say — unless the session wears a color (its own or its
+      // project's), which is the only place that color shows.
+      return color ? <span className={LEADS.idle.dot} style={{ backgroundColor: color }} /> : null
+
+    default:
+      return <span className={LEADS[state].dot} />
+  }
+}
 
 export interface SessionStatusDotProps {
   /** The STORED session id — the key every live-state atom (working /
@@ -102,25 +114,25 @@ export interface SessionStatusDotProps {
    *  and no turn behind it, which is the draft state by definition. */
   storedSessionId: null | string
   /** The session row for color resolution — recents OR the project tree. Both
-   *  call sites already hold it; passing it lets the idle dot inherit the
+   *  call sites already hold it; passing it lets the idle mark inherit the
    *  project color even for a session older than the paginated recents page
    *  (which has no `$sessionColorById` entry). */
   session?: null | SessionInfo
   /** TUI-style tree stem for a branched session (`└─ ` / `├─ `). */
   branchStem?: string
-  /** Applied to the OUTER wrapper (stem + dot) — e.g. hover-fade on the
+  /** Applied to the OUTER wrapper (stem + mark) — e.g. hover-fade on the
    *  reorder handle. */
   className?: string
 }
 
 /**
- * SESSION STATUS DOT — the ONE primitive the sidebar row, the pane tabs, and
+ * SESSION STATUS LEAD — the ONE primitive the sidebar row, the pane tabs, and
  * the session switcher render, so a session's status can never disagree
  * between surfaces. It resolves everything itself from the stored session id:
  * the live state (via `$sessionDotStateById`, already reduced to one mutually
  * exclusive answer) and the color (override → project, via `sessionColorFor`).
- * An idle session shows its project color; the active states own the dot with
- * their semantic color so an attention cue is never masked by the tint.
+ * The active states own the mark with their semantic look so an attention cue
+ * is never masked by a tint.
  */
 export function SessionStatusDot({ storedSessionId, session, branchStem, className }: SessionStatusDotProps) {
   const { t } = useI18n()
@@ -132,33 +144,31 @@ export function SessionStatusDot({ storedSessionId, session, branchStem, classNa
   const color = sessionColorFor(session) ?? null
 
   // Selector, not a plain useStore: the map is rebuilt whenever any session's
-  // status changes, but a given dot only repaints when ITS OWN state flips.
+  // status changes, but a given lead only repaints when ITS OWN state flips.
   const dotState = useStoreSelector($sessionDotStateById, states =>
     storedSessionId ? (states[storedSessionId] ?? 'idle') : 'draft'
   )
 
-  const variant = DOT_VARIANTS[dotState]
+  const variant = LEADS[dotState]
 
   return (
-    <span className={cn('flex items-center gap-0.5', className)}>
+    <span className={cn('flex items-center gap-1', className)}>
+      <span
+        aria-hidden={variant.ariaLabel ? undefined : true}
+        aria-label={variant.ariaLabel?.(r)}
+        className="grid size-3.5 shrink-0 place-items-center"
+        data-status-lead={dotState}
+        role={variant.role}
+        title={variant.title?.(r)}
+      >
+        <LeadMark color={color} state={dotState} />
+      </span>
+      {/* A branch hangs off its parent: one stem glyph after the lead (prototype .stem). */}
       {branchStem ? (
-        <span aria-hidden className="shrink-0 font-mono text-[0.625rem] leading-none text-(--ui-text-quaternary)">
-          {branchStem}
+        <span aria-hidden className="-mr-0.5 shrink-0 font-mono text-[0.6875rem] leading-none text-(--ui-text-quaternary)">
+          └
         </span>
       ) : null}
-      {dotState === 'idle' ? (
-        // Rendered even with no color to paint: an empty dot of the same size
-        // keeps every row's title on one left edge, so a session finishing
-        // can't shift the list under the pointer.
-        <span aria-hidden="true" className={variant.className} style={color ? { backgroundColor: color } : undefined} />
-      ) : (
-        <span
-          aria-label={variant.ariaLabel?.(r)}
-          className={variant.className}
-          role={variant.role}
-          title={variant.title?.(r)}
-        />
-      )}
     </span>
   )
 }

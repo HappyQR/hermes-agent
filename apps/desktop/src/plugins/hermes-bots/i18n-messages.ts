@@ -6,6 +6,15 @@ import { type CanonicalGroupMessages } from './canonical-group-locales'
 
 export type BotsMessages = {
   canonical: { [K in keyof CanonicalGroupMessages]: string }
+  /** The sidebar's compact Bots section (Studio). */
+  sidebar: {
+    /** "⋯" menu: reveal the full Bots workspace (the BOTS tab). */
+    openWorkspace: string
+    /** The "⋯" button's accessible name. */
+    more: string
+    /** "⋯" menu toggle for the roster's activity toasts. */
+    activityToasts: string
+  }
   /** Left rail: the bot + group-chat roster. */
   editor: {
     fullConfigHint: string

@@ -16,23 +16,31 @@ import { VirtualSessionList } from './virtual-session-list'
 const measureSpy = vi.fn()
 let estimateSize: (index: number) => number = () => 0
 
+let virtualItems: { index: number; key: string; start: number }[] = []
+let lastOptions: { getScrollElement: () => Element | null; scrollMargin?: number } | null = null
+
 const stableVirtualizer = {
   measure: (...args: []) => measureSpy(...args),
-  getVirtualItems: () => [],
-  getTotalSize: () => 0,
+  getVirtualItems: () => virtualItems,
+  getTotalSize: () => 120,
   measureElement: vi.fn()
 }
 
 vi.mock('@tanstack/react-virtual', () => ({
-  useVirtualizer: (options: { estimateSize: (index: number) => number }) => {
+  useVirtualizer: (options: {
+    estimateSize: (index: number) => number
+    getScrollElement: () => Element | null
+    scrollMargin?: number
+  }) => {
     estimateSize = options.estimateSize
+    lastOptions = options
 
     return stableVirtualizer
   }
 }))
 
 vi.mock('./chrome', () => ({ SidebarDateDivider: () => null }))
-vi.mock('./session-row', () => ({ SidebarSessionRow: () => null }))
+vi.mock('./session-row', () => ({ SidebarSessionRow: () => <div data-testid="row" /> }))
 
 vi.mock('@/i18n', () => ({
   useI18n: () => ({ t: { sidebar: { dateDivider: {} } } })
@@ -120,5 +128,41 @@ describe('VirtualSessionList row measurement', () => {
     expect(SESSION_CARD_ROW_ESTIMATE_PX).toBeGreaterThanOrEqual(
       sessionRowEstimate('detailed') + onePreviewLine + oneTitleLine
     )
+  })
+})
+
+// Studio: the sidebar has ONE scroller, so a long list rides it instead of
+// nesting its own — placed by its offset inside the scroller's content.
+describe('VirtualSessionList on the sidebar scroller', () => {
+  afterEach(() => {
+    cleanup()
+    virtualItems = []
+    lastOptions = null
+  })
+
+  it('virtualizes against the outer scroller and places rows below the content above it', () => {
+    const scroller = document.createElement('div')
+    const content = document.createElement('div')
+
+    scroller.appendChild(content)
+    document.body.appendChild(scroller)
+    scroller.getBoundingClientRect = () => ({ top: 100 }) as DOMRect
+    Object.defineProperty(scroller, 'scrollTop', { configurable: true, value: 40 })
+
+    virtualItems = [{ index: 1, key: 's1', start: 0 }]
+
+    const { container } = render(
+      <VirtualSessionList {...defaultProps} scrollElement={() => scroller} />,
+      { container: content }
+    )
+
+    const list = container.firstElementChild as HTMLElement
+
+    // No nested scroller: the list is a plain measured box.
+    expect(list.className).not.toContain('overflow-y-auto')
+    expect(list.style.height).toBe('120px')
+    expect(lastOptions?.getScrollElement()).toBe(scroller)
+
+    scroller.remove()
   })
 })

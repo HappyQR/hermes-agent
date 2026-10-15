@@ -41,7 +41,12 @@ const sessionRows = [
   makeSessionInfo({ id: 'tile-two', last_active: 2, profile: 'default', started_at: 1, title: 'Tile two' })
 ]
 
-const renderSidebar = (pathname: string, currentView: AppView, onRetrySessions: () => Promise<void> = noopAsync) =>
+const renderSidebar = (
+  pathname: string,
+  currentView: AppView,
+  onRetrySessions: () => Promise<void> = noopAsync,
+  onLoadMoreMessaging?: (platform: string) => void
+) =>
   render(
     <MemoryRouter initialEntries={[pathname]}>
       <SidebarProvider>
@@ -50,6 +55,7 @@ const renderSidebar = (pathname: string, currentView: AppView, onRetrySessions: 
           onArchiveSession={noop}
           onBranchSession={noop}
           onDeleteSession={noop}
+          onLoadMoreMessaging={onLoadMoreMessaging}
           onLoadMoreSessions={noop}
           onManageCronJob={noop}
           onNavigate={noop}
@@ -64,7 +70,7 @@ const renderSidebar = (pathname: string, currentView: AppView, onRetrySessions: 
   )
 
 const currentButtons = () =>
-  screen.queryAllByRole('button').filter(button => button.classList.contains('bg-(--ui-control-active-background)'))
+  screen.queryAllByRole('button').filter(button => button.getAttribute('aria-current') === 'page')
 
 const expectOnlyCurrent = (label: string | null) => {
   const button = label ? screen.getByRole('button', { name: label }) : null
@@ -152,7 +158,12 @@ describe('ChatSidebar navigation activity', () => {
       ['/capabilities', 'capabilities', 'Capabilities'],
       ['/messaging', 'messaging', 'Messaging'],
       ['/artifacts', 'artifacts', 'Artifacts'],
-      ['/cron', 'cron', 'Scheduled jobs']
+      ['/cron', 'cron', 'Automations'],
+      // /webhooks shows the same Automations view on its Webhook tab.
+      ['/webhooks', 'webhooks', 'Automations'],
+      // /memory and /starmap both give the starmap view.
+      ['/memory', 'starmap', 'Memory'],
+      ['/starmap', 'starmap', 'Memory']
     ] as const) {
       cleanup()
       focus('workspace-group')
@@ -278,7 +289,9 @@ describe('ChatSidebar project entry', () => {
 // Messaging platforms group rows by owner the same way recents does once every
 // profile is on screen, so a Telegram thread is attributable to its profile
 // (#87715). The platform's row cap and load-more stay the section's.
-describe('ChatSidebar section labels', () => {
+// Studio: projects live in their own section above the list; the Sessions
+// header always reads "Sessions", and a project row scopes the list.
+describe('ChatSidebar Projects section', () => {
   const realProject = {
     id: '/repos/new-project',
     label: 'new-project',
@@ -300,6 +313,9 @@ describe('ChatSidebar section labels', () => {
     }
   ]
 
+  const projectsSection = (container: HTMLElement) =>
+    container.querySelector<HTMLElement>('[data-slot="sidebar-projects"]')!
+
   afterEach(() => {
     cleanup()
     $projectScope.set(ALL_PROJECTS)
@@ -308,40 +324,46 @@ describe('ChatSidebar section labels', () => {
     $sessions.set([])
   })
 
-  it('labels the section "Projects" when the grouped tree has a real project', () => {
-    setSidebarAgentsGrouped(true)
+  it('lists real projects in their own section, whatever the grouping', () => {
     $projectTree.set([realProject])
-
-    renderSidebar('/', 'chat')
-
-    expect(screen.getByText('Projects')).toBeTruthy()
-    expect(screen.queryByText('Sessions')).toBeNull()
-  })
-
-  it('keeps the "Sessions" label when grouping is on but no projects exist', () => {
-    // The source-filter toggle with an empty tree: the section lists plain
-    // chat sessions, so heading it "Projects" mislabeled them (#62537).
-    setSidebarAgentsGrouped(true)
-    $projectTree.set([])
     $sessions.set(sessionRows)
 
-    renderSidebar('/', 'chat')
+    const { container } = renderSidebar('/', 'chat')
 
+    expect(screen.getByText('Projects')).toBeTruthy()
     expect(screen.getByText('Sessions')).toBeTruthy()
-    expect(screen.queryByText('Projects')).toBeNull()
+    expect(within(projectsSection(container)).getByText('new-project')).toBeTruthy()
   })
 
-  it('keeps the "Sessions" label when the grouped tree is only the synthetic Home bucket', () => {
+  it('keeps the synthetic Home bucket out of the Projects section', () => {
     // No real projects — every session fell into Home. A lone Home bucket is
-    // the flat session list wearing a project costume, not a switcher.
+    // not a project: the section shows its empty line, the list its sessions.
     setSidebarAgentsGrouped(true)
     $projectTree.set(homeOnly)
     $sessions.set(sessionRows)
 
-    renderSidebar('/', 'chat')
+    const { container } = renderSidebar('/', 'chat')
 
+    expect(within(projectsSection(container)).queryByText('Home')).toBeNull()
+    expect(within(projectsSection(container)).getByText('No projects yet')).toBeTruthy()
     expect(screen.getByText('Sessions')).toBeTruthy()
-    expect(screen.queryByText('Projects')).toBeNull()
+  })
+
+  it('scopes the Sessions list from a project row and clears it from the chip', () => {
+    $projectTree.set([realProject])
+    $sessions.set(sessionRows)
+
+    const { container } = renderSidebar('/', 'chat')
+
+    fireEvent.click(within(projectsSection(container)).getByRole('button', { name: 'new-project' }))
+    expect($projectScope.get()).toBe(realProject.id)
+
+    const chip = container.querySelector<HTMLElement>('[data-slot="sidebar-scope-chip"]')
+    expect(chip?.textContent).toContain('new-project')
+
+    fireEvent.click(within(chip!).getByRole('button', { name: 'Show all sessions' }))
+    expect($projectScope.get()).toBe(ALL_PROJECTS)
+    expect(container.querySelector('[data-slot="sidebar-scope-chip"]')).toBeNull()
   })
 })
 
@@ -376,35 +398,36 @@ describe('ChatSidebar empty-profile sections', () => {
   })
 
   it('shows the messaging section for a profile with no normal sessions', () => {
-    const { container } = renderSidebar('/', 'chat')
+    renderSidebar('/', 'chat')
 
-    // The Telegram platform section renders with its threads…
+    // The Telegram threads render, so the sidebar did not collapse to the
+    // blank state.
     expect(screen.getAllByText('Telegram').length).toBeGreaterThan(0)
     expect(screen.getByText('tg-one')).toBeTruthy()
-    // …and the sidebar did not collapse to the blank state: the search field
-    // only renders inside the session area, so its presence proves the area
-    // (and the messaging sections inside it) rendered.
-    expect(screen.getByPlaceholderText('Search sessions…')).toBeTruthy()
   })
 
-  it('still shows the blank state when a profile has nothing at all', () => {
+  it('still shows the empty line when a profile has nothing at all', () => {
     $messagingSessions.set([])
     $sidebarMessagingOpenIds.set([])
 
-    // SidebarBlankState: a centered "No sessions yet" plus a "New project"
-    // button, rendered INSTEAD of the whole session area (search included).
+    // Studio keeps its sections: the Sessions list says "No sessions yet" (the
+    // Projects section offers "New project…"). Search stays: it is the door to
+    // ⌘K, not part of the list.
     const { container } = renderSidebar('/', 'chat')
 
     expect(container.textContent).toContain('No sessions yet')
-    expect(screen.queryByPlaceholderText('Search sessions…')).toBeNull()
+    expect(screen.queryByText('Telegram')).toBeNull()
+    expect(screen.getByRole('button', { name: 'Search sessions, pages and commands' })).toBeTruthy()
   })
 })
 
+// Messaging threads live in the one Sessions list (Studio): grouped by owner
+// they file under their profile beside the local rows, and the list's one
+// pager also pages every platform that still has older threads.
 describe('ChatSidebar messaging owners', () => {
   const telegram = (id: string, profile: string, last_active: number) =>
     makeSessionInfo({ connection_id: 'local', id, last_active, profile, source: 'telegram', title: id })
 
-  // Newest first: the 3-row cap lets default-1, work-1 and default-2 through.
   const threads = [
     telegram('default-1', 'default', 50),
     telegram('work-1', 'work', 40),
@@ -415,14 +438,12 @@ describe('ChatSidebar messaging owners', () => {
 
   let root: HTMLElement
 
-  const mount = () => {
-    root = renderSidebar('/', 'chat').container
+  const mount = (onLoadMoreMessaging?: (platform: string) => void) => {
+    root = renderSidebar('/', 'chat', noopAsync, onLoadMoreMessaging).container
   }
 
-  const telegramGroups = () =>
-    [...root.querySelectorAll<HTMLElement>('[data-gateway-group]')].filter(node =>
-      node.dataset.gatewayGroup!.startsWith(JSON.stringify(['messaging:telegram']).slice(0, -1))
-    )
+  const ownerGroup = (profile: string) =>
+    root.querySelector<HTMLElement>(`[data-gateway-group='${JSON.stringify(['local', profile])}']`)
 
   const titlesIn = (node: HTMLElement) =>
     threads.map(thread => thread.id).filter(title => within(node).queryByText(title))
@@ -443,7 +464,6 @@ describe('ChatSidebar messaging owners', () => {
     ])
     $messagingSessions.set(threads)
     $messagingTruncated.set(false)
-    $sidebarMessagingOpenIds.set(['telegram'])
   })
 
   afterEach(() => {
@@ -452,33 +472,23 @@ describe('ChatSidebar messaging owners', () => {
     setShowAllProfiles(false)
     $activeGatewayProfile.set('default')
     $gatewayGroupCollapsed.set([])
-    $sidebarMessagingOpenIds.set([])
     $messagingSessions.set([])
+    $messagingTruncated.set(false)
     $sessions.set([])
     $profiles.set([])
     $connectionsRegistry.set(null)
   })
 
-  it('groups the capped rows by owner, pages the platform as a whole, and keeps its own collapse keys', () => {
+  it('files threads under their owner beside the local rows', () => {
     setSidebarGrouping('profile')
     mount()
 
-    const [defaultGroup, workGroup] = telegramGroups()
+    const defaultGroup = ownerGroup('default')!
+    const workGroup = ownerGroup('work')!
 
-    expect(telegramGroups()).toHaveLength(2)
-    expect(titlesIn(defaultGroup)).toEqual(['default-1', 'default-2'])
-    expect(titlesIn(workGroup)).toEqual(['work-1'])
-
-    fireEvent.click(screen.getByRole('button', { name: 'Load 2 more' }))
-
-    expect(titlesIn(telegramGroups()[0])).toEqual(['default-1', 'default-2', 'default-3'])
-    expect(titlesIn(telegramGroups()[1])).toEqual(['work-1', 'work-2'])
-    expect(screen.queryByRole('button', { name: /^Load \d+ more$/ })).toBeNull()
-
-    fireEvent.click(within(telegramGroups()[0]).getByRole('button', { name: 'Hide default sessions' }))
-
-    expect(screen.queryByText('default-1')).toBeNull()
-    expect(screen.getByText('desk')).toBeTruthy()
+    expect(within(defaultGroup).getByText('desk')).toBeTruthy()
+    expect(titlesIn(defaultGroup)).toEqual(['default-1', 'default-2', 'default-3'])
+    expect(titlesIn(workGroup)).toEqual(['work-1', 'work-2'])
   })
 
   it('tags rows with their profile under other groupings and stays flat when scoped to one profile', () => {
@@ -488,16 +498,27 @@ describe('ChatSidebar messaging owners', () => {
 
     const row = (title: string) => screen.getByText(title).closest('.group.row-hover') as HTMLElement
 
-    expect(telegramGroups()).toHaveLength(0)
+    expect(root.querySelectorAll('[data-gateway-group]')).toHaveLength(0)
     expect(within(row('work-1')).getByRole('img', { name: 'Profile: work' })).toBeTruthy()
+    expect(within(row('work-1')).getByRole('img', { name: 'From Telegram' })).toBeTruthy()
 
     cleanup()
     setSidebarGrouping('profile')
     setShowAllProfiles(false)
     mount()
 
-    expect(telegramGroups()).toHaveLength(0)
+    expect(root.querySelectorAll('[data-gateway-group]')).toHaveLength(0)
     expect(screen.queryByText('work-1')).toBeNull()
     expect(within(row('default-1')).queryByRole('img', { name: /^Profile:/ })).toBeNull()
+  })
+
+  it('pages a platform with older threads from the one list footer', () => {
+    $messagingTruncated.set(true)
+    const loadMore = vi.fn()
+
+    mount(loadMore)
+    fireEvent.click(screen.getByRole('button', { name: 'Load more' }))
+
+    expect(loadMore).toHaveBeenCalledWith('telegram')
   })
 })

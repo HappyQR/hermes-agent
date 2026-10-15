@@ -35,11 +35,9 @@ import { KanbanBoardPage } from './board'
 import { KANBAN_LOCALES } from './i18n'
 import { $newTaskLane, useKanban } from './ui'
 
-// Live "N running / ready" pill — one glance at fleet activity from anywhere,
-// clicks through to the board. Shares the board query (one cache, one poll with
-// the page); hidden when nothing is in flight (or unloaded).
-function KanbanCount() {
-  const k = useKanban()
+// Running + ready task counts off the board query — shared by the statusbar
+// pill and the sidebar row's count (one cache, one poll with the page).
+function useKanbanActivity(): null | { ready: number; running: number } {
   const scope = useKanbanScope()
   const slug = useValue($boardSlug)
 
@@ -55,14 +53,23 @@ function KanbanCount() {
   }
 
   const count = (name: string) => board.columns.find(col => col.name === name)?.tasks.length ?? 0
-  const active = count('running') + count('ready')
 
-  if (active === 0) {
+  return { ready: count('ready'), running: count('running') }
+}
+
+// Live "N running / ready" pill — one glance at fleet activity from anywhere,
+// clicks through to the board. Hidden when nothing is in flight (or unloaded).
+function KanbanCount() {
+  const k = useKanban()
+  const activity = useKanbanActivity()
+  const active = activity ? activity.running + activity.ready : 0
+
+  if (!activity || active === 0) {
     return null
   }
 
   return (
-    <Tip label={k.countTip(count('running'), count('ready'))}>
+    <Tip label={k.countTip(activity.running, activity.ready)}>
       <button
         className={cn(
           'inline-flex h-full items-center gap-1 rounded-none px-1.5 text-[0.6875rem] tabular-nums transition-colors',
@@ -74,6 +81,23 @@ function KanbanCount() {
         <Codicon name="project" size="0.7rem" />
         <span>{active}</span>
       </button>
+    </Tip>
+  )
+}
+
+// The same count on the sidebar's Kanban row (the row is the click target).
+function KanbanNavMeta() {
+  const k = useKanban()
+  const activity = useKanbanActivity()
+  const active = activity ? activity.running + activity.ready : 0
+
+  if (!activity || active === 0) {
+    return null
+  }
+
+  return (
+    <Tip label={k.countTip(activity.running, activity.ready)}>
+      <span className="tabular-nums">{active}</span>
     </Tip>
   )
 }
@@ -125,7 +149,13 @@ const plugin: HermesPlugin = {
           id: 'nav',
           area: SIDEBAR_NAV_AREA,
           order: 50,
-          data: { codicon: 'project', label: ctx.i18n.t('nav'), path: '/kanban' } satisfies SidebarNavContribution
+          data: {
+            codicon: 'project',
+            label: ctx.i18n.t('nav'),
+            meta: KanbanNavMeta,
+            studioIcon: 'kanban',
+            path: '/kanban'
+          } satisfies SidebarNavContribution
         },
         {
           id: 'open',

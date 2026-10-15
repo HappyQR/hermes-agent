@@ -4,6 +4,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import type * as HermesModule from '@/hermes'
 import type { SessionInfo } from '@/hermes'
+import type * as StudioSidebarCopy from '@/i18n/en_studio_sidebar'
+import type * as SessionSource from '@/lib/session-source'
 import type * as SessionStore from '@/store/session'
 import type * as SessionStatesStore from '@/store/session-states'
 
@@ -16,9 +18,16 @@ afterEach(cleanup)
 // resume onClick fails here — Radix portals the menu content, but React still
 // propagates synthetic events through the logical parent (#85163).
 
-vi.mock('@/i18n', () => ({
+vi.mock('@/i18n', async () => {
+  const { enStudioSidebar } = await vi.importActual<typeof StudioSidebarCopy>(
+    '@/i18n/en_studio_sidebar'
+  )
+
+  return {
   useI18n: () => ({
+    locale: 'en',
     t: {
+      studio: { sidebar: enStudioSidebar },
       common: { cancel: 'Cancel', close: 'Close', delete: 'Delete', save: 'Save' },
       assistant: {
         thread: {
@@ -71,7 +80,8 @@ vi.mock('@/i18n', () => ({
       zones: { closeAll: 'Close all', closeOthers: 'Close others', closeToRight: 'Close to the right' }
     }
   })
-}))
+  }
+})
 vi.mock('@/app/chat/profile-tag', () => ({ ProfileTag: () => null }))
 vi.mock('@/app/chat/session-drag', () => ({ startSessionDrag: vi.fn() }))
 vi.mock('@/hermes', async importOriginal => ({
@@ -80,7 +90,8 @@ vi.mock('@/hermes', async importOriginal => ({
   setSessionUnreadRemote: vi.fn(() => Promise.resolve({ ok: true }))
 }))
 vi.mock('@/lib/haptics', () => ({ triggerHaptic: vi.fn() }))
-vi.mock('@/lib/session-source', () => ({
+vi.mock('@/lib/session-source', async importOriginal => ({
+  ...(await importOriginal<typeof SessionSource>()),
   handoffOriginSource: () => null,
   sessionSourceLabel: () => ''
 }))

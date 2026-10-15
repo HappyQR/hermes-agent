@@ -83,6 +83,7 @@ import { startScreenAutoRaise } from './screen-autoraise'
 import { ProfileGroupScreenPortal } from './screen-portal'
 import { startHideSweepScheduler } from './session-sweep'
 import { bumpBotOpenGeneration, getBotOpenGeneration, ID, setPluginCtx } from './shared'
+import { botsSidebarSectionContribution } from './sidebar-section'
 import type { GroupChat, RosterRow } from './types'
 import { loadBotSections } from './user-sections'
 
@@ -439,6 +440,8 @@ export default {
       area: SIDEBAR_PROFILE_GROUP_HEADER_AREA,
       data: { render: (route: ProfileGroupRoute) => <ProfileGroupScreenPortal route={route} /> }
     })
+    // Studio sidebar: a compact Bots section after Sessions (folded by default).
+    ctx.register(botsSidebarSectionContribution())
     ctx.register({
       id: 'pane',
       area: 'panes',

@@ -1,1 +1,26 @@
 /* Hermes Studio — sidebar styles (fork-owned; loaded after foundation.css). */
+
+/* Section header count while folded (prototype .sb-count). */
+.sidebar-section-count {
+  margin-left: 3px;
+  padding: 0 5px;
+  min-width: 16px;
+  height: 15px;
+  border-radius: 8px;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--ui-text-tertiary);
+  background: var(--ui-fill);
+  font-variant-numeric: tabular-nums;
+  animation: studio-pop-in 180ms var(--studio-spring) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-section-count {
+    animation: none;
+  }
+}

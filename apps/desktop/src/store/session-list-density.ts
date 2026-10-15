@@ -4,14 +4,15 @@ export type SessionListDensity = 'compact' | 'comfortable' | 'detailed'
 
 const STORAGE_KEY = 'hermes.desktop.sessionListDensity'
 
-// Compact is the pre-density row exactly as it shipped, so existing users see
-// no change until they opt into a denser-information mode themselves (#68119).
+// Hermes Studio: Comfortable (one 30px line) is the shipped row; Compact keeps
+// the tighter pre-density row and Detailed adds the project · branch · model
+// line. An explicit choice persists as before (#68119).
 const densityCodec: Codec<SessionListDensity> = {
-  decode: raw => (raw === 'comfortable' || raw === 'detailed' ? raw : 'compact'),
+  decode: raw => (raw === 'compact' || raw === 'detailed' ? raw : 'comfortable'),
   encode: value => value
 }
 
-export const $sessionListDensity = persistentAtom<SessionListDensity>(STORAGE_KEY, 'compact', densityCodec)
+export const $sessionListDensity = persistentAtom<SessionListDensity>(STORAGE_KEY, 'comfortable', densityCodec)
 
 export function setSessionListDensity(density: SessionListDensity) {
   $sessionListDensity.set(density)

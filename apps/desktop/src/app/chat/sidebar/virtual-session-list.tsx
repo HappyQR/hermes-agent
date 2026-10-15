@@ -3,7 +3,7 @@ import { CSS } from '@dnd-kit/utilities'
 import { useStore } from '@nanostores/react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import type * as React from 'react'
-import { type FC, useEffect, useRef } from 'react'
+import { type FC, type RefObject, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 import type { SessionInfo } from '@/hermes'
 import { useI18n } from '@/i18n'
@@ -12,10 +12,11 @@ import { sessionBucketLabel } from '@/lib/time'
 import { cn } from '@/lib/utils'
 import { sessionPinId } from '@/store/session'
 import { $sessionListDensity } from '@/store/session-list-density'
+import { $sidebarPreviewLine } from '@/store/sidebar-studio'
 
 import { SidebarDateDivider } from './chrome'
 import { SidebarSessionRow } from './session-row'
-import { SESSION_CARD_ROW_ESTIMATE_PX, sessionRowEstimate } from './session-row-details'
+import { SESSION_CARD_ROW_ESTIMATE_PX, SESSION_PREVIEW_LINE_PX, sessionRowEstimate } from './session-row-details'
 
 interface SessionRowCommonProps {
   branchStem?: string
@@ -56,6 +57,8 @@ export interface VirtualSessionListProps {
   pinned: boolean
   showProfileTags?: boolean
   sortable: boolean
+  /** Studio: virtualize against this (outer) scroller instead of owning one. */
+  scrollElement?: () => HTMLElement | null
 }
 
 // Matches the card's typical rendered height (four lines when a preview
@@ -64,6 +67,49 @@ export interface VirtualSessionListProps {
 // see SESSION_CARD_ROW_ESTIMATE_PX (#88473).
 const DIVIDER_ESTIMATE_PX = 28
 const OVERSCAN_ROWS = 12
+
+/** Where the list starts inside an outer scroller's content, kept current as
+ *  anything above it (nav, other sections) grows or shrinks. The scroller's
+ *  first child wraps all of its content, so one observer sees every change. */
+function useScrollMargin(
+  listRef: RefObject<HTMLDivElement | null>,
+  scrollElement: (() => HTMLElement | null) | undefined
+): number {
+  const [margin, setMargin] = useState(0)
+
+  useLayoutEffect(() => {
+    const scroller = scrollElement?.()
+    const list = listRef.current
+
+    if (!scroller || !list) {
+      return
+    }
+
+    const measure = () => {
+      const next = list.getBoundingClientRect().top - scroller.getBoundingClientRect().top + scroller.scrollTop
+
+      setMargin(previous => (Math.abs(previous - next) < 0.5 ? previous : next))
+    }
+
+    measure()
+
+    if (typeof ResizeObserver === 'undefined') {
+      return
+    }
+
+    const observer = new ResizeObserver(measure)
+
+    observer.observe(scroller)
+
+    if (scroller.firstElementChild) {
+      observer.observe(scroller.firstElementChild)
+    }
+
+    return () => observer.disconnect()
+  }, [listRef, scrollElement])
+
+  return margin
+}
 
 export const VirtualSessionList: FC<VirtualSessionListProps> = ({
   activeSessionId,
@@ -80,12 +126,15 @@ export const VirtualSessionList: FC<VirtualSessionListProps> = ({
   onToggleUnread,
   pinned,
   showProfileTags = false,
-  sortable
+  sortable,
+  scrollElement
 }) => {
   const { t } = useI18n()
   const dividerLabels = t.sidebar.dateDivider
   const scrollerRef = useRef<HTMLDivElement | null>(null)
   const density = useStore($sessionListDensity)
+  const previewLine = useStore($sidebarPreviewLine)
+  const scrollMargin = useScrollMargin(scrollerRef, scrollElement)
 
   const virtualizer = useVirtualizer({
     count: listRows.length,
@@ -96,23 +145,26 @@ export const VirtualSessionList: FC<VirtualSessionListProps> = ({
         return DIVIDER_ESTIMATE_PX
       }
 
-      return card ? SESSION_CARD_ROW_ESTIMATE_PX : sessionRowEstimate(density)
+      return card
+        ? SESSION_CARD_ROW_ESTIMATE_PX
+        : sessionRowEstimate(density) + (previewLine ? SESSION_PREVIEW_LINE_PX : 0)
     },
     getItemKey: index => {
       const row = listRows[index]
 
       return row ? (row.kind === 'divider' ? row.key : row.entry.session.id) : index
     },
-    getScrollElement: () => scrollerRef.current,
+    getScrollElement: () => (scrollElement ? scrollElement() : scrollerRef.current),
     // jsdom-friendly default; the real rect takes over on first observe.
     initialRect: { height: 600, width: 240 },
-    overscan: OVERSCAN_ROWS
+    overscan: OVERSCAN_ROWS,
+    scrollMargin
   })
 
   // Rows are measured after paint, so changing density OR toggling Inbox
   // cards must invalidate cached measurements from the previous mode before
   // off-screen rows re-enter (#88473).
-  useEffect(() => virtualizer.measure(), [card, density, virtualizer])
+  useEffect(() => virtualizer.measure(), [card, density, previewLine, virtualizer])
 
   const virtualItems = virtualizer.getVirtualItems()
   const totalSize = virtualizer.getTotalSize()
@@ -128,7 +180,7 @@ export const VirtualSessionList: FC<VirtualSessionListProps> = ({
       left: 0,
       position: 'absolute',
       top: 0,
-      transform: `translateY(${virtualItem.start}px)`,
+      transform: `translateY(${virtualItem.start - scrollMargin}px)`,
       width: '100%'
     }
 
@@ -193,6 +245,16 @@ export const VirtualSessionList: FC<VirtualSessionListProps> = ({
   // When sortable, the caller wraps this in a ReorderableList that owns the
   // DndContext + SortableContext (keyed on the same ids); the virtualized rows
   // just consume that context via useSortable.
+  if (scrollElement) {
+    // The sidebar's one scroller carries the list: no nested scroller, no
+    // second scrollbar — just the measured box the rows are placed in.
+    return (
+      <div className={cn('relative w-full', className)} ref={scrollerRef} style={{ height: `${totalSize}px` }}>
+        {rows}
+      </div>
+    )
+  }
+
   return (
     <div
       // scrollbar-fade, NOT scrollbar-overlay: overlay opts out of the themed

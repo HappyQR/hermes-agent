@@ -69,6 +69,9 @@ export const CONTEXT_KIT: MenuKit = {
 export interface ActionItemSpec {
   className?: string
   disabled?: boolean
+  /** Trailing gesture/shortcut hint (e.g. `⇧-click`). Rendered `aria-hidden` so
+   *  the item's accessible name stays its label. */
+  hint?: string
   icon?: string
   iconNode?: React.ReactNode
   /** Stable key; defaults to `label` when it's a string. */
@@ -78,10 +81,20 @@ export interface ActionItemSpec {
   variant?: 'default' | 'destructive'
 }
 
+/** A menu row's trailing hint (gesture or shortcut). Decorative for assistive
+ *  tech — the row's label is its name; the action stays reachable by the row. */
+export function MenuHint({ children }: { children: React.ReactNode }) {
+  return (
+    <span aria-hidden="true" className="ml-auto shrink-0 pl-3 text-xs text-(--ui-text-tertiary)" data-slot="menu-hint">
+      {children}
+    </span>
+  )
+}
+
 /** Render one `ActionItemSpec` with the given kit's Item component. */
 export function renderActionItem(
   kit: MenuKit,
-  { className, disabled, icon, iconNode, key, label, onSelect, variant }: ActionItemSpec
+  { className, disabled, hint, icon, iconNode, key, label, onSelect, variant }: ActionItemSpec
 ) {
   return (
     <kit.Item
@@ -93,6 +106,7 @@ export function renderActionItem(
     >
       {iconNode ?? (icon ? <Codicon name={icon} size="0.875rem" /> : null)}
       {typeof label === 'string' ? <span>{label}</span> : label}
+      {hint ? <MenuHint>{hint}</MenuHint> : null}
     </kit.Item>
   )
 }

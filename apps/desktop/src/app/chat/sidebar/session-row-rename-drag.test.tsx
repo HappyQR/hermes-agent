@@ -7,6 +7,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest
 import { startSessionDrag } from '@/app/chat/session-drag'
 import type * as SessionDrag from '@/app/chat/session-drag'
 import type { SessionInfo } from '@/hermes'
+import type * as StudioSidebarCopy from '@/i18n/en_studio_sidebar'
 import type * as ChatRuntime from '@/lib/chat-runtime'
 import type * as GatewayStore from '@/store/gateway'
 import type * as ProjectsStore from '@/store/projects'
@@ -61,9 +62,16 @@ vi.mock('@/hermes', async importOriginal => {
 
   return { ...actual, renameSession: vi.fn() }
 })
-vi.mock('@/i18n', () => ({
+vi.mock('@/i18n', async () => {
+  const { enStudioSidebar } = await vi.importActual<typeof StudioSidebarCopy>(
+    '@/i18n/en_studio_sidebar'
+  )
+
+  return {
   useI18n: () => ({
+    locale: 'en',
     t: {
+      studio: { sidebar: enStudioSidebar },
       assistant: {
         thread: {
           today: (time: string) => `Today at ${time}`,
@@ -127,7 +135,8 @@ vi.mock('@/i18n', () => ({
       zones: { closeAll: 'Close all', closeOthers: 'Close others', closeToRight: 'Close to the right' }
     }
   })
-}))
+  }
+})
 vi.mock('@/lib/haptics', async importOriginal => {
   const actual = await importOriginal<Record<string, unknown>>()
 

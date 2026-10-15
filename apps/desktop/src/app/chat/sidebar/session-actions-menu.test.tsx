@@ -2,7 +2,9 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-li
 import { atom } from 'nanostores'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { refreshProjectTree } from '@/store/projects'
+import { exportSession, exportSessionMarkdown } from '@/lib/session-export'
+import { openProjectCreate, refreshProjectTree } from '@/store/projects'
+import { openSessionTile } from '@/store/session-states'
 
 import { SessionActionsMenu, SessionContextMenu } from './session-actions-menu'
 
@@ -36,6 +38,30 @@ vi.mock('@/i18n', () => ({
         save: 'Save'
       },
       errors: { genericFailure: 'Something went wrong' },
+      studio: {
+        sidebar: {
+          menu: {
+            branchFromHere: 'Branch from here',
+            clickHint: (keys: string) => `${keys}-click`,
+            color: 'Color',
+            copySessionId: 'Copy session ID',
+            delete: 'Delete…',
+            export: 'Export',
+            exportAssistant: 'Hermes',
+            exportFailed: 'Could not export the session',
+            exportJson: 'JSON…',
+            exportMarkdown: 'Markdown…',
+            exportUser: 'You',
+            newProject: 'New project…',
+            openInNewWindow: 'Open in new window',
+            renameConfirm: 'Rename',
+            splitDown: 'Down',
+            splitLeft: 'Left',
+            splitRight: 'Right',
+            splitUp: 'Up'
+          }
+        }
+      },
       sidebar: {
         projects: {
           menuAppearance: 'Appearance',
@@ -57,6 +83,10 @@ vi.mock('@/i18n', () => ({
           export: 'Export',
           hideTabBar: 'Hide tab bar',
           markRead: 'Mark as read',
+          markUnread: 'Mark as unread',
+          openInNewTab: 'Open in new tab',
+          openInSplit: 'Open in split',
+          openInTerminal: 'Open in terminal',
           pin: 'Pin',
           rename: 'Rename',
           renameDesc: 'Leave empty to clear.',
@@ -69,18 +99,19 @@ vi.mock('@/i18n', () => ({
           untitledPlaceholder: 'Untitled'
         }
       },
-      zones: { closeAll: 'Close all', closeOthers: 'Close others', closeToRight: 'Close to the right' }
+      zones: { closeAll: 'Close all', closeOthers: 'Close others', closeToRight: 'Close to the right', reload: 'Reload' }
     }
   })
 }))
 vi.mock('@/lib/haptics', () => ({ triggerHaptic: vi.fn() }))
 vi.mock('@/lib/profile-color', () => ({ PROFILE_SWATCHES: [] }))
-vi.mock('@/lib/session-export', () => ({ exportSession: vi.fn() }))
+vi.mock('@/lib/session-export', () => ({ exportSession: vi.fn(), exportSessionMarkdown: vi.fn() }))
 vi.mock('@/store/gateway', () => ({ activeGateway: vi.fn(() => null) }))
 vi.mock('@/store/notifications', () => ({ notify: vi.fn(), notifyError: vi.fn() }))
 vi.mock('@/store/projects', () => ({
   $projectTree: atom<unknown[]>([]),
   moveSessionToProject: vi.fn(),
+  openProjectCreate: vi.fn(),
   projectIdForCwd: vi.fn(() => null),
   projectRootCwd: vi.fn(() => ''),
   refreshProjectTree: vi.fn(() => Promise.resolve())
@@ -193,7 +224,7 @@ describe('SessionActionsMenu', () => {
     const input = within(dialog).getByRole('textbox')
     fireEvent.change(input, { target: { value: 'Prep Butler' } })
 
-    const save = within(dialog).getByRole('button', { name: /save/i })
+    const save = within(dialog).getByRole('button', { name: 'Rename' })
     fireEvent.click(save)
 
     await waitFor(() => {
@@ -395,5 +426,64 @@ describe('SessionActionsMenu', () => {
     fireEvent.click(screen.getByRole('menuitem', { name: 'Move to project' }))
 
     await waitFor(() => expect(refreshProjectTree).toHaveBeenCalledTimes(1))
+  })
+
+  // Studio: the row's click gestures ride the menu as hints, hidden from
+  // assistive tech so every item keeps its plain name.
+  it('shows the row gestures as aria-hidden hints', async () => {
+    renderMenu()
+
+    const trigger = screen.getByRole('button', { name: 'Session actions' })
+    fireEvent.pointerDown(trigger, { button: 0, pointerType: 'mouse' })
+    fireEvent.pointerUp(trigger, { button: 0, pointerType: 'mouse' })
+    fireEvent.click(trigger)
+
+    const pin = await screen.findByRole('menuitem', { name: /^pin$/i })
+    const hint = pin.querySelector('[data-slot="menu-hint"]')
+
+    expect(hint?.textContent).toMatch(/-click$/)
+    expect(hint?.getAttribute('aria-hidden')).toBe('true')
+  })
+
+  it('opens the session in a split from the row menu', async () => {
+    renderMenu()
+
+    const trigger = screen.getByRole('button', { name: 'Session actions' })
+    fireEvent.pointerDown(trigger, { button: 0, pointerType: 'mouse' })
+    fireEvent.pointerUp(trigger, { button: 0, pointerType: 'mouse' })
+    fireEvent.click(trigger)
+
+    fireEvent.click(await screen.findByRole('menuitem', { name: 'Open in split' }))
+
+    expect(openSessionTile).toHaveBeenCalledWith('s1', 'right')
+    await waitFor(() => expect(screen.queryByRole('menu')).toBeNull())
+  })
+
+  it('exports as Markdown or JSON from the Export submenu', async () => {
+    renderMenu()
+
+    const trigger = screen.getByRole('button', { name: 'Session actions' })
+    fireEvent.pointerDown(trigger, { button: 0, pointerType: 'mouse' })
+    fireEvent.pointerUp(trigger, { button: 0, pointerType: 'mouse' })
+    fireEvent.click(trigger)
+
+    fireEvent.click(await screen.findByRole('menuitem', { name: 'Export' }))
+    fireEvent.click(await screen.findByRole('menuitem', { name: 'Markdown…' }))
+    expect(exportSessionMarkdown).toHaveBeenCalledWith('s1', { profile: undefined, title: 'My session' })
+    expect(exportSession).not.toHaveBeenCalled()
+  })
+
+  it('offers New project… under Move to project', async () => {
+    renderMenu()
+
+    const trigger = screen.getByRole('button', { name: 'Session actions' })
+    fireEvent.pointerDown(trigger, { button: 0, pointerType: 'mouse' })
+    fireEvent.pointerUp(trigger, { button: 0, pointerType: 'mouse' })
+    fireEvent.click(trigger)
+
+    fireEvent.click(await screen.findByRole('menuitem', { name: 'Move to project' }))
+    fireEvent.click(await screen.findByRole('menuitem', { name: 'New project…' }))
+
+    expect(openProjectCreate).toHaveBeenCalledTimes(1)
   })
 })

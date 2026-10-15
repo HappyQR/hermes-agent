@@ -11,13 +11,7 @@ import type { HermesGitWorktree } from '@/global'
 import type { SessionInfo } from '@/hermes'
 import { useI18n } from '@/i18n'
 import { flattenSessionsWithBranches } from '@/lib/session-branch-tree'
-import {
-  groupEntriesByRecency,
-  groupEntriesByStatus,
-  hideCollapsedGroupRows,
-  type SidebarListRow,
-  toSessionRows
-} from '@/lib/session-date-groups'
+import { groupEntriesByRecency, hideCollapsedGroupRows, type SidebarListRow, toSessionRows } from '@/lib/session-date-groups'
 import { sessionBucketLabel } from '@/lib/time'
 import { cn } from '@/lib/utils'
 import {
@@ -28,7 +22,7 @@ import {
   toggleWorkspaceNodeCollapsed
 } from '@/store/layout'
 import { sessionPinId } from '@/store/session'
-import { $sessionDotStateById, hasLiveTurn } from '@/store/session-dot-state'
+import { $sessionDotStateById } from '@/store/session-dot-state'
 
 import { SidebarDateDivider, SidebarSectionMeta } from './chrome'
 import { GatewayProfileGroups } from './gateway-groups'
@@ -45,6 +39,7 @@ import { WorkspaceAddButton } from './projects/workspace-header'
 import { ReorderableList, useSortableBindings } from './reorderable-list'
 import { SidebarSessionSkeletons } from './section-states'
 import { SidebarSessionRow } from './session-row'
+import { groupFlatEntries } from './studio/flat-groupings'
 import { VirtualSessionList } from './virtual-session-list'
 
 export const VIRTUALIZE_THRESHOLD = 25
@@ -178,10 +173,10 @@ interface SidebarSessionsSectionProps {
   showProfileTags?: boolean
   // Which dividers to fold into the flat list: `date` gives the chronological
   // "Yesterday" / "Last week" separators (flat recents + entered-project lanes),
-  // `status` splits into WORKING / DONE under the same separators. `none` for
-  // pinned, messaging groups, and the project overview, where the order isn't
-  // strictly by recency so a bucket would be misleading.
-  grouping?: 'date' | 'none' | 'status'
+  // `status` splits into the five status buckets and `source` into one bucket
+  // per source. `none` for pinned and the project overview, where the order
+  // isn't strictly by recency so a bucket would be misleading.
+  grouping?: 'date' | 'none' | 'source' | 'status'
   // Keep the caller's row order instead of re-sorting by group recency
   // (defaults to `pinned`, the only pre-ordered caller). The search results
   // set it too: their order is the backend's ranking (exact id matches
@@ -192,6 +187,11 @@ interface SidebarSessionsSectionProps {
   // grouping is active — the flat recents list opts in; dense tree surfaces
   // (pinned, projects, messaging) keep the one-line row.
   card?: boolean
+  // Studio: the caller's section header (replaces the built-in caption).
+  header?: React.ReactNode
+  // Studio: the sidebar's one scroller — a long flat list virtualizes against
+  // it instead of nesting a scroller of its own.
+  scrollElement?: () => HTMLElement | null
 }
 
 export function SidebarSessionsSection({
@@ -239,12 +239,13 @@ export function SidebarSessionsSection({
   showProfileTags = false,
   grouping = 'none',
   preserveOrder = pinned,
-  card = false
+  card = false,
+  header,
+  scrollElement
 }: SidebarSessionsSectionProps) {
   const { t } = useI18n()
   const showAllSessions = useStore($sidebarShowAllSessions)
   const dividerLabels = t.sidebar.dateDivider
-  const statusDividerLabels = t.sidebar.statusDivider
   const dotStates = useStore($sessionDotStateById)
   const nodeOpen = useStore($sidebarWorkspaceNodeOpen)
   const isListGroupOpen = useCallback((key: string) => nodeOpen[listGroupNodeId(key)] ?? true, [nodeOpen])
@@ -426,16 +427,12 @@ export function SidebarSessionsSection({
     const rows =
       grouping === 'date'
         ? groupEntriesByRecency(displayEntries)
-        : grouping === 'status'
-          ? groupEntriesByStatus(
-              displayEntries,
-              entry => hasLiveTurn(dotStates[entry.session.id] ?? 'idle'),
-              statusDividerLabels
-            )
-          : toSessionRows(displayEntries)
+        : grouping === 'none'
+          ? toSessionRows(displayEntries)
+          : groupFlatEntries(grouping, displayEntries, dotStates, t.studio.sidebar)
 
     return manualOrderIds?.length ? orderRowsWithinGroups(rows, manualOrderIds) : rows
-  }, [grouping, displayEntries, dotStates, manualOrderIds, statusDividerLabels])
+  }, [grouping, displayEntries, dotStates, manualOrderIds, t])
 
   // Closed date/status buckets keep their divider and drop the sessions under
   // it. Same array when nothing is collapsed so the virtualizer's rows ref
@@ -455,7 +452,7 @@ export function SidebarSessionsSection({
   )
 
   useEffect(() => {
-    if (grouping !== 'date' && grouping !== 'status') {
+    if (grouping === 'none') {
       return
     }
 
@@ -484,35 +481,203 @@ export function SidebarSessionsSection({
   const showProjectsSkeleton =
     projectsLoading && !hasProjectOverview && !hasProjectContent && !projectContent && !groups?.length
 
-  let inner: React.ReactNode
+  const inner = renderSectionInner({
+    activeProjectId,
+    activeSessionId,
+    card,
+    contentClassName,
+    dividerAction,
+    dividerToggle,
+    dndSensors,
+    embeddedGroups,
+    emptyState,
+    flatVirtualized,
+    groups,
+    hasProjectContent,
+    liveSessions,
+    onArchiveSession,
+    onBranchSession,
+    onDeleteSession,
+    onEnterProject,
+    onNewSessionInWorkspace,
+    onNewSessionSplit,
+    onReorderProjects,
+    onResumeSession,
+    onTogglePin,
+    onToggleUnread,
+    persistSessionOrder,
+    pinned,
+    projectBackRow,
+    projectContent,
+    projectOverview,
+    projectOverviewHidden,
+    projectOverviewPreviews,
+    projectRepoWorktrees,
+    removedSessionIds,
+    renderListRow,
+    renderPreviewRows,
+    renderRows,
+    renderRowsDated,
+    scrollElement,
+    sessionsDraggable,
+    showAllSessions,
+    showEmptyState,
+    showProfileTags,
+    showProjectsSkeleton,
+    sortableRowIds,
+    visibleRows
+  })
 
-  if (showProjectsSkeleton) {
-    inner = <SidebarSessionSkeletons />
-  } else if (projectContent) {
+  // The virtualizer owns its own scroller, so suppress the wrapper's overflow
+  // to avoid a double scroll container. Both axes: `overflow-y-visible` next
+  // to the inherited `overflow-x-hidden` computes to `auto` (CSS spec), which
+  // kept a phantom 4px scrollbar gutter and cut every row short on the right.
+  const resolvedContentClassName = cn(contentClassName, flatVirtualized && 'overflow-visible')
+
+  return (
+    <SidebarGroup className={rootClassName}>
+      {header ?? (
+        <SidebarSectionHeader
+          action={headerAction}
+          collapsible={collapsible}
+          icon={labelIcon}
+          label={label}
+          meta={labelMeta}
+          onToggle={onToggle}
+          open={sectionOpen}
+        />
+      )}
+      {sectionOpen && (
+        <SidebarGroupContent className={resolvedContentClassName}>
+          {inner}
+          {footer}
+        </SidebarGroupContent>
+      )}
+    </SidebarGroup>
+  )
+}
+
+interface SectionInnerContext
+  extends Pick<
+    SidebarSessionsSectionProps,
+    | 'activeProjectId'
+    | 'activeSessionId'
+    | 'card'
+    | 'contentClassName'
+    | 'dndSensors'
+    | 'embeddedGroups'
+    | 'emptyState'
+    | 'groups'
+    | 'liveSessions'
+    | 'onArchiveSession'
+    | 'onBranchSession'
+    | 'onDeleteSession'
+    | 'onEnterProject'
+    | 'onNewSessionInWorkspace'
+    | 'onNewSessionSplit'
+    | 'onReorderProjects'
+    | 'onResumeSession'
+    | 'onTogglePin'
+    | 'onToggleUnread'
+    | 'pinned'
+    | 'projectBackRow'
+    | 'projectContent'
+    | 'projectOverview'
+    | 'projectOverviewHidden'
+    | 'projectOverviewPreviews'
+    | 'projectRepoWorktrees'
+    | 'removedSessionIds'
+    | 'scrollElement'
+    | 'showProfileTags'
+  > {
+  dividerAction: React.ReactNode
+  dividerToggle: {
+    ariaLabel: (label: string, open: boolean) => string
+    onToggle: (key: string) => void
+    open: (key: string) => boolean
+  }
+  flatVirtualized: boolean
+  hasProjectContent: boolean
+  persistSessionOrder: (ids: string[]) => void
+  renderListRow: (row: SidebarListRow, draggable: boolean, action?: React.ReactNode) => React.ReactNode
+  renderPreviewRows: (items: SessionInfo[], projectId: string) => React.ReactNode
+  renderRows: (items: SessionInfo[]) => React.ReactNode
+  renderRowsDated: (items: SessionInfo[]) => React.ReactNode
+  sessionsDraggable: boolean
+  showAllSessions: boolean
+  showEmptyState: boolean
+  showProjectsSkeleton: boolean
+  sortableRowIds: string[]
+  visibleRows: SidebarListRow[]
+}
+
+// The section body for whichever view is active — skeleton, entered project,
+// empty state, project overview, profile/workspace groups, or the flat list
+// (virtualized when long). Split out of the component so each mode reads as
+// one branch.
+function renderSectionInner(ctx: SectionInnerContext): React.ReactNode {
+  const {
+    activeProjectId,
+    activeSessionId,
+    card,
+    contentClassName,
+    dividerAction,
+    dividerToggle,
+    dndSensors,
+    embeddedGroups,
+    emptyState,
+    groups,
+    onArchiveSession,
+    onBranchSession,
+    onDeleteSession,
+    onReorderProjects,
+    onResumeSession,
+    onTogglePin,
+    onToggleUnread,
+    pinned,
+    projectContent,
+    projectOverview,
+    renderListRow,
+    renderRows,
+    sessionsDraggable,
+    showProfileTags,
+    sortableRowIds,
+    visibleRows
+  } = ctx
+
+  if (ctx.showProjectsSkeleton) {
+    return <SidebarSessionSkeletons />
+  }
+
+  if (projectContent) {
     // Entered a project: the back row is always present, then either the
     // (overlay-aware) content or a clean empty state — never a bare spinner or a
     // blank pane while lanes hydrate.
-    inner = (
+    return (
       <>
-        {projectBackRow}
-        {hasProjectContent ? (
+        {ctx.projectBackRow}
+        {ctx.hasProjectContent ? (
           <EnteredProjectContent
-            liveSessions={liveSessions}
-            onNewSession={onNewSessionInWorkspace}
-            onNewSessionSplit={onNewSessionSplit}
+            liveSessions={ctx.liveSessions}
+            onNewSession={ctx.onNewSessionInWorkspace}
+            onNewSessionSplit={ctx.onNewSessionSplit}
             project={projectContent}
-            removedSessionIds={removedSessionIds}
-            renderRows={renderRowsDated}
-            repoWorktrees={projectRepoWorktrees}
+            removedSessionIds={ctx.removedSessionIds}
+            renderRows={ctx.renderRowsDated}
+            repoWorktrees={ctx.projectRepoWorktrees}
           />
         ) : (
           emptyState
         )}
       </>
     )
-  } else if (showEmptyState) {
-    inner = emptyState
-  } else if (projectOverview?.length) {
+  }
+
+  if (ctx.showEmptyState) {
+    return emptyState
+  }
+
+  if (projectOverview?.length) {
     // The model is already ordered (Home leads; then the default sort groups
     // explicit-before-auto, with a manual drag-order winning when present).
     // Render in that order and make rows drag-to-reorder when a handler is
@@ -525,25 +690,25 @@ export function SidebarSessionsSection({
     const projectRow = (project: SidebarProjectTree, Component: typeof ProjectOverviewRow) => (
       <Component
         activeProjectId={activeProjectId}
-        hiddenSessionCount={projectOverviewHidden?.counts[project.id]}
-        isSessionHidden={projectOverviewHidden?.isHidden}
+        hiddenSessionCount={ctx.projectOverviewHidden?.counts[project.id]}
+        isSessionHidden={ctx.projectOverviewHidden?.isHidden}
         key={project.id}
-        onEnter={onEnterProject}
-        onNewSession={onNewSessionInWorkspace}
-        onNewSessionSplit={onNewSessionSplit}
+        onEnter={ctx.onEnterProject}
+        onNewSession={ctx.onNewSessionInWorkspace}
+        onNewSessionSplit={ctx.onNewSessionSplit}
         // Keyed by project ID to match the producer: `overlayLivePreviews`
         // writes `out[node.id]` (workspace-groups.ts). A path key made Home
         // (path: null) and any id/path-divergent project fall back to stale
         // preview rows instead of the live overlay.
-        previewSessions={projectOverviewPreviews?.[project.id]}
+        previewSessions={ctx.projectOverviewPreviews?.[project.id]}
         project={project}
-        renderRows={showAllSessions ? items => renderPreviewRows(items, project.id) : renderRows}
+        renderRows={ctx.showAllSessions ? items => ctx.renderPreviewRows(items, project.id) : renderRows}
       />
     )
 
     const rows = sortableProjects.map(project => projectRow(project, Row))
 
-    inner = (
+    return (
       <>
         {home && projectRow(home, ProjectOverviewRow)}
         {projectsDraggable && onReorderProjects ? (
@@ -559,27 +724,33 @@ export function SidebarSessionsSection({
         )}
       </>
     )
-  } else if (groups?.length && groups.every(group => group.mode === 'profile' && group.profile)) {
-    inner = (
+  }
+
+  if (groups?.length && groups.every(group => group.mode === 'profile' && group.profile)) {
+    return (
       <GatewayProfileGroups
         embedded={embeddedGroups}
         groups={groups}
-        onNewSessionSplit={onNewSessionSplit}
+        onNewSessionSplit={ctx.onNewSessionSplit}
         renderRows={renderRows}
         sensors={dndSensors}
       />
     )
-  } else if (groups?.length) {
-    inner = groups.map(group => (
+  }
+
+  if (groups?.length) {
+    return groups.map(group => (
       <SidebarWorkspaceGroup
         group={group}
         key={group.id}
-        onNewSession={onNewSessionInWorkspace}
-        onNewSessionSplit={onNewSessionSplit}
+        onNewSession={ctx.onNewSessionInWorkspace}
+        onNewSessionSplit={ctx.onNewSessionSplit}
         renderRows={renderRows}
       />
     ))
-  } else if (flatVirtualized) {
+  }
+
+  if (ctx.flatVirtualized) {
     const virtual = (
       <VirtualSessionList
         activeSessionId={activeSessionId}
@@ -595,53 +766,30 @@ export function SidebarSessionsSection({
         onToggleUnread={onToggleUnread}
         pinned={pinned}
         rows={visibleRows}
+        scrollElement={ctx.scrollElement}
         showProfileTags={showProfileTags}
         sortable={sessionsDraggable}
       />
     )
 
-    inner = sessionsDraggable ? (
-      <ReorderableList ids={sortableRowIds} onReorder={persistSessionOrder} sensors={dndSensors}>
+    return sessionsDraggable ? (
+      <ReorderableList ids={sortableRowIds} onReorder={ctx.persistSessionOrder} sensors={dndSensors}>
         {virtual}
       </ReorderableList>
     ) : (
       virtual
     )
-  } else if (sessionsDraggable) {
-    inner = (
-      <ReorderableList ids={sortableRowIds} onReorder={persistSessionOrder} sensors={dndSensors}>
+  }
+
+  if (sessionsDraggable) {
+    return (
+      <ReorderableList ids={sortableRowIds} onReorder={ctx.persistSessionOrder} sensors={dndSensors}>
         {visibleRows.map(row => renderListRow(row, true, dividerAction))}
       </ReorderableList>
     )
-  } else {
-    inner = visibleRows.map(row => renderListRow(row, false, dividerAction))
   }
 
-  // The virtualizer owns its own scroller, so suppress the wrapper's overflow
-  // to avoid a double scroll container. Both axes: `overflow-y-visible` next
-  // to the inherited `overflow-x-hidden` computes to `auto` (CSS spec), which
-  // kept a phantom 4px scrollbar gutter and cut every row short on the right.
-  const resolvedContentClassName = cn(contentClassName, flatVirtualized && 'overflow-visible')
-
-  return (
-    <SidebarGroup className={rootClassName}>
-      <SidebarSectionHeader
-        action={headerAction}
-        collapsible={collapsible}
-        icon={labelIcon}
-        label={label}
-        meta={labelMeta}
-        onToggle={onToggle}
-        open={sectionOpen}
-      />
-      {sectionOpen && (
-        <SidebarGroupContent className={resolvedContentClassName}>
-          {inner}
-          {footer}
-        </SidebarGroupContent>
-      )}
-    </SidebarGroup>
-  )
+  return visibleRows.map(row => renderListRow(row, false, dividerAction))
 }
 
 interface SortableSessionRowProps {

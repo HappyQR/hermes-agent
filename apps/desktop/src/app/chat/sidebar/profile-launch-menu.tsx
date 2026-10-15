@@ -19,7 +19,10 @@ interface ProfileLaunchMenuProps extends DesktopProfileRoute {
   label: string
 }
 
-export function ProfileLaunchMenuItems({ connectionId, label, profile }: ProfileLaunchMenuProps) {
+/** The launch actions a profile menu offers (open in a new window, set as
+ *  default), for any menu flavour: the rail's context menus and the sidebar
+ *  account menu's per-profile submenu. */
+export function useProfileLaunchActions({ connectionId, label, profile }: ProfileLaunchMenuProps) {
   const { t } = useI18n()
   const p = t.profiles
   const defaultRoute = useStore($defaultProfileRoute)
@@ -35,18 +38,29 @@ export function ProfileLaunchMenuItems({ connectionId, label, profile }: Profile
     }
   }
 
+  return {
+    canOpenWindow: canOpenNewWindow(),
+    canSetDefault: !isDefault && Boolean(window.hermesDesktop?.profile?.setDefault),
+    isDefault,
+    makeDefault: () => void makeDefault(),
+    openWindow: () => void openNewWindow(route)
+  }
+}
+
+export function ProfileLaunchMenuItems(props: ProfileLaunchMenuProps) {
+  const { t } = useI18n()
+  const p = t.profiles
+  const { canOpenWindow, canSetDefault, isDefault, makeDefault, openWindow } = useProfileLaunchActions(props)
+
   return (
     <>
-      {canOpenNewWindow() && (
-        <ContextMenuItem onSelect={() => void openNewWindow(route)}>
+      {canOpenWindow && (
+        <ContextMenuItem onSelect={openWindow}>
           <Codicon name="link-external" size="0.875rem" />
           <span>{p.openInNewWindow}</span>
         </ContextMenuItem>
       )}
-      <ContextMenuItem
-        disabled={isDefault || !window.hermesDesktop?.profile?.setDefault}
-        onSelect={() => void makeDefault()}
-      >
+      <ContextMenuItem disabled={!canSetDefault} onSelect={makeDefault}>
         <Codicon name={isDefault ? 'check' : 'home'} size="0.875rem" />
         <span>{isDefault ? p.defaultProfile : p.setAsDefault}</span>
       </ContextMenuItem>
