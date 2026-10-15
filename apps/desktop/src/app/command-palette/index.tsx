@@ -118,6 +118,8 @@ import { usePaletteContributions } from './contrib'
 import { HighlightWatcher } from './highlight-watcher'
 import { MarketplaceThemePage } from './marketplace-theme-page'
 import { PetInlineToggle, PetPalettePage } from './pet-palette-page'
+import { useSessionsScope } from './sessions-scope'
+import { useModifierHeld } from './use-modifier-held'
 
 interface PaletteItem {
   /** Keybind action id — its live combo renders as a hotkey hint. */
@@ -170,6 +172,8 @@ const PAGE_PARENTS: Record<string, string> = { 'install-theme': 'theme' }
 interface PalettePage {
   groups: PaletteGroup[]
   placeholder: string
+  /** Rows arrive in their own ranking (server full-text order); skip rankGroups. */
+  preRanked?: boolean
   title: string
 }
 
@@ -257,6 +261,11 @@ const rankGroups = (groups: PaletteGroup[], search: string): PaletteGroup[] => {
     .sort((a, b) => b.max - a.max)
     .map(entry => entry.group)
 }
+
+// A page whose rows arrive in their own ranking (the Sessions scope's server
+// full-text order) keeps it.
+const rankPage = (page: null | PalettePage, groups: PaletteGroup[], search: string): PaletteGroup[] =>
+  page?.preRanked ? groups : rankGroups(groups, search)
 
 // cmdk selection values must be unique; labels alone can repeat (a settings
 // field and a session can share a title). The id suffix disambiguates.
@@ -636,26 +645,7 @@ function CommandPaletteBody({ onExited }: { onExited: () => void }) {
     }
   }
 
-  // Live ⌘/⌃-held state while the palette is open: rows with a modifier
-  // variant (projects) preview it by swapping their label. Window-level
-  // listeners because focus sits in the search input; blur clears so a
-  // ⌘-Tab away doesn't strand the preview on.
-  const [modHeld, setModHeld] = useState(false)
-
-  useEffect(() => {
-    const sync = (event: KeyboardEvent) => setModHeld(event.metaKey || event.ctrlKey)
-    const clear = () => setModHeld(false)
-
-    window.addEventListener('keydown', sync, { capture: true })
-    window.addEventListener('keyup', sync, { capture: true })
-    window.addEventListener('blur', clear)
-
-    return () => {
-      window.removeEventListener('keydown', sync, { capture: true })
-      window.removeEventListener('keyup', sync, { capture: true })
-      window.removeEventListener('blur', clear)
-    }
-  }, [])
+  const modHeld = useModifierHeld()
 
   // Server-backed sources for the type-to-search groups. This component only
   // exists while the palette is open, so the queries are inherently lazy — no
@@ -768,6 +758,8 @@ function CommandPaletteBody({ onExited }: { onExited: () => void }) {
     },
     [navigate]
   )
+
+  const sessionsScope = useSessionsScope(page === 'sessions' ? search : null, goSession)
 
   // Step up one nested page (or back to the root list), clearing the filter so
   // the parent page doesn't reopen mid-search.
@@ -1507,9 +1499,16 @@ function CommandPaletteBody({ onExited }: { onExited: () => void }) {
         title: t.commandCenter.nav.settings.title,
         placeholder: t.settings.search.placeholder,
         groups: settingsPageGroups
+      },
+      sessions: {
+        title: t.sidebar.sessions,
+        placeholder: t.studio.sidebar.palette.placeholder,
+        groups: sessionsScope.groups,
+        preRanked: true
       }
     }),
     [
+      sessionsScope.groups,
       availableThemes,
       mode,
       previewTheme,
@@ -1525,7 +1524,8 @@ function CommandPaletteBody({ onExited }: { onExited: () => void }) {
 
   const activePage = page ? subPages[page] : null
   const unrankedGroups = activePage ? activePage.groups : groups
-  const visibleGroups = useMemo(() => rankGroups(unrankedGroups, search), [unrankedGroups, search])
+  const visibleGroups = useMemo(() => rankPage(activePage, unrankedGroups, search), [activePage, unrankedGroups, search])
+
   const placeholder = activePage ? activePage.placeholder : t.commandCenter.searchPlaceholder
 
   // The HighlightWatcher inside <Command> reports the highlighted row (arrows
@@ -1690,7 +1690,7 @@ function CommandPaletteBody({ onExited }: { onExited: () => void }) {
                 bindings={bindings}
                 groups={visibleGroups}
                 modHeld={modHeld}
-                noResultsLabel={t.commandCenter.noResults}
+                noResultsLabel={sessionsScope.pending ? t.studio.sidebar.palette.searching : t.commandCenter.noResults}
                 onSelectItem={handleSelect}
                 onSelectMods={noteSelectMods}
                 search={search}

@@ -10,10 +10,12 @@
 import { atom, computed, type ReadableAtom } from 'nanostores'
 
 import { type Codec, Codecs, persistentAtom } from '@/lib/persisted'
+import { openCommandPalettePage } from '@/store/command-palette'
 import {
   $sidebarGrouping,
   $sidebarViewCustomized,
   resetSidebarView,
+  SESSION_SEARCH_FOCUS_EVENT,
   setSidebarGrouping,
   type SidebarGrouping
 } from '@/store/layout'
@@ -82,6 +84,15 @@ export function registerSidebarSection(id: SidebarSectionId, defaultCollapsed: b
 
     $sidebarMountedSections.set(rest)
   }
+}
+
+// ── Session search ───────────────────────────────────────────────────────────
+
+/** The sidebar's search button and ⇧⌘F: ⌘K on its Sessions scope (server
+ *  full-text search). The focus event still fires for the usage metrics. */
+export function openSessionSearch(): void {
+  window.dispatchEvent(new CustomEvent(SESSION_SEARCH_FOCUS_EVENT))
+  openCommandPalettePage('sessions')
 }
 
 // ── Grouping ─────────────────────────────────────────────────────────────────

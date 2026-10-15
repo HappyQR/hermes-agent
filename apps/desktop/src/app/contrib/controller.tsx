@@ -4,6 +4,7 @@ import type { CSSProperties, ReactElement, PointerEvent as ReactPointerEvent } f
 
 import { SessionDraftTitle } from '@/app/chat/session-draft-title'
 import { SessionStatusDot } from '@/app/chat/session-status-dot'
+import { SidebarTopBar } from '@/app/chat/sidebar/studio/top-bar'
 import { PALETTE_AREA, type PaletteContribution, paletteToggle } from '@/app/command-palette/contrib'
 import { type StatusbarItem } from '@/app/shell/statusbar-controls'
 import { InlinePreviewDirective } from '@/components/assistant-ui/inline-preview-directive'
@@ -207,6 +208,8 @@ registry.registerMany([
       // Standing chrome: no close gestures at all — the tab is shown/hidden
       // (zone menu Show/Hide rows + the auto-registered ⌘K toggle below).
       hideOnly: true,
+      // Studio: the sidebar's top bar paints in the zone's titlebar band.
+      band: SidebarTopBar,
       tabTitle: () => <LocalizedTabTitle select={t => t.sidebar.sessions} />,
       tabTitleText: () => translateNow('sidebar.sessions'),
       width: `${SIDEBAR_DEFAULT_WIDTH}px`,

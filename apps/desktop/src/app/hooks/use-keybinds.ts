@@ -42,9 +42,7 @@ import { toggleHud } from '@/store/hud'
 import { toggleSimpleMode } from '@/store/interface-mode'
 import { $capture, $comboIndex, captureStep, endCapture, setBinding } from '@/store/keybinds'
 import {
-  cycleSidebarGrouping,
   layoutHasRightSide,
-  requestSessionSearchFocus,
   setFileBrowserOpen,
   togglePanesFlipped,
   toggleRightSide,
@@ -85,6 +83,7 @@ import {
   switcherActive,
   switcherJustClosed
 } from '@/store/session-switcher'
+import { cycleStudioGrouping, openSessionSearch } from '@/store/sidebar-studio'
 import { toggleStatusbarVisible } from '@/store/statusbar-prefs'
 import { requestThreadPageScroll } from '@/store/thread-scroll'
 import { openNewWindow } from '@/store/windows'
@@ -323,7 +322,7 @@ export function useKeybinds(deps: KeybindRuntimeDeps): void {
     'session.prev': () => cycleTab(-1),
     ...sessionSlotHandlers,
     ...tabSlotHandlers,
-    'session.focusSearch': requestSessionSearchFocus,
+    'session.focusSearch': openSessionSearch,
     'session.togglePin': deps.toggleSelectedPin,
     'session.archive': deps.archiveSelectedSession,
     'conversation.scrollPageUp': () => requestThreadPageScroll(-1, $focusedStoredSessionId.get()),
@@ -339,7 +338,7 @@ export function useKeybinds(deps: KeybindRuntimeDeps): void {
 
     // Narrow-viewport reveal is handled inside the store toggles now.
     'view.toggleSidebar': toggleSidebarOpen,
-    'view.cycleSidebarGrouping': cycleSidebarGrouping,
+    'view.cycleSidebarGrouping': cycleStudioGrouping,
     // ⌘J toggles the physical right side — whatever column lives there in the
     // live tree (the Browser preview column, the files column). Falls back to
     // the terminal when nothing lives on the right (terminal-on-bottom).

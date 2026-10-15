@@ -64,7 +64,7 @@ const renderSidebar = (pathname: string, currentView: AppView, onRetrySessions: 
   )
 
 const currentButtons = () =>
-  screen.queryAllByRole('button').filter(button => button.classList.contains('bg-(--ui-control-active-background)'))
+  screen.queryAllByRole('button').filter(button => button.getAttribute('aria-current') === 'page')
 
 const expectOnlyCurrent = (label: string | null) => {
   const button = label ? screen.getByRole('button', { name: label }) : null
@@ -152,7 +152,8 @@ describe('ChatSidebar navigation activity', () => {
       ['/capabilities', 'capabilities', 'Capabilities'],
       ['/messaging', 'messaging', 'Messaging'],
       ['/artifacts', 'artifacts', 'Artifacts'],
-      ['/cron', 'cron', 'Scheduled jobs']
+      ['/cron', 'cron', 'Automations'],
+      ['/starmap', 'starmap', 'Memory']
     ] as const) {
       cleanup()
       focus('workspace-group')
@@ -376,15 +377,12 @@ describe('ChatSidebar empty-profile sections', () => {
   })
 
   it('shows the messaging section for a profile with no normal sessions', () => {
-    const { container } = renderSidebar('/', 'chat')
+    renderSidebar('/', 'chat')
 
-    // The Telegram platform section renders with its threads…
+    // The Telegram threads render, so the sidebar did not collapse to the
+    // blank state.
     expect(screen.getAllByText('Telegram').length).toBeGreaterThan(0)
     expect(screen.getByText('tg-one')).toBeTruthy()
-    // …and the sidebar did not collapse to the blank state: the search field
-    // only renders inside the session area, so its presence proves the area
-    // (and the messaging sections inside it) rendered.
-    expect(screen.getByPlaceholderText('Search sessions…')).toBeTruthy()
   })
 
   it('still shows the blank state when a profile has nothing at all', () => {
@@ -392,11 +390,13 @@ describe('ChatSidebar empty-profile sections', () => {
     $sidebarMessagingOpenIds.set([])
 
     // SidebarBlankState: a centered "No sessions yet" plus a "New project"
-    // button, rendered INSTEAD of the whole session area (search included).
+    // button, rendered INSTEAD of the session sections. Search stays: it is the
+    // door to ⌘K, not part of the list.
     const { container } = renderSidebar('/', 'chat')
 
     expect(container.textContent).toContain('No sessions yet')
-    expect(screen.queryByPlaceholderText('Search sessions…')).toBeNull()
+    expect(screen.queryByText('Telegram')).toBeNull()
+    expect(screen.getByRole('button', { name: 'Search sessions, pages and commands' })).toBeTruthy()
   })
 })
 

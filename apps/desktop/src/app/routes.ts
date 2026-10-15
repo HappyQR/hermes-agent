@@ -136,6 +136,10 @@ export interface SidebarNavContribution {
   path: string
   /** `'advanced'` keeps the row out of Simple mode; unset shows it everywhere. */
   tier?: InterfaceTier
+  /** Trailing count/state beside the label (e.g. Kanban's running tasks).
+   *  Mounted as a component inside the row's error boundary; render nothing
+   *  when there is nothing to say. Decorative: the row's name stays the label. */
+  meta?: () => ReactNode
 }
 
 // ── Contributed profile-group header — the `sidebar.profileGroup.header` area ─
