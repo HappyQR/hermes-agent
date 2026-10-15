@@ -7,6 +7,7 @@ import { setTerminalTakeover } from '@/app/right-sidebar/store'
 import { toggleTerminalPane } from '@/app/right-sidebar/terminal/reveal-focus'
 import { closeActiveTerminal, createTerminal, cycleTerminal } from '@/app/right-sidebar/terminal/terminals'
 import { appViewForPath, isOverlayView } from '@/app/routes'
+import { toggleInspector, toggleInspectorKind } from '@/app/shell/inspector/inspector-state'
 import {
   activateTreeTabSlot,
   cycleTreeTabInFocusedZone,
@@ -342,16 +343,20 @@ export function useKeybinds(deps: KeybindRuntimeDeps): void {
     // ⌘J toggles the physical right side — whatever column lives there in the
     // live tree (the Browser preview column, the files column). Falls back to
     // the terminal when nothing lives on the right (terminal-on-bottom).
-    'view.toggleRightSidebar': () => (layoutHasRightSide() ? toggleRightSide() : toggleTerminalPane()),
-    'view.toggleReview': toggleReview,
+    // Studio: with an inspector zone, ⌘J shows/hides it (prototype ⌘J) and each
+    // segment's command toggles it on that segment; the upstream behavior stays
+    // for layouts without one.
+    'view.toggleRightSidebar': () =>
+      toggleInspector() || (layoutHasRightSide() ? toggleRightSide() : toggleTerminalPane()),
+    'view.toggleReview': () => toggleInspectorKind('review') || toggleReview(),
     'view.toggleStatusbar': toggleStatusbarVisible,
     'view.toggleProfileRail': toggleProfileRailVisible,
     'view.toggleSimpleMode': toggleSimpleMode,
     'view.toggleTabStrip': () => void toggleTargetZoneTabStrip(),
-    'view.showFiles': showFiles,
-    'view.showBrowser': toggleBrowserTab,
+    'view.showFiles': () => toggleInspectorKind('files') || showFiles(),
+    'view.showBrowser': () => toggleInspectorKind('preview') || toggleBrowserTab(),
     'view.toggleHud': () => toggleHud(hudTargetSessionId()),
-    'view.showTerminal': () => toggleTerminalPane(),
+    'view.showTerminal': () => toggleInspectorKind('terminal') || toggleTerminalPane(),
     // Create first so the pane's open-effect ensure sees a non-empty set and
     // doesn't also spawn one — net effect is exactly one fresh terminal.
     'view.newTerminal': () => {

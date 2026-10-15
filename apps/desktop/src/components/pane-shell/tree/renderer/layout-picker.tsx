@@ -36,6 +36,7 @@ import {
   layoutPresetResting,
   layoutPresetTier,
   LAYOUTS_AREA,
+  presetTitle,
   saveCurrentLayoutAs
 } from '../presets'
 import { $activePresetId } from '../store'
@@ -81,7 +82,7 @@ export function TreeThumbnail({ node, resting }: { node: LayoutNode; resting: Re
 /** Small-caps section heading — the app's SidebarPanelLabel voice. */
 function PickerSectionLabel({ children }: { children: ReactNode }) {
   return (
-    <span className="text-[0.6rem] font-semibold uppercase tracking-[0.16em] text-(--ui-text-quaternary)">
+    <span className="text-[0.6875rem] font-semibold text-(--ui-text-tertiary)">
       {children}
     </span>
   )
@@ -111,7 +112,7 @@ function PresetCard({ preset }: { preset: Contribution }) {
         <span
           className={cn('truncate text-[0.68rem] font-medium', active ? 'text-foreground' : 'text-muted-foreground/80')}
         >
-          {preset.title ?? preset.id}
+          {presetTitle(preset, t.studio.shell.presets)}
         </span>
       </button>
       {isUserPreset(preset.id) && (

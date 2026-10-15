@@ -2,7 +2,26 @@
 import type { StudioShellTranslations } from './types_studio_shell'
 
 export const jaStudioShell: StudioShellTranslations = {
+  untitledSession: '無題のセッション',
   layout: 'レイアウト',
+  inspector: {
+    label: 'インスペクタ',
+    close: 'インスペクタを閉じる',
+    preview: 'プレビュー',
+    files: 'ファイル',
+    review: '変更',
+    terminal: 'ターミナル',
+    agents: 'エージェント'
+  },
+  presets: {
+    'sidebar-left': 'サイドバーを左に',
+    'sidebar-right': 'サイドバーを右に',
+    default: 'デフォルト',
+    basic: 'ベーシック',
+    focus: 'フォーカス',
+    'terminal-deck': 'ターミナルデッキ',
+    quad: '4分割'
+  },
   toolbar: {
     newSessionTitle: '新しいセッション',
     layoutMenu: 'レイアウトと分割',

@@ -2,7 +2,26 @@
 import type { StudioShellTranslations } from './types_studio_shell'
 
 export const ruStudioShell: StudioShellTranslations = {
+  untitledSession: 'Сеанс без названия',
   layout: 'Макет',
+  inspector: {
+    label: 'Инспектор',
+    close: 'Закрыть инспектор',
+    preview: 'Просмотр',
+    files: 'Файлы',
+    review: 'Изменения',
+    terminal: 'Терминал',
+    agents: 'Агенты'
+  },
+  presets: {
+    'sidebar-left': 'Боковая панель слева',
+    'sidebar-right': 'Боковая панель справа',
+    default: 'По умолчанию',
+    basic: 'Базовый',
+    focus: 'Фокус',
+    'terminal-deck': 'Терминальный стол',
+    quad: 'Четыре панели'
+  },
   toolbar: {
     newSessionTitle: 'Новый сеанс',
     layoutMenu: 'Макет и разделение',

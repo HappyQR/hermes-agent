@@ -4,7 +4,13 @@ import { requestCloseSessionTile } from '@/app/chat/session-tile'
 import { hudTargetSessionId } from '@/app/hud/handoff'
 import { toggleLayoutEditMode } from '@/components/pane-shell/edit-mode'
 import { isLayoutNode } from '@/components/pane-shell/tree/model'
-import { applyLayoutPreset, isUserPreset, layoutPresetTier, LAYOUTS_AREA } from '@/components/pane-shell/tree/presets'
+import {
+  applyLayoutPreset,
+  isUserPreset,
+  layoutPresetTier,
+  LAYOUTS_AREA,
+  presetTitle
+} from '@/components/pane-shell/tree/presets'
 import { $activePresetId, resetLayoutTree } from '@/components/pane-shell/tree/store'
 import {
   DropdownMenuCheckboxItem,
@@ -87,7 +93,7 @@ function TemplatesSubmenu() {
               onSelect={() => isLayoutNode(preset.data) && applyLayoutPreset(preset.id, preset.data)}
               value={preset.id}
             >
-              {preset.title ?? preset.id}
+              {presetTitle(preset, t.studio.shell.presets)}
             </DropdownMenuRadioItem>
           ))}
         </DropdownMenuRadioGroup>

@@ -1,5 +1,6 @@
 import type { StudioTranslations } from './types_studio'
 import { zhHantStudioChat } from './zh-hant_studio_chat'
+import { zhHantStudioMenu } from './zh-hant_studio_menu'
 import { zhHantStudioOverlays } from './zh-hant_studio_overlays'
 import { zhHantStudioPages } from './zh-hant_studio_pages'
 import { zhHantStudioSettings } from './zh-hant_studio_settings'
@@ -13,5 +14,6 @@ export const zhHantStudio: StudioTranslations = {
   chat: zhHantStudioChat,
   pages: zhHantStudioPages,
   settings: zhHantStudioSettings,
-  overlays: zhHantStudioOverlays
+  overlays: zhHantStudioOverlays,
+  menu: zhHantStudioMenu
 }

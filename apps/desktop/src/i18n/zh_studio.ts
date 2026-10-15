@@ -1,5 +1,6 @@
 import type { StudioTranslations } from './types_studio'
 import { zhStudioChat } from './zh_studio_chat'
+import { zhStudioMenu } from './zh_studio_menu'
 import { zhStudioOverlays } from './zh_studio_overlays'
 import { zhStudioPages } from './zh_studio_pages'
 import { zhStudioSettings } from './zh_studio_settings'
@@ -13,5 +14,6 @@ export const zhStudio: StudioTranslations = {
   chat: zhStudioChat,
   pages: zhStudioPages,
   settings: zhStudioSettings,
-  overlays: zhStudioOverlays
+  overlays: zhStudioOverlays,
+  menu: zhStudioMenu
 }

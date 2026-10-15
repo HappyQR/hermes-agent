@@ -23,3 +23,94 @@
   content: '';
   background: var(--ui-line-2);
 }
+
+/* ── Tab strips ─────────────────────────────────────────────────────────
+   Under a band (toolbar zone, sessions zone): the prototype's attached tabs —
+   28px tabs sitting on a 34px secondary-surface row; the active tab takes the
+   content surface and opens into it. Unlayered, so it outranks the strip's
+   Tailwind utilities without !important. Tabs are matched by data-tree-tab:
+   a session tab's context-menu trigger overwrites its data-slot. */
+[data-panel-header]:has(> [data-zone-band]) > [data-zone-tabstrip] {
+  height: 34px;
+  align-items: flex-end;
+  padding-inline: 10px;
+  background: var(--ui-bg-inspector);
+  box-shadow: inset 0 -0.5px 0 var(--ui-line-2);
+}
+
+[data-panel-header]:has(> [data-zone-band]) > [data-zone-tabstrip] [role='tablist'] {
+  align-items: flex-end;
+  gap: 2px;
+}
+
+[data-panel-header]:has(> [data-zone-band]) > [data-zone-tabstrip] [data-tree-tab] {
+  height: 28px;
+  min-width: 120px;
+  max-width: 220px;
+  padding: 0 2px 0 4px;
+  border: 0;
+  border-radius: 7px 7px 0 0;
+  font-size: 0.78125rem;
+  color: var(--ui-text-secondary);
+  background: transparent;
+  box-shadow: none;
+  transition: background-color 120ms var(--studio-ease);
+}
+
+[data-panel-header]:has(> [data-zone-band]) > [data-zone-tabstrip] [data-tree-tab]:hover {
+  background: var(--ui-hover);
+}
+
+[data-panel-header]:has(> [data-zone-band]) > [data-zone-tabstrip] [data-tree-tab][data-active='true'] {
+  color: var(--ui-text-primary);
+  background: var(--ui-chat-surface-background);
+  box-shadow: 0 0 0 0.5px var(--ui-line-2);
+  clip-path: inset(-2px -2px 0 -2px);
+}
+
+/* The inspector's chips (prototype .ptabs / .ptab): free-standing rounded
+   chips on the inspector surface — previews, or terminal + logs. */
+[data-panel-header] > [data-zone-strip='chips'] {
+  height: 34px;
+  align-items: flex-start;
+  padding: 0 8px 8px;
+  background: var(--ui-bg-inspector);
+  box-shadow: none;
+}
+
+[data-panel-header] > [data-zone-strip='chips'] [role='tablist'] {
+  align-items: center;
+  gap: 4px;
+}
+
+[data-panel-header] > [data-zone-strip='chips'] [data-tree-tab] {
+  height: 26px;
+  min-width: 0;
+  max-width: 180px;
+  padding: 0 2px 0 3px;
+  border: 0;
+  border-radius: 7px;
+  font-size: 0.75rem;
+  color: var(--ui-text-secondary);
+  background: transparent;
+  box-shadow: inset 0 0 0 0.5px var(--ui-line);
+  clip-path: none;
+}
+
+[data-panel-header] > [data-zone-strip='chips'] [data-tree-tab][data-active='true'] {
+  color: var(--ui-text-primary);
+  background: var(--ui-bg-editor);
+  box-shadow:
+    0 0 0 0.5px var(--ui-line-2),
+    0 1px 2px rgb(0 0 0 / 0.06);
+}
+
+/* The status bar, when an Advanced user turns it on (prototype .statusbar):
+   24px on the secondary surface, 11.5px, a top hairline instead of a border. */
+[data-slot='statusbar'] {
+  height: 24px;
+  font-size: 11.5px;
+  background: var(--ui-bg-inspector);
+  border-top: 0;
+  box-shadow: inset 0 0.5px 0 var(--ui-line-2);
+}

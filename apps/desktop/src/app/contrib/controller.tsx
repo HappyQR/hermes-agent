@@ -61,9 +61,6 @@ import { $interfaceMode, $showsAdvancedChrome, setModeContext, toggleSimpleMode 
 import {
   $fileBrowserOpen,
   $sidebarOpen,
-  FILE_BROWSER_DEFAULT_WIDTH,
-  FILE_BROWSER_MAX_WIDTH,
-  FILE_BROWSER_MIN_WIDTH,
   fileBrowserSide,
   setFileBrowserOpen,
   setSidebarOpen,
@@ -117,6 +114,8 @@ import { $terminalTakeover, setTerminalTakeover } from '../right-sidebar/store'
 import { terminalPaletteToggle } from '../right-sidebar/terminal/reveal-focus'
 import { $workspaceIsPage, WORKSPACE_PAGE_HEADER_AREA } from '../routes'
 import { Butterbar } from '../shell/butterbar'
+import { registerInspectorBand } from '../shell/inspector/inspector-band'
+import { INSPECTOR_PANE_SIZE } from '../shell/inspector/kinds'
 import { TermsButterbar } from '../shell/terms-butterbar'
 import { WorkspaceToolbarBand } from '../shell/toolbar/workspace-toolbar'
 
@@ -250,7 +249,9 @@ registry.registerMany([
     // header (the sash floors it at COLLAPSED_ZONE_PX and folds the zone to
     // its rail there). A real floor left a sliver of unusable terminal.
     data: {
-      placement: 'bottom',
+      // Studio: the terminal is an inspector segment; Terminal deck/Quad still dock it below.
+      placement: 'right',
+      ...INSPECTOR_PANE_SIZE,
       height: '20vh',
       maxHeight: '80vh',
       lifecycleKeepAlive: true,
@@ -269,9 +270,7 @@ registry.registerMany([
       collapsible: true,
       dock: { pane: 'workspace', pos: 'right' },
       revealAliases: ['file-browser'],
-      width: FILE_BROWSER_DEFAULT_WIDTH,
-      minWidth: FILE_BROWSER_MIN_WIDTH,
-      maxWidth: FILE_BROWSER_MAX_WIDTH,
+      ...INSPECTOR_PANE_SIZE,
       tabTitle: () => <LocalizedTabTitle select={t => t.sidebar.files} />,
       tabTitleText: () => translateNow('sidebar.files')
     },
@@ -287,9 +286,7 @@ registry.registerMany([
       placement: 'right',
       collapsible: true,
       revealAliases: [REVIEW_PANE_ID],
-      width: FILE_BROWSER_DEFAULT_WIDTH,
-      minWidth: FILE_BROWSER_MIN_WIDTH,
-      maxWidth: FILE_BROWSER_MAX_WIDTH,
+      ...INSPECTOR_PANE_SIZE,
       tabTitle: () => <LocalizedTabTitle select={t => t.sidebar.review} />,
       tabTitleText: () => translateNow('sidebar.review')
     },
@@ -449,6 +446,8 @@ registry.registerMany([
 ])
 
 registerLayoutPresets()
+// Studio: the inspector zone's segmented header.
+registerInspectorBand()
 
 declareDefaultTree(DEFAULT_TREE, BASIC_TREE)
 
@@ -642,8 +641,8 @@ const syncLogsPane = (open: boolean) => {
       // rather than leaving a sliver. dock: its OWN zone beside the terminal —
       // never a tab in the terminal's strip.
       data: {
-        placement: 'bottom',
-        dock: { pane: 'terminal', pos: 'right' },
+        placement: 'right',
+        dock: { pane: 'terminal', pos: 'center' },
         height: '20vh',
         maxHeight: '80vh',
         tabTitle: () => <LocalizedTabTitle select={t => t.sidebar.logs} />,

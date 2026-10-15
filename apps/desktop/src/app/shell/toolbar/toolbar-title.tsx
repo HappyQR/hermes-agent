@@ -3,7 +3,6 @@ import { useStore } from '@nanostores/react'
 import { SessionTitleMenu } from '@/app/chat/session-tile'
 import { paneChrome } from '@/components/pane-shell/tree/renderer/track-model'
 import { StudioIcon } from '@/components/ui/studio-icon'
-import { ContribRender } from '@/contrib/react/boundary'
 import { useContributions } from '@/contrib/react/use-contributions'
 import { useI18n } from '@/i18n'
 import { NEW_SESSION_TITLE } from '@/lib/chat-runtime'
@@ -35,10 +34,10 @@ export function ToolbarTitle() {
     (tileFocused ? panes.find(p => p.id === `${TILE_PANE_PREFIX}${focused}`) : undefined) ??
     panes.find(p => p.id === 'workspace')
 
-  const tabTitle = paneChrome(pane).tabTitle
-  // An untitled stored chat carries the English sentinel; show the UI language's word.
+  // The tab's own label rule (tree-group tabLabel): its live node, else the
+  // pane title — an untitled stored chat carries the English sentinel there.
   const title = pane?.title === NEW_SESSION_TITLE ? t.studio.shell.toolbar.newSessionTitle : pane?.title
-  const label = tabTitle ? <ContribRender render={tabTitle} /> : title
+  const label = paneChrome(pane).tabTitle?.() ?? title
   const sessionId = tileFocused ? focused : selected
 
   if (!sessionId) {

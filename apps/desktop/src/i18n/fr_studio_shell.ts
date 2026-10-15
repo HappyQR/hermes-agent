@@ -2,7 +2,26 @@
 import type { StudioShellTranslations } from './types_studio_shell'
 
 export const frStudioShell: StudioShellTranslations = {
+  untitledSession: 'Session sans titre',
   layout: 'Disposition',
+  inspector: {
+    label: 'Inspecteur',
+    close: 'Fermer l’inspecteur',
+    preview: 'Aperçu',
+    files: 'Fichiers',
+    review: 'Modifications',
+    terminal: 'Terminal',
+    agents: 'Agents'
+  },
+  presets: {
+    'sidebar-left': 'Barre latérale à gauche',
+    'sidebar-right': 'Barre latérale à droite',
+    default: 'Par défaut',
+    basic: 'Basique',
+    focus: 'Concentration',
+    'terminal-deck': 'Poste terminal',
+    quad: 'Quatre volets'
+  },
   toolbar: {
     newSessionTitle: 'Nouvelle session',
     layoutMenu: 'Disposition et partage',
