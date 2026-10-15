@@ -4422,6 +4422,7 @@ export const zhOverrides = {
         endpoint: 'Hermes 无法连接到你的自定义模型服务器。请确认它正在运行，然后重新发送消息。',
         streaming: '回复完成前连接已断开。请重试以重新发送。'
       },
+      errorDetails: '详情',
       errorCodes: {
         provider_policy_blocked: {
           title: '账户设置阻止了此模型',
