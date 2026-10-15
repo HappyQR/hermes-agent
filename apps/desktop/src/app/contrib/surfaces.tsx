@@ -17,16 +17,16 @@ import { $activeConnectionId } from '@/store/connections'
 import { $gateway } from '@/store/gateway'
 import { $chatOnboardingSolo } from '@/store/onboarding-intro'
 import { $activeGatewayProfile } from '@/store/profile'
-import { $freshDraftReady, $gatewayState } from '@/store/session'
+import { $gatewayState } from '@/store/session'
 
 import { ChatView } from '../chat'
 import { ChatSidebar } from '../chat/sidebar'
 import { TerminalPaneChrome } from '../right-sidebar/terminal/chrome'
 import { contributedRoutes, NEW_CHAT_ROUTE, ROUTES_AREA, sessionRoute } from '../routes'
-import { useStatusSnapshot } from '../shell/hooks/use-status-snapshot'
 import { useStatusbarItems } from '../shell/hooks/use-statusbar-items'
 import { ModelMenuPanel } from '../shell/model-menu-panel'
 import { ReasoningMenuPanel } from '../shell/reasoning-menu-panel'
+import { useSharedStatus } from '../shell/status-snapshot-host'
 import { StatusbarControls } from '../shell/statusbar-controls'
 
 import { latestChatActions, latestSidebarActions } from './latest-actions'
@@ -80,13 +80,10 @@ export const StatusbarSurface = memo(function StatusbarSurface({
   chatOpen: boolean
   commandCenterOpen: boolean
 }) {
-  const activeConnectionId = useStore($activeConnectionId)
-  const activeGatewayProfile = useStore($activeGatewayProfile)
-  const gatewayState = useStore($gatewayState)
   const demoLayout = useStore($chatOnboardingSolo)
-  const freshDraftReady = useStore($freshDraftReady)
-  const gatewayScope = `${activeConnectionId ?? ''}\0${activeGatewayProfile}`
-  const { inferenceStatus, statusSnapshot } = useStatusSnapshot(gatewayState, actions.requestGateway, gatewayScope)
+  // The poll itself lives in StatusSnapshotHost (always mounted) — Studio keeps
+  // this bar off by default and the snapshot feeds other surfaces too.
+  const { freshDraftReady, gatewayState, inferenceStatus, statusSnapshot } = useSharedStatus()
   const extraLeftItems = useStatusbarContributions('left')
   const extraRightItems = useStatusbarContributions('right')
 
