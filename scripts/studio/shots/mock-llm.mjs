@@ -64,7 +64,8 @@ async function stream(res, step, delayMs) {
 // Stream CJK text a few characters at a time and Latin text by word.
 function* tokens(text) {
   if (!text) return
-  const parts = text.match(/[　-鿿＀-￯]{1,3}|[^　-鿿＀-￯]+?(?=\s|$|[　-鿿])|\s+/g) ?? [text]
+  // The lookahead includes fullwidth forms, or `**` before a "，" never streams.
+  const parts = text.match(/[　-鿿＀-￯]{1,3}|[^　-鿿＀-￯]+?(?=\s|$|[　-鿿＀-￯])|\s+/g) ?? [text]
   yield* parts
 }
 
