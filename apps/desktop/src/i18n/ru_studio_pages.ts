@@ -363,5 +363,26 @@ export const ruStudioPages: StudioPagesTranslations = {
     pairedUsersHint: 'Одобрены через привязку. Отзыв действует сразу.',
     updateCredentials: 'Обновить учётные данные',
     saveHint: 'Сохранение сразу применится к работающему шлюзу'
+  },
+  artifacts: {
+    title: 'Результаты',
+    subtitle: 'Веб-страницы, изображения, файлы и ссылки из последних 30 сеансов. Пробел — быстрый просмотр.',
+    search: 'Поиск по названию или сеансу',
+    typeLabel: 'Тип',
+    tabs: { all: 'Все', web: 'Веб-страницы', image: 'Изображения', file: 'Файлы', link: 'Ссылки' },
+    kind: { web: 'Веб-страница', image: 'Изображение', file: 'Файл', link: 'Ссылка' },
+    sourceLine: (kind, session, when) => `${kind} · из «${session}» · ${when}`,
+    noMatchDesc: 'Попробуйте другое слово или переключитесь на «Все».',
+    showMore: (shown, total) => `Показать ещё (${shown} из ${total})`,
+    quickLook: 'Быстрый просмотр',
+    openInInspector: 'Открыть в инспекторе',
+    openSession: 'Открыть сеанс',
+    openWithDefault: 'Открыть в программе по умолчанию',
+    previous: 'Назад',
+    next: 'Далее',
+    previewUnavailable: 'Этот файл нельзя просмотреть здесь.',
+    partialSkipped: (skipped, total) => `При индексации пропущено сеансов: ${skipped} из ${total}.`,
+    partialSafeLimit: count => `Превысили безопасный лимит загрузки: ${count}.`,
+    partialUnreadable: count => `Не удалось прочитать: ${count}.`
   }
 }

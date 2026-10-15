@@ -349,5 +349,26 @@ export const jaStudioPages: StudioPagesTranslations = {
     pairedUsersHint: 'ペアリングで承認されたユーザーです。取り消しはすぐに反映されます。',
     updateCredentials: '認証情報を更新',
     saveHint: '保存すると実行中のゲートウェイにすぐ反映されます'
+  },
+  artifacts: {
+    title: '成果物',
+    subtitle: '最近 30 件のセッションで作られた Web ページ、画像、ファイル、リンク。スペースキーでクイックルック。',
+    search: '名前またはセッションを検索',
+    typeLabel: '種類',
+    tabs: { all: 'すべて', web: 'Web ページ', image: '画像', file: 'ファイル', link: 'リンク' },
+    kind: { web: 'Web ページ', image: '画像', file: 'ファイル', link: 'リンク' },
+    sourceLine: (kind, session, when) => `${kind} · 「${session}」から · ${when}`,
+    noMatchDesc: '別のキーワードを試すか、「すべて」に切り替えてください。',
+    showMore: (shown, total) => `さらに表示（${shown}/${total}）`,
+    quickLook: 'クイックルック',
+    openInInspector: 'インスペクタで開く',
+    openSession: '元のセッションを開く',
+    openWithDefault: '既定のアプリで開く',
+    previous: '前へ',
+    next: '次へ',
+    previewUnavailable: 'このファイルはここではプレビューできません。',
+    partialSkipped: (skipped, total) => `成果物の索引作成中に、最近の ${total} 件のセッションのうち ${skipped} 件をスキップしました。`,
+    partialSafeLimit: count => `${count} 件が安全な読み込み上限を超えました。`,
+    partialUnreadable: count => `${count} 件を読み込めませんでした。`
   }
 }

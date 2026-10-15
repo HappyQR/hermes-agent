@@ -352,5 +352,26 @@ export const enStudioPages: StudioPagesTranslations = {
     pairedUsersHint: 'Approved through pairing. Revoking takes effect right away.',
     updateCredentials: 'Update credentials',
     saveHint: 'Saving applies to the running gateway.'
+  },
+  artifacts: {
+    title: 'Artifacts',
+    subtitle: 'Pages, images, files and links made in your last 30 sessions. Press Space to Quick Look.',
+    search: 'Search names or sessions',
+    typeLabel: 'Type',
+    tabs: { all: 'All', web: 'Web pages', image: 'Images', file: 'Files', link: 'Links' },
+    kind: { web: 'Web page', image: 'Image', file: 'File', link: 'Link' },
+    sourceLine: (kind, session, when) => `${kind} · from “${session}” · ${when}`,
+    noMatchDesc: 'Try another keyword, or switch to All.',
+    showMore: (shown, total) => `Show more (${shown} of ${total})`,
+    quickLook: 'Quick Look',
+    openInInspector: 'Open in Inspector',
+    openSession: 'Open its session',
+    openWithDefault: 'Open with default app',
+    previous: 'Previous',
+    next: 'Next',
+    previewUnavailable: 'This file can’t be previewed here.',
+    partialSkipped: (skipped, total) => `Skipped ${skipped} of ${total} recent sessions while indexing artifacts.`,
+    partialSafeLimit: count => `${count} exceeded the safe transcript load limit.`,
+    partialUnreadable: count => `${count} could not be read.`
   }
 }

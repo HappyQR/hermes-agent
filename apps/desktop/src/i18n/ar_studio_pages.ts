@@ -349,5 +349,26 @@ export const arStudioPages: StudioPagesTranslations = {
     pairedUsersHint: 'تمت الموافقة عليهم عبر الاقتران. يسري الإلغاء فورًا.',
     updateCredentials: 'تحديث بيانات الاعتماد',
     saveHint: 'يُطبّق الحفظ على البوابة قيد التشغيل فورًا'
+  },
+  artifacts: {
+    title: 'المخرجات',
+    subtitle: 'صفحات الويب والصور والملفات والروابط التي أُنشئت في آخر 30 جلسة. اضغط مفتاح المسافة للمعاينة السريعة.',
+    search: 'ابحث في الأسماء أو الجلسات',
+    typeLabel: 'النوع',
+    tabs: { all: 'الكل', web: 'صفحات الويب', image: 'الصور', file: 'الملفات', link: 'الروابط' },
+    kind: { web: 'صفحة ويب', image: 'صورة', file: 'ملف', link: 'رابط' },
+    sourceLine: (kind, session, when) => `${kind} · من «${session}» · ${when}`,
+    noMatchDesc: 'جرّب كلمة أخرى، أو انتقل إلى «الكل».',
+    showMore: (shown, total) => `عرض المزيد (${shown} من ${total})`,
+    quickLook: 'معاينة سريعة',
+    openInInspector: 'فتح في المفتش',
+    openSession: 'فتح جلستها',
+    openWithDefault: 'فتح بالتطبيق الافتراضي',
+    previous: 'السابق',
+    next: 'التالي',
+    previewUnavailable: 'لا يمكن معاينة هذا الملف هنا.',
+    partialSkipped: (skipped, total) => `تم تخطي ${skipped} من آخر ${total} جلسة أثناء فهرسة المخرجات.`,
+    partialSafeLimit: count => `${count} تجاوزت حد التحميل الآمن.`,
+    partialUnreadable: count => `${count} تعذّرت قراءتها.`
   }
 }

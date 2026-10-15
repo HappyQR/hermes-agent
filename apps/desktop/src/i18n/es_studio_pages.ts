@@ -366,5 +366,26 @@ export const esStudioPages: StudioPagesTranslations = {
     pairedUsersHint: 'Aprobados mediante vinculación. Revocar tiene efecto de inmediato.',
     updateCredentials: 'Actualizar credenciales',
     saveHint: 'Al guardar se aplica de inmediato a la pasarela en marcha'
+  },
+  artifacts: {
+    title: 'Resultados',
+    subtitle: 'Páginas web, imágenes, archivos y enlaces creados en tus últimas 30 sesiones. Pulsa Espacio para la vista rápida.',
+    search: 'Buscar nombres o sesiones',
+    typeLabel: 'Tipo',
+    tabs: { all: 'Todo', web: 'Páginas web', image: 'Imágenes', file: 'Archivos', link: 'Enlaces' },
+    kind: { web: 'Página web', image: 'Imagen', file: 'Archivo', link: 'Enlace' },
+    sourceLine: (kind, session, when) => `${kind} · de «${session}» · ${when}`,
+    noMatchDesc: 'Prueba otra palabra o cambia a Todo.',
+    showMore: (shown, total) => `Mostrar más (${shown} de ${total})`,
+    quickLook: 'Vista rápida',
+    openInInspector: 'Abrir en el inspector',
+    openSession: 'Abrir su sesión',
+    openWithDefault: 'Abrir con la app predeterminada',
+    previous: 'Anterior',
+    next: 'Siguiente',
+    previewUnavailable: 'Este archivo no se puede previsualizar aquí.',
+    partialSkipped: (skipped, total) => `Se omitieron ${skipped} de las últimas ${total} sesiones al indexar.`,
+    partialSafeLimit: count => `${count} superaron el límite de carga seguro.`,
+    partialUnreadable: count => `${count} no se pudieron leer.`
   }
 }

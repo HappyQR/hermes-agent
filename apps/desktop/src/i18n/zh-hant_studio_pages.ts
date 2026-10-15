@@ -337,5 +337,26 @@ export const zhHantStudioPages: StudioPagesTranslations = {
     pairedUsersHint: '透過配對核准的使用者，撤銷立即生效。',
     updateCredentials: '更新憑證',
     saveHint: '儲存後立即套用到執行中的閘道'
+  },
+  artifacts: {
+    title: '產出',
+    subtitle: '最近 30 個對話裡產生的網頁、圖片、檔案和連結。按空白鍵快速查看。',
+    search: '搜尋名稱或對話',
+    typeLabel: '類型',
+    tabs: { all: '全部', web: '網頁', image: '圖片', file: '檔案', link: '連結' },
+    kind: { web: '網頁', image: '圖片', file: '檔案', link: '連結' },
+    sourceLine: (kind, session, when) => `${kind} · 來自「${session}」· ${when}`,
+    noMatchDesc: '換個關鍵字，或切換到「全部」。',
+    showMore: (shown, total) => `顯示更多（${shown}/${total}）`,
+    quickLook: '快速查看',
+    openInInspector: '在檢查器中開啟',
+    openSession: '開啟所在對話',
+    openWithDefault: '用預設應用程式開啟',
+    previous: '上一個',
+    next: '下一個',
+    previewUnavailable: '這個檔案無法在這裡預覽。',
+    partialSkipped: (skipped, total) => `索引產出時略過了最近 ${total} 個對話中的 ${skipped} 個。`,
+    partialSafeLimit: count => `${count} 個超出了安全載入上限。`,
+    partialUnreadable: count => `${count} 個無法讀取。`
   }
 }

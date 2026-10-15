@@ -337,5 +337,26 @@ export const zhStudioPages: StudioPagesTranslations = {
     pairedUsersHint: '通过配对批准的用户，撤销立即生效。',
     updateCredentials: '更新凭据',
     saveHint: '保存后立即应用到运行中的网关'
+  },
+  artifacts: {
+    title: '产物',
+    subtitle: '最近 30 个会话里生成的网页、图片、文件和链接。按空格键快速查看。',
+    search: '搜索名称或会话',
+    typeLabel: '类型',
+    tabs: { all: '全部', web: '网页', image: '图片', file: '文件', link: '链接' },
+    kind: { web: '网页', image: '图片', file: '文件', link: '链接' },
+    sourceLine: (kind, session, when) => `${kind} · 来自「${session}」· ${when}`,
+    noMatchDesc: '换个关键词，或切换到「全部」。',
+    showMore: (shown, total) => `显示更多（${shown}/${total}）`,
+    quickLook: '快速查看',
+    openInInspector: '在检查器中打开',
+    openSession: '打开所在会话',
+    openWithDefault: '用默认应用打开',
+    previous: '上一个',
+    next: '下一个',
+    previewUnavailable: '这个文件无法在这里预览。',
+    partialSkipped: (skipped, total) => `索引产物时跳过了最近 ${total} 个会话中的 ${skipped} 个。`,
+    partialSafeLimit: count => `${count} 个超出了安全加载上限。`,
+    partialUnreadable: count => `${count} 个无法读取。`
   }
 }

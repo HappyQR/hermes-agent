@@ -9,6 +9,8 @@ export interface SegmentedControlOption<T extends string> {
   icon?: IconComponent
   /** Tour handle for this option's button (`data-tour`). */
   dataTour?: string
+  /** Muted count after the label. */
+  meta?: number | string
 }
 
 interface SegmentedControlProps<T extends string> {
@@ -112,7 +114,7 @@ export function SegmentedControl<T extends string>({
           style={{ left: thumb.left, width: thumb.width }}
         />
       )}
-      {options.map(({ dataTour, id, label, icon: Icon }) => {
+      {options.map(({ dataTour, id, label, icon: Icon, meta }) => {
         const active = value === id
 
         return (
@@ -136,6 +138,7 @@ export function SegmentedControl<T extends string>({
             {/* A squeezed track ellipsizes a label inside its own cell; it never
                 wraps or paints across the neighbouring option. */}
             <span className="min-w-0 truncate">{label}</span>
+            {meta !== undefined ? <span className="shrink-0 tabular-nums text-(--ui-text-tertiary)">{meta}</span> : null}
           </button>
         )
       })}

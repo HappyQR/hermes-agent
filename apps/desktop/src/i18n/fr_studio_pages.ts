@@ -354,5 +354,26 @@ export const frStudioPages: StudioPagesTranslations = {
     pairedUsersHint: 'Approuvés par association. La révocation prend effet immédiatement.',
     updateCredentials: 'Mettre à jour les identifiants',
     saveHint: 'L’enregistrement s’applique tout de suite à la passerelle en cours'
+  },
+  artifacts: {
+    title: 'Productions',
+    subtitle: 'Pages web, images, fichiers et liens créés dans vos 30 dernières sessions. Appuyez sur Espace pour un aperçu.',
+    search: 'Rechercher un nom ou une session',
+    typeLabel: 'Type',
+    tabs: { all: 'Tout', web: 'Pages web', image: 'Images', file: 'Fichiers', link: 'Liens' },
+    kind: { web: 'Page web', image: 'Image', file: 'Fichier', link: 'Lien' },
+    sourceLine: (kind, session, when) => `${kind} · depuis « ${session} » · ${when}`,
+    noMatchDesc: 'Essayez un autre mot, ou revenez à Tout.',
+    showMore: (shown, total) => `Afficher plus (${shown} sur ${total})`,
+    quickLook: 'Coup d’œil',
+    openInInspector: 'Ouvrir dans l’inspecteur',
+    openSession: 'Ouvrir sa session',
+    openWithDefault: 'Ouvrir avec l’app par défaut',
+    previous: 'Précédent',
+    next: 'Suivant',
+    previewUnavailable: 'Ce fichier ne peut pas être prévisualisé ici.',
+    partialSkipped: (skipped, total) => `${skipped} sessions sur les ${total} dernières ont été ignorées pendant l’indexation.`,
+    partialSafeLimit: count => `${count} dépassaient la limite de chargement sûre.`,
+    partialUnreadable: count => `${count} n’ont pas pu être lues.`
   }
 }

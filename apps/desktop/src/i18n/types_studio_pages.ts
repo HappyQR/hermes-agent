@@ -8,6 +8,7 @@ export interface StudioPagesTranslations {
   memory: StudioMemoryTranslations
   capabilities: StudioCapabilitiesTranslations
   messaging: StudioMessagingTranslations
+  artifacts: StudioArtifactsTranslations
 }
 
 export interface StudioPagesCommonTranslations {
@@ -366,4 +367,27 @@ export interface StudioMessagingTranslations {
   updateCredentials: string
   /** Under the save button when the change will apply without a restart. */
   saveHint: string
+}
+
+export interface StudioArtifactsTranslations {
+  title: string
+  subtitle: string
+  search: string
+  typeLabel: string
+  tabs: { all: string; file: string; image: string; link: string; web: string }
+  kind: { file: string; image: string; link: string; web: string }
+  /** Quick Look subtitle: kind · from «session» · time. */
+  sourceLine: (kind: string, session: string, when: string) => string
+  noMatchDesc: string
+  showMore: (shown: number, total: number) => string
+  quickLook: string
+  openInInspector: string
+  openSession: string
+  openWithDefault: string
+  previous: string
+  next: string
+  previewUnavailable: string
+  partialSkipped: (skipped: number, total: number) => string
+  partialSafeLimit: (count: number) => string
+  partialUnreadable: (count: number) => string
 }

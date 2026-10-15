@@ -359,5 +359,26 @@ export const deStudioPages: StudioPagesTranslations = {
     pairedUsersHint: 'Über Kopplung freigegeben. Ein Widerruf wirkt sofort.',
     updateCredentials: 'Zugangsdaten aktualisieren',
     saveHint: 'Speichern wirkt sofort auf das laufende Gateway'
+  },
+  artifacts: {
+    title: 'Ergebnisse',
+    subtitle: 'Webseiten, Bilder, Dateien und Links aus deinen letzten 30 Sitzungen. Leertaste für die Übersicht.',
+    search: 'Namen oder Sitzungen durchsuchen',
+    typeLabel: 'Typ',
+    tabs: { all: 'Alle', web: 'Webseiten', image: 'Bilder', file: 'Dateien', link: 'Links' },
+    kind: { web: 'Webseite', image: 'Bild', file: 'Datei', link: 'Link' },
+    sourceLine: (kind, session, when) => `${kind} · aus „${session}“ · ${when}`,
+    noMatchDesc: 'Versuche ein anderes Stichwort oder wechsle zu Alle.',
+    showMore: (shown, total) => `Mehr anzeigen (${shown} von ${total})`,
+    quickLook: 'Übersicht',
+    openInInspector: 'Im Inspektor öffnen',
+    openSession: 'Zugehörige Sitzung öffnen',
+    openWithDefault: 'Mit Standard-App öffnen',
+    previous: 'Zurück',
+    next: 'Weiter',
+    previewUnavailable: 'Diese Datei kann hier nicht angezeigt werden.',
+    partialSkipped: (skipped, total) => `${skipped} von ${total} letzten Sitzungen wurden beim Indizieren übersprungen.`,
+    partialSafeLimit: count => `${count} überschritten das sichere Ladelimit.`,
+    partialUnreadable: count => `${count} konnten nicht gelesen werden.`
   }
 }
