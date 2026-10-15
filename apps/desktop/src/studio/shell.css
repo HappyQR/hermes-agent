@@ -1,1 +1,7 @@
 /* Hermes Studio — shell styles (fork-owned; loaded after foundation.css). */
+
+/* Zone titlebar bands (components/pane-shell/tree/renderer/zone-band.tsx) move the
+   window; anything interactive inside them must still take clicks. */
+[data-zone-band] :is(a, button, input, select, textarea, [role='button'], [role='combobox'], [role='tab'], [role='tablist']) {
+  -webkit-app-region: no-drag;
+}
