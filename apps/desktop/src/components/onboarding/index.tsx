@@ -29,6 +29,7 @@ import {
   DEFAULT_ONBOARDING_REASON,
   dismissFirstRunOnboarding,
   type OnboardingContext,
+  type OnboardingFlow,
   peekPendingProviderOAuth,
   refreshOnboarding,
   saveOnboardingApiKey,
@@ -38,6 +39,8 @@ import {
 } from '@/store/onboarding'
 import { $onboardingSurfaces, onboardingSurfaceActive } from '@/store/onboarding-presence'
 import type { OAuthProvider } from '@/types/hermes'
+
+import { BootHero, StepDots } from '../studio-onboarding/boot-kit'
 
 import { DocsLink, FlowPanel, Status } from './flow'
 import { FreeTierSetupNotice } from './free-tier-setup-notice'
@@ -413,10 +416,18 @@ export function DesktopOnboardingOverlay({
   // the surface — same bare, cinematic treatment as the connecting overlay.
   const bare = ready && (freeTierIntro || (!showPicker && flow.status === 'confirming_model'))
 
+  // The two-column key form needs more room than the choice column.
+  const keyForm =
+    onboarding.localEndpoint ||
+    onboarding.mode === 'apikey' ||
+    (onboarding.providers !== null && onboarding.providers.length === 0)
+
+  const step = ready && !freeTierIntro && !leaving ? onboardingStep(flow.status, showPicker && !keyForm) : null
+
   return (
     <div
       className={cn(
-        'fixed inset-0 z-(--z-onboarding) flex items-center justify-center bg-(--ui-chat-surface-background) p-6 transition-opacity duration-[520ms] ease-out',
+        'fixed inset-0 z-(--z-onboarding) flex justify-center overflow-y-auto bg-(--ui-chat-surface-background) p-6 transition-opacity duration-[520ms] ease-out',
         // On the bare confirm screen, hold the surface (text-out + hold) so the
         // per-element exit plays before it dissolves.
         bare && leaving ? '[transition-delay:660ms]' : '',
@@ -426,33 +437,34 @@ export function DesktopOnboardingOverlay({
       // window glass or the shell shows through. Contract:
       // `[data-glass-opaque]` in styles.css.
       data-glass-opaque=""
+      data-slot="onboarding-overlay"
     >
+      {onboarding.manual ? (
+        <Button
+          aria-label={t.common.close}
+          className="absolute right-4 top-4 z-10 text-(--ui-text-tertiary) hover:bg-(--chrome-action-hover) hover:text-foreground"
+          onClick={() => closeManualOnboarding()}
+          size="icon-sm"
+          variant="ghost"
+        >
+          <Codicon name="close" size="1rem" />
+        </Button>
+      ) : null}
+      {/* Hermes Studio: no card — the brand mark, title and lead stand on the
+          window itself (prototype .onb-card), with the flow below them. */}
       <div
         className={cn(
-          'relative w-full max-w-[45rem] transition-all duration-500 ease-out',
-          bare
-            ? ''
-            : 'overflow-hidden rounded-xl border border-(--stroke-nous) bg-(--ui-chat-bubble-background) shadow-nous',
+          'relative my-auto flex w-full flex-col items-center gap-[1.125rem] transition-all duration-500 ease-out',
+          keyForm ? 'max-w-[45rem]' : 'max-w-[32.5rem]',
           // Bare confirm screen orchestrates its own per-element exit; the
-          // carded states use the simple lift/blur dissolve.
+          // other states use the simple lift/blur dissolve.
           leaving && !bare
             ? '-translate-y-1 scale-[0.985] opacity-0 blur-[2px]'
             : 'translate-y-0 scale-100 opacity-100 blur-0'
         )}
       >
         {showPicker || !ready ? <Header /> : null}
-        {onboarding.manual ? (
-          <Button
-            aria-label={t.common.close}
-            className="absolute right-3 top-3 z-10 text-(--ui-text-tertiary) hover:bg-(--chrome-action-hover) hover:text-foreground"
-            onClick={() => closeManualOnboarding()}
-            size="icon-sm"
-            variant="ghost"
-          >
-            <Codicon name="close" size="1rem" />
-          </Button>
-        ) : null}
-        <div className="grid gap-3 p-5">
+        <div className="grid w-full gap-3 text-left">
           {reason ? <ReasonNotice reason={reason} /> : null}
           {ready && showPicker && !freeTierIntro && !onboarding.manual ? <FreeTierSetupNotice ctx={ctx} /> : null}
           {ready ? (
@@ -467,9 +479,27 @@ export function DesktopOnboardingOverlay({
             <Preparing boot={boot} />
           )}
         </div>
+        {step !== null ? <StepDots current={step} total={ONBOARDING_STEPS} /> : null}
       </div>
     </div>
   )
+}
+
+// The provider flow the user walks: pick a provider → sign in (or paste a
+// key) → confirm the model. The dots show where they are in THAT walk — they
+// are never shown for the free-tier welcome or while Hermes is still starting.
+const ONBOARDING_STEPS = 3
+
+function onboardingStep(status: OnboardingFlow['status'], picking: boolean): null | number {
+  if (status === 'confirming_model') {
+    return 2
+  }
+
+  if (status === 'idle') {
+    return picking ? 0 : 1
+  }
+
+  return 1
 }
 
 /**
@@ -541,7 +571,7 @@ function FreeTierReadyPanel({
 // upstream), so it never shows the generic "no provider configured" noise.
 function ReasonNotice({ reason }: { reason: string }) {
   return (
-    <div className="rounded-2xl border border-(--ui-stroke-tertiary) bg-(--ui-bg-tertiary)/40 px-4 py-3 text-sm text-muted-foreground">
+    <div className="rounded-[10px] bg-(--ui-accent-softer) px-3 py-2.5 text-[0.8125rem] leading-relaxed text-(--ui-text-secondary)">
       {reason}
     </div>
   )
@@ -576,12 +606,7 @@ function Preparing({ boot }: { boot: DesktopBootState }) {
 function Header() {
   const { t } = useI18n()
 
-  return (
-    <div className="bg-(--ui-chat-bubble-background) px-5 pt-5 pb-1">
-      <h2 className="text-[0.9375rem] font-semibold tracking-tight">{t.onboarding.headerTitle}</h2>
-      <p className="mt-1 max-w-xl text-[0.8125rem] leading-5 text-(--ui-text-tertiary)">{t.onboarding.headerDesc}</p>
-    </div>
-  )
+  return <BootHero lead={t.onboarding.headerDesc} title={t.onboarding.headerTitle} />
 }
 
 export const FEATURED_ID = 'nous'
@@ -678,21 +703,21 @@ export function Picker({ ctx }: { ctx: OnboardingContext }) {
 
   return (
     <div className="grid gap-2">
-      <div className="grid max-h-[60dvh] gap-2 overflow-y-auto p-1">
-        {featured ? <FeaturedProviderRow onSelect={select} provider={featured} /> : null}
+      <div className="grid max-h-[60dvh] gap-2.5 overflow-y-auto p-1">
+        {featured ? <FeaturedProviderRow onSelect={select} provider={featured} variant="choice" /> : null}
         {/* The no-account path: everything runs on this machine. Shipped
             behind the --local launch flag. (Fireworks moved into the
             expanded list on main.) */}
-        {$localModelsEnabled.get() ? <LocalModelsProviderRow onClick={openLocalModels} /> : null}
+        {$localModelsEnabled.get() ? <LocalModelsProviderRow onClick={openLocalModels} variant="choice" /> : null}
         {showRest ? (
           <>
             {/* Fireworks leads the expanded list, matching CANONICAL_PROVIDERS
                 (Nous → Fireworks), but stays hidden until the user opens it. */}
-            <FireworksProviderRow onClick={() => openKeyForm('FIREWORKS_API_KEY')} />
+            <FireworksProviderRow onClick={() => openKeyForm('FIREWORKS_API_KEY')} variant="choice" />
             {rest.map(p => (
-              <ProviderRow key={p.id} onSelect={select} provider={p} />
+              <ProviderRow key={p.id} onSelect={select} provider={p} variant="choice" />
             ))}
-            <OpenRouterProviderRow onClick={() => openKeyForm('OPENROUTER_API_KEY')} />
+            <OpenRouterProviderRow onClick={() => openKeyForm('OPENROUTER_API_KEY')} variant="choice" />
           </>
         ) : null}
       </div>

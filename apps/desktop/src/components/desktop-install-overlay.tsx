@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
+import { IconTile } from '@/app/overlays/studio/icon-tile'
 import { BrandMark } from '@/components/brand-mark'
 import { Button } from '@/components/ui/button'
 import { Codicon } from '@/components/ui/codicon'
@@ -15,12 +16,19 @@ import type {
   DesktopBootstrapState
 } from '@/global'
 import { useI18n } from '@/i18n'
-import { AlertCircle, ChevronDown, ChevronRight, Globe, iconSize, Loader2, Monitor } from '@/lib/icons'
+import { AlertCircle, ChevronDown, ChevronRight, Globe, iconSize, Loader2 } from '@/lib/icons'
 import { capitalize } from '@/lib/text'
 import { cn } from '@/lib/utils'
 
 import { localCardPresentation } from './desktop-install-local-card'
 import { FirstRunRemoteSetup } from './remote-setup/first-run'
+import {
+  BOOT_CARD_CLASS,
+  BOOT_COLUMN_CLASS,
+  BOOT_SURFACE_CLASS,
+  BootHero,
+  ChoiceRow
+} from './studio-onboarding/boot-kit'
 
 /**
  * DesktopInstallOverlay
@@ -444,73 +452,65 @@ export function DesktopInstallOverlay({ enabled = true }: DesktopInstallOverlayP
     const localState = state.setupChoice.local
     const localPres = localCardPresentation(localState)
 
+    const startLocal = async () => {
+      setLocalStart({ root: activeRoot, starting: true, error: null })
+
+      try {
+        const desktop = window.hermesDesktop
+
+        if (!desktop || typeof desktop.continueBootstrapLocal !== 'function') {
+          throw new Error(copy.localStartUnavailable)
+        }
+
+        await desktop.continueBootstrapLocal()
+      } catch (err) {
+        setLocalStart({ root: activeRoot, starting: false, error: errorMessage(err) })
+      }
+    }
+
+    // The prototype's first step: where Hermes runs. This machine leads (it is
+    // the recommended path); each row acts on click, there is no extra
+    // "Continue" step.
     return (
-      <div className="fixed inset-0 z-(--z-setup) flex items-center justify-center bg-background/90 p-4 backdrop-blur-md">
-        <div className="w-full max-w-2xl rounded-xl border border-(--stroke-nous) bg-card p-8 shadow-nous">
-          <div className="flex items-start gap-4">
-            <BrandMark className="size-11 shrink-0" />
-            <div className="min-w-0">
-              <h2 className="text-xl font-semibold tracking-tight">{copy.setupChoiceTitle}</h2>
-              <p className="mt-1.5 text-sm text-muted-foreground">
-                {localState === 'none' ? copy.setupChoiceDesc : copy.setupChoiceDescLocal}
-              </p>
-            </div>
-          </div>
+      <div
+        className={cn('fixed inset-0 z-(--z-setup) flex items-center justify-center overflow-y-auto p-5', BOOT_SURFACE_CLASS)}
+      >
+        <div className={BOOT_COLUMN_CLASS}>
+          <BootHero
+            lead={localState === 'none' ? copy.setupChoiceDesc : copy.setupChoiceDescLocal}
+            title={copy.setupChoiceTitle}
+          />
 
-          <div className="mt-6 grid gap-3 sm:grid-cols-2">
-            <button
-              className="rounded-lg border border-(--ui-stroke-tertiary) bg-(--ui-bg-quinary) p-4 text-left transition hover:bg-(--chrome-action-hover)"
-              onClick={() => setRemoteOpen(true)}
-              type="button"
-            >
-              <div className="flex items-center gap-2 text-sm font-medium">
-                <Globe className="size-4 text-muted-foreground" />
-                <span>{copy.connectExistingTitle}</span>
-              </div>
-              <p className="mt-2 text-sm leading-5 text-muted-foreground">{copy.connectExistingDesc}</p>
-            </button>
-
-            <button
-              className="rounded-lg border border-(--ui-stroke-tertiary) bg-(--ui-bg-quinary) p-4 text-left transition hover:bg-(--chrome-action-hover) disabled:cursor-not-allowed disabled:opacity-60"
+          <div className="mt-1 grid w-full gap-2.5">
+            <ChoiceRow
+              description={copy[localPres.desc]}
               disabled={localStarting}
-              onClick={async () => {
-                setLocalStart({ root: activeRoot, starting: true, error: null })
-
-                try {
-                  const desktop = window.hermesDesktop
-
-                  if (!desktop || typeof desktop.continueBootstrapLocal !== 'function') {
-                    throw new Error(copy.localStartUnavailable)
-                  }
-
-                  await desktop.continueBootstrapLocal()
-                } catch (err) {
-                  setLocalStart({ root: activeRoot, starting: false, error: errorMessage(err) })
-                }
-              }}
-              type="button"
-            >
-              <div className="flex items-center gap-2 text-sm font-medium">
-                {localStarting ? (
-                  <Loader2 className="size-4 animate-spin text-muted-foreground" />
-                ) : (
-                  <Monitor className="size-4 text-muted-foreground" />
-                )}
-                <span>{copy[localPres.title]}</span>
-              </div>
-              <p className="mt-2 text-sm leading-5 text-muted-foreground">{copy[localPres.desc]}</p>
-            </button>
+              media={
+                <IconTile glyph={localStarting ? undefined : 'window'} size={38} tone="blue">
+                  {localStarting ? <Loader2 className="animate-spin" /> : null}
+                </IconTile>
+              }
+              onClick={() => void startLocal()}
+              title={copy[localPres.title]}
+            />
+            <ChoiceRow
+              description={copy.connectExistingDesc}
+              glyph="server"
+              onClick={() => setRemoteOpen(true)}
+              title={copy.connectExistingTitle}
+              tone="teal"
+            />
           </div>
 
           {localStartError ? (
-            <div className="mt-4 flex items-start gap-2 text-sm text-destructive">
+            <div className="flex w-full items-start gap-2 text-left text-sm text-(--ui-red)">
               <AlertCircle className="mt-0.5 size-4 shrink-0" />
               <span>{localStartError}</span>
             </div>
           ) : null}
 
           {localPres.showInstallTo ? (
-            <div className="mt-6 text-xs text-muted-foreground">
+            <div className="text-xs text-(--ui-text-tertiary)">
               {copy.installTo}{' '}
               <code className="font-mono text-(--ui-text-secondary)">{state.setupChoice.activeRoot}</code>
             </div>
@@ -529,17 +529,18 @@ export function DesktopInstallOverlay({ enabled = true }: DesktopInstallOverlayP
     const platformLabel = ups.platform === 'darwin' ? 'macOS' : ups.platform === 'linux' ? 'Linux' : ups.platform
 
     return (
-      <div className="fixed inset-0 z-(--z-setup) flex items-center justify-center bg-background/90 backdrop-blur-md">
-        <div className="w-full max-w-xl rounded-xl border border-(--stroke-nous) bg-card p-8 shadow-nous">
-          <h2 className="text-xl font-semibold tracking-tight">{copy.oneTimeTitle}</h2>
-          <p className="mt-2 text-sm text-muted-foreground">{copy.unsupportedDesc(platformLabel)}</p>
+      <div
+        className={cn('fixed inset-0 z-(--z-setup) flex items-center justify-center overflow-y-auto p-5', BOOT_SURFACE_CLASS)}
+      >
+        <div className={cn(BOOT_COLUMN_CLASS, 'w-[min(36rem,100%)]')}>
+          <BootHero lead={copy.unsupportedDesc(platformLabel)} title={copy.oneTimeTitle} />
 
-          <div className="mt-4">
-            <div className="mb-1.5 text-xs font-medium text-muted-foreground">{copy.installCommand}</div>
-            <pre className="overflow-x-auto rounded-md border border-(--stroke-nous) px-3 py-2.5 font-mono text-[12px]">
+          <div className="mt-1 grid w-full gap-2 text-left">
+            <div className="text-xs font-medium text-(--ui-text-tertiary)">{copy.installCommand}</div>
+            <pre className="overflow-x-auto rounded-[11px] bg-(--ui-bg-editor) px-3.5 py-3 font-mono text-[12px] shadow-[0_0_0_0.5px_var(--ui-line-2)]">
               <code>{ups.installCommand}</code>
             </pre>
-            <div className="mt-2 flex items-center gap-2">
+            <div className="flex items-center gap-2">
               <Button
                 onClick={() => {
                   void navigator.clipboard?.writeText(ups.installCommand).catch(() => {})
@@ -561,8 +562,8 @@ export function DesktopInstallOverlay({ enabled = true }: DesktopInstallOverlayP
             </div>
           </div>
 
-          <div className="mt-6 flex items-center justify-between pt-2">
-            <span className="text-xs text-muted-foreground">
+          <div className="flex w-full flex-wrap items-center justify-between gap-3 pt-2 text-left">
+            <span className="min-w-0 text-xs text-(--ui-text-tertiary)">
               {copy.installTo} <code className="font-mono text-(--ui-text-secondary)">{ups.activeRoot}</code>
             </span>
             <div className="flex items-center gap-2">
@@ -601,11 +602,11 @@ export function DesktopInstallOverlay({ enabled = true }: DesktopInstallOverlayP
   const currentElapsed = typeof currentStartedAt === 'number' ? formatElapsed(now - currentStartedAt) : ''
 
   return (
-    <div className="fixed inset-0 z-(--z-setup) flex items-center justify-center bg-background/90 backdrop-blur-md p-4">
-      <div className="flex w-full max-w-2xl max-h-[90vh] flex-col rounded-xl border border-(--stroke-nous) bg-card shadow-nous">
+    <div className={cn('fixed inset-0 z-(--z-setup) flex items-center justify-center p-4', BOOT_SURFACE_CLASS)}>
+      <div className={cn('flex max-h-[90vh] w-full max-w-2xl flex-col', BOOT_CARD_CLASS)}>
         {/* Header -- always visible, never scrolls */}
         <div className="flex flex-shrink-0 items-start gap-4 p-8 pb-4">
-          {!failed && <BrandMark className="size-11 shrink-0" />}
+          {!failed && <BrandMark className="size-11 shrink-0 drop-shadow-[0_4px_10px_rgb(0_0_0/0.14)]" />}
           <div className="min-w-0">
             <h2 className="text-xl font-semibold tracking-tight">
               {failed ? copy.failedTitle : state.active ? copy.settingUpTitle : copy.finishingTitle}
@@ -700,7 +701,7 @@ export function DesktopInstallOverlay({ enabled = true }: DesktopInstallOverlayP
 
         {/* Active footer: let the user actually cancel a running install. */}
         {state.active && !failed && (
-          <div className="flex-shrink-0 bg-card p-4">
+          <div className="flex-shrink-0 p-4">
             <div className="flex items-center justify-end">
               <Button
                 disabled={cancelling}
@@ -725,7 +726,7 @@ export function DesktopInstallOverlay({ enabled = true }: DesktopInstallOverlayP
 
         {/* Footer -- always visible, never scrolls; only renders on failure */}
         {failed && (
-          <div className="flex-shrink-0 bg-card p-4">
+          <div className="flex-shrink-0 p-4">
             <div className="flex items-center justify-between gap-2">
               <span className="text-xs text-muted-foreground">
                 {copy.transcriptSaved}{' '}
