@@ -35,6 +35,10 @@ export const zhHantStudioChat: StudioChatTranslations = {
     placeholderHero: '交給 Hermes 一個任務，/ 使用指令，@ 引用檔案'
   },
   transcript: {
+    delegateSpawned: count => `衍生了 ${count} 個子代理`,
+    delegateRunning: count => `${count} 個執行中`,
+    delegateAllDone: '全部完成',
+    openAgents: '在代理中檢視',
     editAndRerun: '編輯並重新執行',
     editRerunNote: '傳送後從這裡重新執行，之後的訊息會被移除',
     previousVersion: '上一個版本',

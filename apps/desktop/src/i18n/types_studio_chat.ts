@@ -8,6 +8,10 @@ export interface StudioChatTranslations {
 
 /** Messages, their actions, cards and decisions in the transcript. */
 export interface StudioChatTranscriptTranslations {
+  delegateSpawned: (count: number) => string
+  delegateRunning: (count: number) => string
+  delegateAllDone: string
+  openAgents: string
   /** The user bubble's edit action (the bubble itself is "Edit message"). */
   editAndRerun: string
   /** Under the inline edit: what sending an edit does (later messages go). */

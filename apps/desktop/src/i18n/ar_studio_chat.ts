@@ -35,6 +35,10 @@ export const arStudioChat: StudioChatTranslations = {
     placeholderHero: 'امنح Hermes مهمة — / للأوامر، @ للإشارة إلى الملفات'
   },
   transcript: {
+    delegateSpawned: count => `أنشأ ${count} من الوكلاء الفرعيين`,
+    delegateRunning: count => `${count} قيد التشغيل`,
+    delegateAllDone: 'اكتمل الكل',
+    openAgents: 'عرض في الوكلاء',
     editAndRerun: 'تعديل وإعادة التشغيل',
     editRerunNote: 'يُرسل من هنا — تُحذف الرسائل اللاحقة في هذه المحادثة',
     previousVersion: 'الإصدار السابق',

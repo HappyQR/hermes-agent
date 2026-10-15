@@ -35,6 +35,10 @@ export const deStudioChat: StudioChatTranslations = {
     placeholderHero: 'Gib Hermes eine Aufgabe — / für Befehle, @ für Dateien'
   },
   transcript: {
+    delegateSpawned: count => `${count} Subagent${count === 1 ? '' : 'en'} gestartet`,
+    delegateRunning: count => `${count} laufen`,
+    delegateAllDone: 'Alle fertig',
+    openAgents: 'In Agenten ansehen',
     editAndRerun: 'Bearbeiten und neu ausführen',
     editRerunNote: 'Sendet ab hier — spätere Nachrichten in diesem Chat werden entfernt',
     previousVersion: 'Vorherige Version',

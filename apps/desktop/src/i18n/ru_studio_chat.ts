@@ -35,6 +35,10 @@ export const ruStudioChat: StudioChatTranslations = {
     placeholderHero: 'Дайте Hermes задачу — / для команд, @ для ссылок на файлы'
   },
   transcript: {
+    delegateSpawned: count => `Запущено субагентов: ${count}`,
+    delegateRunning: count => `выполняется: ${count}`,
+    delegateAllDone: 'Все готово',
+    openAgents: 'Открыть в агентах',
     editAndRerun: 'Изменить и перезапустить',
     editRerunNote: 'Отправка отсюда — последующие сообщения в этом чате будут удалены',
     previousVersion: 'Предыдущая версия',

@@ -108,6 +108,163 @@
   font-weight: 600;
 }
 
+/* ── Cards (prototype .card): every inline widget — clarify, artifact,
+   changed files, connectors, catalog installs — is one card look. */
+.widget-shell,
+.studio-deleg {
+  border-radius: 0.75rem;
+  background: var(--dt-card);
+  box-shadow:
+    0 0 0 0.5px var(--ui-line-2),
+    0 2px 8px -4px rgb(0 0 0 / 0.08);
+}
+
+/* Delegation (prototype .deleg): one card, a head, rows inside. */
+.studio-deleg {
+  max-width: 35rem;
+  padding: 0.25rem 0;
+}
+
+.studio-deleg-head {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem 0.375rem;
+  font-size: 0.8125rem;
+}
+
+.studio-deleg-head b {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.studio-deleg-state {
+  color: var(--ui-text-tertiary);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+/* Artifact card (prototype .art-card): a page-shaped thumbnail and an Open
+   label that is always there. */
+[data-slot='aui_artifact-card'].widget-shell {
+  max-width: 28.75rem;
+  gap: 0.75rem;
+  padding: 0.625rem 0.75rem 0.625rem 0.625rem;
+  transition:
+    box-shadow var(--studio-t2),
+    transform var(--studio-t2) var(--studio-ease);
+}
+
+[data-slot='aui_artifact-card'].widget-shell:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 0 0 0.5px var(--ui-line-2),
+    0 8px 22px -10px rgb(0 0 0 / 0.22);
+}
+
+.studio-art-thumb {
+  position: relative;
+  width: 4rem;
+  height: 3rem;
+  flex: none;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  background: linear-gradient(135deg, var(--ui-accent-soft), var(--ui-fill-2));
+  box-shadow: inset 0 0 0 0.5px var(--ui-line);
+}
+
+.studio-art-thumb i {
+  position: absolute;
+  display: block;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--ui-text-primary) 14%, transparent);
+}
+
+.studio-art-thumb i:nth-child(1) {
+  top: 6px;
+  bottom: 6px;
+  left: 6px;
+  width: 14px;
+  background: color-mix(in srgb, var(--ui-text-primary) 10%, transparent);
+}
+
+.studio-art-thumb i:nth-child(2) {
+  top: 8px;
+  left: 24px;
+  width: 30px;
+  height: 4px;
+}
+
+.studio-art-thumb i:nth-child(3) {
+  top: 16px;
+  left: 24px;
+  width: 22px;
+  height: 4px;
+  background: var(--dt-primary);
+}
+
+.studio-art-thumb i:nth-child(4) {
+  top: 24px;
+  left: 24px;
+  width: 28px;
+  height: 4px;
+}
+
+.studio-art-thumb i:nth-child(5) {
+  top: 32px;
+  left: 24px;
+  width: 18px;
+  height: 4px;
+}
+
+.studio-art-kind {
+  position: absolute;
+  right: 4px;
+  bottom: 3px;
+  color: var(--ui-text-tertiary);
+  font-size: 0.75rem;
+}
+
+.studio-art-open {
+  flex: none;
+  border-radius: 6px;
+  padding: 0.1875rem 0.5625rem;
+  background: var(--ui-fill);
+  color: var(--ui-text-primary);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* Changed files (prototype .files-card): icon, count, total, Review; rows
+   with mono paths on hairlines. */
+[data-slot='aui_changed-files'].widget-shell {
+  max-width: 32.5rem;
+  padding: 0;
+  overflow: hidden;
+}
+
+[data-slot='aui_changed-files'] .studio-files-head {
+  padding: 0.625rem 0.75rem;
+  font-size: 0.8125rem;
+}
+
+[data-slot='aui_changed-files'] [data-slot='fade-scroll'],
+[data-slot='aui_changed-files'] .studio-files-head + * {
+  margin: 0;
+  padding: 0;
+}
+
+[data-slot='aui_changed-files'] .studio-files-head + * button {
+  border-radius: 0;
+  padding: 0.375rem 0.75rem;
+  box-shadow: inset 0 0.5px 0 var(--ui-line);
+}
+
 /* ── The prompt (prototype .msg-user) ──
    A right-aligned 19px pill; the sticky wrapper stays unpainted (DESIGN.md
    sticky prompts) and the actions sit in a row under the bubble. */

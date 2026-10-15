@@ -106,8 +106,15 @@ export function ArtifactCard({ code, detection, streaming = false }: ArtifactCar
       onClick={open}
       type="button"
     >
-      <span className="grid size-8 shrink-0 place-items-center rounded-md bg-muted/55 text-muted-foreground">
-        <CodeCardIcon className="text-[1rem]" name={detectionIcon(detection)} />
+      {/* Hermes Studio: a page-shaped thumbnail painted from tokens, with the
+          kind glyph in its corner (prototype .art-thumb). */}
+      <span aria-hidden className="studio-art-thumb">
+        <i />
+        <i />
+        <i />
+        <i />
+        <i />
+        <CodeCardIcon className="studio-art-kind" name={detectionIcon(detection)} />
       </span>
       <span className="min-w-0 flex-1">
         <span
@@ -126,11 +133,7 @@ export function ArtifactCard({ code, detection, streaming = false }: ArtifactCar
               : kindLabel}
         </span>
       </span>
-      {!streaming && (
-        <span className="shrink-0 text-[length:var(--conversation-tool-font-size)] font-medium text-muted-foreground opacity-0 transition-opacity group-hover/artifact:opacity-100">
-          {copy.open}
-        </span>
-      )}
+      {!streaming && <span className="studio-art-open">{copy.open}</span>}
     </button>
   )
 }

@@ -35,6 +35,10 @@ export const jaStudioChat: StudioChatTranslations = {
     placeholderHero: 'Hermes にタスクを — / でコマンド、@ でファイルを参照'
   },
   transcript: {
+    delegateSpawned: count => `${count} 個のサブエージェントを起動`,
+    delegateRunning: count => `${count} 件実行中`,
+    delegateAllDone: 'すべて完了',
+    openAgents: 'エージェントで見る',
     editAndRerun: '編集して再実行',
     editRerunNote: 'ここから送信します。このチャットの以降のメッセージは削除されます',
     previousVersion: '前のバージョン',

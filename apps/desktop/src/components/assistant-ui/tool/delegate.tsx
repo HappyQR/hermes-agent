@@ -2,16 +2,18 @@
 
 import { useStore } from '@nanostores/react'
 import { type FC, type ReactNode, useMemo } from 'react'
+import { useInRouterContext, useNavigate } from 'react-router'
 
 import { useSessionView } from '@/app/chat/session-view'
+import { AGENTS_ROUTE } from '@/app/routes'
 import { useElapsedSeconds } from '@/components/chat/activity-timer'
 import { ActivityTimerText } from '@/components/chat/activity-timer-text'
 import { SCAFFOLD_GLYPH_CLASS, SCAFFOLD_LABEL_CLASS, SCAFFOLD_META_CLASS } from '@/components/chat/scaffold-row'
-import { Codicon } from '@/components/ui/codicon'
+import { Button } from '@/components/ui/button'
 import { FadeText } from '@/components/ui/fade-text'
-import { GlyphSpinner } from '@/components/ui/glyph-spinner'
+import { StudioIcon } from '@/components/ui/studio-icon'
 import { useI18n } from '@/i18n'
-import { AlertCircle, CheckCircle2 } from '@/lib/icons'
+import { AlertCircle } from '@/lib/icons'
 import { displayModelName } from '@/lib/model-status-label'
 import { useSessionSlice } from '@/lib/use-session-slice'
 import { cn } from '@/lib/utils'
@@ -35,9 +37,7 @@ const TICKER_DEPTH = 6
 
 function statusGlyph(status: DelegateRowStatus, label: string): ReactNode {
   if (isDelegateRowLive(status)) {
-    return (
-      <GlyphSpinner ariaLabel={label} className="size-3.5 text-[0.95rem] text-(--ui-text-tertiary)" spinner="breathe" />
-    )
+    return <span aria-label={label} className="studio-ring-run size-3.5" role="img" />
   }
 
   if (status === 'failed' || status === 'interrupted') {
@@ -51,7 +51,11 @@ function statusGlyph(status: DelegateRowStatus, label: string): ReactNode {
     return <span aria-hidden className="size-1.5 rounded-full bg-(--ui-text-tertiary)" />
   }
 
-  return <CheckCircle2 aria-label={label} className="size-3.5 text-emerald-600/85 dark:text-emerald-400/85" />
+  return (
+    <span aria-label={label} className="inline-flex text-(--ui-dot-green)" role="img">
+      <StudioIcon name="check-circle" size={15} />
+    </span>
+  )
 }
 
 /**
@@ -93,7 +97,7 @@ function DelegateRowView({ row }: { row: DelegateRow }) {
   // and the whole card read as stacked ghosts (#105579). styles.css's own
   // invariant: the mark is per surface and never on a container.
   return (
-    <div className="grid min-w-0 max-w-full gap-0.5 rounded-xl border border-(--ui-stroke-tertiary) px-3 py-2">
+    <div className="studio-deleg-row grid min-w-0 max-w-full gap-0.5 px-3 py-1.5">
       <div className="flex min-w-0 max-w-full items-center gap-1.5" data-conversation-scaffold="">
         <span className={SCAFFOLD_GLYPH_CLASS}>{statusGlyph(row.status, statusLabel)}</span>
         <button
@@ -110,7 +114,6 @@ function DelegateRowView({ row }: { row: DelegateRow }) {
         </button>
         {meta.length > 0 && <span className={SCAFFOLD_META_CLASS}>{meta.join(' · ')}</span>}
         {live && <ActivityTimerText className={cn(SCAFFOLD_META_CLASS, 'ml-auto')} seconds={elapsed} />}
-        <Codicon className="ml-auto shrink-0 text-(--conversation-scaffold-text)" name="agent" size="0.625rem" />
       </div>
       {activity.length > 0 && (
         <div className="min-w-0 max-w-full pl-5">
@@ -157,10 +160,40 @@ export const DelegateTool: FC<Pick<ToolPart, 'args' | 'result' | 'toolCallId'>> 
   }
 
   return (
-    <div className="grid min-w-0 gap-(--tool-row-gap)" data-delegate-card="" data-slot="tool-block">
+    <div className="studio-deleg grid min-w-0" data-delegate-card="" data-slot="tool-block">
+      <DelegateCardHead rows={rows} />
       {rows.map(row => (
         <DelegateRowView key={row.id} row={row} />
       ))}
     </div>
+  )
+}
+
+/** The card's head (prototype `.dg-head`): how many children, whether any
+ *  still runs, and the way to the Agents view that watches them. */
+function DelegateCardHead({ rows }: { rows: readonly DelegateRow[] }) {
+  const { t } = useI18n()
+  const copy = t.studio.chat.transcript
+  const running = rows.filter(row => isDelegateRowLive(row.status)).length
+  const inRouter = useInRouterContext()
+
+  return (
+    <div className="studio-deleg-head">
+      <StudioIcon className="text-(--dt-primary)" name="tree" size={15} />
+      <b>{copy.delegateSpawned(rows.length)}</b>
+      <span className="studio-deleg-state">{running ? copy.delegateRunning(running) : copy.delegateAllDone}</span>
+      {inRouter && <OpenAgentsButton label={copy.openAgents} />}
+    </div>
+  )
+}
+
+// Isolated: useNavigate() throws outside a <Router> (bare harnesses render threads router-free).
+function OpenAgentsButton({ label }: { label: string }) {
+  const navigate = useNavigate()
+
+  return (
+    <Button onClick={() => navigate(AGENTS_ROUTE)} size="xs" type="button" variant="ghost">
+      {label}
+    </Button>
   )
 }
