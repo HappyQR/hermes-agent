@@ -62,7 +62,8 @@ export default {
       await sleep(700)
       await shot(page, 'onboarding-all')
       // The disclosure persists (localStorage): fold it back.
-      await more.click()
+      const collapse = await button(overlay, ['收起', 'Collapse'])
+      if (collapse) await collapse.click()
       await sleep(300)
     }
   },
