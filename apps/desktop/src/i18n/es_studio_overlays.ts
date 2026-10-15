@@ -77,6 +77,11 @@ export const esStudioOverlays: StudioOverlaysTranslations = {
     exportNote: 'Los perfiles exportados nunca incluyen claves',
     importShort: 'Importar…'
   },
+  import: {
+    subtitle: host => `Trae una conversación de Claude Code o Codex a Hermes y continúa donde la dejaste. Leyendo desde ${host}`,
+    importInto: profile => `Importar en: ${profile}`,
+    sourceLabel: 'Origen'
+  },
   updates: {
     currentVersion: (version, channel) => `Actual ${version} · ${channel}`
   }

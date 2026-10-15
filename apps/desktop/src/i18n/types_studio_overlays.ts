@@ -77,6 +77,11 @@ export interface StudioOverlaysTranslations {
     exportNote: string
     importShort: string
   }
+  import: {
+    subtitle: (host: string) => string
+    importInto: (profile: string) => string
+    sourceLabel: string
+  }
   updates: {
     currentVersion: (version: string, channel: string) => string
   }

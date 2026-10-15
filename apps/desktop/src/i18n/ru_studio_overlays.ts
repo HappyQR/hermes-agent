@@ -77,6 +77,11 @@ export const ruStudioOverlays: StudioOverlaysTranslations = {
     exportNote: 'Экспортированный профиль не содержит ключей',
     importShort: 'Импорт…'
   },
+  import: {
+    subtitle: host => `Перенесите разговор из Claude Code или Codex в Hermes и продолжите с того же места. Источник: ${host}`,
+    importInto: profile => `Импорт в: ${profile}`,
+    sourceLabel: 'Источник'
+  },
   updates: {
     currentVersion: (version, channel) => `Текущая ${version} · ${channel}`
   }

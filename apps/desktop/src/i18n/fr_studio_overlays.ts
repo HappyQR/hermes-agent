@@ -77,6 +77,11 @@ export const frStudioOverlays: StudioOverlaysTranslations = {
     exportNote: 'Les profils exportés n’incluent jamais les clés',
     importShort: 'Importer…'
   },
+  import: {
+    subtitle: host => `Importez une conversation Claude Code ou Codex dans Hermes et reprenez là où vous en étiez. Lecture depuis ${host}`,
+    importInto: profile => `Importer dans : ${profile}`,
+    sourceLabel: 'Source'
+  },
   updates: {
     currentVersion: (version, channel) => `Actuelle ${version} · ${channel}`
   }

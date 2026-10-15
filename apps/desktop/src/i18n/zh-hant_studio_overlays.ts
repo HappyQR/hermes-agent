@@ -77,6 +77,11 @@ export const zhHantStudioOverlays: StudioOverlaysTranslations = {
     exportNote: '匯出的設定檔不包含金鑰',
     importShort: '匯入…'
   },
+  import: {
+    subtitle: host => `把 Claude Code 或 Codex 的對話匯入 Hermes，接續上次的進度。讀取自：${host}`,
+    importInto: profile => `匯入到：${profile}`,
+    sourceLabel: '來源'
+  },
   updates: {
     currentVersion: (version, channel) => `目前 ${version} · ${channel}`
   }

@@ -77,6 +77,11 @@ export const arStudioOverlays: StudioOverlaysTranslations = {
     exportNote: 'لا تتضمن ملفات التعريف المصدّرة أي مفاتيح',
     importShort: 'استيراد…'
   },
+  import: {
+    subtitle: host => `انقل محادثة من Claude Code أو Codex إلى Hermes وتابع من حيث توقفت. القراءة من ${host}`,
+    importInto: profile => `الاستيراد إلى: ${profile}`,
+    sourceLabel: 'المصدر'
+  },
   updates: {
     currentVersion: (version, channel) => `الحالي ${version} · ${channel}`
   }

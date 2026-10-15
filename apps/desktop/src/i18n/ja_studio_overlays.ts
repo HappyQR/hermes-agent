@@ -77,6 +77,11 @@ export const jaStudioOverlays: StudioOverlaysTranslations = {
     exportNote: '書き出したプロファイルにキーは含まれません',
     importShort: '読み込む…'
   },
+  import: {
+    subtitle: host => `Claude Code や Codex の会話を Hermes に取り込み、続きから再開できます。読み込み元：${host}`,
+    importInto: profile => `取り込み先：${profile}`,
+    sourceLabel: 'ソース'
+  },
   updates: {
     currentVersion: (version, channel) => `現在 ${version} · ${channel}`
   }

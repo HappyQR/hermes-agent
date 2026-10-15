@@ -77,6 +77,11 @@ export const deStudioOverlays: StudioOverlaysTranslations = {
     exportNote: 'Exportierte Profile enthalten nie Schlüssel',
     importShort: 'Importieren…'
   },
+  import: {
+    subtitle: host => `Hol ein Gespräch aus Claude Code oder Codex in Hermes und mach dort weiter, wo du aufgehört hast. Gelesen von ${host}`,
+    importInto: profile => `Importieren in: ${profile}`,
+    sourceLabel: 'Quelle'
+  },
   updates: {
     currentVersion: (version, channel) => `Aktuell ${version} · ${channel}`
   }
