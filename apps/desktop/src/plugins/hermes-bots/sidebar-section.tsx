@@ -37,9 +37,8 @@ import {
 import { avatarColor, botAppearance, BotFace } from './avatar'
 import { isBackfilledFacePng } from './avatar-image'
 import { BotRowMenu } from './bot-row-menu'
-import { $botChatFocused, $focusedBotOwner, $pendingBotOpen, $selectedRosterKey, focusedRosterOwner } from './bot-state'
+import { $focusedBotOwner, $openBotChat, $pendingBotOpen, focusedRosterOwner } from './bot-state'
 import { $botAttention, $botMeta, $lastRoster, botRosterKey, botSelectionKey, botSourceStatus, ROSTER_KEY, useRoster } from './data'
-import { $groupChatWorkspace } from './group-chat'
 import { $activeGroupMemberKeys } from './group-presence'
 import { $showHiddenBots, isBotHidden } from './hidden-bots'
 import { useBots } from './i18n'
@@ -48,7 +47,7 @@ import { $activityToasts, openRosterBot, setActivityToasts } from './roster-acti
 import { sortRosterBots } from './roster-pane-derivation'
 import { renderRosterDialogs } from './roster-pane-dialogs'
 import { botRosterMeta } from './routing'
-import { botRowOwnsWorkspace, botWorkingMood, useTurnBusy, warmRosterBot } from './row-helpers'
+import { botWorkingMood, useTurnBusy, warmRosterBot } from './row-helpers'
 import { ID } from './shared'
 import type { BotMeta, GroupMember, RosterRow } from './types'
 import type { SectionDialogState } from './user-sections'
@@ -192,16 +191,17 @@ const rowCallbacks = {
   onNewSection: (bot: RosterRow) => openDialog({ sectionDialog: { bot, mode: 'create' } })
 }
 
-/** One bot as a 30px sidebar row. Same open path, highlight rule, working
- *  mood and right-click menu as the pane's row; no preview line. */
+/** One bot as a 30px sidebar row. Same open path, working mood and
+ *  right-click menu as the pane's row; no preview line. */
 function CompactBotRow({ bot }: { bot: RosterRow }) {
   const b = useBots()
   const allMeta = useValue($botMeta)
   const meta = botRosterMeta(bot, allMeta)
   const focusedOwner = focusedRosterOwner(useValue($focusedBotOwner))
-  const selectedRosterKey = useValue($selectedRosterKey)
-  const botChatFocused = useValue($botChatFocused)
-  const activeGroup = useValue($groupChatWorkspace)
+  // Lit while this bot's chat — opened from a bot row — owns the center. The
+  // pane's wider rule (any chat of the bot's profile) would light the row
+  // beside an unrelated session in the list above.
+  const active = useValue($openBotChat)?.key === botRosterKey(bot)
   const opening = useValue($pendingBotOpen)?.key === botRosterKey(bot)
   const turnBusy = useTurnBusy()
   const groupKeys = useValue($activeGroupMemberKeys)
@@ -217,7 +217,6 @@ function CompactBotRow({ bot }: { bot: RosterRow }) {
     null
 
   const mood = botWorkingMood(bot, focusedOwner, turnBusy, activeConnectionId, Date.now(), groupKeys)
-  const active = botRowOwnsWorkspace(bot, activeGroup, botChatFocused, focusedOwner, selectedRosterKey)
   const status = botSourceStatus(bot)
   const { shape, color, image } = botAppearance(bot.name, meta)
   const name = displayName(bot, meta)

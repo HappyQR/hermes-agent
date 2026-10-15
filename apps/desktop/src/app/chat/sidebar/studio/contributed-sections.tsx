@@ -1,9 +1,10 @@
 import { useStore } from '@nanostores/react'
 import { atom } from 'nanostores'
+import { useSyncExternalStore } from 'react'
 
 import { ContribBoundary, ContribRender } from '@/contrib/react/boundary'
 import { useContributions } from '@/contrib/react/use-contributions'
-import { useI18n } from '@/i18n'
+import { getRuntimeI18nLocale, subscribeRuntimeI18nLocale } from '@/i18n/runtime'
 import { SIDEBAR_SECTIONS_AREA, type SidebarSectionContribution } from '@/sdk/sidebar-sections'
 import { $showsAdvancedChrome } from '@/store/interface-mode'
 
@@ -48,8 +49,10 @@ function ContributedSection({ id, data, render }: ContributedSectionProps) {
  * plugin, behind their own error boundaries.
  */
 export function SidebarContributedSections() {
-  // Titles are read on paint: re-render when the language changes.
-  useI18n()
+  // Titles are read on paint, often through the runtime translator (plugin
+  // catalogues, translateNow), which settles a beat after React's locale:
+  // repaint when it does.
+  useSyncExternalStore(subscribeRuntimeI18nLocale, getRuntimeI18nLocale)
   const items = useContributions(SIDEBAR_SECTIONS_AREA)
   const advanced = useStore($showsAdvancedChrome)
 
