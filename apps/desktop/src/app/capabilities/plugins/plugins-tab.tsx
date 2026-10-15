@@ -375,6 +375,7 @@ function PackageRow({
       : desktop && desktopRemovable
         ? () => onDesktopRemove(desktop)
         : null
+
   const failedDesktop = desktop?.status === 'error'
   const detail = failedDesktop ? desktop.error : pkg.description
 

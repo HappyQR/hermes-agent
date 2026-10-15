@@ -4,10 +4,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPluginContext } from '@/contrib/plugin'
 import { $pluginDecisions, $pluginRecords, dropPlugin, patchPlugin, publishPlugin } from '@/contrib/plugins-store'
 import { queryClient } from '@/lib/query-client'
-import { $agentPlugins, $agentPluginsStatus } from '@/store/agent-plugins'
+import { $agentPlugins, $agentPluginsStatus, type AgentPluginRow } from '@/store/agent-plugins'
 import { $confirmRequest, settleConfirm } from '@/store/confirm'
 import { $notifications } from '@/store/notifications'
-import { $paneHeightOverride, setPaneHeightOverride } from '@/store/panes'
 import { $pluginInstallRequest, closePluginInstallRequest } from '@/store/plugin-install-request'
 import { $connection } from '@/store/session'
 
@@ -46,6 +45,25 @@ vi.mock('@/api/toolsets', async importOriginal => ({
   getToolsets: (...args: unknown[]) => getToolsets(...args),
   setToolsetEnabled: (...args: unknown[]) => setToolsetEnabled(...(args as Parameters<typeof setToolsetEnabled>))
 }))
+
+/** Radix menus open on the full pointer gesture. */
+function press(element: HTMLElement) {
+  fireEvent.pointerDown(element, { button: 0, pointerType: 'mouse' })
+  fireEvent.pointerUp(element, { button: 0, pointerType: 'mouse' })
+  fireEvent.click(element)
+}
+
+/** Opens a package row's ⋯ menu (reveal, check for updates, uninstall). */
+async function openRowMenu(name: string) {
+  press(screen.getByRole('button', { name: `More actions: ${name}` }))
+
+  return screen.findByRole('menu')
+}
+
+/** Opens the plugin catalog sheet — its picker listens only while open. */
+function openCatalog() {
+  fireEvent.click(screen.getByRole('button', { name: 'Browse plugin catalog' }))
+}
 
 describe('PluginsTab', () => {
   beforeEach(() => {
@@ -177,7 +195,7 @@ describe('PluginsTab', () => {
     expect(screen.getByText('Agent + Desktop')).toBeTruthy()
     expect(screen.getByRole('switch', { name: 'Desktop: Media Studio' }).getAttribute('aria-checked')).toBe('true')
     expect(screen.getByRole('switch', { name: 'Agent: Media Studio' }).getAttribute('aria-checked')).toBe('false')
-    expect(screen.getAllByText('Agent in workbot').length).toBeGreaterThan(0)
+    expect(screen.getAllByRole('cell', { name: 'Agent in workbot' }).length).toBeGreaterThan(0)
   })
 
   it('offers "Install here" for a desktop half whose agent half is not in the selected profile', async () => {
@@ -228,6 +246,7 @@ describe('PluginsTab', () => {
 
   it('opens the dual-target install modal from a catalog pick message', async () => {
     render(<PluginsTab profile="workbot" />)
+    openCatalog()
 
     window.dispatchEvent(
       new MessageEvent('message', {
@@ -256,6 +275,7 @@ describe('PluginsTab', () => {
 
   it('ignores pick messages from foreign origins', () => {
     render(<PluginsTab profile={null} />)
+    openCatalog()
 
     window.dispatchEvent(
       new MessageEvent('message', {
@@ -377,6 +397,7 @@ describe('PluginsTab', () => {
 
   it('appends the subdir fragment for multi-plugin repos', async () => {
     render(<PluginsTab profile={null} />)
+    openCatalog()
 
     window.dispatchEvent(
       new MessageEvent('message', {
@@ -556,29 +577,28 @@ describe('PluginsTab catalog UX', () => {
     $agentPluginsStatus.set('ready')
     closePluginInstallRequest()
     requestGateway.mockClear()
-    setPaneHeightOverride('capabilities-plugin-catalog', undefined)
   })
 
   afterEach(cleanup)
 
-  it('grows the catalog when its top-edge sash is dragged up, and resets on double-click', () => {
-    // jsdom has no layout: give the Capabilities column a real height so the
-    // "never crush the lists above" clamp has something to clamp against.
-    const clientHeight = vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(900)
-    Object.defineProperty(window, 'innerHeight', { configurable: true, value: 1000 })
+  it('shows the catalog frame only while its sheet is open, and listens only then', async () => {
     render(<PluginsTab profile={null} />)
-    const sash = screen.getByTestId('plugin-catalog-sash')
 
-    fireEvent.pointerDown(sash, { button: 0, clientY: 600 })
-    fireEvent.pointerMove(window, { clientY: 400 })
-    fireEvent.pointerUp(window)
+    // Closed: no frame, and a pick from the catalog origin does nothing.
+    expect(screen.queryByTitle('Plugin catalog')).toBeNull()
+    window.dispatchEvent(
+      new MessageEvent('message', {
+        data: { name: 'weather-plugin', repo: 'https://github.com/example/weather-plugin', type: 'hermes-plugin-pick' },
+        origin: 'https://hermes-agent.nousresearch.com'
+      })
+    )
+    expect($pluginInstallRequest.get()).toBeNull()
 
-    // Default 380px + 200px of upward drag (clamped only by window/column size).
-    expect($paneHeightOverride('capabilities-plugin-catalog').get()).toBe(580)
+    openCatalog()
+    expect(screen.getByTitle('Plugin catalog').getAttribute('src')).toContain('embed=picker')
 
-    fireEvent.doubleClick(sash)
-    expect($paneHeightOverride('capabilities-plugin-catalog').get()).toBeUndefined()
-    clientHeight.mockRestore()
+    fireEvent.click(screen.getByRole('button', { name: 'Done' }))
+    await waitFor(() => expect(screen.queryByTitle('Plugin catalog')).toBeNull())
   })
 
   it('shows an Update chip when the catalog pin moved past the installed SHA', () => {
@@ -634,21 +654,33 @@ describe('PluginsTab catalog UX', () => {
   })
 
   it('uninstalls through plugins.manage remove only after the confirm dialog is accepted', async () => {
-    $agentPlugins.set([
-      {
-        description: '',
-        key: 'demo-weather',
-        name: 'demo-weather',
-        source: 'git',
-        status: 'enabled',
-        version: '1.0.0'
+    const row: AgentPluginRow = {
+      description: '',
+      key: 'demo-weather',
+      name: 'demo-weather',
+      source: 'git',
+      status: 'enabled',
+      version: '1.0.0'
+    }
+
+    let removed = false
+    $agentPlugins.set([row])
+    // The list keeps the plugin until the remove lands (the menu is opened
+    // after the initial load has settled).
+    requestGateway.mockImplementation((async (_method: string, params?: { action?: string }) => {
+      if (params?.action === 'remove') {
+        removed = true
+
+        return { name: 'demo-weather', ok: true, plugins: [] }
       }
-    ])
-    requestGateway.mockResolvedValue({ ok: true, name: 'demo-weather', plugins: [] } as never)
+
+      return { plugins: removed ? [] : [row] }
+    }) as never)
 
     render(<PluginsTab profile="workbot" />)
 
-    screen.getByRole('button', { name: 'Uninstall: demo-weather' }).click()
+    await openRowMenu('demo-weather')
+    press(await screen.findByRole('menuitem', { name: 'Uninstall…' }))
 
     // The click only asks; nothing is deleted until the destructive confirm is answered.
     await waitFor(() => expect($confirmRequest.get()?.title).toContain('demo-weather'))
@@ -673,7 +705,8 @@ describe('PluginsTab catalog UX', () => {
 
     render(<PluginsTab profile={null} />)
 
-    screen.getByRole('button', { name: 'Uninstall: Clock' }).click()
+    await openRowMenu('Clock')
+    press(await screen.findByRole('menuitem', { name: 'Uninstall…' }))
 
     await waitFor(() => expect($confirmRequest.get()?.title).toContain('Clock'))
     expect(uninstallDiskPlugin).not.toHaveBeenCalled()
@@ -685,7 +718,7 @@ describe('PluginsTab catalog UX', () => {
     expect(requestGateway).not.toHaveBeenCalledWith('plugins.manage', expect.objectContaining({ action: 'remove' }))
   })
 
-  it('offers no desktop Uninstall for a bundled plugin or a unified package half', () => {
+  it('offers no desktop Uninstall for a bundled plugin or a unified package half', async () => {
     $pluginRecords.set({
       bots: { id: 'bots', name: 'Bot Mode', kind: 'bundled', status: 'loaded' },
       media: { id: 'media', name: 'Media Studio', kind: 'disk', status: 'loaded', packageName: 'hermes-media-studio' }
@@ -693,20 +726,26 @@ describe('PluginsTab catalog UX', () => {
 
     render(<PluginsTab profile={null} />)
 
-    expect(screen.getByText('Bot Mode')).toBeTruthy()
-    expect(screen.getByText('Media Studio')).toBeTruthy()
-    expect(screen.queryByRole('button', { name: /^Uninstall:/ })).toBeNull()
+    for (const name of ['Bot Mode', 'Media Studio']) {
+      const menu = await openRowMenu(name)
+
+      expect(within(menu).getByRole('menuitem', { name: 'Check for updates' })).toBeTruthy()
+      expect(within(menu).queryByRole('menuitem', { name: 'Uninstall…' })).toBeNull()
+      fireEvent.keyDown(menu, { key: 'Escape' })
+      await waitFor(() => expect(screen.queryByRole('menu')).toBeNull())
+    }
   })
 
-  it('offers no Uninstall for a pip-installed (entrypoint) agent plugin', () => {
+  it('offers no Uninstall for a pip-installed (entrypoint) agent plugin', async () => {
     $agentPlugins.set([
       { description: '', key: 'demo-tool', name: 'demo-tool', source: 'entrypoint', status: 'enabled', version: '' }
     ])
 
     render(<PluginsTab profile={null} />)
 
-    expect(screen.getByText('demo-tool')).toBeTruthy()
-    expect(screen.queryByRole('button', { name: 'Uninstall: demo-tool' })).toBeNull()
+    const menu = await openRowMenu('demo-tool')
+
+    expect(within(menu).queryByRole('menuitem', { name: 'Uninstall…' })).toBeNull()
   })
 
   it('refuses a catalog pick that is already installed and current', async () => {
@@ -725,6 +764,7 @@ describe('PluginsTab catalog UX', () => {
     ])
 
     render(<PluginsTab profile={null} />)
+    openCatalog()
 
     window.dispatchEvent(
       new MessageEvent('message', {
@@ -758,6 +798,7 @@ describe('PluginsTab catalog UX', () => {
     ])
 
     render(<PluginsTab profile={null} />)
+    openCatalog()
 
     window.dispatchEvent(
       new MessageEvent('message', {

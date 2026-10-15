@@ -296,7 +296,7 @@ describe('CapabilitiesView toolset management', { timeout: 60_000 }, () => {
     // eagerly mounted hub is exactly the Capabilities lag bug.
     await renderSkills() // ?tab=toolsets
     await screen.findByRole('switch', { name: 'Turn Web Search toolset off' })
-    expect(document.querySelector('iframe')).toBeNull()
+    expect(screen.queryByTitle('Skills Hub')).toBeNull()
     cleanup()
 
     // Embedded mode drives tabs through local state, starting on Skills: the
@@ -311,20 +311,19 @@ describe('CapabilitiesView toolset management', { timeout: 60_000 }, () => {
       )
     })
 
-    expect(document.querySelector('iframe')).toBeNull()
+    expect(screen.queryByTitle('Skills Hub')).toBeNull()
 
     await act(async () => {
       fireEvent.click(await screen.findByRole('button', { name: 'Browse Skills Hub' }))
     })
 
-    const iframe = document.querySelector('iframe')
-    expect(iframe?.getAttribute('src')).toContain('embed=picker')
+    expect(screen.getByTitle('Skills Hub').getAttribute('src')).toContain('embed=picker')
 
     // Done closes the sheet and drops the frame (and its message listener).
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: 'Done' }))
     })
-    await waitFor(() => expect(document.querySelector('iframe')).toBeNull())
+    await waitFor(() => expect(screen.queryByTitle('Skills Hub')).toBeNull())
 
     // The tab switch is the page's segmented control.
     await act(async () => {
