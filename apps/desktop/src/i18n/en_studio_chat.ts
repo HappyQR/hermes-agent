@@ -1,6 +1,15 @@
 // Hermes Studio copy (chat) — fork-owned so upstream locale merges stay clean.
 import type { StudioChatTranslations } from './types_studio_chat'
 
+// Tool-run summary clauses, English order: verb, then the target or a count.
+const enRun = (present: string, past: string, one: string, many: string) => ({
+  present,
+  named: (target: string, live: boolean) => `${live ? present : past} ${target}`,
+  counted: (count: number, live: boolean) => `${live ? present : past} ${count} ${count === 1 ? one : many}`
+})
+
+const lowerFirst = (text: string) => text.charAt(0).toLowerCase() + text.slice(1)
+
 export const enStudioChat: StudioChatTranslations = {
   contextUsage: 'Context usage',
   composer: {
@@ -66,6 +75,22 @@ export const enStudioChat: StudioChatTranslations = {
       }
     },
     continueFrom: 'Continue from Claude Code or Codex'
+  },
+  toolRun: {
+    categories: {
+      analyze: enRun('Analyzing', 'Analyzed', 'image', 'images'),
+      browse: enRun('Opening', 'Opened', 'page', 'pages'),
+      delegate: enRun('Delegating', 'Delegated', 'task', 'tasks'),
+      edit: enRun('Editing', 'Edited', 'file', 'files'),
+      explore: enRun('Exploring', 'Explored', 'file', 'files'),
+      interact: enRun('Performing', 'Performed', 'browser action', 'browser actions'),
+      other: enRun('Using', 'Used', 'tool', 'tools'),
+      read: enRun('Reading', 'Read', 'page', 'pages'),
+      run: enRun('Running', 'Ran', 'command', 'commands'),
+      search: enRun('Searching', 'Searched', 'query', 'queries')
+    },
+    join: clauses => clauses.map((clause, index) => (index === 0 ? clause : lowerFirst(clause))).join(', '),
+    moreCommands: (first, more) => `${first} + ${more} ${more === 1 ? 'command' : 'commands'}`
   },
   transcript: {
     delegateSpawned: count => `Spawned ${count} subagent${count === 1 ? '' : 's'}`,
