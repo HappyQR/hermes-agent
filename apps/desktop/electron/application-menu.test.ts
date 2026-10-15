@@ -250,6 +250,16 @@ describe('sanitizeMenuModel', () => {
     })
   })
 
+  test('keeps URI-encoded data in command ids (profile names)', () => {
+    const model = sanitizeMenuModel({
+      sections: [
+        { id: 'window', label: 'Window', items: [{ type: 'command', id: 'menu.profile:my%20work', label: 'My work' }] }
+      ]
+    })
+
+    assert.equal(model?.sections[0].items[0].type, 'command')
+  })
+
   test('rejects anything without a usable section', () => {
     assert.equal(sanitizeMenuModel(null), null)
     assert.equal(sanitizeMenuModel({ sections: [] }), null)

@@ -404,7 +404,8 @@ export function acceleratorKeyInput(accelerator: string): null | { keyCode: stri
 const MAX_LABEL = 200
 const MAX_ITEMS = 600
 const MAX_DEPTH = 3
-const COMMAND_ID = /^[A-Za-z0-9._:-]{1,160}$/
+// `%` admits URI-encoded data (a profile name inside `menu.profile:<name>`).
+const COMMAND_ID = /^[A-Za-z0-9._:%-]{1,160}$/
 
 interface SanitizeBudget {
   items: number

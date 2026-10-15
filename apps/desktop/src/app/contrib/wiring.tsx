@@ -148,6 +148,7 @@ import { startWorkspaceSession } from '../session/workspace-session-target'
 import { PluginInstallModal } from '../settings/plugin-install-modal'
 import { useOverlayRouting } from '../shell/hooks/use-overlay-routing'
 import { useWindowControlsOverlayWidth } from '../shell/hooks/use-window-controls-overlay-width'
+import { NativeMenu } from '../shell/native-menu-host'
 import {
   TITLEBAR_CHROME_CHANGED_EVENT,
   titlebarControlsPosition,
@@ -1417,7 +1418,7 @@ export function ContribWiring({ children }: { children: ReactNode }) {
 
       {/* Backs confirm() from @/store/confirm — renders only while one is open. */}
       <ConfirmHost />
-
+      <NativeMenu actions={actions} />
       {/* Send Diagnostics consent/upload dialog — driven by $sendDiagnostics
           (error card action); renders nothing until requested. */}
       <SendDiagnosticsHost />

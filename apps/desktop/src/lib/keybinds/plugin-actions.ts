@@ -64,6 +64,14 @@ export function registerBuiltinActionRunner(next: BuiltinActionRunner): () => vo
   }
 }
 
+/** Run a built-in action through the installed handler table — for
+ *  user-initiated callers outside the keyboard (the native menu); not gated
+ *  by the plugin allow-list. False when the shell isn't mounted or the id has
+ *  no handler. */
+export function runBuiltinAction(id: string): boolean {
+  return runner ? runner(id) : false
+}
+
 export function listPluginAppActions(): PluginAppActionInfo[] {
   // Action ids contain dots, so read the block rather than a dot-path key.
   const labels: Record<string, string | undefined> = runtimeTranslations().keybinds.actions
