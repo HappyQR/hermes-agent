@@ -23,7 +23,7 @@ import { useTheme } from '@/themes/context'
 import type { ApplicationMenuModel } from '../../../electron/application-menu-model'
 
 import { createMenuCommandResolver, type MenuSessionActions } from './native-menu-commands'
-import { buildMenuModel } from './native-menu-model'
+import { buildMenuModel, type MenuModelInput } from './native-menu-model'
 import {
   $menuProfilesKey,
   $menuSessionBusy,
@@ -55,7 +55,12 @@ function usePublisher(): (model: ApplicationMenuModel) => void {
   }, [])
 }
 
-function useMenuModel(): ApplicationMenuModel {
+/** The model's inputs; `registryVersion` re-runs the build when contributions
+ *  (keybinds, palette rows) change which commands exist. */
+type MenuInput = Omit<MenuModelInput, 'available'> & { registryVersion: number }
+
+/** Everything the model reads, memoized on the values that change it. */
+function useMenuInput(): MenuInput {
   const { t } = useI18n()
   const { mode: themeMode } = useTheme()
   const sidebarOpen = useStore($sidebarOpen)
@@ -75,11 +80,11 @@ function useMenuModel(): ApplicationMenuModel {
   return useMemo(() => {
     const profiles = menuProfilesState(profilesKey)
 
-    return buildMenuModel({
-      available: menuCommandAvailable,
-      combos: id => bindingsFor(id, bindings),
+    return {
+      combos: (id: string) => bindingsFor(id, bindings),
       copy: t.studio.menu,
       recording,
+      registryVersion,
       state: {
         activeProfile: profiles.active,
         inspectorOpen,
@@ -92,9 +97,7 @@ function useMenuModel(): ApplicationMenuModel {
         tabBar,
         themeMode
       }
-    })
-    // registryVersion: `available` reads the registry imperatively.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }
   }, [
     bindings,
     busy,
@@ -118,7 +121,7 @@ export function useNativeMenu(actions: MenuSessionActions): NativeMenuRename {
   const [renameTarget, setRenameTarget] = useState<MenuSessionTarget | null>(null)
   const [renameOpen, setRenameOpen] = useState(false)
   const publish = usePublisher()
-  const model = useMenuModel()
+  const input = useMenuInput()
 
   // Menu-only commands read the latest route and actions at call time.
   const live = useRef({ actions, pathname: location.pathname })
@@ -141,11 +144,13 @@ export function useNativeMenu(actions: MenuSessionActions): NativeMenuRename {
     [navigate]
   )
 
+  // Built here, after the menu-only commands above are registered (effects
+  // run in order), so `menuCommandAvailable` sees them on the first publish.
   useEffect(() => {
     if (isMacPlatform()) {
-      publish(model)
+      publish(buildMenuModel({ ...input, available: menuCommandAvailable }))
     }
-  }, [model, publish])
+  }, [input, publish])
 
   useEffect(() => window.hermesDesktop?.onMenuCommand?.(({ id }) => void runMenuCommand(id)), [])
 

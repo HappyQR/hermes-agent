@@ -31,7 +31,9 @@ const BASE_STATE: MenuState = {
 
 const DEFAULTS = defaultBindings()
 
-function build(overrides: Partial<MenuModelInput> & { state?: Partial<MenuState> } = {}): ApplicationMenuModel {
+function build(
+  overrides: Omit<Partial<MenuModelInput>, 'state'> & { state?: Partial<MenuState> } = {}
+): ApplicationMenuModel {
   return buildMenuModel({
     available: () => true,
     combos: id => DEFAULTS[id] ?? (id === 'layout.editMode' ? ['mod+shift+\\'] : []),
