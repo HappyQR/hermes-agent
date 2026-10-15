@@ -197,3 +197,95 @@
   background: var(--pg-space-bg);
   color: var(--pg-space-fg);
 }
+
+/* ── Kanban (plugin) ─────────────────────────────────────────────────────── */
+
+/* Prototype .kanban / .k-col / .k-card on the plugin's own markup (tagged with
+   data-slot in plugins/kanban/board.tsx). Unlayered, so these win over the
+   plugin's Tailwind utilities. The page head grows to the workspace-page title
+   only when the board has a page's width; a split tile keeps the compact row. */
+[data-slot='kanban-board'] {
+  container: kanban-board / inline-size;
+  background: var(--ui-chat-surface-background);
+}
+
+@container kanban-board (min-width: 48rem) {
+  [data-slot='kanban-head'] {
+    padding: 0.5rem 2rem 0.75rem;
+    row-gap: 0.875rem;
+  }
+
+  [data-slot='kanban-title'] {
+    flex-basis: 100%;
+    gap: 0.25rem;
+  }
+
+  [data-slot='kanban-title'] h1 {
+    color: var(--ui-text-primary);
+    font-size: 1.625rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+
+  [data-slot='kanban-subtitle'] {
+    display: block;
+    color: var(--ui-text-tertiary);
+    font-size: 0.84375rem;
+    line-height: 1.5;
+  }
+
+  [data-slot='kanban-lanes'] {
+    gap: 0.75rem;
+    padding-inline: 2rem;
+  }
+}
+
+[data-slot='kanban-column'],
+[data-slot='kanban-rail'] {
+  border-radius: 14px;
+  background: var(--pg-recessed);
+  box-shadow: inset 0 0 0 0.5px var(--ui-line, var(--ui-stroke-tertiary));
+}
+
+[data-slot='kanban-column'] {
+  width: 15rem;
+  padding: 10px;
+}
+
+[data-slot='kanban-column'][data-over='true'] {
+  background: color-mix(in srgb, var(--pg-recessed), var(--ui-text-primary) 5%);
+}
+
+[data-slot='kanban-column-label'] {
+  color: var(--ui-text-primary);
+  font-size: 0.78125rem;
+  font-weight: 650;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+[data-slot='kanban-column-count'] {
+  color: var(--ui-text-tertiary);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+[data-slot='kanban-card'] {
+  border-width: 0;
+  border-radius: 10px;
+  background: var(--pg-card);
+  box-shadow: var(--pg-card-shadow);
+  padding: 10px;
+}
+
+[data-slot='kanban-card']:hover {
+  background: var(--pg-card);
+  box-shadow: var(--pg-card-ring), 0 4px 12px -6px rgb(0 0 0 / 0.18);
+}
+
+[data-slot='kanban-card'][data-selected='true'] {
+  box-shadow:
+    0 0 0 2px var(--dt-composer-ring),
+    var(--pg-card-shadow);
+}

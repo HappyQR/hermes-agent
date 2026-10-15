@@ -213,7 +213,27 @@ export default {
     await shot(page, 'memory-list')
   },
   async kanban(page, { shot, sleep }) {
-    await go(page, sleep, '/kanban', 2500)
+    // The board is a desktop plugin: switch it on first (Plugins tab) if needed.
+    await go(page, sleep, '/capabilities?tab=plugins', 2500)
+    const row = page.locator('[data-testid^="plugin-row-"]').filter({ hasText: 'Kanban' }).first()
+    const desktop = row.locator('[role="switch"]').first()
+    if ((await desktop.count()) > 0 && (await desktop.getAttribute('aria-checked')) !== 'true') {
+      await desktop.click({ timeout: 5000 })
+      await sleep(2500)
+    }
+    await go(page, sleep, '/kanban', 3000)
+    // An empty board shows no lanes: add a few triage cards (the title field
+    // is focused when the dialog opens; Enter creates).
+    const newTask = page.locator('[data-slot="kanban-head"] button').filter({ hasText: /新建任务|New task/ }).first()
+    for (const title of ['调研 MCP 远程认证方案', '会话列表虚拟化', '补全繁体中文文案']) {
+      if ((await page.locator('[data-slot="kanban-card"]').count()) >= 3) break
+      await newTask.click({ timeout: 5000 })
+      await sleep(700)
+      await page.keyboard.type(title)
+      await page.keyboard.press('Enter')
+      await sleep(1500)
+    }
+    await sleep(1000)
     await shot(page, 'kanban')
   },
   async 'inspector-files'(page, { shot, sleep, openSession }) {
