@@ -92,7 +92,12 @@ export function DetailHead({ className, lead, subtitle, title, titleClassName, t
     <div className={cn('flex items-center gap-3', className)} data-slot="studio-detail-head">
       {lead}
       <div className="min-w-0 flex-1">
-        <h2 className={cn('m-0 truncate text-[1.1875rem] font-[650] tracking-[-0.01em] text-(--ui-text-primary)', titleClassName)}>
+        <h2
+          className={cn(
+            'm-0 truncate text-[1.1875rem] font-[650] tracking-[-0.01em] text-(--ui-text-primary)',
+            titleClassName
+          )}
+        >
           {title}
         </h2>
         {subtitle ? <p className="mt-0.5 mb-0 text-[0.78125rem] text-(--ui-text-tertiary)">{subtitle}</p> : null}

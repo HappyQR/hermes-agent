@@ -157,7 +157,12 @@ function AgentsSummary({ flat, live }: { flat: SubagentNode[]; live: number }) {
 function SummaryStat({ accent = false, label, value }: { accent?: boolean; label: string; value: string }) {
   return (
     <div className="flex min-w-0 flex-col gap-px">
-      <b className={cn('text-base leading-tight font-[650] tabular-nums', accent ? 'text-primary' : 'text-(--ui-text-primary)')}>
+      <b
+        className={cn(
+          'text-base leading-tight font-[650] tabular-nums',
+          accent ? 'text-primary' : 'text-(--ui-text-primary)'
+        )}
+      >
         {value}
       </b>
       <span className="truncate text-[0.6875rem] text-(--ui-text-tertiary)">{label}</span>
@@ -214,7 +219,11 @@ function StatusMark({ status }: { status: SubagentStatus }) {
 
   if (isLive(status)) {
     return (
-      <span aria-label={status === 'queued' ? t.agents.queued : t.agents.running} className="flex size-4 shrink-0 items-center justify-center" role="img">
+      <span
+        aria-label={status === 'queued' ? t.agents.queued : t.agents.running}
+        className="flex size-4 shrink-0 items-center justify-center"
+        role="img"
+      >
         <RunRing />
       </span>
     )
@@ -267,7 +276,9 @@ function AgentNodeCard({ depth, expandedId, node, onToggle, owners }: AgentNodeT
         <span className="flex min-w-0 flex-1 flex-col">
           <b className="truncate text-[0.8125rem] font-semibold text-(--ui-text-primary)">{node.goal}</b>
           {meta.length > 0 ? (
-            <span className="truncate text-[0.71875rem] text-(--ui-text-tertiary) tabular-nums">{meta.join(' · ')}</span>
+            <span className="truncate text-[0.71875rem] text-(--ui-text-tertiary) tabular-nums">
+              {meta.join(' · ')}
+            </span>
           ) : null}
         </span>
         <StudioIcon className="shrink-0 text-(--ui-text-tertiary)" name={expanded ? 'chev-d' : 'chev-r'} size={12} />
@@ -328,7 +339,9 @@ function AgentNodeBody({
 
   return (
     <div className="flex min-w-0 flex-col gap-2 px-3 pb-3" data-slot="agent-node-body">
-      {title ? <div className="truncate text-[0.71875rem] text-(--ui-text-tertiary)">{a.fromSession(title)}</div> : null}
+      {title ? (
+        <div className="truncate text-[0.71875rem] text-(--ui-text-tertiary)">{a.fromSession(title)}</div>
+      ) : null}
       {stream.length > 0 || running ? (
         <div
           className="rounded-lg bg-(--pg-recessed) px-2.5 py-2 font-mono text-[0.71875rem] leading-[1.6] text-(--ui-text-secondary)"
@@ -355,13 +368,18 @@ function AgentNodeBody({
         </div>
       ) : null}
       {files.length > 0 ? (
-        <div className="font-mono text-[0.71875rem] leading-normal text-(--ui-text-secondary)" data-selectable-text="true">
+        <div
+          className="font-mono text-[0.71875rem] leading-normal text-(--ui-text-secondary)"
+          data-selectable-text="true"
+        >
           {files.slice(0, 8).map(line => (
             <div className="wrap-anywhere" key={line}>
               {line}
             </div>
           ))}
-          {files.length > 8 ? <div className="text-(--ui-text-tertiary)">{t.agents.moreFiles(files.length - 8)}</div> : null}
+          {files.length > 8 ? (
+            <div className="text-(--ui-text-tertiary)">{t.agents.moreFiles(files.length - 8)}</div>
+          ) : null}
         </div>
       ) : null}
       {running && ownerSessionId ? <AgentSteerControls sessionId={ownerSessionId} subagentId={node.id} /> : null}

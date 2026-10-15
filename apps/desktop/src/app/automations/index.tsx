@@ -3,12 +3,7 @@ import { useNavigate } from 'react-router'
 
 import { StudioPage } from '@/components/studio/pages/page'
 import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { SegmentedControl } from '@/components/ui/segmented-control'
 import { StudioIcon } from '@/components/ui/studio-icon'
 import type { SessionInfo } from '@/hermes'

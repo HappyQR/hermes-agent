@@ -167,7 +167,11 @@ interface CronViewProps extends React.ComponentProps<'section'> {
   setStatusbarItemGroup?: SetStatusbarItemGroup
 }
 
-export function CronView({ onOpenSession, section = 'jobs', setStatusbarItemGroup: _setStatusbarItemGroup }: CronViewProps) {
+export function CronView({
+  onOpenSession,
+  section = 'jobs',
+  setStatusbarItemGroup: _setStatusbarItemGroup
+}: CronViewProps) {
   const { t } = useI18n()
   const c = t.cron
   // Source of truth is the shared atom (also fed by the controller poll), so the
@@ -870,9 +874,7 @@ function CronJobDetail({
           label: s.cron.kvDeliver,
           value: <DeliveryTargets targets={parseCronDeliveryTargets(jobDeliver(job))} />
         },
-        ...(scriptOnly
-          ? []
-          : [{ key: 'model', label: s.cron.kvModel, value: modelOverride || s.cron.modelDefault }])
+        ...(scriptOnly ? [] : [{ key: 'model', label: s.cron.kvModel, value: modelOverride || s.cron.modelDefault }])
       ]}
       runs={
         <CronJobRuns
@@ -1046,8 +1048,7 @@ function CronJobRuns({
 function deliverTargetLabel(target: CronDeliveryTarget, t: Translations): string {
   const c = t.cron
 
-  const base =
-    target.id === 'local' ? thisDeviceLabel(t) : (c.deliveryLabels[target.id] ?? target.name)
+  const base = target.id === 'local' ? thisDeviceLabel(t) : (c.deliveryLabels[target.id] ?? target.name)
 
   return target.id !== 'local' && !target.home_target_set ? `${base} — ${c.deliverNeedsHomeChannel}` : base
 }
@@ -1349,11 +1350,7 @@ function CronEditorDialog({
   return (
     <Dialog onOpenChange={value => !value && !saving && onClose()} open={open}>
       <DialogContent bodyClassName={STUDIO_SHEET_BODY} className={STUDIO_SHEET_CONTENT.md} showCloseButton={false}>
-        <SheetHeader
-          closable={!saving}
-          lead={<IconTile icon="clock" size={30} tone="orange" />}
-          title={title}
-        />
+        <SheetHeader closable={!saving} lead={<IconTile icon="clock" size={30} tone="orange" />} title={title} />
         {isBlueprint && blueprint ? (
           <form className="contents" onSubmit={handleBlueprintSubmit}>
             <SheetBody>
@@ -1380,7 +1377,12 @@ function CronEditorDialog({
                       </div>
                     </FormRow>
                   ) : (
-                    <FormRow description={blueprintSlotHelp(field)} htmlFor={fieldId} key={field.name} title={field.label}>
+                    <FormRow
+                      description={blueprintSlotHelp(field)}
+                      htmlFor={fieldId}
+                      key={field.name}
+                      title={field.label}
+                    >
                       <div className="w-52 max-w-full">
                         <BlueprintSlotControl
                           field={field}

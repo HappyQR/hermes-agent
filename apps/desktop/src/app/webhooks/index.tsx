@@ -220,7 +220,6 @@ function ProfileOwnedWebhooksView({ backendProfile, onOpenReceiverSettings }: Pr
     }
   }, [backendProfile, reload, w])
 
-
   const resetForm = useCallback(() => {
     setDraft(EMPTY_DRAFT)
     setMoreOpen(false)
@@ -365,7 +364,6 @@ function ProfileOwnedWebhooksView({ backendProfile, onOpenReceiverSettings }: Pr
     () => visible.find(s => s.name === selectedName) ?? visible[0] ?? null,
     [visible, selectedName]
   )
-
 
   // The page head's "New webhook…" (it may be picked before this tab mounted).
   const createRequest = useStore($automationCreateRequest)

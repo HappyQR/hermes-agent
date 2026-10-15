@@ -3,7 +3,17 @@ import type { ReactNode } from 'react'
 import { thisDeviceLabel } from '@/components/studio/pages/device'
 import { FormSection } from '@/components/studio/pages/form'
 import { DetailBody, DetailHead } from '@/components/studio/pages/master-detail'
-import { Callout, CardGrid, GridCard, GridCardFoot, GridCardText, GridCardTop, KeyValueList, ListGroup, ListGroupRow } from '@/components/studio/pages/surfaces'
+import {
+  Callout,
+  CardGrid,
+  GridCard,
+  GridCardFoot,
+  GridCardText,
+  GridCardTop,
+  KeyValueList,
+  ListGroup,
+  ListGroupRow
+} from '@/components/studio/pages/surfaces'
 import { Dot, type DotTone, IconTile, RunRing, Spinner, type TileTone } from '@/components/studio/pages/tile'
 import { ActionsContextMenu, ActionsMenu, type MenuKit, renderActionItem } from '@/components/ui/actions-menu'
 import { Badge } from '@/components/ui/badge'
@@ -74,7 +84,16 @@ interface CronJobItemProps {
 
 /** A job row: status dot · title · schedule and next run. Right-click and the
  *  hover ⋯ open the same actions. */
-export function CronJobItem({ active, menuItems, menuLabel, onSelect, rowKey, state, subtitle, title }: CronJobItemProps) {
+export function CronJobItem({
+  active,
+  menuItems,
+  menuLabel,
+  onSelect,
+  rowKey,
+  state,
+  subtitle,
+  title
+}: CronJobItemProps) {
   return (
     <ActionsContextMenu ariaLabel={menuLabel} contentClassName="w-48" items={renderCronMenu(menuItems)}>
       <div

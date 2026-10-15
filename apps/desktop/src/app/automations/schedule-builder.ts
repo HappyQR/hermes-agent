@@ -95,9 +95,7 @@ export function cronToPreset(expr: string): null | SchedulePreset {
   }
 
   if (hourToken === '*') {
-    return domToken === '*' && dowToken === '*'
-      ? { ...DEFAULT_SCHEDULE_PRESET, frequency: 'hourly', minute }
-      : null
+    return domToken === '*' && dowToken === '*' ? { ...DEFAULT_SCHEDULE_PRESET, frequency: 'hourly', minute } : null
   }
 
   const hour = intIn(hourToken, 0, 23)

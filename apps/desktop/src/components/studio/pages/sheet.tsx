@@ -80,7 +80,10 @@ export function SheetBody({ children, className }: { children: ReactNode; classN
 
 export function SheetFooter({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <div className={cn('flex shrink-0 flex-wrap items-center gap-2 px-[18px] pt-3 pb-4', className)} data-slot="studio-sheet-foot">
+    <div
+      className={cn('flex shrink-0 flex-wrap items-center gap-2 px-[18px] pt-3 pb-4', className)}
+      data-slot="studio-sheet-foot"
+    >
       {children}
     </div>
   )

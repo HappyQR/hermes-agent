@@ -1,6 +1,12 @@
 import { useState } from 'react'
 
-import { SheetBody, SheetFooter, SheetHeader, STUDIO_SHEET_BODY, STUDIO_SHEET_CONTENT } from '@/components/studio/pages/sheet'
+import {
+  SheetBody,
+  SheetFooter,
+  SheetHeader,
+  STUDIO_SHEET_BODY,
+  STUDIO_SHEET_CONTENT
+} from '@/components/studio/pages/sheet'
 import { IconTile } from '@/components/studio/pages/tile'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent } from '@/components/ui/dialog'

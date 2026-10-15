@@ -77,7 +77,11 @@ export function IconTile({ className, color, icon, size = 36, tone = 'gray' }: I
         width: size
       }}
     >
-      {typeof icon === 'string' ? <StudioIcon name={icon as StudioIconName} size={Math.round(size * 0.5)} stroke={1.8} /> : icon}
+      {typeof icon === 'string' ? (
+        <StudioIcon name={icon as StudioIconName} size={Math.round(size * 0.5)} stroke={1.8} />
+      ) : (
+        icon
+      )}
     </span>
   )
 }

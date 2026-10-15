@@ -77,7 +77,12 @@ export function GridCardTop({ lead, onOpen, openLabel, subtitle, title, titleCla
 /** Two-line description (min-height keeps a row of cards aligned). */
 export function GridCardText({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <p className={cn('pg-clamp-2 m-0 min-h-[3em] text-[0.78125rem] leading-normal text-(--ui-text-secondary)', className)}>
+    <p
+      className={cn(
+        'pg-clamp-2 m-0 min-h-[3em] text-[0.78125rem] leading-normal text-(--ui-text-secondary)',
+        className
+      )}
+    >
       {children}
     </p>
   )
@@ -91,10 +96,21 @@ export function GridCardFoot({ children, className }: { children: ReactNode; cla
   )
 }
 
-export function SectionTitle({ children, count, className }: { children: ReactNode; className?: string; count?: ReactNode }) {
+export function SectionTitle({
+  children,
+  count,
+  className
+}: {
+  children: ReactNode
+  className?: string
+  count?: ReactNode
+}) {
   return (
     <div
-      className={cn('-mb-1 mt-1.5 flex items-center gap-2 text-[0.8125rem] font-[650] text-(--ui-text-primary)', className)}
+      className={cn(
+        '-mb-1 mt-1.5 flex items-center gap-2 text-[0.8125rem] font-[650] text-(--ui-text-primary)',
+        className
+      )}
       data-slot="studio-section-title"
     >
       {children}
@@ -210,9 +226,7 @@ export function Callout({ children, className, icon, tone = 'info' }: CalloutPro
     <div
       className={cn(
         'flex gap-2.5 rounded-[10px] px-3 py-2.5 text-[0.78125rem] leading-relaxed text-(--ui-text-primary)',
-        tone === 'warn'
-          ? 'bg-[color-mix(in_srgb,var(--pg-dot-orange)_10%,transparent)]'
-          : 'bg-(--ui-accent-softer)',
+        tone === 'warn' ? 'bg-[color-mix(in_srgb,var(--pg-dot-orange)_10%,transparent)]' : 'bg-(--ui-accent-softer)',
         className
       )}
       data-slot="studio-callout"

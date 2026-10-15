@@ -17,7 +17,12 @@ const skill = (id: string, overrides: Partial<StarmapNode> = {}): StarmapNode =>
 })
 
 const cards = [
-  { body: 'Prefers short answers.\nLead with the conclusion.', fingerprint: 'f1', source: 'memory' as const, title: 'Prefers short answers.' },
+  {
+    body: 'Prefers short answers.\nLead with the conclusion.',
+    fingerprint: 'f1',
+    source: 'memory' as const,
+    title: 'Prefers short answers.'
+  },
   { body: 'Uses nanostores.', fingerprint: 'f2', source: 'memory' as const, title: 'Uses nanostores.' },
   { body: 'Lives in Hangzhou.', fingerprint: 'f3', source: 'profile' as const, title: 'Lives in Hangzhou.' }
 ]

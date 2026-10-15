@@ -69,9 +69,7 @@ export function memoryRows(graph: StarmapGraph, source: StarmapMemoryCard['sourc
 
 /** Learned skills, most used first. */
 export function learnedSkills(graph: StarmapGraph): StarmapNode[] {
-  return graph.nodes
-    .filter(isLearnedSkill)
-    .sort((a, b) => b.useCount - a.useCount || a.label.localeCompare(b.label))
+  return graph.nodes.filter(isLearnedSkill).sort((a, b) => b.useCount - a.useCount || a.label.localeCompare(b.label))
 }
 
 /** Characters a memory file uses, counted the way the memory tool does
