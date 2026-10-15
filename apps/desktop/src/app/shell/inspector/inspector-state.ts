@@ -1,4 +1,4 @@
-import { computed } from 'nanostores'
+import { atom, computed } from 'nanostores'
 
 import { setTerminalTakeover } from '@/app/right-sidebar/store'
 import type { GroupNode, LayoutNode } from '@/components/pane-shell/tree/model'
@@ -59,6 +59,10 @@ export const $inspectorShown = computed(
   }
 )
 
+/** Whether the Agents pane is open (the controller binds the pane to it).
+ *  Session-only, like the review flag: a fresh boot rests it. */
+export const $agentsPaneOpen = atom(false)
+
 // The kind a bare "show inspector" reopens on.
 let lastKind: InspectorKind = 'files'
 
@@ -112,7 +116,22 @@ export function revealInspectorKind(kind: InspectorKind) {
     setTerminalTakeover(true)
   }
 
+  if (kind === 'agents') {
+    $agentsPaneOpen.set(true)
+  }
+
   revealTreePane(kind)
+}
+
+/** Prototype "View in Inspector" (live pill, delegation card, tray): front the
+ *  running agents — the inspector's Agents segment, or wherever the pane docks
+ *  in a layout without an inspector. Never hides, unlike the segment toggle. */
+export function showAgentsPane() {
+  if (inspectorGroup()) {
+    showInspector('agents')
+  } else {
+    revealInspectorKind('agents')
+  }
 }
 
 /** Hide the whole inspector (prototype ×): its side collapses, no rail.

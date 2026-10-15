@@ -96,7 +96,7 @@ export const jaStudioChat: StudioChatTranslations = {
     delegateSpawned: count => `${count} 個のサブエージェントを起動`,
     delegateRunning: count => `${count} 件実行中`,
     delegateAllDone: 'すべて完了',
-    openAgents: 'エージェントで見る',
+    openAgents: 'インスペクタで表示',
     approvalTitle: 'Hermes にこのコマンドの実行を許可しますか？',
     approvalTitleAction: 'Hermes にこの操作を許可しますか？',
     approvalMode: '承認モード…',

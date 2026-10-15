@@ -285,6 +285,7 @@ export const ruOverrides = {
       'view.toggleProfileRail': 'Показать / скрыть панель профилей',
       'view.toggleSimpleMode': 'Переключить простой режим',
       'view.showFiles': 'Показать браузер файлов',
+      'view.showAgents': 'Показать агентов',
       'view.showBrowser': 'Переключить браузер',
       'view.toggleHud': 'Включить / выключить режим HUD',
       'hud.snapToPointer': 'Переместить HUD под курсор (глобально, пока HUD открыт)',

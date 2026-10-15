@@ -2,10 +2,9 @@
 
 import { useStore } from '@nanostores/react'
 import { type FC, type ReactNode, useMemo } from 'react'
-import { useInRouterContext, useNavigate } from 'react-router'
 
 import { useSessionView } from '@/app/chat/session-view'
-import { AGENTS_ROUTE } from '@/app/routes'
+import { showAgentsPane } from '@/app/shell/inspector/inspector-state'
 import { useElapsedSeconds } from '@/components/chat/activity-timer'
 import { ActivityTimerText } from '@/components/chat/activity-timer-text'
 import { SCAFFOLD_GLYPH_CLASS, SCAFFOLD_LABEL_CLASS, SCAFFOLD_META_CLASS } from '@/components/chat/scaffold-row'
@@ -175,25 +174,15 @@ function DelegateCardHead({ rows }: { rows: readonly DelegateRow[] }) {
   const { t } = useI18n()
   const copy = t.studio.chat.transcript
   const running = rows.filter(row => isDelegateRowLive(row.status)).length
-  const inRouter = useInRouterContext()
 
   return (
     <div className="studio-deleg-head">
       <StudioIcon className="text-(--dt-primary)" name="tree" size={15} />
       <b>{copy.delegateSpawned(rows.length)}</b>
       <span className="studio-deleg-state">{running ? copy.delegateRunning(running) : copy.delegateAllDone}</span>
-      {inRouter && <OpenAgentsButton label={copy.openAgents} />}
+      <Button onClick={showAgentsPane} size="xs" type="button" variant="ghost">
+        {copy.openAgents}
+      </Button>
     </div>
-  )
-}
-
-// Isolated: useNavigate() throws outside a <Router> (bare harnesses render threads router-free).
-function OpenAgentsButton({ label }: { label: string }) {
-  const navigate = useNavigate()
-
-  return (
-    <Button onClick={() => navigate(AGENTS_ROUTE)} size="xs" type="button" variant="ghost">
-      {label}
-    </Button>
   )
 }

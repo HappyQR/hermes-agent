@@ -6,8 +6,8 @@ import { registerBundledPresets } from '@/components/pane-shell/tree/presets'
 // ---------------------------------------------------------------------------
 
 // The REAL default (Hermes Studio): sessions | chat | inspector. The inspector is
-// ONE zone holding the tooling — files, changes and the terminal (+ logs, the
-// running agents and every preview tile join it at runtime) — switched by the
+// ONE zone holding the tooling — files, changes, the terminal and the running
+// agents (+ logs and every preview tile join it at runtime) — switched by the
 // segmented header in its titlebar band (app/shell/inspector). Ids are a
 // contract (tools/set_theme_tool.py names presets; grp-* ids are stable).
 export const DEFAULT_TREE = split(
@@ -15,7 +15,7 @@ export const DEFAULT_TREE = split(
   [
     group(['sessions'], { id: 'grp-sessions' }),
     group(['workspace'], { id: 'grp-main' }),
-    group(['files', 'review', 'terminal'], { active: 'files', id: 'grp-inspector' })
+    group(['files', 'review', 'terminal', 'agents'], { active: 'files', id: 'grp-inspector' })
   ],
   [1, 3.4, 1.4],
   'spl-root'
@@ -36,16 +36,16 @@ const FOCUS_TREE = split(
 // pane back in as workspace tabs, which is Focus.
 export const BASIC_TREE = split(
   'row',
-  [group(['sessions']), group(['workspace']), group(['files', 'review', 'terminal'])],
+  [group(['sessions']), group(['workspace']), group(['files', 'review', 'terminal', 'agents'])],
   [1, 3.4, 1.25]
 )
 
-const BASIC_RESTING = ['terminal', 'files', 'review'] as const
+const BASIC_RESTING = ['terminal', 'files', 'review', 'agents'] as const
 
 const TERMINAL_TREE = split(
   'column',
   [
-    split('row', [group(['sessions']), group(['workspace']), group(['files', 'review'])], [1, 3.2, 1.2]),
+    split('row', [group(['sessions']), group(['workspace']), group(['files', 'review', 'agents'])], [1, 3.2, 1.2]),
     group(['terminal'])
   ],
   [3, 1]
@@ -56,7 +56,7 @@ const TERMINAL_TREE = split(
 // each one in its deck slot. Review rests with files: closing the file tree
 // collapses their shared column, and an open review there would leave ⌘G
 // reading open while nothing shows.
-const TERMINAL_RESTING = ['terminal', 'files', 'review'] as const
+const TERMINAL_RESTING = ['terminal', 'files', 'review', 'agents'] as const
 
 // The first-run intro's borrowed layout: the chat alone, no tab strip. Unlisted,
 // and applied while layout persistence is held (onboarding/first-run/assembly.ts).

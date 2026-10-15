@@ -96,7 +96,7 @@ export const enStudioChat: StudioChatTranslations = {
     delegateSpawned: count => `Spawned ${count} subagent${count === 1 ? '' : 's'}`,
     delegateRunning: count => `${count} running`,
     delegateAllDone: 'All done',
-    openAgents: 'View in Agents',
+    openAgents: 'View in Inspector',
     approvalTitle: 'Allow Hermes to run this command?',
     approvalTitleAction: 'Allow Hermes to do this?',
     approvalMode: 'Approval mode…',

@@ -112,7 +112,7 @@ export const ruStudioChat: StudioChatTranslations = {
     delegateSpawned: count => `Запущено субагентов: ${count}`,
     delegateRunning: count => `выполняется: ${count}`,
     delegateAllDone: 'Все готово',
-    openAgents: 'Открыть в агентах',
+    openAgents: 'Открыть в инспекторе',
     approvalTitle: 'Разрешить Hermes выполнить эту команду?',
     approvalTitleAction: 'Разрешить Hermes выполнить это действие?',
     approvalMode: 'Режим одобрения…',

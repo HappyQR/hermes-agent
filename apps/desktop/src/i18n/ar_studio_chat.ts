@@ -125,7 +125,7 @@ export const arStudioChat: StudioChatTranslations = {
     delegateSpawned: count => `أنشأ ${count} من الوكلاء الفرعيين`,
     delegateRunning: count => `${count} قيد التشغيل`,
     delegateAllDone: 'اكتمل الكل',
-    openAgents: 'عرض في الوكلاء',
+    openAgents: 'عرض في المفتش',
     approvalTitle: 'هل تسمح لـ Hermes بتشغيل هذا الأمر؟',
     approvalTitleAction: 'هل تسمح لـ Hermes بتنفيذ هذا الإجراء؟',
     approvalMode: 'وضع الموافقة…',

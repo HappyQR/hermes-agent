@@ -31,7 +31,7 @@ function buildWithLiveAvailability() {
       session: { archived: false, busy: true, pinned: false, renameable: true },
       showAllProfiles: false,
       sidebarOpen: true,
-    split: false,
+      split: false,
       statusbarVisible: true,
       tabBar: 'auto',
       themeMode: 'light'
@@ -140,18 +140,20 @@ describe('runMenuCommand', () => {
   })
 
   it('leaves out an action that has not landed yet and picks it up once it registers', () => {
-    expect(menuCommandIds(buildWithLiveAvailability())).not.toContain('view.showAgents')
+    // As if the controller had not contributed anything yet.
+    disposers.splice(0).forEach(dispose => dispose())
+    expect(menuCommandIds(buildWithLiveAvailability())).not.toContain('layout.reset')
 
     disposers.push(
       registry.register({
         area: KEYBINDS_AREA,
-        data: { id: 'view.showAgents', label: 'Show agents', run: () => ran.push('keybind:view.showAgents') },
-        id: 'view.showAgents'
+        data: { id: 'layout.reset', label: 'Reset layout', run: () => ran.push('keybind:layout.reset') },
+        id: 'layout.reset'
       })
     )
 
-    expect(menuCommandIds(buildWithLiveAvailability())).toContain('view.showAgents')
-    expect(runMenuCommand('view.showAgents')).toBe(true)
+    expect(menuCommandIds(buildWithLiveAvailability())).toContain('layout.reset')
+    expect(runMenuCommand('layout.reset')).toBe(true)
   })
 
   it('reports unknown ids instead of running anything', () => {

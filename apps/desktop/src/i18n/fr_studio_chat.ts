@@ -108,7 +108,7 @@ export const frStudioChat: StudioChatTranslations = {
     delegateSpawned: count => `${count} sous-agent${count > 1 ? 's' : ''} lancé${count > 1 ? 's' : ''}`,
     delegateRunning: count => `${count} en cours`,
     delegateAllDone: 'Tout est terminé',
-    openAgents: 'Voir dans Agents',
+    openAgents: 'Voir dans l’inspecteur',
     approvalTitle: 'Autoriser Hermes à exécuter cette commande ?',
     approvalTitleAction: 'Autoriser Hermes à effectuer cette action ?',
     approvalMode: 'Mode d’approbation…',

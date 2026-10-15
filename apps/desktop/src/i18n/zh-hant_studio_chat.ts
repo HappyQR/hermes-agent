@@ -95,7 +95,7 @@ export const zhHantStudioChat: StudioChatTranslations = {
     delegateSpawned: count => `衍生了 ${count} 個子代理`,
     delegateRunning: count => `${count} 個執行中`,
     delegateAllDone: '全部完成',
-    openAgents: '在代理中檢視',
+    openAgents: '在檢閱器中檢視',
     approvalTitle: '允許 Hermes 執行這條指令？',
     approvalTitleAction: '允許 Hermes 執行這項操作？',
     approvalMode: '核准模式…',

@@ -7,7 +7,7 @@ import { setTerminalTakeover } from '@/app/right-sidebar/store'
 import { toggleTerminalPane } from '@/app/right-sidebar/terminal/reveal-focus'
 import { closeActiveTerminal, createTerminal, cycleTerminal } from '@/app/right-sidebar/terminal/terminals'
 import { appViewForPath, isOverlayView } from '@/app/routes'
-import { toggleInspector, toggleInspectorKind } from '@/app/shell/inspector/inspector-state'
+import { showAgentsPane, toggleInspector, toggleInspectorKind } from '@/app/shell/inspector/inspector-state'
 import {
   activateTreeTabSlot,
   cycleTreeTabInFocusedZone,
@@ -355,6 +355,7 @@ export function useKeybinds(deps: KeybindRuntimeDeps): void {
     'view.toggleSimpleMode': toggleSimpleMode,
     'view.toggleTabStrip': () => void toggleTargetZoneTabStrip(),
     'view.showFiles': () => toggleInspectorKind('files') || showFiles(),
+    'view.showAgents': () => toggleInspectorKind('agents') || showAgentsPane(),
     'view.showBrowser': () => toggleInspectorKind('preview') || toggleBrowserTab(),
     'view.toggleHud': () => toggleHud(hudTargetSessionId()),
     'view.showTerminal': () => toggleInspectorKind('terminal') || toggleTerminalPane(),

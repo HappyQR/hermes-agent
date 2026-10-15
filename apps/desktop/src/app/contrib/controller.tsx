@@ -95,6 +95,7 @@ import { watchUnreadWriteGuard } from '@/store/session-unread-remote'
 import { $statusbarVisible } from '@/store/statusbar-prefs'
 import { isBrowserWindow, isHudWindow } from '@/store/windows'
 
+import { AgentsPane } from '../agents'
 import { BrowserPopoutShell } from '../chat/browser-popout-shell'
 import type { SessionDragPayload } from '../chat/composer/inline-refs'
 import { watchPreviewTiles } from '../chat/preview-tile'
@@ -115,6 +116,7 @@ import { terminalPaletteToggle } from '../right-sidebar/terminal/reveal-focus'
 import { $workspaceIsPage, WORKSPACE_PAGE_HEADER_AREA } from '../routes'
 import { Butterbar } from '../shell/butterbar'
 import { registerInspectorBand } from '../shell/inspector/inspector-band'
+import { $agentsPaneOpen } from '../shell/inspector/inspector-state'
 import { INSPECTOR_PANE_SIZE } from '../shell/inspector/kinds'
 import { TermsButterbar } from '../shell/terms-butterbar'
 import { WorkspaceToolbarBand } from '../shell/toolbar/workspace-toolbar'
@@ -291,6 +293,24 @@ registry.registerMany([
       tabTitleText: () => translateNow('sidebar.review')
     },
     render: () => idle(<ReviewPaneContent />)
+  },
+  {
+    id: 'agents',
+    area: 'panes',
+    title: translateNow('studio.shell.inspector.agents'),
+    // The inspector's fifth segment (prototype Agents), hidden until a segment
+    // click or a "View in Inspector" door opens it ($agentsPaneOpen, bound
+    // below). dock: joins the file tree's zone — the inspector — when a
+    // layout without it summons the pane.
+    data: {
+      placement: 'right',
+      collapsible: true,
+      dock: { pane: 'files', pos: 'center' },
+      ...INSPECTOR_PANE_SIZE,
+      tabTitle: () => <LocalizedTabTitle select={t => t.studio.shell.inspector.agents} />,
+      tabTitleText: () => translateNow('studio.shell.inspector.agents')
+    },
+    render: () => idle(<AgentsPane />)
   }
 ])
 
@@ -602,6 +622,12 @@ bindPaneVisibility(
   computed([$reviewOpen, $hasWorkspace], (open, workspace) => open && workspace),
   closeReview,
   () => openReview($reviewScopeCwd.get(), $reviewScopeTarget.get())
+)
+bindPaneVisibility(
+  'agents',
+  $agentsPaneOpen,
+  () => $agentsPaneOpen.set(false),
+  () => $agentsPaneOpen.set(true)
 )
 // ⌃` / statusbar toggle — the terminal COLLAPSES to a rail (tab stays), not
 // hides; PTYs stay alive while collapsed (see PersistentTerminal). Simple has
