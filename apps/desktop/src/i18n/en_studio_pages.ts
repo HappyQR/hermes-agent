@@ -2,5 +2,101 @@
 import type { StudioPagesTranslations } from './types_studio_pages'
 
 export const enStudioPages: StudioPagesTranslations = {
-  automations: 'Automations'
+  common: {
+    moreActions: 'More actions',
+    deleteEllipsis: 'Delete…',
+    edit: 'Edit',
+    appliesTo: 'Applies to',
+    thisMac: 'This Mac',
+    thisDevice: 'This device'
+  },
+  automations: {
+    title: 'Automations',
+    subtitle: 'Run Hermes on a schedule or when an event arrives, and send the results where you want them.',
+    tabsLabel: 'Automation type',
+    tabs: { cron: 'Scheduled', webhook: 'Webhook', blueprints: 'Blueprints' },
+    newMenu: 'New',
+    newJob: 'New scheduled job…',
+    newHook: 'New webhook…',
+    blueprintsIntro:
+      'Ready-made automations: fill in a few options and they run. They come from your installed plugins and skills.',
+    blueprintKind: 'Blueprint',
+    useBlueprint: 'Use',
+    useBlueprintAria: name => `Use ${name}`
+  },
+  cron: {
+    listLabel: 'Scheduled jobs',
+    nextAt: when => `next ${when}`,
+    overdueAt: when => `overdue since ${when}`,
+    tagHealthy: 'Healthy',
+    tagFailed: 'Last run failed',
+    triggerNow: 'Trigger now',
+    duplicate: 'Duplicate job',
+    copyName: name => `${name} (copy)`,
+    openLatestRun: 'Open latest run in a session',
+    noRunsToOpen: 'This job has no run with a session yet.',
+    deleteNamed: name => `Delete “${name}”?`,
+    deleteBody:
+      'The job stops running right away and its saved run outputs are deleted. Sessions from earlier runs stay in your history.',
+    lastRunFailed: 'Last run failed',
+    failureSeparator: ': ',
+    kvNext: 'Next run',
+    kvOverdue: 'Overdue since',
+    kvLast: 'Last run',
+    kvDeliver: 'Sends to',
+    kvModel: 'Model',
+    modelDefault: 'Default (global model)',
+    prompt: 'Prompt',
+    script: 'Script',
+    runs: 'Runs',
+    runRunning: 'Running',
+    runViewOnly: 'View only',
+    runOutputOnly: 'Output only',
+    durationSeconds: seconds => `${seconds} s`,
+    durationMinutes: (minutes, seconds) => (seconds ? `${minutes} min ${seconds} s` : `${minutes} min`),
+    durationHours: (hours, minutes) => (minutes ? `${hours} h ${minutes} min` : `${hours} h`),
+    weeklyOnDaysAt: (days, time) => `Every ${days} at ${time}`,
+    weekdaysShort: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    daySeparator: ', ',
+    sheet: {
+      newTitle: 'New scheduled job',
+      editTitle: 'Edit scheduled job',
+      blueprintTitle: name => `Use blueprint: ${name}`,
+      name: 'Name',
+      promptQuestion: 'What should Hermes do?',
+      promptPlaceholder:
+        'For example: summarize the important AI news from the past 24 hours, one sentence each, with source links.',
+      when: 'When',
+      frequency: 'Frequency',
+      time: 'Time',
+      weekdays: 'Days',
+      dayOfMonth: 'Day of the month',
+      customLabel: 'Custom schedule',
+      customPlaceholder: 'Or type a cron expression or a phrase like “every 30m”',
+      checkedOnSave: 'Checked when you save',
+      deliverTo: 'Send results to',
+      model: 'Model',
+      create: 'Create',
+      save: 'Save'
+    }
+  },
+  webhooks: {
+    listLabel: 'Webhooks',
+    runsOnEvent: 'Runs Hermes when an event arrives',
+    enableAria: name => `Enable ${name}`,
+    receiveUrl: 'Receive URL',
+    receiveUrlHint: 'Paste it into the sender’s webhook settings',
+    signingSecret: 'Signing secret',
+    signingSecretHint: 'Shown only once, when the webhook is created',
+    secretSet: 'Set',
+    secretNotSet: 'Not set',
+    events: 'Events',
+    skills: 'Skills',
+    deliverTo: 'Send results to',
+    none: '—',
+    newTitle: 'New webhook',
+    promptQuestion: 'What should Hermes do when an event arrives?',
+    moreOptions: 'More options',
+    receiverSettings: 'Receiver settings'
+  }
 }

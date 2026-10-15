@@ -2,5 +2,101 @@
 import type { StudioPagesTranslations } from './types_studio_pages'
 
 export const esStudioPages: StudioPagesTranslations = {
-  automations: 'Automatizaciones'
+  common: {
+    moreActions: 'Más acciones',
+    deleteEllipsis: 'Eliminar…',
+    edit: 'Editar',
+    appliesTo: 'Se aplica a',
+    thisMac: 'Este Mac',
+    thisDevice: 'Este dispositivo'
+  },
+  automations: {
+    title: 'Automatizaciones',
+    subtitle: 'Ejecuta Hermes según un horario o cuando llega un evento, y envía los resultados a donde quieras.',
+    tabsLabel: 'Tipo de automatización',
+    tabs: { cron: 'Programadas', webhook: 'Webhook', blueprints: 'Plantillas' },
+    newMenu: 'Nuevo',
+    newJob: 'Nueva tarea programada…',
+    newHook: 'Nuevo webhook…',
+    blueprintsIntro:
+      'Automatizaciones listas para usar: rellena unas pocas opciones y funcionan. Provienen de tus plugins y habilidades instalados.',
+    blueprintKind: 'Plantilla',
+    useBlueprint: 'Usar',
+    useBlueprintAria: name => `Usar ${name}`
+  },
+  cron: {
+    listLabel: 'Tareas programadas',
+    nextAt: when => `próxima ${when}`,
+    overdueAt: when => `con retraso desde ${when}`,
+    tagHealthy: 'Correcta',
+    tagFailed: 'Falló la última ejecución',
+    triggerNow: 'Ejecutar ahora',
+    duplicate: 'Duplicar tarea',
+    copyName: name => `${name} (copia)`,
+    openLatestRun: 'Abrir la última ejecución en una sesión',
+    noRunsToOpen: 'Esta tarea aún no tiene ejecuciones con sesión.',
+    deleteNamed: name => `¿Eliminar «${name}»?`,
+    deleteBody:
+      'La tarea deja de ejecutarse de inmediato y se eliminan sus salidas guardadas. Las sesiones de ejecuciones anteriores se conservan en el historial.',
+    lastRunFailed: 'Falló la última ejecución',
+    failureSeparator: ': ',
+    kvNext: 'Próxima ejecución',
+    kvOverdue: 'Con retraso desde',
+    kvLast: 'Última ejecución',
+    kvDeliver: 'Envía a',
+    kvModel: 'Modelo',
+    modelDefault: 'Predeterminado (modelo global)',
+    prompt: 'Prompt',
+    script: 'Script',
+    runs: 'Ejecuciones',
+    runRunning: 'En curso',
+    runViewOnly: 'Solo lectura',
+    runOutputOnly: 'Solo salida',
+    durationSeconds: seconds => `${seconds} s`,
+    durationMinutes: (minutes, seconds) => (seconds ? `${minutes} min ${seconds} s` : `${minutes} min`),
+    durationHours: (hours, minutes) => (minutes ? `${hours} h ${minutes} min` : `${hours} h`),
+    weeklyOnDaysAt: (days, time) => `Cada ${days} a las ${time}`,
+    weekdaysShort: ['lun', 'mar', 'mié', 'jue', 'vie', 'sáb', 'dom'],
+    daySeparator: ', ',
+    sheet: {
+      newTitle: 'Nueva tarea programada',
+      editTitle: 'Editar tarea programada',
+      blueprintTitle: name => `Usar plantilla: ${name}`,
+      name: 'Nombre',
+      promptQuestion: '¿Qué debe hacer Hermes?',
+      promptPlaceholder:
+        'Por ejemplo: resume las noticias de IA importantes de las últimas 24 horas, una frase por noticia, con enlaces a las fuentes.',
+      when: 'Cuándo',
+      frequency: 'Frecuencia',
+      time: 'Hora',
+      weekdays: 'Días',
+      dayOfMonth: 'Día del mes',
+      customLabel: 'Programación personalizada',
+      customPlaceholder: 'O escribe una expresión cron o una frase como «every 30m»',
+      checkedOnSave: 'Se comprueba al guardar',
+      deliverTo: 'Enviar resultados a',
+      model: 'Modelo',
+      create: 'Crear',
+      save: 'Guardar'
+    }
+  },
+  webhooks: {
+    listLabel: 'Webhooks',
+    runsOnEvent: 'Ejecuta Hermes cuando llega un evento',
+    enableAria: name => `Activar ${name}`,
+    receiveUrl: 'URL de recepción',
+    receiveUrlHint: 'Pégala en la configuración de webhooks del remitente',
+    signingSecret: 'Secreto de firma',
+    signingSecretHint: 'Solo se muestra una vez, al crearlo',
+    secretSet: 'Configurado',
+    secretNotSet: 'Sin configurar',
+    events: 'Eventos',
+    skills: 'Habilidades',
+    deliverTo: 'Enviar resultados a',
+    none: '—',
+    newTitle: 'Nuevo webhook',
+    promptQuestion: '¿Qué debe hacer Hermes cuando llega un evento?',
+    moreOptions: 'Más opciones',
+    receiverSettings: 'Ajustes del receptor'
+  }
 }

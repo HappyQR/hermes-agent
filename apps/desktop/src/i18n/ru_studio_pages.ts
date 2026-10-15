@@ -2,5 +2,101 @@
 import type { StudioPagesTranslations } from './types_studio_pages'
 
 export const ruStudioPages: StudioPagesTranslations = {
-  automations: 'Автоматизация'
+  common: {
+    moreActions: 'Другие действия',
+    deleteEllipsis: 'Удалить…',
+    edit: 'Изменить',
+    appliesTo: 'Применяется к',
+    thisMac: 'Этот Mac',
+    thisDevice: 'Это устройство'
+  },
+  automations: {
+    title: 'Автоматизация',
+    subtitle: 'Запускайте Hermes по расписанию или по событию и отправляйте результаты туда, куда нужно.',
+    tabsLabel: 'Тип автоматизации',
+    tabs: { cron: 'По расписанию', webhook: 'Webhook', blueprints: 'Шаблоны' },
+    newMenu: 'Создать',
+    newJob: 'Новое задание по расписанию…',
+    newHook: 'Новый webhook…',
+    blueprintsIntro:
+      'Готовые автоматизации: заполните пару полей — и они работают. Их предоставляют установленные плагины и навыки.',
+    blueprintKind: 'Шаблон',
+    useBlueprint: 'Использовать',
+    useBlueprintAria: name => `Использовать «${name}»`
+  },
+  cron: {
+    listLabel: 'Задания по расписанию',
+    nextAt: when => `далее ${when}`,
+    overdueAt: when => `просрочено с ${when}`,
+    tagHealthy: 'В порядке',
+    tagFailed: 'Последний запуск не удался',
+    triggerNow: 'Запустить сейчас',
+    duplicate: 'Дублировать задание',
+    copyName: name => `${name} (копия)`,
+    openLatestRun: 'Открыть последний запуск в сеансе',
+    noRunsToOpen: 'У этого задания пока нет запусков с сеансом.',
+    deleteNamed: name => `Удалить «${name}»?`,
+    deleteBody:
+      'Задание сразу перестанет запускаться, а сохранённые результаты запусков будут удалены. Сеансы прошлых запусков останутся в истории.',
+    lastRunFailed: 'Последний запуск не удался',
+    failureSeparator: ': ',
+    kvNext: 'Следующий запуск',
+    kvOverdue: 'Просрочено с',
+    kvLast: 'Последний запуск',
+    kvDeliver: 'Отправляет в',
+    kvModel: 'Модель',
+    modelDefault: 'По умолчанию (общая модель)',
+    prompt: 'Промпт',
+    script: 'Скрипт',
+    runs: 'Запуски',
+    runRunning: 'Выполняется',
+    runViewOnly: 'Только просмотр',
+    runOutputOnly: 'Только вывод',
+    durationSeconds: seconds => `${seconds} с`,
+    durationMinutes: (minutes, seconds) => (seconds ? `${minutes} мин ${seconds} с` : `${minutes} мин`),
+    durationHours: (hours, minutes) => (minutes ? `${hours} ч ${minutes} мин` : `${hours} ч`),
+    weeklyOnDaysAt: (days, time) => `Каждую неделю: ${days}, в ${time}`,
+    weekdaysShort: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
+    daySeparator: ', ',
+    sheet: {
+      newTitle: 'Новое задание по расписанию',
+      editTitle: 'Изменить задание по расписанию',
+      blueprintTitle: name => `Шаблон: ${name}`,
+      name: 'Название',
+      promptQuestion: 'Что должен сделать Hermes?',
+      promptPlaceholder:
+        'Например: соберите важные новости ИИ за последние 24 часа — по одному предложению на новость, со ссылками на источники.',
+      when: 'Когда',
+      frequency: 'Частота',
+      time: 'Время',
+      weekdays: 'Дни',
+      dayOfMonth: 'День месяца',
+      customLabel: 'Своё расписание',
+      customPlaceholder: 'Или введите выражение cron либо фразу вроде «every 30m»',
+      checkedOnSave: 'Проверяется при сохранении',
+      deliverTo: 'Отправлять результаты в',
+      model: 'Модель',
+      create: 'Создать',
+      save: 'Сохранить'
+    }
+  },
+  webhooks: {
+    listLabel: 'Webhook',
+    runsOnEvent: 'Запускает Hermes при поступлении события',
+    enableAria: name => `Включить ${name}`,
+    receiveUrl: 'Адрес приёма',
+    receiveUrlHint: 'Вставьте его в настройки webhook у отправителя',
+    signingSecret: 'Секрет подписи',
+    signingSecretHint: 'Показывается один раз, при создании',
+    secretSet: 'Задан',
+    secretNotSet: 'Не задан',
+    events: 'События',
+    skills: 'Навыки',
+    deliverTo: 'Отправлять результаты в',
+    none: '—',
+    newTitle: 'Новый webhook',
+    promptQuestion: 'Что должен сделать Hermes при поступлении события?',
+    moreOptions: 'Дополнительные параметры',
+    receiverSettings: 'Настройки приёмника'
+  }
 }
