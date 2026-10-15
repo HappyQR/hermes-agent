@@ -6,18 +6,23 @@
 // `dt-portal-scrollbar` reproduces the thin themed scrollbar from
 // `.scrollbar-dt` for portaled overlays (Radix renders under document.body,
 // outside #root's scope). See styles.css.
+// Hermes Studio: the macOS menu — frosted --ui-menu fill, 0.5px ring inside
+// shadow-md (no border), 11px corners, 13px text.
 export const menuSurfaceClass =
-  'dt-portal-scrollbar rounded-lg border border-(--ui-stroke-secondary) bg-[color-mix(in_srgb,var(--ui-bg-elevated)_96%,transparent)] p-1 text-[length:var(--conversation-text-font-size)] text-popover-foreground shadow-md backdrop-blur-md'
+  'dt-portal-scrollbar rounded-xl bg-(--ui-menu) p-[5px] text-[0.8125rem] text-popover-foreground shadow-md backdrop-blur-[36px] backdrop-saturate-[1.8]'
 
-export const menuMotionClass =
-  'data-[side=bottom]:slide-in-from-top-1 data-[side=left]:slide-in-from-right-1 data-[side=right]:slide-in-from-left-1 data-[side=top]:slide-in-from-bottom-1 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95'
+// Motion lives in studio.css (keyed on data-slot + data-state), so menus,
+// selects and popovers share one spring pop-in and a quick fade-out.
+export const menuMotionClass = ''
 
 // Row shape only. Each primitive adds its own highlight/disabled selectors:
 // Radix rows take real focus (`focus:`), cmdk rows stay behind the input and
 // mark `data-selected="true"`.
 export const menuItemClass =
-  "relative flex items-center gap-2 rounded-md px-2 py-1 text-xs outline-hidden select-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3.5"
+  "relative flex min-h-6 items-center gap-2 rounded-[5px] px-2 py-[3px] text-[0.8125rem] leading-[1.25rem] outline-hidden select-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3.5"
 
-export const menuItemFocusClass = 'focus:bg-(--ui-control-active-background) focus:text-foreground'
+// macOS highlight: accent fill, white label and glyphs.
+export const menuItemFocusClass =
+  'focus:bg-(--dt-primary) focus:text-(--ui-on-accent) focus:[&_svg]:text-(--ui-on-accent) focus:[&_*]:text-(--ui-on-accent)'
 
-export const menuLabelClass = 'px-2 py-1 text-xs font-medium text-(--ui-text-tertiary)'
+export const menuLabelClass = 'px-2 pt-1.5 pb-1 text-[0.71875rem] font-semibold text-(--ui-text-tertiary)'

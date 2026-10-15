@@ -66,7 +66,7 @@ describe('ThemeTool', () => {
     const respond = park('accent')
 
     renderRow({ args: { picker: 'accent' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Ultraviolet' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Purple' }))
 
     expect(respond).not.toHaveBeenCalled()
     expect($accentOverride.get()).not.toBeNull()
@@ -74,7 +74,7 @@ describe('ThemeTool', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
 
     expect(respond).toHaveBeenCalledWith({ picked: { accent: 'violet' } })
-    expect(screen.getByText('Ultraviolet').closest('[data-theme-settled]')).not.toBeNull()
+    expect(screen.getByText('Purple').closest('[data-theme-settled]')).not.toBeNull()
   })
 
   it('puts the previous accent back when the card settles without a pick', async () => {
@@ -82,7 +82,7 @@ describe('ThemeTool', () => {
 
     const { rerender } = renderRow({ args: { picker: 'accent' } })
 
-    fireEvent.click(screen.getByRole('button', { name: 'Ultraviolet' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Purple' }))
     // The backend's cancel or timeout settles the row with a result and no pick.
     rerender(row({ args: { picker: 'accent' }, result: { cancelled: true } }))
 

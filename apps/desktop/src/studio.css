@@ -1,0 +1,367 @@
+/* ──────────────────────────────────────────────────────────────────────────
+   Hermes Studio — the macOS design layer.
+
+   Imported right after styles.css. Declarations here are unlayered, so they
+   win over the `@layer base` tokens in styles.css without editing those rules
+   (keeps upstream merges clean). Three parts:
+     1. Foundation tokens (every theme): shape, motion, type, semantic aliases.
+     2. The Studio palette (scoped to the Studio theme and its accent retints).
+     3. Motion for Radix overlays (menus, popovers, dialogs, sheets, tooltips).
+   Values reproduce the design prototype (hermes-proto/styles.css).
+   ────────────────────────────────────────────────────────────────────────── */
+
+/* ── 1. Foundation ─────────────────────────────────────────────────────── */
+
+:root {
+  /* Shape: rounded-md 7px (controls, rows), rounded-xl 11px (menus, cards),
+     rounded-2xl 17px (sheets), rounded-3xl 22px (composer). */
+  --radius-scalar: 0.7;
+
+  /* Motion (prototype --ease / --spring / --t1..3). */
+  --studio-ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --studio-spring: cubic-bezier(0.34, 1.32, 0.64, 1);
+  --studio-t1: 120ms;
+  --studio-t2: 220ms;
+  --studio-t3: 380ms;
+
+  /* Conversation type: 15px with ~1.65 leading at the default 110% Chat Text Size. */
+  --conversation-text-base-size: 0.8523rem;
+  --conversation-tool-base-size: 0.75rem;
+  --conversation-caption-base-size: 0.75rem;
+  --conversation-base-line-height: 1.4rem;
+  --conversation-caption-base-line-height: 1.05rem;
+  --turn-block-gap: 1rem;
+  --paragraph-gap: 0.75rem;
+
+  /* Toolbar metrics (prototype .ibtn 28px, 16px glyphs). */
+  --titlebar-control-size: 28px;
+  --titlebar-control-height: 28px;
+  --titlebar-icon-size: 16px;
+
+  /* Semantic aliases the restyled primitives use, with fallbacks for any theme. */
+  --ui-fill: var(--ui-bg-quaternary);
+  --ui-fill-2: var(--ui-bg-quinary);
+  --ui-hover: var(--ui-control-hover-background);
+  --ui-press: var(--ui-control-active-background);
+  --ui-selected: var(--ui-row-active-background);
+  --ui-line: var(--ui-stroke-tertiary);
+  --ui-line-2: var(--ui-stroke-secondary);
+  --ui-bg-inspector: var(--ui-sidebar-surface-background);
+  --ui-bg-recessed: var(--ui-bg-tertiary);
+  --ui-accent-text: var(--dt-primary);
+  --ui-accent-soft: color-mix(in srgb, var(--dt-primary) 13%, transparent);
+  --ui-accent-softer: color-mix(in srgb, var(--dt-primary) 7%, transparent);
+  --ui-on-accent: #ffffff;
+  --ui-glass: color-mix(in srgb, var(--ui-bg-elevated) 74%, transparent);
+  --ui-glass-strong: color-mix(in srgb, var(--ui-bg-elevated) 90%, transparent);
+  --ui-menu: color-mix(in srgb, var(--ui-bg-elevated) 86%, transparent);
+  --ui-scrim: rgb(0 0 0 / 0.22);
+  --ui-code-background: var(--ui-bg-editor);
+
+  /* Elevation (prototype --shadow-pop / -float / -soft / -win). */
+  --elev-pop: 0 0 0 0.5px rgb(0 0 0 / 0.12), 0 16px 40px -10px rgb(0 0 0 / 0.24), 0 4px 12px -4px rgb(0 0 0 / 0.12);
+  --elev-float: 0 0 0 0.5px rgb(0 0 0 / 0.1), 0 10px 30px -10px rgb(0 0 0 / 0.22), 0 2px 6px -2px rgb(0 0 0 / 0.08);
+  --elev-soft: 0 0 0 0.5px rgb(0 0 0 / 0.07), 0 1px 3px rgb(0 0 0 / 0.05);
+  --elev-win: 0 0 0 0.5px rgb(0 0 0 / 0.22), 0 30px 80px -14px rgb(18 22 44 / 0.4), 0 10px 26px -10px rgb(18 22 44 / 0.2);
+  --hairline-hi: inset 0 0.5px 0 rgb(255 255 255 / 0.7);
+}
+
+.dark {
+  --ui-scrim: rgb(0 0 0 / 0.38);
+  --elev-pop: 0 0 0 0.5px rgb(255 255 255 / 0.14), 0 16px 40px -10px rgb(0 0 0 / 0.6), 0 4px 12px -4px rgb(0 0 0 / 0.4);
+  --elev-float: 0 0 0 0.5px rgb(255 255 255 / 0.12), 0 10px 30px -10px rgb(0 0 0 / 0.55), 0 2px 6px -2px rgb(0 0 0 / 0.3);
+  --elev-soft: 0 0 0 0.5px rgb(255 255 255 / 0.08), 0 1px 3px rgb(0 0 0 / 0.3);
+  --elev-win: 0 0 0 0.5px rgb(255 255 255 / 0.16), 0 30px 80px -14px rgb(0 0 0 / 0.7), 0 10px 26px -10px rgb(0 0 0 / 0.5);
+  --hairline-hi: inset 0 0.5px 0 rgb(255 255 255 / 0.08);
+}
+
+/* ── 2. The Studio palette ─────────────────────────────────────────────── */
+
+:root:is([data-hermes-theme='studio'], [data-hermes-theme^='studio-accent-']) {
+  --ui-bg-chrome: #ffffff;
+  --ui-bg-sidebar: #eaeaf0;
+  --ui-bg-editor: #ffffff;
+  --ui-bg-elevated: #f6f6f9;
+  --dt-popover: rgb(246 246 249 / 0.86);
+  --ui-bg-inspector: #f7f7f9;
+  --ui-bg-recessed: #efeff3;
+
+  --ui-bg-primary: rgb(118 118 128 / 0.24);
+  --ui-bg-secondary: rgb(118 118 128 / 0.18);
+  --ui-bg-tertiary: rgb(0 0 0 / 0.085);
+  --ui-bg-quaternary: rgb(118 118 128 / 0.12);
+  --ui-bg-quinary: rgb(118 118 128 / 0.07);
+  --ui-row-hover-background: rgb(0 0 0 / 0.045);
+  --ui-row-active-background: rgb(0 0 0 / 0.075);
+  --ui-control-hover-background: rgb(0 0 0 / 0.045);
+  --ui-control-active-background: rgb(0 0 0 / 0.085);
+
+  --ui-stroke-primary: rgb(0 0 0 / 0.22);
+  --ui-stroke-secondary: rgb(0 0 0 / 0.14);
+  --ui-stroke-tertiary: rgb(0 0 0 / 0.08);
+  --ui-stroke-quaternary: rgb(0 0 0 / 0.05);
+  --sidebar-edge-border: rgb(0 0 0 / 0.14);
+  --stroke-nous: transparent;
+
+  --ui-text-primary: #1d1d1f;
+  --ui-text-secondary: #4f4f55;
+  --ui-text-tertiary: #6b6b71;
+  --ui-text-quaternary: #9c9ca3;
+  --conversation-scaffold-text: #6b6b71;
+  --conversation-scaffold-meta: #9c9ca3;
+
+  --ui-accent-text: color-mix(in srgb, var(--theme-primary) 84%, #000);
+  --ui-accent-soft: color-mix(in srgb, var(--theme-primary) 13%, transparent);
+  --ui-accent-softer: color-mix(in srgb, var(--theme-primary) 7%, transparent);
+  --ui-glass: rgb(255 255 255 / 0.74);
+  --ui-glass-strong: rgb(251 251 253 / 0.9);
+  --ui-menu: rgb(246 246 249 / 0.86);
+  --ui-scrim: rgb(24 24 30 / 0.2);
+
+  --ui-chat-bubble-background: #f0f0f4;
+  --ui-terminal-surface-background: #fbfbfc;
+  --ui-code-background: #f6f6f8;
+  --ui-inline-code-background: rgb(118 118 128 / 0.1);
+  --ui-inline-code-foreground: #1d1d1f;
+  --ui-selection-background: color-mix(in srgb, var(--theme-primary) 26%, transparent);
+  --ui-widget-surface-background: #f7f7f9;
+
+  --ui-red: #c9271b;
+  --ui-green: #18803f;
+  --ui-orange: #b25400;
+  --ui-purple: #8340c2;
+  --ui-cyan: #1f8aa0;
+  --ui-yellow: #9c6b00;
+  --ui-blue: var(--theme-primary);
+  --ui-dot-green: #30c25a;
+  --ui-dot-orange: #ff9500;
+  --ui-dot-red: #ff3b30;
+  --ui-dot-purple: #af52de;
+  --ui-dot-teal: #30b0c7;
+  --ui-dot-yellow: #ffcc00;
+  --ui-dot-pink: #ff2d55;
+  --ui-diff-add-background: rgb(48 194 90 / 0.13);
+  --ui-diff-remove-background: rgb(255 59 48 / 0.11);
+
+  --dt-input-border: 0%;
+  --dt-input-inset: inset 0 1px 1px rgb(0 0 0 / 0.03);
+}
+
+:root:is([data-hermes-theme='studio'], [data-hermes-theme^='studio-accent-']).dark {
+  --ui-bg-chrome: #1c1c1e;
+  --ui-bg-sidebar: #24242a;
+  --ui-bg-editor: #252528;
+  --ui-bg-elevated: #28282e;
+  --dt-popover: rgb(40 40 46 / 0.86);
+  --ui-bg-inspector: #222225;
+  --ui-bg-recessed: #2b2b2f;
+
+  --ui-bg-primary: rgb(118 118 128 / 0.36);
+  --ui-bg-secondary: rgb(118 118 128 / 0.3);
+  --ui-bg-tertiary: rgb(255 255 255 / 0.1);
+  --ui-bg-quaternary: rgb(118 118 128 / 0.24);
+  --ui-bg-quinary: rgb(118 118 128 / 0.14);
+  --ui-row-hover-background: rgb(255 255 255 / 0.06);
+  --ui-row-active-background: rgb(255 255 255 / 0.09);
+  --ui-control-hover-background: rgb(255 255 255 / 0.06);
+  --ui-control-active-background: rgb(255 255 255 / 0.1);
+
+  --ui-stroke-primary: rgb(255 255 255 / 0.24);
+  --ui-stroke-secondary: rgb(255 255 255 / 0.15);
+  --ui-stroke-tertiary: rgb(255 255 255 / 0.08);
+  --ui-stroke-quaternary: rgb(255 255 255 / 0.05);
+  --sidebar-edge-border: rgb(255 255 255 / 0.15);
+
+  --ui-text-primary: #f2f2f5;
+  --ui-text-secondary: #c2c2c9;
+  --ui-text-tertiary: #9d9da6;
+  --ui-text-quaternary: #6d6d76;
+  --conversation-scaffold-text: #9d9da6;
+  --conversation-scaffold-meta: #6d6d76;
+
+  --ui-accent-text: color-mix(in srgb, var(--theme-primary) 72%, #fff);
+  --ui-accent-soft: color-mix(in srgb, var(--theme-primary) 22%, transparent);
+  --ui-accent-softer: color-mix(in srgb, var(--theme-primary) 12%, transparent);
+  --ui-glass: rgb(42 42 48 / 0.72);
+  --ui-glass-strong: rgb(36 36 42 / 0.92);
+  --ui-menu: rgb(40 40 46 / 0.86);
+  --ui-scrim: rgb(0 0 0 / 0.38);
+
+  --ui-chat-bubble-background: #2c2c30;
+  --ui-terminal-surface-background: #161618;
+  --ui-code-background: #161618;
+  --ui-inline-code-background: rgb(118 118 128 / 0.2);
+  --ui-inline-code-foreground: #f2f2f5;
+  --ui-selection-background: color-mix(in srgb, var(--theme-primary) 38%, transparent);
+  --ui-widget-surface-background: #222225;
+
+  --ui-red: #ff6b5f;
+  --ui-green: #4cd27a;
+  --ui-orange: #ffad4d;
+  --ui-purple: #c890f5;
+  --ui-cyan: #40c8e0;
+  --ui-yellow: #ffd60a;
+  --ui-dot-green: #32d74b;
+  --ui-dot-orange: #ff9f0a;
+  --ui-dot-red: #ff453a;
+  --ui-dot-purple: #bf5af2;
+  --ui-dot-teal: #40c8e0;
+  --ui-dot-yellow: #ffd60a;
+  --ui-dot-pink: #ff375f;
+  --ui-diff-add-background: rgb(50 215 75 / 0.15);
+  --ui-diff-remove-background: rgb(255 69 58 / 0.15);
+
+  --dt-input-inset: inset 0 1px 1px rgb(0 0 0 / 0.2);
+}
+
+/* Glass rail: the sidebar half of <body> wears the sidebar grey, not the chat white. */
+:root[data-hermes-glass][data-hermes-glass-scope='sidebar']:is([data-hermes-theme='studio'], [data-hermes-theme^='studio-accent-']) body {
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--ui-bg-sidebar) var(--translucency-glass-keep, 100%), transparent) var(--glass-rail-edge, 0px),
+    var(--ui-bg-chrome) var(--glass-rail-edge, 0px)
+  );
+}
+
+:root[data-hermes-glass][data-hermes-glass-scope='sidebar'][dir='rtl']:is([data-hermes-theme='studio'], [data-hermes-theme^='studio-accent-']) body {
+  background: linear-gradient(
+    to left,
+    color-mix(in srgb, var(--ui-bg-sidebar) var(--translucency-glass-keep, 100%), transparent) var(--glass-rail-edge, 0px),
+    var(--ui-bg-chrome) var(--glass-rail-edge, 0px)
+  );
+}
+
+/* ── 3. Motion for Radix overlays ──────────────────────────────────────── */
+
+@keyframes studio-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes studio-pop-out {
+  to {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+}
+
+@keyframes studio-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes studio-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes studio-sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(-14px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes studio-sheet-out {
+  to {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.985);
+  }
+}
+
+@keyframes studio-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+[data-slot='dropdown-menu-content'],
+[data-slot='dropdown-menu-sub-content'],
+[data-slot='context-menu-content'],
+[data-slot='context-menu-sub-content'],
+[data-slot='select-content'],
+[data-slot='popover-content'] {
+  transform-origin: var(
+    --radix-dropdown-menu-content-transform-origin,
+    var(
+      --radix-context-menu-content-transform-origin,
+      var(--radix-select-content-transform-origin, var(--radix-popover-content-transform-origin, center))
+    )
+  );
+}
+
+:is(
+    [data-slot='dropdown-menu-content'],
+    [data-slot='dropdown-menu-sub-content'],
+    [data-slot='context-menu-content'],
+    [data-slot='context-menu-sub-content'],
+    [data-slot='select-content'],
+    [data-slot='popover-content']
+  )[data-state='open'] {
+  animation: studio-pop-in 170ms var(--studio-spring) both;
+}
+
+:is(
+    [data-slot='dropdown-menu-content'],
+    [data-slot='dropdown-menu-sub-content'],
+    [data-slot='context-menu-content'],
+    [data-slot='context-menu-sub-content'],
+    [data-slot='select-content'],
+    [data-slot='popover-content']
+  )[data-state='closed'] {
+  animation: studio-pop-out 120ms var(--studio-ease) both;
+}
+
+:is([data-slot='dialog-overlay'], [data-slot='sheet-overlay'])[data-state='open'] {
+  animation: studio-fade-in 200ms var(--studio-ease) both;
+}
+
+:is([data-slot='dialog-overlay'], [data-slot='sheet-overlay'])[data-state='closed'] {
+  animation: studio-fade-out 160ms var(--studio-ease) both;
+}
+
+[data-slot='dialog-content'][data-state='open'] {
+  animation: studio-sheet-in 300ms var(--studio-spring) both;
+}
+
+[data-slot='dialog-content'][data-state='closed'] {
+  animation: studio-sheet-out 180ms var(--studio-ease) both;
+}
+
+/* Tooltips keep their own motion contract (DESIGN.md "Tooltip timing"). */
+
+@media (prefers-reduced-motion: reduce) {
+  :is(
+      [data-slot='dropdown-menu-content'],
+      [data-slot='dropdown-menu-sub-content'],
+      [data-slot='context-menu-content'],
+      [data-slot='context-menu-sub-content'],
+      [data-slot='select-content'],
+      [data-slot='popover-content'],
+      [data-slot='dialog-overlay'],
+      [data-slot='sheet-overlay'],
+      [data-slot='dialog-content']
+    )[data-state] {
+    animation: none;
+  }
+}

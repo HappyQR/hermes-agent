@@ -6,7 +6,8 @@
  * the pick. `custom:#rrggbb` names a colour that is not a swatch.
  */
 
-export const NOUS_ACCENT = '#0053fd'
+// Studio's default accent (macOS system blue); the theme paints it, so it resolves to `null`.
+export const NOUS_ACCENT = '#0a7aff'
 
 export const CUSTOM_ACCENT_PREFIX = 'custom:'
 
@@ -17,18 +18,25 @@ interface Swatch {
   name: string
 }
 
+// Hermes Studio: the macOS accent row, in the prototype's order. `nous` stays
+// the theme's own accent (system blue under Studio) so the ids the backend's
+// set_theme tool validates (tools/set_theme_tool.py) keep landing; `hermes` is
+// Studio's brand blue. `cyan` is no longer offered but still resolves for the
+// agent and for picks saved before the fork.
 const SWATCHES: readonly Swatch[] = [
-  { id: 'mono', name: 'Mono', light: '#000000', dark: '#ffffff' },
-  { id: 'green', name: 'GitHub green', light: '#2ea043', dark: '#2ea043' },
-  { id: 'cyan', name: 'Cyber cyan', light: '#00d5ff', dark: '#00d5ff' },
-  { id: 'nous', name: 'Nous blue', light: NOUS_ACCENT, dark: NOUS_ACCENT },
-  { id: 'violet', name: 'Ultraviolet', light: '#8a2be2', dark: '#8a2be2' },
-  { id: 'pink', name: 'Barbie pink', light: '#e0218a', dark: '#e0218a' },
-  { id: 'red', name: 'Electric red', light: '#ff073a', dark: '#ff073a' },
-  { id: 'orange', name: 'Safety orange', light: '#ff6a00', dark: '#ff6a00' }
+  { id: 'nous', name: 'Blue', light: NOUS_ACCENT, dark: '#0a84ff' },
+  { id: 'hermes', name: 'Hermes blue', light: '#2456f5', dark: '#4d7bff' },
+  { id: 'violet', name: 'Purple', light: '#9b51e0', dark: '#bf5af2' },
+  { id: 'pink', name: 'Pink', light: '#e8457f', dark: '#ff375f' },
+  { id: 'red', name: 'Red', light: '#e5483c', dark: '#ff453a' },
+  { id: 'orange', name: 'Orange', light: '#e8790f', dark: '#ff9f0a' },
+  { id: 'green', name: 'Green', light: '#2f9e47', dark: '#32d74b' },
+  { id: 'mono', name: 'Graphite', light: '#7d7d84', dark: '#98989d' }
 ]
 
-export const ACCENT_SWATCH_IDS: readonly string[] = SWATCHES.map(swatch => swatch.id)
+const RETIRED_SWATCHES: readonly Swatch[] = [{ id: 'cyan', name: 'Cyan', light: '#1fa6c4', dark: '#40c8e0' }]
+
+export const ACCENT_SWATCH_IDS: readonly string[] = [...SWATCHES, ...RETIRED_SWATCHES].map(swatch => swatch.id)
 
 export interface AccentSwatchSpec {
   hex: string
@@ -54,7 +62,9 @@ export function resolveAccentPick(value: string, dark: boolean): ResolvedAccent 
     return { hex: null, id: null }
   }
 
-  const swatch = accentsFor(dark).find(candidate => candidate.id === value)
+  const swatch = [...SWATCHES, ...RETIRED_SWATCHES]
+    .map(({ dark: onDark, id, light, name }) => ({ hex: dark ? onDark : light, id, name }))
+    .find(candidate => candidate.id === value)
 
   if (swatch) {
     return { hex: swatch.hex, id: swatch.id }
@@ -73,5 +83,5 @@ export function resolveAccentPick(value: string, dark: boolean): ResolvedAccent 
 
 /** The name a settled card shows for a reported accent id. */
 export function accentName(id: string): string {
-  return SWATCHES.find(swatch => swatch.id === id)?.name ?? id.replace(CUSTOM_ACCENT_PREFIX, '')
+  return [...SWATCHES, ...RETIRED_SWATCHES].find(swatch => swatch.id === id)?.name ?? id.replace(CUSTOM_ACCENT_PREFIX, '')
 }
