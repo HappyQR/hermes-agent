@@ -473,7 +473,10 @@ export function DesktopInstallOverlay({ enabled = true }: DesktopInstallOverlayP
     // "Continue" step.
     return (
       <div
-        className={cn('fixed inset-0 z-(--z-setup) flex items-center justify-center overflow-y-auto p-5', BOOT_SURFACE_CLASS)}
+        className={cn(
+          'fixed inset-0 z-(--z-setup) flex items-center justify-center overflow-y-auto p-5',
+          BOOT_SURFACE_CLASS
+        )}
       >
         <div className={BOOT_COLUMN_CLASS}>
           <BootHero
@@ -485,11 +488,7 @@ export function DesktopInstallOverlay({ enabled = true }: DesktopInstallOverlayP
             <ChoiceRow
               description={copy[localPres.desc]}
               disabled={localStarting}
-              media={
-                <IconTile glyph={localStarting ? undefined : 'window'} size={38} tone="blue">
-                  {localStarting ? <Loader2 className="animate-spin" /> : null}
-                </IconTile>
-              }
+              media={<LocalChoiceTile starting={localStarting} />}
               onClick={() => void startLocal()}
               title={copy[localPres.title]}
             />
@@ -530,7 +529,10 @@ export function DesktopInstallOverlay({ enabled = true }: DesktopInstallOverlayP
 
     return (
       <div
-        className={cn('fixed inset-0 z-(--z-setup) flex items-center justify-center overflow-y-auto p-5', BOOT_SURFACE_CLASS)}
+        className={cn(
+          'fixed inset-0 z-(--z-setup) flex items-center justify-center overflow-y-auto p-5',
+          BOOT_SURFACE_CLASS
+        )}
       >
         <div className={cn(BOOT_COLUMN_CLASS, 'w-[min(36rem,100%)]')}>
           <BootHero lead={copy.unsupportedDesc(platformLabel)} title={copy.oneTimeTitle} />
@@ -789,5 +791,16 @@ export function DesktopInstallOverlay({ enabled = true }: DesktopInstallOverlayP
         )}
       </div>
     </div>
+  )
+}
+
+/** The "this computer" choice's tile: the window glyph, or a spinner while the local runtime starts. */
+function LocalChoiceTile({ starting }: { starting: boolean }) {
+  return starting ? (
+    <IconTile size={38} tone="blue">
+      <Loader2 className="animate-spin" />
+    </IconTile>
+  ) : (
+    <IconTile glyph="window" size={38} tone="blue" />
   )
 }

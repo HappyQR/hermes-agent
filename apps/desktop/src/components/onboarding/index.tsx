@@ -27,6 +27,7 @@ import {
   confirmOnboardingModel,
   DEFAULT_MANUAL_ONBOARDING_REASON,
   DEFAULT_ONBOARDING_REASON,
+  type DesktopOnboardingState,
   dismissFirstRunOnboarding,
   type OnboardingContext,
   type OnboardingFlow,
@@ -416,13 +417,12 @@ export function DesktopOnboardingOverlay({
   // the surface — same bare, cinematic treatment as the connecting overlay.
   const bare = ready && (freeTierIntro || (!showPicker && flow.status === 'confirming_model'))
 
-  // The two-column key form needs more room than the choice column.
-  const keyForm =
-    onboarding.localEndpoint ||
-    onboarding.mode === 'apikey' ||
-    (onboarding.providers !== null && onboarding.providers.length === 0)
-
-  const step = ready && !freeTierIntro && !leaving ? onboardingStep(flow.status, showPicker && !keyForm) : null
+  const { step, widthClass } = onboardingLayout(onboarding, flow.status, {
+    freeTierIntro,
+    leaving,
+    picking: showPicker,
+    ready
+  })
 
   return (
     <div
@@ -455,7 +455,7 @@ export function DesktopOnboardingOverlay({
       <div
         className={cn(
           'relative my-auto flex w-full flex-col items-center gap-[1.125rem] transition-all duration-500 ease-out',
-          keyForm ? 'max-w-[45rem]' : 'max-w-[32.5rem]',
+          widthClass,
           // Bare confirm screen orchestrates its own per-element exit; the
           // other states use the simple lift/blur dissolve.
           leaving && !bare
@@ -479,7 +479,7 @@ export function DesktopOnboardingOverlay({
             <Preparing boot={boot} />
           )}
         </div>
-        {step !== null ? <StepDots current={step} total={ONBOARDING_STEPS} /> : null}
+        <OnboardingStepDots step={step} />
       </div>
     </div>
   )
@@ -500,6 +500,38 @@ function onboardingStep(status: OnboardingFlow['status'], picking: boolean): nul
   }
 
   return 1
+}
+
+/**
+ * Column width and walk position. The two-column key form (local endpoint,
+ * API key, or no provider catalog) needs more room than the choice column,
+ * and is a step of its own rather than the picker.
+ */
+function onboardingLayout(
+  onboarding: Pick<DesktopOnboardingState, 'localEndpoint' | 'mode' | 'providers'>,
+  status: OnboardingFlow['status'],
+  {
+    freeTierIntro,
+    leaving,
+    picking,
+    ready
+  }: { freeTierIntro: boolean; leaving: boolean; picking: boolean; ready: boolean }
+): { step: null | number; widthClass: string } {
+  // No dots for the free-tier welcome, while Hermes is still starting, or on the way out.
+  const stepsShown = ready && !freeTierIntro && !leaving
+  const keyForm =
+    onboarding.localEndpoint ||
+    onboarding.mode === 'apikey' ||
+    (onboarding.providers !== null && onboarding.providers.length === 0)
+
+  return {
+    step: stepsShown ? onboardingStep(status, picking && !keyForm) : null,
+    widthClass: keyForm ? 'max-w-[45rem]' : 'max-w-[32.5rem]'
+  }
+}
+
+function OnboardingStepDots({ step }: { step: null | number }) {
+  return step === null ? null : <StepDots current={step} total={ONBOARDING_STEPS} />
 }
 
 /**

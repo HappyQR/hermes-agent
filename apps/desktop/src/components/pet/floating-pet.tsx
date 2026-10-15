@@ -107,6 +107,41 @@ function loadPosition(): Point {
  * Promotion to a separate frameless OS-level window is a follow-up — the
  * sprite + state logic here is reused as-is, only the host changes.
  */
+/** The pet's display name for its accessible label (falls back to its slug). */
+function petName(info: { displayName?: null | string; slug?: null | string }): string {
+  return info.displayName || info.slug || ''
+}
+
+/** One press on the pet: where it grabbed, where it started and whether it has travelled. */
+interface PetDrag {
+  dx: number
+  dy: number
+  moved: boolean
+  startX: number
+  startY: number
+  x: number
+  y: number
+}
+
+/** Marks the press as a drag once the pointer travels past the click slop. */
+function noteTravel(drag: PetDrag, e: { clientX: number; clientY: number }) {
+  if (Math.hypot(e.clientX - drag.startX, e.clientY - drag.startY) > CLICK_SLOP_PX) {
+    drag.moved = true
+  }
+}
+
+/**
+ * A press that never travelled is a click: the pet speaks up instead of
+ * persisting a position it never left. A drag commits where it was dropped.
+ */
+function finishPress(drag: PetDrag, onClick: () => void, onDrop: (at: { x: number; y: number }) => void) {
+  if (drag.moved) {
+    onDrop({ x: drag.x, y: drag.y })
+  } else {
+    onClick()
+  }
+}
+
 /** Click the pet and it says how things are going (or hello), for a moment. */
 function usePetPeek(): [boolean, () => void] {
   const [peeking, setPeeking] = useState(false)
@@ -154,15 +189,7 @@ export function FloatingPet() {
   // Live drag offset (pointer → element top-left). Drag updates the DOM
   // directly to avoid a React re-render (and canvas reflow) per pointermove —
   // state is only committed on release.
-  const dragRef = useRef<{
-    dx: number
-    dy: number
-    moved: boolean
-    startX: number
-    startY: number
-    x: number
-    y: number
-  } | null>(null)
+  const dragRef = useRef<PetDrag | null>(null)
 
   // Keep the *whole* pet on-screen at its current size, so growing it near an
   // edge can't leave the window cropping it. Shared by drag + the reclamp effect.
@@ -412,9 +439,7 @@ export function FloatingPet() {
         return
       }
 
-      if (Math.hypot(e.clientX - drag.startX, e.clientY - drag.startY) > CLICK_SLOP_PX) {
-        drag.moved = true
-      }
+      noteTravel(drag, e)
 
       const next = clamp({ x: e.clientX - drag.dx, y: e.clientY - drag.dy })
       drag.x = next.x
@@ -439,17 +464,11 @@ export function FloatingPet() {
       if (drag) {
         dragRef.current = null
 
-        // A press that never travelled is a click: the pet speaks up instead
-        // of persisting a position it never left.
-        if (!drag.moved) {
-          peek()
-        } else {
-          const committed = { x: drag.x, y: drag.y }
+        finishPress(drag, peek, committed => {
           setPosition(committed)
           persistString(POSITION_KEY, JSON.stringify(committed))
-        }
+        })
       }
-
 
       const el = containerRef.current
 
@@ -523,7 +542,7 @@ export function FloatingPet() {
 
   return (
     <div
-      aria-label={t.studio.overlays.aux.pet.label(info.displayName || info.slug || '')}
+      aria-label={t.studio.overlays.aux.pet.label(petName(info))}
       onKeyDown={event => {
         if (event.key === 'Enter' || event.key === ' ') {
           event.preventDefault()
