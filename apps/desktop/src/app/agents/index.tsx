@@ -22,7 +22,9 @@ import {
   type SubagentStreamEntry
 } from '@/store/subagents'
 
-import { Panel, PanelEmpty, PanelHeader } from '../overlays/panel'
+import { OverlayView } from '../overlays/overlay-view'
+import { PanelEmpty } from '../overlays/panel'
+import { SheetBody, SheetHeader } from '../overlays/studio/sheet-header'
 
 // Mirrors statusGlyph() in tool-fallback.tsx so subagent rows speak the
 // same visual vocabulary as the chat tool blocks.
@@ -97,16 +99,23 @@ export function AgentsView({ onClose }: AgentsViewProps) {
   )
 
   return (
-    <Panel closeLabel={t.agents.close} onClose={onClose}>
-      {tree.length === 0 ? (
-        <PanelEmpty description={t.agents.emptyDesc} icon="hubot" title={t.agents.emptyTitle} />
-      ) : (
-        <>
-          <PanelHeader subtitle={t.agents.subtitle} title={t.agents.title} />
+    <OverlayView closeLabel={t.agents.close} onClose={onClose} rootClassName="h-[min(36rem,100%)]" size="wide" variant="sheet">
+      <SheetHeader
+        closeLabel={t.agents.close}
+        glyph="bot"
+        onClose={onClose}
+        subtitle={t.agents.subtitle}
+        title={t.agents.title}
+        tone="indigo"
+      />
+      <SheetBody>
+        {tree.length === 0 ? (
+          <PanelEmpty description={t.agents.emptyDesc} icon="hubot" title={t.agents.emptyTitle} />
+        ) : (
           <SubagentTree tree={tree} />
-        </>
-      )}
-    </Panel>
+        )}
+      </SheetBody>
+    </OverlayView>
   )
 }
 
