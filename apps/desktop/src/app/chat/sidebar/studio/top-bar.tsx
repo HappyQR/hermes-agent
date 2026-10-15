@@ -3,10 +3,9 @@ import { atom } from 'nanostores'
 import { useEffect, useState } from 'react'
 
 import { type NewSessionSplitHandler, startNewSessionDrag } from '@/app/chat/new-session-drag'
-import { TitlebarIcon } from '@/app/shell/titlebar-icon'
 import { Button } from '@/components/ui/button'
-import { Codicon } from '@/components/ui/codicon'
 import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from '@/components/ui/context-menu'
+import { StudioIcon } from '@/components/ui/studio-icon'
 import { Tip, TipKeybindLabel } from '@/components/ui/tooltip'
 import { useI18n } from '@/i18n'
 import { triggerHaptic } from '@/lib/haptics'
@@ -37,7 +36,7 @@ export function publishSidebarTopBarActions(actions: SidebarTopBarActions): void
 /** The "New session" nav item the compose button stands in for. */
 export const NEW_SESSION_NAV_ITEM: SidebarNavItem = {
   action: 'new-session',
-  icon: props => <Codicon name="edit" {...props} />,
+  icon: props => <StudioIcon name="compose" {...props} />,
   id: 'new-session',
   keybindActionId: 'session.new',
   label: ''
@@ -106,10 +105,10 @@ export function SidebarTopBar() {
             triggerHaptic('tap')
             toggleSidebarOpen()
           }}
-          size="icon-titlebar"
+          size="icon-toolbar"
           variant="ghost"
         >
-          <TitlebarIcon name="layout-sidebar-left" />
+          <StudioIcon name="sidebar" size={17} />
         </Button>
       </Tip>
       <ContextMenu>
@@ -133,10 +132,10 @@ export function SidebarTopBar() {
                     actions.onNewSessionSplit(placement.dir, { anchor: placement.anchor, before: placement.before })
                   }, event)
                 }}
-                size="icon-titlebar"
+                size="icon-toolbar"
                 variant="ghost"
               >
-                <TitlebarIcon name="edit" />
+                <StudioIcon name="compose" size={17} />
               </Button>
             </Tip>
           </span>

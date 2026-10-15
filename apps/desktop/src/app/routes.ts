@@ -131,6 +131,9 @@ export const SIDEBAR_NAV_AREA = 'sidebar.nav'
 export interface SidebarNavContribution {
   /** Codicon name, e.g. `'project'`. */
   codicon: string
+  /** Studio icon name (`components/ui/studio-icon`), e.g. `'kanban'`; preferred
+   *  over `codicon` where the Studio set has the glyph. */
+  studioIcon?: string
   label: string
   /** Route to navigate to (usually a contributed page's path). */
   path: string

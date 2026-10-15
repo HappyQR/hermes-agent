@@ -1,4 +1,4 @@
-import { Codicon } from '@/components/ui/codicon'
+import { StudioIcon } from '@/components/ui/studio-icon'
 import { useI18n } from '@/i18n'
 import { useKeybindHint } from '@/lib/keybinds/use-keybind-hint'
 import { recordAction } from '@/store/desktop-metrics'
@@ -25,7 +25,7 @@ export function SidebarSearchButton() {
       }}
       type="button"
     >
-      <Codicon name="search" size="0.875rem" />
+      <StudioIcon name="search" size={14} />
       <span className="min-w-0 flex-1 truncate">{copy.search}</span>
       {hint && (
         <span aria-hidden="true" className="shrink-0 text-[0.71875rem] tracking-[0.02em] text-(--ui-text-tertiary)">

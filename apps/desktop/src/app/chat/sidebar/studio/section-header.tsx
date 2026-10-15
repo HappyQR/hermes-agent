@@ -1,7 +1,6 @@
 import { useStore } from '@nanostores/react'
 import { type ReactNode, useEffect } from 'react'
 
-import { Codicon } from '@/components/ui/codicon'
 import {
   ContextMenu,
   ContextMenuContent,
@@ -9,6 +8,7 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger
 } from '@/components/ui/context-menu'
+import { StudioIcon } from '@/components/ui/studio-icon'
 import { Tip } from '@/components/ui/tooltip'
 import { useI18n } from '@/i18n'
 import { cn } from '@/lib/utils'
@@ -67,7 +67,7 @@ function SectionMenuItems() {
           ackAllSessionsRead()
         }}
       >
-        <Codicon name="check-all" size="0.875rem" />
+        <StudioIcon name="check" size={15} />
         <span>{t.sidebar.markAllRead}</span>
       </ContextMenuItem>
       <ContextMenuSeparator />
@@ -139,13 +139,14 @@ export function SidebarSectionHeader({
               type="button"
             >
               <span className="truncate">{title}</span>
-              <Codicon
+              <StudioIcon
                 className={cn(
-                  'shrink-0 opacity-0 transition-[opacity,transform] duration-200 ease-(--studio-ease) group-hover/section:opacity-100',
+                  'opacity-0 transition-[opacity,transform] duration-200 ease-(--studio-ease) group-hover/section:opacity-100',
                   collapsed && '-rotate-90 opacity-100'
                 )}
-                name="chevron-down"
-                size="0.6875rem"
+                name="chev-d"
+                size={11}
+                stroke={2.2}
               />
             </button>
           </Tip>

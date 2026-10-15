@@ -11,6 +11,8 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger
 } from '@/components/ui/context-menu'
+import { StudioIcon, type StudioIconName } from '@/components/ui/studio-icon'
+import { STUDIO_ICON_SHAPES } from '@/components/ui/studio-icon-shapes'
 import { Tip, TipKeybindLabel } from '@/components/ui/tooltip'
 import { ContribBoundary, ContribRender } from '@/contrib/react/boundary'
 import { useContributions } from '@/contrib/react/use-contributions'
@@ -52,14 +54,14 @@ const SIDEBAR_NAV: NavRowItem[] = [
   {
     id: 'capabilities',
     label: '',
-    icon: props => <Codicon name="symbol-misc" {...props} />,
+    icon: props => <StudioIcon name="cube" {...props} />,
     route: CAPABILITIES_ROUTE,
     keybindActionId: 'nav.capabilities'
   },
   {
     id: 'messaging',
     label: '',
-    icon: props => <Codicon name="comment-discussion" {...props} />,
+    icon: props => <StudioIcon name="bubbles" {...props} />,
     route: MESSAGING_ROUTE,
     keybindActionId: 'nav.messaging'
   },
@@ -67,7 +69,7 @@ const SIDEBAR_NAV: NavRowItem[] = [
   {
     id: 'cron',
     label: '',
-    icon: props => <Codicon name="watch" {...props} />,
+    icon: props => <StudioIcon name="clock" {...props} />,
     route: CRON_ROUTE,
     keybindActionId: 'nav.cron',
     views: ['cron', 'webhooks', 'automations']
@@ -76,7 +78,7 @@ const SIDEBAR_NAV: NavRowItem[] = [
   {
     id: 'artifacts',
     label: '',
-    icon: props => <Codicon name="files" {...props} />,
+    icon: props => <StudioIcon name="shapes" {...props} />,
     route: ARTIFACTS_ROUTE,
     keybindActionId: 'nav.artifacts',
     tier: 'advanced'
@@ -84,7 +86,7 @@ const SIDEBAR_NAV: NavRowItem[] = [
   {
     id: 'memory',
     label: '',
-    icon: props => <Codicon name="graph" {...props} />,
+    icon: props => <StudioIcon name="graph" {...props} />,
     route: STARMAP_ROUTE,
     views: ['starmap', 'memory']
   }
@@ -122,11 +124,17 @@ function useNavItems(): NavRowItem[] {
         }
 
         const codicon = data.codicon || 'plug'
+        const studioIcon = data.studioIcon && data.studioIcon in STUDIO_ICON_SHAPES ? data.studioIcon : null
 
         return [
           {
             contributedMeta: data.meta,
-            icon: (props: { className?: string }) => <Codicon name={codicon} {...props} />,
+            icon: (props: { className?: string }) =>
+              studioIcon ? (
+                <StudioIcon name={studioIcon as StudioIconName} {...props} />
+              ) : (
+                <Codicon name={codicon} {...props} />
+              ),
             id: c.id,
             label: data.label,
             route: data.path,
@@ -192,7 +200,7 @@ function NavRow({ active, item, label, meta, onNavigate, openLabel, splitLabel }
       }}
       type="button"
     >
-      <ItemIcon className="size-4 shrink-0 text-(--ui-accent)" />
+      <ItemIcon className="size-4 shrink-0 text-(--ui-accent) [&.codicon]:text-[1rem]" />
       {/* Shrink-to-fit: the label carries the row's `data-tour` handle, so a
           tip anchored to it lands at the end of the word. Its own
           `sidebar-nav-` namespace (the overlay nav owns `nav-<id>`). */}
@@ -235,7 +243,6 @@ function NavRow({ active, item, label, meta, onNavigate, openLabel, splitLabel }
       )}
       <ContextMenuContent aria-label={label}>
         <ContextMenuItem onSelect={() => onNavigate(item)}>
-          <Codicon name="go-to-file" size="0.875rem" />
           <span>{openLabel}</span>
         </ContextMenuItem>
         {item.route ? (

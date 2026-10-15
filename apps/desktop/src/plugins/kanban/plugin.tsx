@@ -153,6 +153,7 @@ const plugin: HermesPlugin = {
             codicon: 'project',
             label: ctx.i18n.t('nav'),
             meta: KanbanNavMeta,
+            studioIcon: 'kanban',
             path: '/kanban'
           } satisfies SidebarNavContribution
         },
