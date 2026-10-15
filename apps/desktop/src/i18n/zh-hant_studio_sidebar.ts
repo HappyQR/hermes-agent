@@ -98,6 +98,7 @@ export const zhHantStudioSidebar: StudioSidebarTranslations = {
     exportAssistant: 'Hermes',
     exportFailed: '無法匯出工作階段',
     newProject: '新增專案…',
+    renameConfirm: '重新命名',
     delete: '刪除…'
   },
   footer: {

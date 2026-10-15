@@ -98,6 +98,7 @@ export const zhStudioSidebar: StudioSidebarTranslations = {
     exportAssistant: 'Hermes',
     exportFailed: '无法导出会话',
     newProject: '新建项目…',
+    renameConfirm: '重命名',
     delete: '删除…'
   },
   footer: {

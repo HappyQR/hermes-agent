@@ -72,6 +72,25 @@ export default {
     await closeMenus(page, sleep)
   },
 
+  async 'sidebar-bots'(page, { shot, sleep }) {
+    const toggle = page.locator(`${SIDEBAR} [data-sidebar-section^="contrib:"] [data-slot="sidebar-section-header"] button[aria-expanded]`).first()
+    if ((await toggle.getAttribute('aria-expanded')) === 'false') await toggle.click()
+    await sleep(1200)
+    await shot(page, 'sidebar-bots')
+    await toggle.click()
+    await sleep(300)
+  },
+
+  async 'sidebar-rename'(page, { shot, sleep }) {
+    const row = page.locator(`${SIDEBAR} .group.row-hover`).nth(1)
+    await row.click({ button: 'right' })
+    await sleep(400)
+    await page.locator('[role="menuitem"]', { hasText: /重命名|Rename/ }).first().click()
+    await sleep(600)
+    await shot(page, 'sidebar-rename')
+    await closeMenus(page, sleep)
+  },
+
   async 'sidebar-row-menu'(page, { shot, sleep }) {
     const row = page.locator(`${SIDEBAR} .group.row-hover`).nth(1)
     await row.click({ button: 'right' })

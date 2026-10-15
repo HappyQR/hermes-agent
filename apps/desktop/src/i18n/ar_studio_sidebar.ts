@@ -98,6 +98,7 @@ export const arStudioSidebar: StudioSidebarTranslations = {
     exportAssistant: 'Hermes',
     exportFailed: 'تعذّر تصدير الجلسة',
     newProject: 'مشروع جديد…',
+    renameConfirm: 'إعادة التسمية',
     delete: 'حذف…'
   },
   footer: {

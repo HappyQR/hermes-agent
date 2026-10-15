@@ -114,6 +114,7 @@ export const ruStudioSidebar: StudioSidebarTranslations = {
     exportAssistant: 'Hermes',
     exportFailed: 'Не удалось экспортировать сеанс',
     newProject: 'Новый проект…',
+    renameConfirm: 'Переименовать',
     delete: 'Удалить…'
   },
   footer: {

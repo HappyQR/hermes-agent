@@ -98,6 +98,7 @@ export const jaStudioSidebar: StudioSidebarTranslations = {
     exportAssistant: 'Hermes',
     exportFailed: 'セッションを書き出せませんでした',
     newProject: '新規プロジェクト…',
+    renameConfirm: '名前を変更',
     delete: '削除…'
   },
   footer: {

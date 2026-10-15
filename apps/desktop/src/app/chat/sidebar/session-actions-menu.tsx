@@ -12,7 +12,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { CopyButton } from '@/components/ui/copy-button'
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { renameSession } from '@/hermes'
 import { useI18n } from '@/i18n'
@@ -34,6 +34,7 @@ import {
 import { $sessionStates, $sessionTiles, openSessionTile } from '@/store/session-states'
 import { ackStoredSessionId } from '@/store/session-unread'
 
+import { SheetBody, SheetFooter, SheetHeader } from '../../overlays/studio/sheet-header'
 import type { SessionTitleResponse } from '../../types'
 
 import {
@@ -522,36 +523,51 @@ function RenameSessionDialog({ open, onOpenChange, sessionId, currentTitle, prof
     }
   }
 
+  // The prototype's rename sheet: sheet header with the close X, one field,
+  // and Cancel / Rename in the sheet footer.
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>{r.renameTitle}</DialogTitle>
-        </DialogHeader>
-        <Input
-          autoFocus
-          disabled={submitting}
-          onChange={event => setValue(event.target.value)}
-          onKeyDown={event => {
-            if (isSubmitEnter(event)) {
-              event.preventDefault()
-              void submit()
-            } else if (event.key === 'Escape') {
-              onOpenChange(false)
-            }
-          }}
-          placeholder={r.untitledPlaceholder}
-          ref={inputRef}
-          value={value}
-        />
-        <DialogFooter>
-          <Button disabled={submitting} onClick={() => onOpenChange(false)} type="button" variant="ghost">
+      <DialogContent
+        bodyClassName="flex flex-col gap-0 p-0"
+        className="w-[min(30rem,calc(100vw-2.5rem))] max-w-none"
+        // The field, not the header's close X, takes focus on open.
+        onOpenAutoFocus={event => {
+          event.preventDefault()
+          inputRef.current?.focus()
+        }}
+        showCloseButton={false}
+      >
+        <SheetHeader closeLabel={t.common.close} inDialog onClose={() => onOpenChange(false)} title={r.renameTitle} />
+        <SheetBody className="gap-1.5 pt-0 pb-1">
+          <Input
+            aria-label={r.renameTitle}
+            autoFocus
+            className="h-8.5 text-sm"
+            disabled={submitting}
+            onChange={event => setValue(event.target.value)}
+            onKeyDown={event => {
+              if (isSubmitEnter(event)) {
+                event.preventDefault()
+                void submit()
+              } else if (event.key === 'Escape') {
+                onOpenChange(false)
+              }
+            }}
+            placeholder={r.untitledPlaceholder}
+            ref={inputRef}
+            value={value}
+          />
+          <p className="m-0 px-0.5 text-[0.71875rem] leading-[1.4] text-(--ui-text-tertiary)">{r.renameDesc}</p>
+        </SheetBody>
+        <SheetFooter>
+          <span className="flex-1" />
+          <Button disabled={submitting} onClick={() => onOpenChange(false)} type="button" variant="secondary">
             {t.common.cancel}
           </Button>
           <Button disabled={submitting} onClick={() => void submit()} type="button">
-            {t.common.save}
+            {t.studio.sidebar.menu.renameConfirm}
           </Button>
-        </DialogFooter>
+        </SheetFooter>
       </DialogContent>
     </Dialog>
   )

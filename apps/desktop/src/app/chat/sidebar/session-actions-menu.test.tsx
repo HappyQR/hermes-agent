@@ -54,6 +54,7 @@ vi.mock('@/i18n', () => ({
             exportUser: 'You',
             newProject: 'New project…',
             openInNewWindow: 'Open in new window',
+            renameConfirm: 'Rename',
             splitDown: 'Down',
             splitLeft: 'Left',
             splitRight: 'Right',
@@ -223,7 +224,7 @@ describe('SessionActionsMenu', () => {
     const input = within(dialog).getByRole('textbox')
     fireEvent.change(input, { target: { value: 'Prep Butler' } })
 
-    const save = within(dialog).getByRole('button', { name: /save/i })
+    const save = within(dialog).getByRole('button', { name: 'Rename' })
     fireEvent.click(save)
 
     await waitFor(() => {

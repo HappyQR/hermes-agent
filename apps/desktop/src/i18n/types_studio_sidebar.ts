@@ -101,6 +101,8 @@ export interface StudioSidebarTranslations {
     exportAssistant: string
     exportFailed: string
     newProject: string
+    /** The rename sheet's confirm button. */
+    renameConfirm: string
     delete: string
   }
   footer: {

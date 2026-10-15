@@ -5368,6 +5368,7 @@
     "studio.sidebar.menu.exportUser",
     "studio.sidebar.menu.newProject",
     "studio.sidebar.menu.openInNewWindow",
+    "studio.sidebar.menu.renameConfirm",
     "studio.sidebar.menu.splitDown",
     "studio.sidebar.menu.splitLeft",
     "studio.sidebar.menu.splitRight",

@@ -98,6 +98,7 @@ export const enStudioSidebar: StudioSidebarTranslations = {
     exportAssistant: 'Hermes',
     exportFailed: 'Could not export the session',
     newProject: 'New project…',
+    renameConfirm: 'Rename',
     delete: 'Delete…'
   },
   footer: {
