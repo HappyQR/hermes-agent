@@ -96,6 +96,19 @@ export const arStudioPages: StudioPagesTranslations = {
     moreOptions: 'خيارات إضافية',
     receiverSettings: 'إعدادات المستقبِل'
   },
+  inspector: {
+    agents: {
+      statAgents: 'الوكلاء',
+      statRunning: 'قيد التشغيل',
+      statToolCalls: 'استدعاءات الأدوات',
+      statCost: 'التكلفة',
+      toolCalls: count => `${count} استدعاء أداة`,
+      fromSession: title => `من «${title}»`,
+      viewTranscript: 'عرض السجل الكامل',
+      hideTranscript: 'إخفاء السجل',
+      steerLabel: 'توجيه هذا الوكيل الفرعي'
+    }
+  },
   memory: {
     title: 'الذاكرة',
     subtitle: 'ما يتذكره Hermes، وما يعرفه عنك، والمهارات التي تعلّمها بنفسه. يمكنك تعديل أي منها أو حذفه في أي وقت.',

@@ -96,6 +96,19 @@ export const zhHantStudioPages: StudioPagesTranslations = {
     moreOptions: '更多選項',
     receiverSettings: '接收器設定'
   },
+  inspector: {
+    agents: {
+      statAgents: '代理',
+      statRunning: '執行中',
+      statToolCalls: '工具呼叫',
+      statCost: '費用',
+      toolCalls: count => `${count} 次工具`,
+      fromSession: title => `來自對話「${title}」`,
+      viewTranscript: '檢視完整記錄',
+      hideTranscript: '收起記錄',
+      steerLabel: '引導子代理'
+    }
+  },
   memory: {
     title: '記憶',
     subtitle: 'Hermes 記住的事、對你的了解，以及自己學會的技能。都可以隨時修改或刪除。',

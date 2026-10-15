@@ -99,6 +99,19 @@ export const esStudioPages: StudioPagesTranslations = {
     moreOptions: 'Más opciones',
     receiverSettings: 'Ajustes del receptor'
   },
+  inspector: {
+    agents: {
+      statAgents: 'Agentes',
+      statRunning: 'En curso',
+      statToolCalls: 'Llamadas a herramientas',
+      statCost: 'Coste',
+      toolCalls: count => `${count} ${count === 1 ? 'llamada a herramienta' : 'llamadas a herramientas'}`,
+      fromSession: title => `De «${title}»`,
+      viewTranscript: 'Ver la transcripción completa',
+      hideTranscript: 'Ocultar la transcripción',
+      steerLabel: 'Orientar a este subagente'
+    }
+  },
   memory: {
     title: 'Memoria',
     subtitle: 'Lo que Hermes recuerda, lo que sabe de ti y las habilidades que aprendió por sí mismo. Puedes cambiar o borrar cualquier cosa.',

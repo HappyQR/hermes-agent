@@ -100,6 +100,19 @@ export const deStudioPages: StudioPagesTranslations = {
     moreOptions: 'Weitere Optionen',
     receiverSettings: 'Empfänger-Einstellungen'
   },
+  inspector: {
+    agents: {
+      statAgents: 'Agenten',
+      statRunning: 'Laufen',
+      statToolCalls: 'Werkzeugaufrufe',
+      statCost: 'Kosten',
+      toolCalls: count => `${count} ${count === 1 ? 'Werkzeugaufruf' : 'Werkzeugaufrufe'}`,
+      fromSession: title => `Aus „${title}“`,
+      viewTranscript: 'Vollständiges Protokoll anzeigen',
+      hideTranscript: 'Protokoll ausblenden',
+      steerLabel: 'Diesen Subagenten lenken'
+    }
+  },
   memory: {
     title: 'Gedächtnis',
     subtitle: 'Was Hermes sich merkt, was es über dich weiß und welche Skills es sich selbst beigebracht hat. Alles lässt sich ändern oder löschen.',

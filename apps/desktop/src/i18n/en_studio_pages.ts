@@ -99,6 +99,19 @@ export const enStudioPages: StudioPagesTranslations = {
     moreOptions: 'More options',
     receiverSettings: 'Receiver settings'
   },
+  inspector: {
+    agents: {
+      statAgents: 'Agents',
+      statRunning: 'Running',
+      statToolCalls: 'Tool calls',
+      statCost: 'Cost',
+      toolCalls: count => `${count} tool ${count === 1 ? 'call' : 'calls'}`,
+      fromSession: title => `From “${title}”`,
+      viewTranscript: 'View full transcript',
+      hideTranscript: 'Hide transcript',
+      steerLabel: 'Steer this subagent'
+    }
+  },
   memory: {
     title: 'Memory',
     subtitle: 'What Hermes remembers, what it knows about you, and the skills it taught itself. Change or delete any of it.',

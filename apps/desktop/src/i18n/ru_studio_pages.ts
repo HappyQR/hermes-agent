@@ -99,6 +99,19 @@ export const ruStudioPages: StudioPagesTranslations = {
     moreOptions: 'Дополнительные параметры',
     receiverSettings: 'Настройки приёмника'
   },
+  inspector: {
+    agents: {
+      statAgents: 'Агенты',
+      statRunning: 'Работают',
+      statToolCalls: 'Вызовы инструментов',
+      statCost: 'Стоимость',
+      toolCalls: count => `вызовов инструментов: ${count}`,
+      fromSession: title => `Из «${title}»`,
+      viewTranscript: 'Показать полную запись',
+      hideTranscript: 'Скрыть запись',
+      steerLabel: 'Направить этого субагента'
+    }
+  },
   memory: {
     title: 'Память',
     subtitle: 'Что Hermes помнит, что знает о вас и каким навыкам научился сам. Всё это можно изменить или удалить.',

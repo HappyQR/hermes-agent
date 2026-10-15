@@ -96,6 +96,19 @@ export const zhStudioPages: StudioPagesTranslations = {
     moreOptions: '更多选项',
     receiverSettings: '接收器设置'
   },
+  inspector: {
+    agents: {
+      statAgents: '代理',
+      statRunning: '运行中',
+      statToolCalls: '工具调用',
+      statCost: '费用',
+      toolCalls: count => `${count} 次工具`,
+      fromSession: title => `来自会话「${title}」`,
+      viewTranscript: '查看完整记录',
+      hideTranscript: '收起记录',
+      steerLabel: '引导子代理'
+    }
+  },
   memory: {
     title: '记忆',
     subtitle: 'Hermes 记住的事、对你的了解，以及自己学会的技能。都可以随时修改或删除。',

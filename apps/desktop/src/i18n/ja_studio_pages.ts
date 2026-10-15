@@ -98,6 +98,19 @@ export const jaStudioPages: StudioPagesTranslations = {
     moreOptions: 'その他のオプション',
     receiverSettings: '受信設定'
   },
+  inspector: {
+    agents: {
+      statAgents: 'エージェント',
+      statRunning: '実行中',
+      statToolCalls: 'ツール呼び出し',
+      statCost: '費用',
+      toolCalls: count => `ツール ${count} 回`,
+      fromSession: title => `「${title}」から`,
+      viewTranscript: '全記録を表示',
+      hideTranscript: '記録を隠す',
+      steerLabel: 'このサブエージェントに指示する'
+    }
+  },
   memory: {
     title: 'メモリ',
     subtitle: 'Hermes が覚えていること、あなたについて知っていること、自分で身につけたスキル。いつでも変更・削除できます。',

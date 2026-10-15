@@ -4,6 +4,7 @@ export interface StudioPagesTranslations {
   automations: StudioAutomationsTranslations
   cron: StudioCronTranslations
   webhooks: StudioWebhooksTranslations
+  inspector: StudioInspectorTranslations
   memory: StudioMemoryTranslations
 }
 
@@ -113,6 +114,22 @@ export interface StudioWebhooksTranslations {
   promptQuestion: string
   moreOptions: string
   receiverSettings: string
+}
+
+export interface StudioInspectorTranslations {
+  agents: {
+    statAgents: string
+    statRunning: string
+    statToolCalls: string
+    statCost: string
+    /** Tool calls on one agent's meta line. */
+    toolCalls: (count: number) => string
+    fromSession: (title: string) => string
+    viewTranscript: string
+    hideTranscript: string
+    /** Accessible name of the steer field. */
+    steerLabel: string
+  }
 }
 
 export interface StudioMemoryTranslations {

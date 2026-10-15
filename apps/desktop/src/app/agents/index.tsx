@@ -24,6 +24,8 @@ import {
 
 import { Panel, PanelEmpty, PanelHeader } from '../overlays/panel'
 
+import { AgentsPaneBody, usePanelSubagents } from './agents-pane'
+
 // Mirrors statusGlyph() in tool-fallback.tsx so subagent rows speak the
 // same visual vocabulary as the chat tool blocks.
 function statusGlyph(status: SubagentStatus, a: Translations['agents']): ReactNode {
@@ -108,6 +110,15 @@ export function AgentsView({ onClose }: AgentsViewProps) {
       )}
     </Panel>
   )
+}
+
+/** The inspector's Agents pane: this overlay's tree as a pane body (no Panel
+ *  chrome) — summary strip, expandable sub-agent cards with steer/stop. */
+export function AgentsPane() {
+  const panel = usePanelSubagents()
+  const groups = useMemo(() => groupDelegations(panel.tree), [panel.tree])
+
+  return <AgentsPaneBody groups={groups} owners={panel.owners} tree={panel.tree} />
 }
 
 const fmtDuration = (seconds: number | undefined, a: Translations['agents']) => {
