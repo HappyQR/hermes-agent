@@ -437,7 +437,7 @@ function ProfileOwnedWebhooksView({ backendProfile, onOpenReceiverSettings }: Pr
                     key={sub.name}
                     menuItems={[
                       {
-                        icon: sub.enabled ? 'circle-slash' : 'check',
+                        icon: sub.enabled ? 'x-circle' : 'check-circle',
                         key: 'toggle',
                         label: sub.enabled ? w.disableRow : w.enableRow,
                         onSelect: () => void handleToggle(sub.name, !sub.enabled)

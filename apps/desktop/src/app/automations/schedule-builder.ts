@@ -146,13 +146,10 @@ export function parseTimeValue(value: string): null | { hour: number; minute: nu
   return hour <= 23 && minute <= 59 ? { hour, minute } : null
 }
 
-/** Localized clock for a cron time (system locale, like every other app timestamp). */
-export function formatClock(hour: number, minute: number): string {
-  return new Date(2000, 0, 1, hour, minute).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })
-}
-
 /** The copy a summary needs — the legacy `t.cron` helpers plus the studio additions. */
 export interface ScheduleCopy {
+  /** A time of day in the UI language. */
+  clock: (hour: number, minute: number) => string
   dayName: (cronDay: number) => string
   daySeparator: string
   everyDayAt: (time: string) => string
@@ -166,7 +163,7 @@ export interface ScheduleCopy {
 }
 
 export function describePreset(preset: SchedulePreset, copy: ScheduleCopy): string {
-  const time = formatClock(preset.hour, preset.minute)
+  const time = copy.clock(preset.hour, preset.minute)
 
   switch (preset.frequency) {
     case 'daily':

@@ -12,6 +12,7 @@ import {
 } from './schedule-builder'
 
 const copy: ScheduleCopy = {
+  clock: (hour, minute) => `${hour}:${String(minute).padStart(2, '0')}`,
   dayName: day => ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][day],
   daySeparator: ', ',
   everyDayAt: time => `Every day at ${time}`,
@@ -56,10 +57,12 @@ describe('schedule summaries', () => {
   it('describes each frequency', () => {
     expect(describePreset(preset({ frequency: 'hourly', minute: 0 }), copy)).toBe('At the top of every hour')
     expect(describePreset(preset({ frequency: 'hourly', minute: 5 }), copy)).toBe('Every hour at :05')
-    expect(describePreset(preset({ frequency: 'weekly', weekdays: [3] }), copy)).toMatch(/^Every Wednesday at /)
+    expect(describePreset(preset({ frequency: 'weekly', weekdays: [3] }), copy)).toBe('Every Wednesday at 9:00')
     // Monday-first order, whatever order the days were picked in.
-    expect(describePreset(preset({ frequency: 'weekly', weekdays: [0, 1] }), copy)).toMatch(/^Every Mon, Sun at /)
-    expect(describePreset(preset({ dayOfMonth: 3, frequency: 'monthly' }), copy)).toMatch(/^Monthly on day 3 at /)
+    expect(describePreset(preset({ frequency: 'weekly', weekdays: [0, 1] }), copy)).toBe('Every Mon, Sun at 9:00')
+    expect(describePreset(preset({ dayOfMonth: 3, frequency: 'monthly', minute: 5 }), copy)).toBe(
+      'Monthly on day 3 at 9:05'
+    )
   })
 
   it('reads and writes time inputs', () => {

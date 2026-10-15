@@ -1,8 +1,8 @@
-import { type ReactNode, type RefObject, useEffect, useRef } from 'react'
+import { type ReactNode, useRef } from 'react'
 
 import { PAGE_INSET_X } from '@/app/layout-constants'
+import { useToolbarPageTitle } from '@/app/shell/toolbar/use-toolbar-page-title'
 import { cn } from '@/lib/utils'
-import { clearWorkspacePageTitle, publishWorkspacePageTitle } from '@/store/page-title-studio'
 
 // Hermes Studio workspace page frame (prototype `.page` / `.page-in` /
 // `.page-head`): a large title + subtitle head with its tools on the right, an
@@ -37,8 +37,6 @@ export function StudioPage({
   width = 'default',
   ...props
 }: StudioPageProps) {
-  const scrollRef = useRef<HTMLDivElement>(null)
-
   return (
     <section
       {...props}
@@ -53,7 +51,6 @@ export function StudioPage({
           PAGE_INSET_X
         )}
         data-slot="studio-page-scroll"
-        ref={scrollRef}
       >
         <div
           className={cn(
@@ -65,7 +62,7 @@ export function StudioPage({
           )}
           data-slot="studio-page-inner"
         >
-          <StudioPageHeader scrollRef={layout === 'split' ? undefined : scrollRef} subtitle={subtitle} title={title} tools={tools} />
+          <StudioPageHeader subtitle={subtitle} title={title} tools={tools} />
           {toolbar}
           {children}
         </div>
@@ -75,17 +72,16 @@ export function StudioPage({
 }
 
 interface StudioPageHeaderProps {
-  /** The page's scroller; when given, the title is published as "offscreen" once it scrolls away. */
-  scrollRef?: RefObject<HTMLElement | null>
   subtitle?: ReactNode
   title: string
   tools?: ReactNode
 }
 
-export function StudioPageHeader({ scrollRef, subtitle, title, tools }: StudioPageHeaderProps) {
+/** The page head; its title moves into the toolbar once it scrolls away. */
+export function StudioPageHeader({ subtitle, title, tools }: StudioPageHeaderProps) {
   const titleRef = useRef<HTMLHeadingElement>(null)
 
-  useWorkspacePageTitle(title, titleRef, scrollRef)
+  useToolbarPageTitle(title, titleRef)
 
   return (
     <header className="flex flex-wrap items-end gap-x-4 gap-y-3 pt-1.5" data-slot="studio-page-head">
@@ -119,42 +115,4 @@ export function StudioToolbar({ children, className }: { children: ReactNode; cl
 /** Pushes the following toolbar items to the trailing edge. */
 export function ToolbarSpacer() {
   return <span aria-hidden className="flex-1" />
-}
-
-function titlebarHeightPx(element: HTMLElement): number {
-  const raw = getComputedStyle(element).getPropertyValue('--titlebar-height').trim()
-  const value = Number.parseFloat(raw)
-
-  return Number.isFinite(value) ? value : 0
-}
-
-/** Publish this page's title for the toolbar while the page is mounted. */
-function useWorkspacePageTitle(
-  title: string,
-  titleRef: RefObject<HTMLElement | null>,
-  scrollRef?: RefObject<HTMLElement | null>
-) {
-  useEffect(() => {
-    const owner = Symbol('studio-page-title')
-    const heading = titleRef.current
-    const root = scrollRef?.current ?? null
-
-    publishWorkspacePageTitle({ owner, offscreen: false, title })
-
-    if (!heading || !root || typeof IntersectionObserver === 'undefined') {
-      return () => clearWorkspacePageTitle(owner)
-    }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => publishWorkspacePageTitle({ owner, offscreen: !entry.isIntersecting, title }),
-      { root, rootMargin: `-${titlebarHeightPx(root)}px 0px 0px 0px` }
-    )
-
-    observer.observe(heading)
-
-    return () => {
-      observer.disconnect()
-      clearWorkspacePageTitle(owner)
-    }
-  }, [scrollRef, title, titleRef])
 }

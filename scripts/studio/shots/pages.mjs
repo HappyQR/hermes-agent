@@ -6,7 +6,15 @@
 // Pages are reached through the HashRouter (`location.hash`), the same target
 // the sidebar rows and the palette navigate to.
 
+// The gateway reconnects once shortly after boot; the first page shot waits it out.
+let warmed = false
+
 async function go(page, sleep, route, wait = 1600) {
+  if (!warmed) {
+    warmed = true
+    await sleep(6000)
+  }
+
   await page.evaluate(target => {
     window.location.hash = `#${target}`
   }, route)
@@ -18,16 +26,6 @@ async function escape(page, sleep, times = 1) {
     await page.keyboard.press('Escape')
     await sleep(350)
   }
-}
-
-async function clickText(page, text, options = {}) {
-  const target = page.getByText(text, { exact: options.exact ?? true }).first()
-  await target.click({ timeout: options.timeout ?? 8000 })
-}
-
-async function clickRole(page, role, name, options = {}) {
-  const target = page.getByRole(role, { name, exact: options.exact ?? false }).first()
-  await target.click({ timeout: options.timeout ?? 8000 })
 }
 
 export default {
@@ -72,7 +70,7 @@ export default {
     await shot(page, 'messaging-detail')
   },
   async automations(page, { shot, sleep }) {
-    await go(page, sleep, '/cron', 2500)
+    await go(page, sleep, '/cron', 4000)
     await shot(page, 'automations')
   },
   async 'automations-webhook'(page, { shot, sleep }) {
@@ -84,12 +82,37 @@ export default {
     await shot(page, 'automations-blueprints')
   },
   async 'new-job'(page, { shot, sleep }) {
-    await go(page, sleep, '/automations', 2000)
-    await clickRole(page, 'button', /新建|New/)
+    await go(page, sleep, '/automations', 2500)
+    await page.locator('[data-slot="studio-page-tools"] button').last().click({ timeout: 8000 })
+    await sleep(500)
+    await page.getByRole('menuitem').first().click({ timeout: 5000 })
+    await sleep(1200)
+    await shot(page, 'new-job')
+    // Fill the sheet and create the job so the master/detail has content.
+    await page.locator('#cron-name').fill('每日 AI 新闻摘要')
+    await page.locator('#cron-prompt').fill('汇总过去 24 小时 AI 领域的重要新闻，每条一句话，附来源链接。')
+    await page.locator('[data-slot="studio-sheet-foot"] button[type="submit"]').click({ timeout: 5000 })
+    await sleep(2500)
+    await shot(page, 'automations-job')
+  },
+  async 'new-job-weekly'(page, { shot, sleep }) {
+    await go(page, sleep, '/automations', 2500)
+    await page.locator('[data-slot="studio-page-tools"] button').last().click({ timeout: 8000 })
     await sleep(500)
     await page.getByRole('menuitem').first().click({ timeout: 5000 })
     await sleep(900)
-    await shot(page, 'new-job')
+    await page.locator('[data-slot="studio-sheet-body"] [data-slot="segmented-control"] button').nth(2).click()
+    await sleep(500)
+    await shot(page, 'new-job-weekly')
+    await escape(page, sleep)
+  },
+  async 'new-hook'(page, { shot, sleep }) {
+    await go(page, sleep, '/automations?tab=webhook', 2500)
+    await page.locator('[data-slot="studio-page-tools"] button').last().click({ timeout: 8000 })
+    await sleep(500)
+    await page.getByRole('menuitem').nth(1).click({ timeout: 5000 })
+    await sleep(1200)
+    await shot(page, 'new-hook')
     await escape(page, sleep)
   },
   async artifacts(page, { shot, sleep }) {

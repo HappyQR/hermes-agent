@@ -161,3 +161,23 @@
     transition: none;
   }
 }
+
+/* Inline busy spinner in the current text colour (prototype .spin) — for
+   buttons whose label stays in place while they work. */
+.pg-spin {
+  display: inline-block;
+  box-sizing: border-box;
+  flex: none;
+  width: 11px;
+  height: 11px;
+  border: 1.6px solid color-mix(in srgb, currentColor 22%, transparent);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: studio-rot 0.8s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pg-spin {
+    animation-duration: 2.4s;
+  }
+}

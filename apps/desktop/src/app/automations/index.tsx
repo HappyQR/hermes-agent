@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router'
 
 import { StudioPage } from '@/components/studio/pages/page'
 import { Button } from '@/components/ui/button'
-import { Codicon } from '@/components/ui/codicon'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,9 +10,9 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { SegmentedControl } from '@/components/ui/segmented-control'
+import { StudioIcon } from '@/components/ui/studio-icon'
 import type { SessionInfo } from '@/hermes'
 import { useI18n } from '@/i18n'
-import { Plus } from '@/lib/icons'
 
 import { CronView } from '../cron'
 import { useRouteEnumParam } from '../hooks/use-route-enum-param'
@@ -73,17 +72,17 @@ export function AutomationsView({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button>
-                <Plus />
+                <StudioIcon name="plus" size={14} />
                 {a.newMenu}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="min-w-48">
               <DropdownMenuItem onSelect={() => startNew('cron')}>
-                <Codicon name="watch" size="0.875rem" />
+                <StudioIcon name="clock" size={14} />
                 {a.newJob}
               </DropdownMenuItem>
               <DropdownMenuItem onSelect={() => startNew('webhook')}>
-                <Codicon name="globe" size="0.875rem" />
+                <StudioIcon name="webhook" size={14} />
                 {a.newHook}
               </DropdownMenuItem>
             </DropdownMenuContent>

@@ -126,7 +126,7 @@ describe('CronView queued trigger feedback (#70826)', () => {
     await waitFor(() => expect(queuedRow()).toBeNull())
     expect((triggerButton as HTMLButtonElement).disabled).toBe(false)
     // The spinner hands the trigger its run glyph back once the run settles.
-    expect(container.querySelector('.codicon-play')).toBeTruthy()
+    expect(container.querySelector('[data-studio-icon="play"]')).toBeTruthy()
   })
 
   it('reconciles the queued row immediately when cron.changed publishes the run', async () => {

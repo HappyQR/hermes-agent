@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-import { Codicon } from '@/components/ui/codicon'
+import { StudioIcon, type StudioIconName } from '@/components/ui/studio-icon'
 import { cn } from '@/lib/utils'
 
 // Coloured icon tiles (prototype `.gc-ic`): the app-icon-like squares that lead
@@ -55,8 +55,8 @@ interface IconTileProps {
   className?: string
   /** A brand colour (third-party platforms); wins over `tone`. */
   color?: string
-  /** A codicon name, or any glyph node (sized by the caller). */
-  icon: ReactNode | string
+  /** A Studio icon name, or any glyph node (sized by the caller). */
+  icon: ReactNode | StudioIconName
   size?: number
   tone?: TileTone
 }
@@ -77,7 +77,7 @@ export function IconTile({ className, color, icon, size = 36, tone = 'gray' }: I
         width: size
       }}
     >
-      {typeof icon === 'string' ? <Codicon name={icon} size={`${Math.round(size * 0.5)}px`} /> : icon}
+      {typeof icon === 'string' ? <StudioIcon name={icon as StudioIconName} size={Math.round(size * 0.5)} stroke={1.8} /> : icon}
     </span>
   )
 }
@@ -96,15 +96,17 @@ export function Dot({ className, pulse = false, tone }: { className?: string; pu
   )
 }
 
-/** The accent spinner ring (prototype `.ring-run`): something is running now. */
+/** Busy spinner in the current text colour (prototype `.spin`). */
+export function Spinner({ className }: { className?: string }) {
+  return <span aria-hidden="true" className={cn('pg-spin', className)} data-slot="studio-spinner" />
+}
+
+/** The accent spinner ring (prototype `.ring-run`, foundation `.studio-ring-run`): running now. */
 export function RunRing({ className, size = 14 }: { className?: string; size?: number }) {
   return (
     <span
       aria-hidden="true"
-      className={cn(
-        'inline-block shrink-0 animate-spin rounded-full border-[1.8px] border-(--ui-accent-soft) border-t-primary [animation-duration:900ms] motion-reduce:animate-none',
-        className
-      )}
+      className={cn('studio-ring-run', className)}
       data-slot="studio-run-ring"
       style={{ height: size, width: size }}
     />

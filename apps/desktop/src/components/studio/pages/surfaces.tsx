@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-import { Codicon } from '@/components/ui/codicon'
+import { StudioIcon, type StudioIconName } from '@/components/ui/studio-icon'
 import { cn } from '@/lib/utils'
 
 // Page surfaces from the prototype: card grids (`.grid-cards` / `.gcard`),
@@ -201,7 +201,7 @@ export function KeyValueList({ className, rows }: { className?: string; rows: Ke
 interface CalloutProps {
   children: ReactNode
   className?: string
-  icon?: string
+  icon?: StudioIconName
   tone?: 'info' | 'warn'
 }
 
@@ -218,10 +218,10 @@ export function Callout({ children, className, icon, tone = 'info' }: CalloutPro
       data-slot="studio-callout"
       role={tone === 'warn' ? 'alert' : undefined}
     >
-      <Codicon
-        className={cn('mt-[3px] shrink-0', tone === 'warn' ? 'text-(--pg-dot-orange)' : 'text-primary')}
-        name={icon ?? (tone === 'warn' ? 'warning' : 'info')}
-        size="0.9375rem"
+      <StudioIcon
+        className={cn('mt-[3px]', tone === 'warn' ? 'text-(--pg-dot-orange)' : 'text-primary')}
+        name={icon ?? (tone === 'warn' ? 'warn' : 'info')}
+        size={15}
       />
       <div className="min-w-0 flex-1">{children}</div>
     </div>
@@ -280,7 +280,7 @@ export function FilterChip({
       className={cn(
         'inline-flex h-6 cursor-pointer items-center justify-center gap-1.5 rounded-full px-2.5 text-xs font-medium whitespace-nowrap transition-colors duration-[120ms] outline-none focus-visible:ring-2 focus-visible:ring-ring/40',
         pressed
-          ? 'bg-(--ui-text-primary) text-(--ui-chat-surface-background)'
+          ? 'bg-(--ui-text-primary) text-(--ui-bg-editor)'
           : 'text-(--ui-text-secondary) shadow-[inset_0_0_0_0.5px_var(--ui-line-2)] hover:bg-(--ui-hover)',
         className
       )}

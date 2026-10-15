@@ -2,9 +2,9 @@ import { useState } from 'react'
 
 import { FormGroup, FormRow } from '@/components/studio/pages/form'
 import { FilterChip } from '@/components/studio/pages/surfaces'
-import { Codicon } from '@/components/ui/codicon'
 import { Input } from '@/components/ui/input'
 import { SegmentedControl } from '@/components/ui/segmented-control'
+import { StudioIcon } from '@/components/ui/studio-icon'
 import { useI18n } from '@/i18n'
 
 import {
@@ -61,7 +61,7 @@ export function SchedulePicker({ id, initialExpr, onChange }: SchedulePickerProp
 
   return (
     <FormGroup>
-      <FormRow stack>
+      <FormRow>
         <SegmentedControl
           aria-label={s.frequency}
           onChange={frequency => applyPreset({ ...preset, frequency })}
@@ -73,10 +73,10 @@ export function SchedulePicker({ id, initialExpr, onChange }: SchedulePickerProp
           // Free text owns the schedule while it has content: no segment is on.
           value={usingCustom ? ('' as ScheduleFrequency) : preset.frequency}
         />
-      </FormRow>
-      {!usingCustom && preset.frequency !== 'hourly' ? (
-        <FormRow htmlFor={`${id}-time`} title={s.time}>
+        <span className="flex-1" />
+        {!usingCustom && preset.frequency !== 'hourly' ? (
           <Input
+            aria-label={s.time}
             className="w-[7.5rem]"
             id={`${id}-time`}
             onChange={event => {
@@ -89,15 +89,15 @@ export function SchedulePicker({ id, initialExpr, onChange }: SchedulePickerProp
             type="time"
             value={presetTimeValue(preset)}
           />
-        </FormRow>
-      ) : null}
+        ) : null}
+      </FormRow>
       {!usingCustom && preset.frequency === 'weekly' ? (
-        <FormRow title={s.weekdays}>
+        <FormRow>
           <div aria-label={s.weekdays} className="flex flex-wrap gap-1.5" role="group">
             {WEEKDAY_ORDER.map(day => (
               <FilterChip
                 aria-label={copy.dayName(day)}
-                className="w-[2.125rem] px-0"
+                className="min-w-[2.125rem] px-1.5"
                 key={day}
                 onClick={() => toggleWeekday(day)}
                 pressed={preset.weekdays.includes(day)}
@@ -144,7 +144,7 @@ export function SchedulePicker({ id, initialExpr, onChange }: SchedulePickerProp
       </FormRow>
       <FormRow className="text-[0.78125rem]" stack>
         <span className="flex min-w-0 flex-1 items-center gap-2">
-          <Codicon className="shrink-0 text-primary" name="calendar" size="0.875rem" />
+          <StudioIcon className="text-primary" name="calendar" size={14} />
           <span className="min-w-0 flex-1 truncate">
             {usingCustom ? s.checkedOnSave : describePreset(preset, copy)}
           </span>

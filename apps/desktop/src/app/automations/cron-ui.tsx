@@ -4,11 +4,11 @@ import { thisDeviceLabel } from '@/components/studio/pages/device'
 import { FormSection } from '@/components/studio/pages/form'
 import { DetailBody, DetailHead } from '@/components/studio/pages/master-detail'
 import { Callout, CardGrid, GridCard, GridCardFoot, GridCardText, GridCardTop, KeyValueList, ListGroup, ListGroupRow } from '@/components/studio/pages/surfaces'
-import { Dot, type DotTone, IconTile, RunRing, type TileTone } from '@/components/studio/pages/tile'
+import { Dot, type DotTone, IconTile, RunRing, Spinner, type TileTone } from '@/components/studio/pages/tile'
 import { ActionsContextMenu, ActionsMenu, type MenuKit, renderActionItem } from '@/components/ui/actions-menu'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Codicon } from '@/components/ui/codicon'
+import { StudioIcon, type StudioIconName } from '@/components/ui/studio-icon'
 import type { AutomationBlueprint, CronJob, SessionInfo } from '@/hermes'
 import { useI18n } from '@/i18n'
 import { cn } from '@/lib/utils'
@@ -25,7 +25,7 @@ import { formatDuration, formatWhen, isoMs } from './format'
 export interface CronMenuItem {
   danger?: boolean
   disabled?: boolean
-  icon: string
+  icon: StudioIconName
   key: string
   label: string
   onSelect: () => void
@@ -38,7 +38,7 @@ export function renderCronMenu(items: CronMenuItem[]) {
       ...(item.separatorBefore ? [<kit.Separator key={`${item.key}-sep`} />] : []),
       renderActionItem(kit, {
         disabled: item.disabled,
-        icon: item.icon,
+        iconNode: <StudioIcon name={item.icon} size={14} />,
         key: item.key,
         label: item.label,
         onSelect: item.onSelect,
@@ -99,7 +99,7 @@ export function CronJobItem({ active, menuItems, menuLabel, onSelect, rowKey, st
         <div className="shrink-0 pr-1.5 opacity-0 transition-opacity duration-100 group-focus-within/row:opacity-100 group-hover/row:opacity-100 has-[[data-state=open]]:opacity-100">
           <ActionsMenu ariaLabel={menuLabel} contentClassName="w-48" items={renderCronMenu(menuItems)}>
             <Button aria-label={menuLabel} size="icon-xs" variant="ghost">
-              <Codicon name="ellipsis" size="0.875rem" />
+              <StudioIcon name="more" size={14} />
             </Button>
           </ActionsMenu>
         </div>
@@ -155,7 +155,7 @@ export function DeliveryMark({ target }: { target: string }) {
   const [platform] = target.split(':')
 
   if (platform === 'local') {
-    return <Codicon className="w-4 shrink-0 text-center text-(--ui-text-tertiary)" name="device-desktop" size="0.9375rem" />
+    return <StudioIcon className="text-(--ui-text-tertiary)" name="window" size={15} />
   }
 
   return <PlatformTile platformId={platform} platformName={t.cron.deliveryLabels[platform] ?? platform} size={16} />
@@ -286,9 +286,9 @@ function RunLead({ row }: { row: CronRunRowModel }) {
     return <RunRing />
   }
 
-  const name = row.outputOnly ? 'output' : row.viewOnly ? 'lock' : 'history'
+  const name: StudioIconName = row.outputOnly ? 'doc' : row.viewOnly ? 'lock' : 'clock'
 
-  return <Codicon className="w-4 shrink-0 text-center text-(--ui-text-tertiary)" name={name} size="1rem" />
+  return <StudioIcon className="text-(--ui-text-tertiary)" name={name} size={16} />
 }
 
 interface CronRunsListProps {
@@ -299,7 +299,7 @@ interface CronRunsListProps {
 }
 
 export function CronRunsList({ count, loading, pendingAt, rows }: CronRunsListProps) {
-  const { t } = useI18n()
+  const { locale, t } = useI18n()
   const c = t.cron
   const s = t.studio.pages.cron
 
@@ -307,7 +307,7 @@ export function CronRunsList({ count, loading, pendingAt, rows }: CronRunsListPr
     <FormSection meta={count > 0 ? <span className="tabular-nums">{count}</span> : undefined} title={s.runs}>
       {loading ? (
         <div className="flex items-center gap-1.5 px-1 py-1 text-xs text-(--ui-text-tertiary)">
-          <Codicon name="loading" size="0.75rem" spinning />
+          <Spinner />
         </div>
       ) : rows.length === 0 && pendingAt === undefined ? (
         <p className="m-0 px-1 text-[0.78125rem] text-(--ui-text-tertiary)">{c.noRuns}</p>
@@ -326,7 +326,7 @@ export function CronRunsList({ count, loading, pendingAt, rows }: CronRunsListPr
                 <RunRing />
                 <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                   <b className="truncate font-medium text-(--ui-text-primary)">{c.queuedRun}</b>
-                  <span className="text-xs text-(--ui-text-tertiary)">{formatWhen(pendingAt)}</span>
+                  <span className="text-xs text-(--ui-text-tertiary)">{formatWhen(pendingAt, locale)}</span>
                 </span>
               </span>
             </ListGroupRow>
@@ -341,7 +341,7 @@ export function CronRunsList({ count, loading, pendingAt, rows }: CronRunsListPr
 }
 
 function CronRunRow({ row }: { row: CronRunRowModel }) {
-  const { t } = useI18n()
+  const { locale, t } = useI18n()
   const s = t.studio.pages.cron
 
   const status = row.live
@@ -361,7 +361,7 @@ function CronRunRow({ row }: { row: CronRunRowModel }) {
     </>
   )
 
-  const title = row.startedMs !== null ? formatWhen(row.startedMs) : row.run.id
+  const title = row.startedMs !== null ? formatWhen(row.startedMs, locale) : row.run.id
 
   if (!row.onOpen) {
     return <ListGroupRow lead={<RunLead row={row} />} subtitle={subtitle} title={title} />
@@ -379,7 +379,7 @@ function CronRunRow({ row }: { row: CronRunRowModel }) {
           <b className="truncate font-medium text-(--ui-text-primary)">{title}</b>
           <span className="truncate text-xs text-(--ui-text-tertiary)">{subtitle}</span>
         </span>
-        <Codicon className="shrink-0 text-(--ui-text-tertiary)" name="chevron-right" size="0.75rem" />
+        <StudioIcon className="text-(--ui-text-tertiary)" name="chev-r" size={12} />
       </button>
     </ListGroupRow>
   )
@@ -406,35 +406,40 @@ export function runRowModel(
 
 // ── Blueprints ─────────────────────────────────────────────────────────────
 
-const BLUEPRINT_TILES: Record<string, { icon: string; tone: TileTone }> = {
-  'bill-renewal-watch': { icon: 'credit-card', tone: 'green' },
-  'competitor-watch': { icon: 'eye', tone: 'graphite' },
-  'custom-reminder': { icon: 'bell', tone: 'orange' },
-  'evening-winddown': { icon: 'book', tone: 'indigo' },
-  'gratitude-journal': { icon: 'heart', tone: 'pink' },
-  'habit-checkin': { icon: 'verified', tone: 'green' },
-  'hydration-move': { icon: 'pulse', tone: 'cyan' },
-  'important-mail': { icon: 'mail', tone: 'blue' },
-  'learn-daily': { icon: 'mortar-board', tone: 'blue' },
-  'meal-plan': { icon: 'flame', tone: 'orange' },
-  'morning-brief': { icon: 'coffee', tone: 'orange' },
-  'news-digest': { icon: 'rss', tone: 'red' },
-  'on-this-day': { icon: 'history', tone: 'brown' },
-  'price-watch': { icon: 'tag', tone: 'pink' },
-  'weekly-review': { icon: 'checklist', tone: 'indigo' },
-  'workday-start': { icon: 'briefcase', tone: 'teal' }
+interface Tile {
+  icon: StudioIconName
+  tone: TileTone
 }
 
-const CATEGORY_TILES: Record<string, { icon: string; tone: TileTone }> = {
+const BLUEPRINT_TILES: Record<string, Tile> = {
+  'bill-renewal-watch': { icon: 'card', tone: 'green' },
+  'competitor-watch': { icon: 'eye', tone: 'graphite' },
+  'custom-reminder': { icon: 'bell', tone: 'orange' },
+  'evening-winddown': { icon: 'moon', tone: 'indigo' },
+  'gratitude-journal': { icon: 'heart', tone: 'pink' },
+  'habit-checkin': { icon: 'check-circle', tone: 'green' },
+  'hydration-move': { icon: 'pulse', tone: 'cyan' },
+  'important-mail': { icon: 'mail', tone: 'blue' },
+  'learn-daily': { icon: 'cap', tone: 'blue' },
+  'meal-plan': { icon: 'todo', tone: 'orange' },
+  'morning-brief': { icon: 'sun', tone: 'orange' },
+  'news-digest': { icon: 'globe', tone: 'red' },
+  'on-this-day': { icon: 'rewind', tone: 'brown' },
+  'price-watch': { icon: 'chart', tone: 'pink' },
+  'weekly-review': { icon: 'graph', tone: 'indigo' },
+  'workday-start': { icon: 'bolt', tone: 'teal' }
+}
+
+const CATEGORY_TILES: Record<string, Tile> = {
   daily: { icon: 'calendar', tone: 'blue' },
   email: { icon: 'mail', tone: 'blue' },
   weekly: { icon: 'calendar', tone: 'indigo' }
 }
 
-export function blueprintTile(blueprint: AutomationBlueprint): { icon: string; tone: TileTone } {
+export function blueprintTile(blueprint: AutomationBlueprint): Tile {
   const bareKey = blueprint.key.includes(':') ? blueprint.key.split(':').pop()! : blueprint.key
 
-  return BLUEPRINT_TILES[bareKey] ?? CATEGORY_TILES[blueprint.category] ?? { icon: 'rocket', tone: 'accent' }
+  return BLUEPRINT_TILES[bareKey] ?? CATEGORY_TILES[blueprint.category] ?? { icon: 'sparkle', tone: 'accent' }
 }
 
 interface BlueprintCardsProps {
@@ -477,14 +482,23 @@ export function BlueprintCards({ blueprints, onUse }: BlueprintCardsProps) {
   )
 }
 
+interface CronRowSubtitleOptions {
+  inactiveLabel: null | string
+  locale?: string
+  nextAt: (when: string) => string
+  overdue: boolean
+  overdueAt: (when: string) => string
+  scheduleText: string
+}
+
 /** "Every day 9:00 · next tomorrow 9:00" for a list row. */
-export function cronRowSubtitle(job: CronJob, opts: { inactiveLabel: null | string; overdue: boolean; scheduleText: string; nextAt: (when: string) => string; overdueAt: (when: string) => string }): string {
+export function cronRowSubtitle(job: CronJob, opts: CronRowSubtitleOptions): string {
   const nextMs = isoMs(job.next_run_at)
 
   const tail = opts.inactiveLabel
     ? opts.inactiveLabel
     : nextMs !== null
-      ? (opts.overdue ? opts.overdueAt : opts.nextAt)(formatWhen(nextMs))
+      ? (opts.overdue ? opts.overdueAt : opts.nextAt)(formatWhen(nextMs, opts.locale))
       : null
 
   return tail ? `${opts.scheduleText} · ${tail}` : opts.scheduleText

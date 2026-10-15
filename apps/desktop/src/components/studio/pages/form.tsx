@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-import { Codicon } from '@/components/ui/codicon'
+import { StudioIcon } from '@/components/ui/studio-icon'
 import { cn } from '@/lib/utils'
 
 // Grouped-inset forms (System Settings; prototype `.form-sec` / `.form-group` /
@@ -85,7 +85,13 @@ export function FormRow({ children, className, description, htmlFor, id, stack =
         </div>
       ) : null}
       {children ? (
-        <div className={cn('flex min-w-0 items-center gap-2', stack ? 'max-w-full' : 'max-w-[60%] flex-none')}>
+        <div
+          className={cn(
+            'flex min-w-0 items-center gap-2',
+            // A row without a label is all control.
+            !title && !description ? 'flex-1' : stack ? 'max-w-full' : 'max-w-[60%] flex-none'
+          )}
+        >
           {children}
         </div>
       ) : null}
@@ -111,13 +117,13 @@ export function FormDisclosure({ children, label, onOpenChange, open }: FormDisc
         onClick={() => onOpenChange(!open)}
         type="button"
       >
-        <Codicon
+        <StudioIcon
           className={cn(
             'transition-transform duration-[220ms] ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none',
             open && 'rotate-90'
           )}
-          name="chevron-right"
-          size="0.75rem"
+          name="chev-r"
+          size={12}
         />
         {label}
       </button>

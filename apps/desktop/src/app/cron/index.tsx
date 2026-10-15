@@ -16,11 +16,10 @@ import {
   STUDIO_SHEET_CONTENT
 } from '@/components/studio/pages/sheet'
 import { Callout } from '@/components/studio/pages/surfaces'
-import { IconTile } from '@/components/studio/pages/tile'
+import { IconTile, Spinner } from '@/components/studio/pages/tile'
 import { ActionsMenu } from '@/components/ui/actions-menu'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Codicon } from '@/components/ui/codicon'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
@@ -34,6 +33,7 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select'
+import { StudioIcon } from '@/components/ui/studio-icon'
 import { Textarea } from '@/components/ui/textarea'
 import {
   type AutomationBlueprint,
@@ -662,7 +662,9 @@ function cronMenuItems(job: CronJob, actions: CronJobActions, t: Translations, i
   const s = t.studio.pages
 
   return [
-    ...(includeEdit ? [{ icon: 'edit', key: 'edit', label: s.common.edit, onSelect: () => actions.onEdit(job) }] : []),
+    ...(includeEdit
+      ? [{ icon: 'pencil' as const, key: 'edit', label: s.common.edit, onSelect: () => actions.onEdit(job) }]
+      : []),
     {
       // A script-only job cannot be created from the desktop (no prompt to send).
       disabled: jobIsScriptOnly(job),
@@ -673,7 +675,7 @@ function cronMenuItems(job: CronJob, actions: CronJobActions, t: Translations, i
     },
     {
       disabled: !actions.onOpenLatestRun,
-      icon: 'comment-discussion',
+      icon: 'bubbles',
       key: 'latest-run',
       label: s.cron.openLatestRun,
       onSelect: () => actions.onOpenLatestRun?.(job)
@@ -702,7 +704,7 @@ function CronJobList({
   query: string
   selectedId: null | string
 }) {
-  const { t } = useI18n()
+  const { locale, t } = useI18n()
   const c = t.cron
   const s = t.studio.pages.cron
   const copy = useScheduleCopy()
@@ -731,6 +733,7 @@ function CronJobList({
             state={state}
             subtitle={cronRowSubtitle(job, {
               inactiveLabel: INACTIVE_ROW_STATES.has(state) ? (c.states[state] ?? state) : null,
+              locale,
               nextAt: s.nextAt,
               overdue: nextRunOverdueMs(job) !== null,
               overdueAt: s.overdueAt,
@@ -798,7 +801,7 @@ function CronJobDetail({
   pendingJobKey,
   pendingRunAt
 }: CronJobDetailProps) {
-  const { t } = useI18n()
+  const { locale, t } = useI18n()
   const s = t.studio.pages
   const copy = useScheduleCopy()
   const state = jobState(job)
@@ -815,7 +818,7 @@ function CronJobDetail({
       actions={
         <>
           <Button aria-busy={pending || undefined} disabled={busy} onClick={onTrigger}>
-            <Codicon name={pending ? 'loading' : 'play'} size="0.8125rem" spinning={pending} />
+            {pending ? <Spinner /> : <StudioIcon name="play" size={13} />}
             {s.cron.triggerNow}
           </Button>
           <Button disabled={busy} onClick={onPauseResume} variant="secondary">
@@ -830,7 +833,7 @@ function CronJobDetail({
             items={renderCronMenu(cronMenuItems(job, actions, t, false))}
           >
             <Button aria-label={s.common.moreActions} size="icon-sm" variant="ghost">
-              <Codicon name="ellipsis" size="0.9375rem" />
+              <StudioIcon name="more" size={15} />
             </Button>
           </ActionsMenu>
         </>
@@ -859,9 +862,9 @@ function CronJobDetail({
         {
           key: 'next',
           label: overdue ? s.cron.kvOverdue : s.cron.kvNext,
-          value: nextMs !== null ? formatWhen(nextMs) : isPaused ? (c.states.paused ?? state) : '—'
+          value: nextMs !== null ? formatWhen(nextMs, locale) : isPaused ? (c.states.paused ?? state) : '—'
         },
-        { key: 'last', label: s.cron.kvLast, value: lastMs !== null ? formatWhen(lastMs) : '—' },
+        { key: 'last', label: s.cron.kvLast, value: lastMs !== null ? formatWhen(lastMs, locale) : '—' },
         {
           key: 'deliver',
           label: s.cron.kvDeliver,
@@ -1348,7 +1351,7 @@ function CronEditorDialog({
       <DialogContent bodyClassName={STUDIO_SHEET_BODY} className={STUDIO_SHEET_CONTENT.md} showCloseButton={false}>
         <SheetHeader
           closable={!saving}
-          lead={<IconTile icon="watch" size={30} tone="orange" />}
+          lead={<IconTile icon="clock" size={30} tone="orange" />}
           title={title}
         />
         {isBlueprint && blueprint ? (

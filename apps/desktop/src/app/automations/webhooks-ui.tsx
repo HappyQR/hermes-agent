@@ -4,14 +4,14 @@ import { FormDisclosure, FormGroup, FormRow, FormSection } from '@/components/st
 import { DetailBody, DetailHead } from '@/components/studio/pages/master-detail'
 import { SheetBody, SheetFooter, SheetHeader } from '@/components/studio/pages/sheet'
 import { Callout } from '@/components/studio/pages/surfaces'
-import { Dot, IconTile } from '@/components/studio/pages/tile'
+import { Dot, IconTile, Spinner } from '@/components/studio/pages/tile'
 import { ActionsContextMenu, ActionsMenu } from '@/components/ui/actions-menu'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Codicon } from '@/components/ui/codicon'
 import { CopyButton } from '@/components/ui/copy-button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { StudioIcon } from '@/components/ui/studio-icon'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import type { WebhookRoute } from '@/hermes'
@@ -66,7 +66,7 @@ export function WebhookItem({
         <div className="shrink-0 pr-1.5 opacity-0 transition-opacity duration-100 group-focus-within/row:opacity-100 group-hover/row:opacity-100 has-[[data-state=open]]:opacity-100">
           <ActionsMenu ariaLabel={menuLabel} contentClassName="w-44" items={renderCronMenu(menuItems)}>
             <Button aria-label={menuLabel} size="icon-xs" variant="ghost">
-              <Codicon name="ellipsis" size="0.875rem" />
+              <StudioIcon name="more" size={14} />
             </Button>
           </ActionsMenu>
         </div>
@@ -168,7 +168,7 @@ export function WebhookBanners({
   return (
     <>
       {!enabled && (
-        <Callout icon="globe" tone="warn">
+        <Callout icon="webhook" tone="warn">
           <b className="font-semibold">{w.disabledTitle}</b>
           <p className="mt-0.5 mb-0">{w.disabledBody}</p>
           <div className="mt-2 flex flex-wrap gap-2">
@@ -188,7 +188,7 @@ export function WebhookBanners({
           <p className="m-0">{restartError ?? w.restartNeeded}</p>
           <div className="mt-2">
             <Button disabled={restarting} onClick={onRestart} size="sm" variant="outline">
-              <Codicon name="refresh" size="0.8125rem" spinning={restarting} />
+              {restarting ? <Spinner /> : <StudioIcon name="retry" size={13} />}
               {restarting ? w.restartingGateway : w.restartGateway}
             </Button>
           </div>
@@ -359,7 +359,7 @@ export function WebhookSheetHeader({ created }: { created: boolean }) {
 
   return (
     <SheetHeader
-      lead={<IconTile icon="globe" size={30} tone="green" />}
+      lead={<IconTile icon="webhook" size={30} tone="green" />}
       title={created ? t.webhooks.createdTitle : t.studio.pages.webhooks.newTitle}
     />
   )

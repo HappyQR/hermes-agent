@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react'
 
 import { Button } from '@/components/ui/button'
-import { Codicon } from '@/components/ui/codicon'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,6 +9,7 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
+import { StudioIcon } from '@/components/ui/studio-icon'
 import { cn } from '@/lib/utils'
 
 // macOS pop-up button (prototype `.popup`): a card-filled trigger with an
@@ -33,7 +33,7 @@ export function PopupButton({ children, className, lead, ...props }: PopupButton
     >
       {lead ? <span className="shrink-0 text-(--ui-text-tertiary)">{lead}</span> : null}
       <span className="min-w-0 truncate">{children}</span>
-      <Codicon className="shrink-0 text-(--ui-text-tertiary)" name="unfold" size="0.75rem" />
+      <StudioIcon className="text-(--ui-text-tertiary)" name="chev-ud" size={12} />
     </Button>
   )
 }

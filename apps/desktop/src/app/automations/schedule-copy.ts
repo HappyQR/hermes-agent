@@ -6,14 +6,16 @@ import { asText } from '@/lib/text'
 
 import { openCronRun } from '../cron/open-cron-run'
 
+import { formatClock } from './format'
 import { describeCron, type ScheduleCopy } from './schedule-builder'
 
 /** Summary copy from the legacy `t.cron` helpers plus the Studio additions. */
-export function scheduleCopyFor(t: Translations): ScheduleCopy {
+export function scheduleCopyFor(t: Translations, locale?: string): ScheduleCopy {
   const c = t.cron
   const s = t.studio.pages.cron
 
   return {
+    clock: (hour, minute) => formatClock(hour, minute, locale),
     dayName: day => c.days[String(day)] ?? c.dayFallback(String(day)),
     daySeparator: s.daySeparator,
     everyDayAt: c.everyDayAt,
@@ -28,9 +30,9 @@ export function scheduleCopyFor(t: Translations): ScheduleCopy {
 }
 
 export function useScheduleCopy(): ScheduleCopy {
-  const { t } = useI18n()
+  const { locale, t } = useI18n()
 
-  return useMemo(() => scheduleCopyFor(t), [t])
+  return useMemo(() => scheduleCopyFor(t, locale), [locale, t])
 }
 
 export function cronExpr(job: CronJob): string {
