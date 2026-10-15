@@ -91,7 +91,7 @@ export function ConnectorDialog({
     <Dialog onOpenChange={onOpenChange} open={open}>
       <DialogContent
         bodyClassName="gap-0 overflow-hidden p-0"
-        className="max-h-[85vh] max-w-lg"
+        className="max-h-[85vh] max-w-[35rem]"
         onEscapeKeyDown={event => {
           // One cancel gesture does one thing: Escape abandons an open name edit first.
           if (onEscape?.()) {
@@ -130,7 +130,7 @@ function Header({ card, titleRef, ...rest }: PartProps & { titleRef: RefObject<H
   const local = card.residency === 'local'
 
   return (
-    <header className="flex shrink-0 items-center gap-2.5 border-b border-(--ui-stroke-tertiary) px-5 py-3">
+    <header className="flex shrink-0 items-center gap-2.5 px-[1.125rem] pt-4 pb-2.5">
       <ConnectorLogo
         className="size-9 shrink-0 rounded-[9px]"
         connector={{ iconUrl: local ? undefined : connectorIconUrl(card.slug), name: card.slug, title: card.name }}
@@ -138,7 +138,7 @@ function Header({ card, titleRef, ...rest }: PartProps & { titleRef: RefObject<H
 
       <div className="grid min-w-0 flex-1 gap-0.5">
         <div className="flex min-w-0 items-center gap-2">
-          <DialogTitle className="truncate text-base font-semibold outline-none" ref={titleRef} tabIndex={-1}>
+          <DialogTitle className="truncate text-[0.9375rem] font-[650] outline-none" ref={titleRef} tabIndex={-1}>
             {card.name}
           </DialogTitle>
 

@@ -51,7 +51,7 @@ export function ToolsList({ busy, onOpen, onToggle, toolCalls, toolsets }: Tools
               key={toolset.name}
               lead={<IconTile icon={tile.icon} size={30} tone={tile.tone} />}
               onOpen={() => onOpen(toolset)}
-              subtitle={subtitle}
+              subtitle={<span className="pg-clamp-2">{subtitle}</span>}
               title={label}
               trailing={
                 <>

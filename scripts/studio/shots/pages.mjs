@@ -166,7 +166,7 @@ export default {
     // Fill the sheet and create the job so the master/detail has content.
     await page.locator('#cron-name').fill('每日 AI 新闻摘要')
     await page.locator('#cron-prompt').fill('汇总过去 24 小时 AI 领域的重要新闻，每条一句话，附来源链接。')
-    await page.locator('[data-slot="studio-sheet-foot"] button[type="submit"]').click({ timeout: 5000 })
+    await page.locator('[data-slot="sheet-footer"] button[type="submit"]').click({ timeout: 5000 })
     await sleep(2500)
     await shot(page, 'automations-job')
   },
@@ -176,7 +176,7 @@ export default {
     await sleep(500)
     await page.getByRole('menuitem').first().click({ timeout: 5000 })
     await sleep(900)
-    await page.locator('[data-slot="studio-sheet-body"] [data-slot="segmented-control"] button').nth(2).click()
+    await page.locator('[data-slot="sheet-body"] [data-slot="segmented-control"] button').nth(2).click()
     await sleep(500)
     await shot(page, 'new-job-weekly')
     await escape(page, sleep)

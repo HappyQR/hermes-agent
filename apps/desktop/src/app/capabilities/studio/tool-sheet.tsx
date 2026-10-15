@@ -140,7 +140,6 @@ function ToolSheetContent({ onClose, onConfiguredChange, profile, toolCalls, too
             toolset={toolset.name}
           />
         </section>
-        <p className="m-0 mx-1 text-xs text-(--ui-text-tertiary)">{t.skills.changesApplyNewSessions}</p>
       </SheetBody>
       <SheetFooter>
         <span className="flex-1" />

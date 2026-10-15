@@ -205,6 +205,37 @@ export type StudioConnectorStateWord =
 export type StudioConnectorVerb =
   'authenticate' | 'connect' | 'install' | 'openLogs' | 'reconnect' | 'stopWaiting' | 'tryAgain' | 'turnBackOn'
 
+/** Skill categories the bundled and official catalogs use. */
+export type StudioSkillCategory =
+  | 'apple'
+  | 'autonomous-ai-agents'
+  | 'blockchain'
+  | 'communication'
+  | 'creative'
+  | 'data-science'
+  | 'devops'
+  | 'dogfood'
+  | 'email'
+  | 'finance'
+  | 'gaming'
+  | 'general'
+  | 'github'
+  | 'health'
+  | 'mcp'
+  | 'media'
+  | 'migration'
+  | 'mlops'
+  | 'note-taking'
+  | 'payments'
+  | 'productivity'
+  | 'research'
+  | 'security'
+  | 'smart-home'
+  | 'social-media'
+  | 'software-development'
+  | 'web'
+  | 'web-development'
+
 export interface StudioCapabilitiesTranslations {
   title: string
   subtitle: string
@@ -229,6 +260,8 @@ export interface StudioCapabilitiesTranslations {
   usedTimes: (count: number) => string
   emptyTitle: string
   emptyNoMatch: (query: string) => string
+  /** Display names of known skill categories (others are humanized). */
+  categories: Record<StudioSkillCategory, string>
   skills: {
     source: { agent: string; bundled: string; external: string; hub: string; local: string }
     /** After "Learned" on a card: Hermes wrote the skill itself. */
@@ -300,6 +333,8 @@ export interface StudioCapabilitiesTranslations {
     columnPlugin: string
     columnDesktop: string
     columnAgent: string
+    /** Kind tag of a package with both halves. */
+    kindBoth: string
     checkUpdates: string
     uninstallEllipsis: string
     browseCatalog: string

@@ -143,9 +143,22 @@ const SERVER_TONE = {
 
 function KindBadge({ kind }: { kind: PackageKind }) {
   const { t } = useI18n()
-  const p = t.skills.plugins
+  const c = t.studio.pages.capabilities.plugins
 
-  return <Pill>{kind === 'both' ? p.kindBoth : kind === 'agent' ? p.kindAgent : p.kindDesktop}</Pill>
+  return <Pill>{kind === 'both' ? c.kindBoth : kind === 'agent' ? c.columnAgent : c.columnDesktop}</Pill>
+}
+
+/** Where an agent half was installed from, in words. */
+function agentSourceLabel(source: string, labels: { bundled: string; local: string }): string {
+  if (source === 'bundled') {
+    return labels.bundled
+  }
+
+  if (source === 'user') {
+    return labels.local
+  }
+
+  return source === 'git' ? 'Git' : source
 }
 
 /** Provenance pill: where the package came from. */
@@ -176,7 +189,7 @@ function ProvenancePill({ pkg }: { pkg: PluginPackage }) {
   }
 
   if (pkg.agent) {
-    return <Pill>{pkg.agent.source}</Pill>
+    return <Pill>{agentSourceLabel(pkg.agent.source, t.studio.pages.capabilities.skills.source)}</Pill>
   }
 
   if (pkg.desktop) {
@@ -407,7 +420,7 @@ function PackageRow({
           <span
             className={cn(
               'text-xs leading-[1.4] break-words',
-              failedDesktop ? 'text-(--ui-red)' : 'text-(--ui-text-tertiary)'
+              failedDesktop ? 'text-(--ui-red)' : 'pg-clamp-2 text-(--ui-text-tertiary)'
             )}
           >
             {detail}

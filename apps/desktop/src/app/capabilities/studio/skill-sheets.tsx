@@ -32,11 +32,12 @@ import { $selectedStoredSessionId } from '@/store/session'
 import type { OfficialSkillInfo, SkillInfo } from '@/types/hermes'
 
 import { NEW_CHAT_ROUTE, sessionRoute } from '../../routes'
-import { asText, prettyName } from '../../settings/helpers'
+import { asText } from '../../settings/helpers'
 import { parseFrontmatter } from '../skills/frontmatter'
 import { isEditableProvenance } from '../skills/skill-provenance'
 import { categoryFor, usageOf } from '../skills/skills-data'
 
+import { categoryLabel } from './labels'
 import { skillTile } from './tiles'
 
 // The skill sheet (prototype overlays.js:325, 353-357): tags, the SKILL.md
@@ -228,7 +229,7 @@ function SkillSheetContent({ embedded, onArchive, onClose, onSaved, profile, ski
       ) : (
         <SheetBody>
           <SheetTags>
-            <Badge variant="muted">{prettyName(categoryFor(skill))}</Badge>
+            <Badge variant="muted">{categoryLabel(categoryFor(skill), c)}</Badge>
             <Badge variant={skill.provenance === 'agent' ? 'default' : 'muted'}>
               {skillSourceLabel(skill, c.skills.source)}
             </Badge>
@@ -327,7 +328,7 @@ function OfficialSkillSheetContent({
       />
       <SheetBody>
         <SheetTags>
-          <Badge variant="muted">{c.skills.officialSource(prettyName(skill.category))}</Badge>
+          <Badge variant="muted">{c.skills.officialSource(categoryLabel(skill.category, c))}</Badge>
           {skill.tags.slice(0, 4).map(tag => (
             <Badge key={tag} variant="muted">
               {tag}

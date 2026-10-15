@@ -14,9 +14,10 @@ import { Switch } from '@/components/ui/switch'
 import { useI18n } from '@/i18n'
 import type { OfficialSkillInfo, SkillInfo } from '@/types/hermes'
 
-import { asText, prettyName } from '../../settings/helpers'
+import { asText } from '../../settings/helpers'
 import { categoryFor, usageOf } from '../skills/skills-data'
 
+import { categoryLabel } from './labels'
 import { skillSourceLabel } from './skill-sheets'
 import { skillTile } from './tiles'
 
@@ -77,7 +78,7 @@ export function SkillsGrid({
     <>
       {groups.map(group => (
         <Fragment key={group.category}>
-          <SectionTitle count={group.skills.length}>{prettyName(group.category)}</SectionTitle>
+          <SectionTitle count={group.skills.length}>{categoryLabel(group.category, c)}</SectionTitle>
           <CardGrid>
             {group.skills.map(skill => (
               <SkillCard busy={busy} key={skill.name} onOpen={onOpenSkill} onToggle={onToggleSkill} skill={skill} />
@@ -165,7 +166,7 @@ function OfficialSkillCard({ installing, onInstall, onOpen, skill }: OfficialSki
       <GridCardTop
         lead={<IconTile icon={tile.icon} tone={tile.tone} />}
         onOpen={() => onOpen(skill)}
-        subtitle={c.skills.officialSource(prettyName(skill.category))}
+        subtitle={c.skills.officialSource(categoryLabel(skill.category, c))}
         title={skill.name}
         titleClassName="font-mono text-[0.78125rem]"
       />
