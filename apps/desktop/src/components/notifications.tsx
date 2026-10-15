@@ -40,7 +40,18 @@ const tone: Record<NotificationKind, { icon: IconComponent; iconClass: string; v
   success: { icon: CheckCircle2, iconClass: 'text-primary', variant: 'success' }
 }
 
-const STACK_SURFACE = 'pointer-events-auto border border-(--stroke-nous) bg-popover/95 shadow-nous backdrop-blur-md'
+// Hermes Studio: the toast's 28px icon tile — a soft wash of the kind's colour
+// behind its glyph (prototype .toast .t-ic; accent-soft by default).
+const TILE_TONE: Record<NotificationKind, string> = {
+  error: 'bg-[color-mix(in_srgb,var(--ui-red)_13%,transparent)] text-(--ui-red)',
+  warning: 'bg-[color-mix(in_srgb,var(--ui-orange)_15%,transparent)] text-(--ui-orange)',
+  info: 'bg-(--ui-accent-soft) text-(--ui-accent-text)',
+  success: 'bg-[color-mix(in_srgb,var(--ui-green)_15%,transparent)] text-(--ui-green)'
+}
+
+// The macOS notification banner: frosted glass, 14px corners, pop shadow.
+const STACK_SURFACE =
+  'pointer-events-auto rounded-[14px] bg-(--ui-glass-strong) shadow-[var(--elev-pop),var(--hairline-hi)] backdrop-blur-[36px] backdrop-saturate-[1.8]'
 
 function partitionNotifications(notifications: AppNotification[]) {
   const defaultStack: AppNotification[] = []
@@ -92,7 +103,7 @@ export function NotificationStack() {
 
   return (
     <>
-      <TopCenterStack
+      <TopRightStack
         copy={copy}
         expanded={expanded}
         notifications={defaultStack}
@@ -107,12 +118,13 @@ export function NotificationStack() {
 // see the top-center variant below for why.
 const REGION_BASE = 'pointer-events-none fixed z-(--z-over-modal) flex gap-2'
 
-// Primary stack: top-center, collapsed to the latest toast with a "+N more"
-// expander + clear-all — the noisy/important surface (errors, warnings,
-// action toasts). Without the portal it lives inside the React root subtree,
-// which any body-level dialog/overlay portal paints over — so a toast fired
-// while a dialog is open was invisible.
-function TopCenterStack({
+// Primary stack: top-right under the toolbar band (where macOS shows its
+// banners), collapsed to the latest toast with a "+N more" expander +
+// clear-all — the noisy/important surface (errors, warnings, action toasts).
+// Without the portal it lives inside the React root subtree, which any
+// body-level dialog/overlay portal paints over — so a toast fired while a
+// dialog is open was invisible.
+function TopRightStack({
   copy,
   expanded,
   notifications,
@@ -130,7 +142,7 @@ function TopCenterStack({
       aria-label={copy.region}
       className={cn(
         REGION_BASE,
-        'left-1/2 top-[calc(var(--titlebar-height,34px)+0.75rem)] w-[min(28rem,calc(100%-2rem))] -translate-x-1/2 flex-col p-1',
+        'right-4 top-[calc(var(--titlebar-height,34px)+0.5rem)] w-[min(21.25rem,calc(100%-2rem))] flex-col p-1',
         expanded && 'max-h-[70vh] overflow-y-auto overscroll-contain'
       )}
       role="region"
@@ -182,7 +194,7 @@ function BottomRightStack({
       aria-label={copy.region}
       className={cn(
         REGION_BASE,
-        'right-4 bottom-4 w-[min(24rem,calc(100%-2rem))] flex-col-reverse p-1',
+        'right-4 bottom-4 w-[min(21.25rem,calc(100%-2rem))] flex-col-reverse p-1',
         expanded && 'max-h-[70vh] overflow-y-auto overscroll-contain'
       )}
       role="region"
@@ -222,7 +234,7 @@ export function NotificationDeck({
       onSwipe={(notification, _side, action) => {
         void action.depart(() => userDismiss(notification.id))
       }}
-      surfaceClassName={cn(STACK_SURFACE, 'rounded-lg')}
+      surfaceClassName={STACK_SURFACE}
       swipeDirections={['left', 'right']}
     >
       {(notification, action) => <NotificationItem notification={notification} stack={action} />}
@@ -254,9 +266,9 @@ function renderMessage(message: string, accent?: string): ReactNode {
   )
 }
 
-// AlertTitle defaults to a single-line clamp. Toast errors are often a full
-// sentence, so the toast wraps — then caps height and scrolls instead of
-// growing down the chat or clipping with an ellipsis.
+// Toast errors are often a full sentence, so the title wraps — then caps its
+// height and scrolls instead of growing down the chat or clipping with an
+// ellipsis.
 export function toastTitleClassName() {
   return 'col-start-auto line-clamp-none max-h-[4.5em] overflow-y-auto overscroll-contain whitespace-normal wrap-break-word'
 }
@@ -268,75 +280,92 @@ function NotificationItem({ notification, stack }: { notification: AppNotificati
   const { t } = useI18n()
   const copy = t.notifications
 
-  // Nudge the icon down to sit on the first text line, in `ch` so it tracks the
-  // toast's font size instead of a fixed rem. `accentColor` (when set) tints the
-  // icon + message as a severity ramp, overriding the kind's default color.
+  // `accentColor` (when set) tints the glyph + the message's money figure as a
+  // severity ramp, overriding the kind's own colour.
   const accent = notification.accentColor
-  const iconStyle: CSSProperties = { marginTop: '0.42ch', ...(accent ? { color: accent } : {}) }
+  const glyphStyle: CSSProperties | undefined = accent ? { color: accent } : undefined
 
   return (
-    <Alert
+    <div
       aria-live={!stack.active ? 'off' : notification.kind === 'error' ? 'assertive' : 'polite'}
-      className="grid-cols-[auto_minmax(0,1fr)_auto] border-0 bg-transparent pr-2.5 text-xs shadow-none"
+      className="flex items-start gap-2.5 py-[0.6875rem] pr-2 pl-3 text-[0.8125rem] text-(--ui-text-primary)"
+      data-kind={notification.kind}
+      data-slot="toast"
       role={notification.kind === 'error' ? 'alert' : 'status'}
-      variant={styles.variant}
     >
-      {notification.icon ? (
-        <Codicon className={styles.iconClass} name={notification.icon} size="1rem" style={iconStyle} />
-      ) : (
-        <Icon className={styles.iconClass} style={iconStyle} />
-      )}
-      <div className="col-start-2 min-w-0">
-        {notification.title && (
-          <AlertTitle className={toastTitleClassName()} title={notification.title}>
-            {notification.title}
-          </AlertTitle>
+      <span
+        aria-hidden
+        className={cn(
+          'inline-flex size-7 shrink-0 items-center justify-center rounded-[7px] [&_svg]:size-4',
+          TILE_TONE[notification.kind]
         )}
-        <AlertDescription className="col-start-auto">
-          <p className="m-0 wrap-break-word">{renderMessage(notification.message, accent)}</p>
-          {notification.meta && <p className="m-0 text-xs text-muted-foreground tabular-nums">{notification.meta}</p>}
-          {hasDetail && <NotificationDetail detail={notification.detail || ''} />}
-          {(notification.action || notification.secondaryAction) && (
-            <div className="mt-1.5 flex flex-wrap gap-1.5">
-              {notification.action && (
-                <Button
-                  disabled={stack.busy || !stack.active}
-                  onClick={() => {
-                    void stack.depart(() => {
-                      notification.action?.onClick()
-                      dismissNotification(notification.id)
-                    })
-                  }}
-                  size="sm"
-                  type="button"
-                  variant="default"
-                >
-                  {notification.action.label}
-                </Button>
-              )}
-              {notification.secondaryAction && (
-                <Button
-                  disabled={stack.busy || !stack.active}
-                  onClick={() => {
-                    void stack.depart(() => {
-                      notification.secondaryAction?.onClick()
-                      dismissNotification(notification.id)
-                    })
-                  }}
-                  size="sm"
-                  type="button"
-                  variant="outline"
-                >
-                  {notification.secondaryAction.label}
-                </Button>
-              )}
-            </div>
+      >
+        {notification.icon ? (
+          <Codicon name={notification.icon} size="1rem" style={glyphStyle} />
+        ) : (
+          <Icon style={glyphStyle} />
+        )}
+      </span>
+      <div className="flex min-w-0 flex-1 flex-col gap-0.5 pt-px">
+        {notification.title && (
+          <div className={cn('font-semibold leading-snug', toastTitleClassName())} title={notification.title}>
+            {notification.title}
+          </div>
+        )}
+        <p
+          className={cn(
+            'm-0 wrap-break-word leading-[1.4]',
+            notification.title
+              ? 'text-[0.78125rem] text-(--ui-text-secondary)'
+              : 'font-medium text-(--ui-text-primary)'
           )}
-        </AlertDescription>
+        >
+          {renderMessage(notification.message, accent)}
+        </p>
+        {notification.meta && (
+          <p className="m-0 text-xs text-(--ui-text-tertiary) tabular-nums">{notification.meta}</p>
+        )}
+        {hasDetail && <NotificationDetail detail={notification.detail || ''} />}
+        {(notification.action || notification.secondaryAction) && (
+          <div className="mt-1.5 flex flex-wrap gap-1.5">
+            {notification.action && (
+              <Button
+                disabled={stack.busy || !stack.active}
+                onClick={() => {
+                  void stack.depart(() => {
+                    notification.action?.onClick()
+                    dismissNotification(notification.id)
+                  })
+                }}
+                size="sm"
+                type="button"
+                variant="default"
+              >
+                {notification.action.label}
+              </Button>
+            )}
+            {notification.secondaryAction && (
+              <Button
+                disabled={stack.busy || !stack.active}
+                onClick={() => {
+                  void stack.depart(() => {
+                    notification.secondaryAction?.onClick()
+                    dismissNotification(notification.id)
+                  })
+                }}
+                size="sm"
+                type="button"
+                variant="secondary"
+              >
+                {notification.secondaryAction.label}
+              </Button>
+            )}
+          </div>
+        )}
       </div>
       <Button
         aria-label={copy.dismiss}
-        className="col-start-3 -mr-1 text-muted-foreground"
+        className="shrink-0 text-(--ui-text-tertiary) hover:text-(--ui-text-primary)"
         disabled={stack.busy || !stack.active}
         onClick={() => {
           void stack.depart(() => userDismiss(notification.id))
@@ -347,7 +376,7 @@ function NotificationItem({ notification, stack }: { notification: AppNotificati
       >
         <Codicon name="close" size="0.875rem" />
       </Button>
-    </Alert>
+    </div>
   )
 }
 
@@ -356,9 +385,9 @@ function NotificationDetail({ detail }: { detail: string }) {
   const copy = t.notifications
 
   return (
-    <details className="mt-2 text-xs text-muted-foreground">
-      <summary className="select-none font-medium text-muted-foreground hover:text-foreground">{copy.details}</summary>
-      <div className="mt-1 rounded-md bg-background/65 p-2">
+    <details className="mt-1.5 text-xs text-(--ui-text-tertiary)">
+      <summary className="select-none font-medium hover:text-(--ui-text-primary)">{copy.details}</summary>
+      <div className="mt-1 rounded-[7px] bg-(--ui-fill-2) p-2">
         <pre
           className="max-h-32 whitespace-pre-wrap wrap-break-word font-mono text-[0.6875rem] leading-relaxed"
           data-selectable-text="true"
