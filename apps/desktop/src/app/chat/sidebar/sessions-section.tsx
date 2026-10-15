@@ -11,13 +11,7 @@ import type { HermesGitWorktree } from '@/global'
 import type { SessionInfo } from '@/hermes'
 import { useI18n } from '@/i18n'
 import { flattenSessionsWithBranches } from '@/lib/session-branch-tree'
-import {
-  groupEntriesByRecency,
-  groupEntriesByStatus,
-  hideCollapsedGroupRows,
-  type SidebarListRow,
-  toSessionRows
-} from '@/lib/session-date-groups'
+import { groupEntriesByRecency, hideCollapsedGroupRows, type SidebarListRow, toSessionRows } from '@/lib/session-date-groups'
 import { sessionBucketLabel } from '@/lib/time'
 import { cn } from '@/lib/utils'
 import {
@@ -28,7 +22,7 @@ import {
   toggleWorkspaceNodeCollapsed
 } from '@/store/layout'
 import { sessionPinId } from '@/store/session'
-import { $sessionDotStateById, hasLiveTurn } from '@/store/session-dot-state'
+import { $sessionDotStateById } from '@/store/session-dot-state'
 
 import { SidebarDateDivider, SidebarSectionMeta } from './chrome'
 import { GatewayProfileGroups } from './gateway-groups'
@@ -45,6 +39,7 @@ import { WorkspaceAddButton } from './projects/workspace-header'
 import { ReorderableList, useSortableBindings } from './reorderable-list'
 import { SidebarSessionSkeletons } from './section-states'
 import { SidebarSessionRow } from './session-row'
+import { groupFlatEntries } from './studio/flat-groupings'
 import { VirtualSessionList } from './virtual-session-list'
 
 export const VIRTUALIZE_THRESHOLD = 25
@@ -178,10 +173,10 @@ interface SidebarSessionsSectionProps {
   showProfileTags?: boolean
   // Which dividers to fold into the flat list: `date` gives the chronological
   // "Yesterday" / "Last week" separators (flat recents + entered-project lanes),
-  // `status` splits into WORKING / DONE under the same separators. `none` for
-  // pinned, messaging groups, and the project overview, where the order isn't
-  // strictly by recency so a bucket would be misleading.
-  grouping?: 'date' | 'none' | 'status'
+  // `status` splits into the five status buckets and `source` into one bucket
+  // per source. `none` for pinned and the project overview, where the order
+  // isn't strictly by recency so a bucket would be misleading.
+  grouping?: 'date' | 'none' | 'source' | 'status'
   // Keep the caller's row order instead of re-sorting by group recency
   // (defaults to `pinned`, the only pre-ordered caller). The search results
   // set it too: their order is the backend's ranking (exact id matches
@@ -251,7 +246,6 @@ export function SidebarSessionsSection({
   const { t } = useI18n()
   const showAllSessions = useStore($sidebarShowAllSessions)
   const dividerLabels = t.sidebar.dateDivider
-  const statusDividerLabels = t.sidebar.statusDivider
   const dotStates = useStore($sessionDotStateById)
   const nodeOpen = useStore($sidebarWorkspaceNodeOpen)
   const isListGroupOpen = useCallback((key: string) => nodeOpen[listGroupNodeId(key)] ?? true, [nodeOpen])
@@ -433,16 +427,12 @@ export function SidebarSessionsSection({
     const rows =
       grouping === 'date'
         ? groupEntriesByRecency(displayEntries)
-        : grouping === 'status'
-          ? groupEntriesByStatus(
-              displayEntries,
-              entry => hasLiveTurn(dotStates[entry.session.id] ?? 'idle'),
-              statusDividerLabels
-            )
-          : toSessionRows(displayEntries)
+        : grouping === 'none'
+          ? toSessionRows(displayEntries)
+          : groupFlatEntries(grouping, displayEntries, dotStates, t.studio.sidebar)
 
     return manualOrderIds?.length ? orderRowsWithinGroups(rows, manualOrderIds) : rows
-  }, [grouping, displayEntries, dotStates, manualOrderIds, statusDividerLabels])
+  }, [grouping, displayEntries, dotStates, manualOrderIds, t])
 
   // Closed date/status buckets keep their divider and drop the sessions under
   // it. Same array when nothing is collapsed so the virtualizer's rows ref
@@ -462,7 +452,7 @@ export function SidebarSessionsSection({
   )
 
   useEffect(() => {
-    if (grouping !== 'date' && grouping !== 'status') {
+    if (grouping === 'none') {
       return
     }
 

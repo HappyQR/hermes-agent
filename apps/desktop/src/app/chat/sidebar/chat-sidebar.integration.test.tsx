@@ -41,7 +41,12 @@ const sessionRows = [
   makeSessionInfo({ id: 'tile-two', last_active: 2, profile: 'default', started_at: 1, title: 'Tile two' })
 ]
 
-const renderSidebar = (pathname: string, currentView: AppView, onRetrySessions: () => Promise<void> = noopAsync) =>
+const renderSidebar = (
+  pathname: string,
+  currentView: AppView,
+  onRetrySessions: () => Promise<void> = noopAsync,
+  onLoadMoreMessaging?: (platform: string) => void
+) =>
   render(
     <MemoryRouter initialEntries={[pathname]}>
       <SidebarProvider>
@@ -50,6 +55,7 @@ const renderSidebar = (pathname: string, currentView: AppView, onRetrySessions: 
           onArchiveSession={noop}
           onBranchSession={noop}
           onDeleteSession={noop}
+          onLoadMoreMessaging={onLoadMoreMessaging}
           onLoadMoreSessions={noop}
           onManageCronJob={noop}
           onNavigate={noop}
@@ -400,11 +406,13 @@ describe('ChatSidebar empty-profile sections', () => {
   })
 })
 
+// Messaging threads live in the one Sessions list (Studio): grouped by owner
+// they file under their profile beside the local rows, and the list's one
+// pager also pages every platform that still has older threads.
 describe('ChatSidebar messaging owners', () => {
   const telegram = (id: string, profile: string, last_active: number) =>
     makeSessionInfo({ connection_id: 'local', id, last_active, profile, source: 'telegram', title: id })
 
-  // Newest first: the 3-row cap lets default-1, work-1 and default-2 through.
   const threads = [
     telegram('default-1', 'default', 50),
     telegram('work-1', 'work', 40),
@@ -415,14 +423,12 @@ describe('ChatSidebar messaging owners', () => {
 
   let root: HTMLElement
 
-  const mount = () => {
-    root = renderSidebar('/', 'chat').container
+  const mount = (onLoadMoreMessaging?: (platform: string) => void) => {
+    root = renderSidebar('/', 'chat', noopAsync, onLoadMoreMessaging).container
   }
 
-  const telegramGroups = () =>
-    [...root.querySelectorAll<HTMLElement>('[data-gateway-group]')].filter(node =>
-      node.dataset.gatewayGroup!.startsWith(JSON.stringify(['messaging:telegram']).slice(0, -1))
-    )
+  const ownerGroup = (profile: string) =>
+    root.querySelector<HTMLElement>(`[data-gateway-group='${JSON.stringify(['local', profile])}']`)
 
   const titlesIn = (node: HTMLElement) =>
     threads.map(thread => thread.id).filter(title => within(node).queryByText(title))
@@ -443,7 +449,6 @@ describe('ChatSidebar messaging owners', () => {
     ])
     $messagingSessions.set(threads)
     $messagingTruncated.set(false)
-    $sidebarMessagingOpenIds.set(['telegram'])
   })
 
   afterEach(() => {
@@ -452,33 +457,23 @@ describe('ChatSidebar messaging owners', () => {
     setShowAllProfiles(false)
     $activeGatewayProfile.set('default')
     $gatewayGroupCollapsed.set([])
-    $sidebarMessagingOpenIds.set([])
     $messagingSessions.set([])
+    $messagingTruncated.set(false)
     $sessions.set([])
     $profiles.set([])
     $connectionsRegistry.set(null)
   })
 
-  it('groups the capped rows by owner, pages the platform as a whole, and keeps its own collapse keys', () => {
+  it('files threads under their owner beside the local rows', () => {
     setSidebarGrouping('profile')
     mount()
 
-    const [defaultGroup, workGroup] = telegramGroups()
+    const defaultGroup = ownerGroup('default')!
+    const workGroup = ownerGroup('work')!
 
-    expect(telegramGroups()).toHaveLength(2)
-    expect(titlesIn(defaultGroup)).toEqual(['default-1', 'default-2'])
-    expect(titlesIn(workGroup)).toEqual(['work-1'])
-
-    fireEvent.click(screen.getByRole('button', { name: 'Load 2 more' }))
-
-    expect(titlesIn(telegramGroups()[0])).toEqual(['default-1', 'default-2', 'default-3'])
-    expect(titlesIn(telegramGroups()[1])).toEqual(['work-1', 'work-2'])
-    expect(screen.queryByRole('button', { name: /^Load \d+ more$/ })).toBeNull()
-
-    fireEvent.click(within(telegramGroups()[0]).getByRole('button', { name: 'Hide default sessions' }))
-
-    expect(screen.queryByText('default-1')).toBeNull()
-    expect(screen.getByText('desk')).toBeTruthy()
+    expect(within(defaultGroup).getByText('desk')).toBeTruthy()
+    expect(titlesIn(defaultGroup)).toEqual(['default-1', 'default-2', 'default-3'])
+    expect(titlesIn(workGroup)).toEqual(['work-1', 'work-2'])
   })
 
   it('tags rows with their profile under other groupings and stays flat when scoped to one profile', () => {
@@ -488,16 +483,27 @@ describe('ChatSidebar messaging owners', () => {
 
     const row = (title: string) => screen.getByText(title).closest('.group.row-hover') as HTMLElement
 
-    expect(telegramGroups()).toHaveLength(0)
+    expect(root.querySelectorAll('[data-gateway-group]')).toHaveLength(0)
     expect(within(row('work-1')).getByRole('img', { name: 'Profile: work' })).toBeTruthy()
+    expect(within(row('work-1')).getByRole('img', { name: 'From Telegram' })).toBeTruthy()
 
     cleanup()
     setSidebarGrouping('profile')
     setShowAllProfiles(false)
     mount()
 
-    expect(telegramGroups()).toHaveLength(0)
+    expect(root.querySelectorAll('[data-gateway-group]')).toHaveLength(0)
     expect(screen.queryByText('work-1')).toBeNull()
     expect(within(row('default-1')).queryByRole('img', { name: /^Profile:/ })).toBeNull()
+  })
+
+  it('pages a platform with older threads from the one list footer', () => {
+    $messagingTruncated.set(true)
+    const loadMore = vi.fn()
+
+    mount(loadMore)
+    fireEvent.click(screen.getByRole('button', { name: 'Load more' }))
+
+    expect(loadMore).toHaveBeenCalledWith('telegram')
   })
 })

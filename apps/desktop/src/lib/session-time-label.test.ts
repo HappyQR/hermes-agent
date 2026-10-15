@@ -5,6 +5,7 @@ import { sessionTimeLabel } from './session-time-label'
 const labels = { yesterday: 'Yesterday' }
 // Wednesday 2026-10-14, 15:30 local.
 const now = new Date(2026, 9, 14, 15, 30).getTime()
+
 const at = (month: number, day: number, hour: number, minute = 0, year = 2026) =>
   new Date(year, month, day, hour, minute).getTime()
 
