@@ -258,6 +258,12 @@ export default {
     await page.keyboard.press('Control+Backquote')
     await sleep(500)
   },
+  async 'inspector-preview'(page, { shot, sleep, openSession }) {
+    await openSession(page, '分组重构')
+    await page.keyboard.press('Meta+Shift+L')
+    await sleep(2500)
+    await shot(page, 'inspector-preview')
+  },
   async 'inspector-agents'(page, { shot, sleep }) {
     await go(page, sleep, '/agents', 2000)
     await shot(page, 'inspector-agents')

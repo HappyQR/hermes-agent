@@ -36,6 +36,7 @@ import {
 
 import { SidebarPanelLabel } from '../../shell/sidebar-label'
 import { PaneEmptyState, RightSidebarSectionHeader } from '../index'
+import { useInInspector } from '../studio/use-in-inspector'
 
 import { ReviewFileTree } from './file-tree'
 import { ReviewScopeRow } from './scope-row'
@@ -73,6 +74,62 @@ export function ReviewPane() {
   const showTreeSkeleton = useDelayedTrue(loading && !hasFiles)
   const showDiffSkeleton = useDelayedTrue(diffLoading)
 
+  const inInspector = useInInspector()
+
+  // The review actions: in the header row, or — inside the inspector, whose
+  // band names the pane and owns its close — beside the scope switch.
+  const actions = (
+    <>
+      <Tip label={treeMode === 'tree' ? c.viewAsList : c.viewAsTree}>
+        <Button
+          aria-label={treeMode === 'tree' ? c.viewAsList : c.viewAsTree}
+          className={ACTION_BTN}
+          disabled={!hasFiles}
+          onClick={toggleReviewTreeMode}
+          size="icon-xs"
+          variant="ghost"
+        >
+          <Codicon name={treeMode === 'tree' ? 'list-flat' : 'list-tree'} size="0.8125rem" />
+        </Button>
+      </Tip>
+      <Tip label={c.stageAll}>
+        <Button
+          aria-label={c.stageAll}
+          className={ACTION_BTN}
+          disabled={!hasFiles || !isUncommitted}
+          onClick={() => void stageReviewFile(null).catch(err => notifyError(err, c.stageAll))}
+          size="icon-xs"
+          variant="ghost"
+        >
+          <Codicon name="add" size="0.8125rem" />
+        </Button>
+      </Tip>
+      <Tip label={c.revertAll}>
+        <Button
+          aria-label={c.revertAll}
+          className={ACTION_BTN}
+          disabled={!hasFiles || !isUncommitted}
+          onClick={() => requestRevert(null)}
+          size="icon-xs"
+          variant="ghost"
+        >
+          <Codicon name="discard" size="0.8125rem" />
+        </Button>
+      </Tip>
+      <Tip label={t.rightSidebar.refreshTree}>
+        <Button
+          aria-label={t.rightSidebar.refreshTree}
+          className={ACTION_BTN}
+          onClick={() => void refreshReview()}
+          size="icon-xs"
+          variant="ghost"
+        >
+          <Codicon name="refresh" size="0.8125rem" spinning={loading} />
+        </Button>
+      </Tip>
+    </>
+  )
+
   return (
     <aside
       aria-label={c.review}
@@ -82,68 +139,23 @@ export function ReviewPane() {
           ? 'border-r shadow-[inset_-0.0625rem_0_0_color-mix(in_srgb,white_18%,transparent)]'
           : 'border-l shadow-[inset_0.0625rem_0_0_color-mix(in_srgb,white_18%,transparent)]'
       )}
+      data-slot="review-pane"
     >
-      {showChrome && (
+      {showChrome && !inInspector && (
         <RightSidebarSectionHeader data-suppress-pane-reveal-side="">
           <div className="flex min-w-0 flex-1">
             {/* Pure self-naming label — redundant under a zone tab that already
                 says "review", so the zone header hides it (styles.css). */}
             <SidebarPanelLabel data-pane-self-label="">{c.review}</SidebarPanelLabel>
           </div>
-          <Tip label={treeMode === 'tree' ? c.viewAsList : c.viewAsTree}>
-            <Button
-              aria-label={treeMode === 'tree' ? c.viewAsList : c.viewAsTree}
-              className={ACTION_BTN}
-              disabled={!hasFiles}
-              onClick={toggleReviewTreeMode}
-              size="icon-xs"
-              variant="ghost"
-            >
-              <Codicon name={treeMode === 'tree' ? 'list-flat' : 'list-tree'} size="0.8125rem" />
-            </Button>
-          </Tip>
-          <Tip label={c.stageAll}>
-            <Button
-              aria-label={c.stageAll}
-              className={ACTION_BTN}
-              disabled={!hasFiles || !isUncommitted}
-              onClick={() => void stageReviewFile(null).catch(err => notifyError(err, c.stageAll))}
-              size="icon-xs"
-              variant="ghost"
-            >
-              <Codicon name="add" size="0.8125rem" />
-            </Button>
-          </Tip>
-          <Tip label={c.revertAll}>
-            <Button
-              aria-label={c.revertAll}
-              className={ACTION_BTN}
-              disabled={!hasFiles || !isUncommitted}
-              onClick={() => requestRevert(null)}
-              size="icon-xs"
-              variant="ghost"
-            >
-              <Codicon name="discard" size="0.8125rem" />
-            </Button>
-          </Tip>
-          <Tip label={t.rightSidebar.refreshTree}>
-            <Button
-              aria-label={t.rightSidebar.refreshTree}
-              className={ACTION_BTN}
-              onClick={() => void refreshReview()}
-              size="icon-xs"
-              variant="ghost"
-            >
-              <Codicon name="refresh" size="0.8125rem" spinning={loading} />
-            </Button>
-          </Tip>
+          {actions}
           <Button aria-label={c.close} className={ACTION_BTN} onClick={closeReview} size="icon-xs" variant="ghost">
             <Codicon name="close" size="0.8125rem" />
           </Button>
         </RightSidebarSectionHeader>
       )}
 
-      {showChrome && <ReviewScopeRow />}
+      {showChrome && <ReviewScopeRow trailing={inInspector ? actions : undefined} />}
 
       {showChrome ? (
         hasFiles ? (
