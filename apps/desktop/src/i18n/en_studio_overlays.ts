@@ -1,6 +1,8 @@
+import { enStudioOverlaysAux } from './en_studio_overlays_aux'
 // Hermes Studio copy (overlays) — fork-owned so upstream locale merges stay clean.
 import type { StudioOverlaysTranslations } from './types_studio_overlays'
 
 export const enStudioOverlays: StudioOverlaysTranslations = {
-  quickAsk: 'Quick Ask'
+  quickAsk: 'Quick Ask',
+  aux: enStudioOverlaysAux
 }

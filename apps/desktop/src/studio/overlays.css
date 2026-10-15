@@ -1,1 +1,47 @@
 /* Hermes Studio — overlays styles (fork-owned; loaded after foundation.css). */
+/* Aux windows, boot/onboarding surfaces and toasts live in their own file. */
+@import './overlays-aux.css';
+
+/* ── Shared kit (app/overlays/studio/*): tile colours, window + sheet motion ──
+   macOS System Settings tile colours. Fixed per category on purpose (they do
+   not follow the accent); IconTile tone="accent" is the one that does. */
+:root {
+  --ov-tile-gray: #8e8e93;
+  --ov-tile-black: #1d1d1f;
+  --ov-tile-teal: #20a4bd;
+  --ov-tile-red: #ff3b30;
+  --ov-tile-purple: #9b51e0;
+  --ov-tile-orange: #f08a00;
+  --ov-tile-pink: #e8457f;
+  --ov-tile-indigo: #5856d6;
+  --ov-tile-blue: #0a7aff;
+  --ov-tile-green: #2f9e47;
+  --ov-tile-brown: #a2845e;
+  --ov-tile-graphite: #636366;
+  --ov-tile-yellow: #e5a800;
+}
+
+.dark {
+  /* A black tile disappears on a dark rail; dark mode lifts it to graphite. */
+  --ov-tile-black: #3a3a3f;
+}
+
+@keyframes ov-win-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-slot='overlay-window'],
+  [data-slot='route-sheet'] {
+    animation: none !important;
+  }
+}
+
+/* ── Sheets & palette ─────────────────────────────────────────────────────── */
