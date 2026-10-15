@@ -6,7 +6,6 @@ import { type FormEvent, useCallback, useEffect, useMemo, useRef, useState } fro
 import { Loader } from '@/components/ui/loader'
 import { useI18n } from '@/i18n'
 import { triggerHaptic } from '@/lib/haptics'
-import { MessageQuestion } from '@/lib/icons'
 import {
   bareChoice,
   type ClarifyQuestion,
@@ -20,9 +19,10 @@ import { notifyError } from '@/store/notifications'
 import { forgetServerRequest } from '@/store/server-requests'
 import { requestForOwnedSession } from '@/store/session-states'
 
+import { ClarifyHead } from './core/clarify-head'
 import { ClarifyConfirmBar } from './core/confirm-bar'
 import { emptyStage, QuestionBlock } from './core/question-block'
-import { CLARIFY_ICON_CLASS, ClarifyShell } from './core/shell'
+import { ClarifyShell } from './core/shell'
 import { useClarifyKeys } from './core/use-clarify-keys'
 import type { ClarifyArgs } from './parse'
 import { handleClarifySubmitShortcut } from './submit-shortcut'
@@ -309,12 +309,10 @@ export function ClarifyToolPending({
         </span>
       )}
       <ClarifyShell className="grid gap-3">
-        <div className="flex items-start gap-2">
-          <span className="flex-1 text-[0.6875rem] leading-4 text-(--ui-text-tertiary)">
-            {questions.length === 1 ? copy.oneQuestion : copy.questionProgress(answeredCount, questions.length)}
-          </span>
-          <MessageQuestion aria-hidden className={CLARIFY_ICON_CLASS} />
-        </div>
+        <ClarifyHead
+          count={questions.length === 1 ? copy.oneQuestion : copy.questionProgress(answeredCount, questions.length)}
+          state="pending"
+        />
         {undelivered ? <UndeliveredNotice /> : null}
         {questions.map((question, index) => (
           <QuestionBlock
@@ -329,16 +327,15 @@ export function ClarifyToolPending({
             staged={stageFor(question.qid)}
           />
         ))}
+        {undelivered ? null : (
+          <ClarifyConfirmBar
+            canConfirm={canConfirm}
+            disabled={disabled}
+            onSkip={() => void cancelAll()}
+            submitting={submitting}
+          />
+        )}
       </ClarifyShell>
-
-      {undelivered ? null : (
-        <ClarifyConfirmBar
-          canConfirm={canConfirm}
-          disabled={disabled}
-          onSkip={() => void cancelAll()}
-          submitting={submitting}
-        />
-      )}
     </form>
   )
 }

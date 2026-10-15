@@ -278,7 +278,8 @@ blurred backdrop.
   fans sibling toggles out on hover: `direction` `vertical` | `horizontal`
   (split around the hub) | `arc`. Discs are `Button` `floating` off /
   `default` on; tips face outside the fan according to its geometry. Use it where a row of rarely
-  touched toggles is costing input width (the composer's voice controls).
+  touched toggles is costing input width. (Hermes Studio's composer instead keeps one mic — click
+  dictates — and puts the other voice toggles in its right-click menu, `ContextDropdown`.)
 
 ## Layout
 
@@ -421,14 +422,21 @@ from their root base tokens; do not multiply the global tokens or nest CSS zoom.
   horizontal code/output boundaries may remain contained. Thinking previews
   follow new tokens only while near the bottom, preserving the user's reading
   position until they scroll back down.
-- Composer status groups start collapsed except todos. Progress updates and queue
-  pause/resume preserve the user's disclosure choice. Error banners meet the
-  stack's top edge without a blank padding strip. File and preview links remain
-  visible at the bottom of the stack, below the queue and all status groups.
-  A centered ridge on the composer's top edge hides/reveals the entire stack,
-  including the git row, with a short downward/upward drawer slide. Its choice
-  persists per conversation and owner, not globally. Hidden sections stay
-  mounted but inert so their disclosure choices survive; reduced motion is instant.
+- Hermes Studio lays the composer status groups out as the **activity tray**
+  (`app/chat/composer/activity-tray/`, through `ComposerStatusStack`'s `layout`
+  prop): one row of chips above the composer — approval, question, tasks,
+  goal/loop/heartbeat, subagents, queue, background, previews, then the git
+  branch chip — each opening its group in one panel. A chip is presence; the
+  panel shows one group at a time and opens only when the user presses a chip
+  (never because activity arrived); progress updates and queue pause/resume do
+  not change it. Decision chips (approval, question) jump to their card in the
+  transcript instead of opening a panel. A section key the chip table does not
+  know lands in a "More" chip. Billing, free-tier and metrics notices stay
+  visible above the tray and never fold into a chip. The tray's hide button
+  folds it to one "Show activity" chip; that choice persists per conversation
+  and owner, not globally. Every section stays mounted (hidden and inert) while
+  its chip is closed or the tray is hidden, so its own state survives; reduced
+  motion is instant. The upstream stack card remains the default layout.
 - Popping out a composer makes it the window's only visible composer. It keeps
   its viewport placement while hover or keyboard focus selects a chat pane;
   moving back into the editor retains that recipient. Drafts, attachments and
@@ -453,10 +461,13 @@ from their root base tokens; do not multiply the global tokens or nest CSS zoom.
   columns for goal/loop/heartbeat details; `StatusPendingIcon` supplies the
   dashed marker for tasks and criteria. The first row keeps its normal padding;
   the stack adds no extra top inset.
-- Keep the rounded status card stationary, with the bounded scroll viewport
-  inside it. The outer scroll boundary uses `overscroll-behavior-y: contain`;
-  nested rosters and transcripts use `auto` so wheel input can hand off at an
-  edge without trapping it or scrolling the chat behind the stack.
+- Keep the rounded status card (and the tray panel) stationary, with the
+  bounded scroll viewport inside it. The outer scroll boundary uses
+  `overscroll-behavior-y: contain`; nested rosters and transcripts use `auto`
+  so wheel input can hand off at an edge without trapping it or scrolling the
+  chat behind the stack. Inside the tray panel a `StatusSection` renders as a
+  static title row (`StatusSectionPresentation`), titled so the chip's count is
+  never repeated.
 - Install, onboarding, connecting, boot failure, and reauthentication are
   distinct states with shared visual primitives. Preserve their recovery
   semantics when unifying appearance.

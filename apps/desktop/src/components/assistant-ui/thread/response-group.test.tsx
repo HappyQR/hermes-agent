@@ -1,5 +1,5 @@
 import type { ThreadMessage } from '@assistant-ui/react'
-import { cleanup, fireEvent, render, waitFor, within } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 
 import { toChatMessages } from '@/lib/chat-messages'
@@ -62,10 +62,14 @@ it('keeps background continuations in one response with one action bar and the o
     // separate explicit action (#118864).
     fireEvent.click(within(actions).getByRole('button', { name: /^copy$/i }))
     await waitFor(() => expect(clipboard.writeText).toHaveBeenLastCalledWith('The deployment is verified.'))
-    fireEvent.click(within(actions).getByRole('button', { name: /copy full response/i }))
+    // Hermes Studio: the whole-response copy lives in the footer's ⋯ menu.
+    fireEvent.keyDown(within(actions).getByRole('button', { name: /more actions/i }), { key: 'Enter' })
+    fireEvent.click(screen.getByRole('menuitem', { name: /copy full response/i }))
     await waitFor(() =>
       expect(clipboard.writeText).toHaveBeenLastCalledWith('Checking the deployment.\n\nThe deployment is verified.')
     )
+    // The copy row keeps the menu open to show "Copied"; dismiss it first.
+    fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' })
     fireEvent.click(within(actions).getByRole('button', { name: /branch/i }))
     expect(branch).toHaveBeenLastCalledWith(messages[3]!.id)
 

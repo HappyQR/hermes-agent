@@ -45,7 +45,9 @@ test.describe('chat interaction with mock backend', () => {
     const page = fixture!.page
     const composer = page.locator('[contenteditable="true"]').first()
     const primary = page.locator('[data-slot="composer-root"] button[type="submit"]')
-    const queue = page.locator('[data-slot="composer-root"] button[aria-label="Queue message"]')
+    // Hermes Studio: the secondary busy modes (Queue / Steer / Redirect) live
+    // behind the primary's "More send options" chevron.
+    const moreSend = page.locator('[data-slot="composer-root"] button[aria-label="More send options"]')
 
     await composer.click()
     await composer.type(BLOCKING_CLARIFY_TRIGGER)
@@ -60,12 +62,13 @@ test.describe('chat interaction with mock backend', () => {
     // affordance mid-turn — steer is routed through the submit engine, not a
     // separate labeled button. Queue remains the explicit secondary action.
     await expect(primary).toHaveAttribute('aria-label', 'Send')
-    await expect(queue).toBeVisible()
+    await expect(moreSend).toBeVisible()
     await page.screenshot({ path: testInfo.outputPath('busy-composer-steer.png') })
 
-    await queue.click()
+    await moreSend.click()
+    await page.getByRole('menuitem', { name: /Queue message/ }).click()
     await expect(primary).toHaveAttribute('aria-label', 'Stop')
-    await expect(queue).toHaveCount(0)
+    await expect(moreSend).toHaveCount(0)
     await page.screenshot({ path: testInfo.outputPath('busy-composer-queue.png') })
     await expect(page.getByText('1 Queued')).toBeVisible()
 

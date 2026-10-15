@@ -1,1 +1,1517 @@
-/* Hermes Studio — chat styles (fork-owned; loaded after foundation.css). */
+/* Hermes Studio — chat styles (fork-owned; loaded after foundation.css).
+   Composer, activity tray, transcript and empty state. Values reproduce the
+   design prototype (hermes-proto/styles.css) through the foundation tokens. */
+
+/* ── Shared ────────────────────────────────────────────────────────────── */
+
+/* ── Pane ──────────────────────────────────────────────────────────────── */
+
+/* The reading column (prototype .tx-col, 760px): one token drives the thread
+   column, the composer dock and the intro alike. The first-run demo's narrower
+   column and the HUD keep their own. */
+:root:not([data-onboarding-demo]) [data-chat-surface]:not([data-hud-shell] *) {
+  --composer-width: 47.5rem;
+}
+
+/* ── Transcript (prototype .tx-col / .turn / .msg-* / .disclose / .act*) ── */
+
+/* Rhythm: 22px between turns, 14px from a prompt to its reply; reply text
+   sits flush with the column edge. */
+[data-chat-surface] {
+  --message-text-indent: 0rem;
+}
+
+[data-slot='aui_thread-content'] {
+  --conversation-turn-gap: 0.875rem;
+  /* Disclosure chevrons stay visible, like the prototype's .disclose. */
+  --disclosure-caret-rest: 0.7;
+}
+
+[data-slot='aui_message-group'] {
+  gap: 1.375rem;
+}
+
+/* Scaffold lines (thinking, tool runs, live status) read in tertiary text at
+   full strength; the prototype has no resting fade. */
+[data-slot='aui_assistant-message-content'] [data-conversation-scaffold],
+[data-slot='aui_background-result'] [data-conversation-scaffold],
+[data-slot='aui_background-resume'] {
+  opacity: 1;
+}
+
+/* Disclosure headers: a soft pill on hover (prototype .disclose). */
+[data-slot='aui_thread-content'] [data-conversation-scaffold] .group\/disclosure-row > button:not(:disabled) {
+  margin-inline-start: -0.25rem;
+  border-radius: 0.4375rem;
+  padding: 0.125rem 0.5rem 0.125rem 0.25rem;
+  transition:
+    background-color var(--studio-t1),
+    color var(--studio-t1);
+}
+
+[data-slot='aui_thread-content'] [data-conversation-scaffold] .group\/disclosure-row > button:not(:disabled):hover {
+  background: var(--ui-hover);
+  color: var(--ui-text-secondary);
+}
+
+[data-slot='scaffold-icon'] {
+  width: 0.9375rem;
+  height: 0.9375rem;
+  color: var(--ui-text-tertiary);
+}
+
+/* Thinking body: quiet text on a left rail (prototype .think-body). */
+[data-slot='aui_thinking-body'] {
+  margin: 0.25rem 0 0 0.25rem;
+  border-inline-start: 1.5px solid var(--ui-line-2);
+  padding: 0.125rem 0 0.125rem 1rem;
+  color: var(--ui-text-tertiary);
+  line-height: 1.65;
+}
+
+/* An opened tool run hangs its rows off the same rail (prototype .acts). */
+[data-tool-group] > [data-tool-summary] ~ div:not([data-tool-ticker]) {
+  margin-inline-start: 0.25rem;
+  border-inline-start: 1.5px solid var(--ui-line-2);
+  padding-inline-start: 1rem;
+}
+
+/* Markdown (prototype .md): accent links, quiet inline code, rounded tables. */
+[data-slot='aui_assistant-message-content'] .aui-md a {
+  color: var(--ui-accent-text);
+}
+
+[data-slot='aui_assistant-message-content'] .aui-md :not(pre) > code {
+  border-radius: 5px;
+  padding: 0.12em 0.36em;
+  background: var(--ui-fill-2);
+  box-shadow: inset 0 0 0 0.5px var(--ui-line);
+  font-size: 0.86em;
+}
+
+[data-slot='aui_assistant-message-content'] .aui-md li::marker {
+  color: var(--ui-text-tertiary);
+}
+
+[data-slot='aui_assistant-message-content'] .aui-md-table {
+  border-color: transparent;
+  border-radius: 0.625rem;
+  box-shadow: 0 0 0 0.5px var(--ui-line-2);
+}
+
+[data-slot='aui_assistant-message-content'] .aui-md-table thead {
+  background: transparent;
+}
+
+[data-slot='aui_assistant-message-content'] .aui-md-table th {
+  color: var(--ui-text-secondary);
+  font-weight: 600;
+}
+
+/* ── Cards (prototype .card): every inline widget — clarify, artifact,
+   changed files, connectors, catalog installs — is one card look. */
+.widget-shell,
+.studio-deleg {
+  border-radius: 0.75rem;
+  background: var(--dt-card);
+  box-shadow:
+    0 0 0 0.5px var(--ui-line-2),
+    0 2px 8px -4px rgb(0 0 0 / 0.08);
+}
+
+/* Delegation (prototype .deleg): one card, a head, rows inside. */
+.studio-deleg {
+  max-width: 35rem;
+  padding: 0.25rem 0;
+}
+
+.studio-deleg-head {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem 0.375rem;
+  font-size: 0.8125rem;
+}
+
+.studio-deleg-head b {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.studio-deleg-state {
+  color: var(--ui-text-tertiary);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+/* Artifact card (prototype .art-card): a page-shaped thumbnail and an Open
+   label that is always there. */
+[data-slot='aui_artifact-card'].widget-shell {
+  max-width: 28.75rem;
+  gap: 0.75rem;
+  padding: 0.625rem 0.75rem 0.625rem 0.625rem;
+  transition:
+    box-shadow var(--studio-t2),
+    transform var(--studio-t2) var(--studio-ease);
+}
+
+[data-slot='aui_artifact-card'].widget-shell:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 0 0 0.5px var(--ui-line-2),
+    0 8px 22px -10px rgb(0 0 0 / 0.22);
+}
+
+.studio-art-thumb {
+  position: relative;
+  width: 4rem;
+  height: 3rem;
+  flex: none;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  background: linear-gradient(135deg, var(--ui-accent-soft), var(--ui-fill-2));
+  box-shadow: inset 0 0 0 0.5px var(--ui-line);
+}
+
+.studio-art-thumb i {
+  position: absolute;
+  display: block;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--ui-text-primary) 14%, transparent);
+}
+
+.studio-art-thumb i:nth-child(1) {
+  top: 6px;
+  bottom: 6px;
+  left: 6px;
+  width: 14px;
+  background: color-mix(in srgb, var(--ui-text-primary) 10%, transparent);
+}
+
+.studio-art-thumb i:nth-child(2) {
+  top: 8px;
+  left: 24px;
+  width: 30px;
+  height: 4px;
+}
+
+.studio-art-thumb i:nth-child(3) {
+  top: 16px;
+  left: 24px;
+  width: 22px;
+  height: 4px;
+  background: var(--dt-primary);
+}
+
+.studio-art-thumb i:nth-child(4) {
+  top: 24px;
+  left: 24px;
+  width: 28px;
+  height: 4px;
+}
+
+.studio-art-thumb i:nth-child(5) {
+  top: 32px;
+  left: 24px;
+  width: 18px;
+  height: 4px;
+}
+
+.studio-art-kind {
+  position: absolute;
+  right: 4px;
+  bottom: 3px;
+  color: var(--ui-text-tertiary);
+  font-size: 0.75rem;
+}
+
+.studio-art-open {
+  flex: none;
+  border-radius: 6px;
+  padding: 0.1875rem 0.5625rem;
+  background: var(--ui-fill);
+  color: var(--ui-text-primary);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* Changed files (prototype .files-card): icon, count, total, Review; rows
+   with mono paths on hairlines. */
+[data-slot='aui_changed-files'].widget-shell {
+  max-width: 32.5rem;
+  padding: 0;
+  overflow: hidden;
+}
+
+[data-slot='aui_changed-files'] .studio-files-head {
+  padding: 0.625rem 0.75rem;
+  font-size: 0.8125rem;
+}
+
+[data-slot='aui_changed-files'] [data-slot='fade-scroll'],
+[data-slot='aui_changed-files'] .studio-files-head + * {
+  margin: 0;
+  padding: 0;
+}
+
+[data-slot='aui_changed-files'] .studio-files-head + * button {
+  border-radius: 0;
+  padding: 0.375rem 0.75rem;
+  box-shadow: inset 0 0.5px 0 var(--ui-line);
+}
+
+/* ── The prompt (prototype .msg-user) ──
+   A right-aligned 19px pill; the sticky wrapper stays unpainted (DESIGN.md
+   sticky prompts) and the actions sit in a row under the bubble. */
+[data-slot='aui_user-message-root'] button.composer-human-message {
+  width: fit-content;
+  max-width: min(82%, 37.5rem);
+  margin-inline-start: auto;
+  border-color: transparent;
+  border-radius: 1.1875rem;
+  padding: 0.5625rem 0.875rem;
+  background: var(--dt-user-bubble);
+  line-height: 1.55;
+}
+
+[data-slot='aui_user-message-root'] button.composer-human-message:hover {
+  border-color: transparent;
+  filter: brightness(0.985);
+}
+
+.studio-user-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1px;
+  margin-top: 0.25rem;
+  margin-inline-end: 0.25rem;
+  opacity: 0;
+  transition: opacity var(--studio-t2);
+}
+
+[data-slot='aui_user-message-root']:is(:hover, :focus-within) .studio-user-actions {
+  opacity: 1;
+}
+
+.studio-user-actions .studio-user-time {
+  margin-inline-end: 0.375rem;
+  font-size: 0.71875rem;
+}
+
+.studio-user-actions button,
+.studio-msg-footer [data-slot='aui_msg-actions'] button,
+.studio-msg-footer button[data-slot='aui_msg-reactions'] {
+  width: 1.375rem;
+  height: 1.375rem;
+  min-width: 1.375rem;
+  border-radius: 0.375rem;
+  padding: 0;
+  color: var(--ui-text-secondary);
+  opacity: 1;
+}
+
+.studio-user-actions button:hover,
+.studio-msg-footer [data-slot='aui_msg-actions'] button:hover:not(:disabled),
+.studio-msg-footer button[data-slot='aui_msg-reactions']:hover {
+  background: var(--ui-hover);
+  color: var(--ui-text-primary);
+}
+
+/* The inline edit (prototype edit card): the bubble grows into a composer
+   card with the accent ring, a note on what sending does, Cancel and Send. */
+[data-slot='aui_edit-composer-root'] .composer-human-message {
+  width: min(100%, 37.5rem);
+  margin-inline-start: auto;
+  border-color: transparent;
+  border-radius: 1.1875rem;
+  padding: 0.6875rem 0.875rem 0.5rem;
+  background: var(--dt-card);
+  box-shadow:
+    0 0 0 0.5px color-mix(in srgb, var(--dt-primary) 45%, var(--ui-line-2)),
+    0 0 0 4px color-mix(in srgb, var(--dt-primary) 12%, transparent),
+    0 12px 36px -14px rgb(0 0 0 / 0.28);
+}
+
+.studio-edit-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding-top: 0.375rem;
+}
+
+.studio-edit-note {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  color: var(--ui-text-tertiary);
+  font-size: 0.75rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Reply footer (prototype .ai-foot) ──
+   Left-aligned; the latest settled reply keeps it on screen, older replies
+   reveal it on hover or focus. */
+.studio-msg-footer {
+  display: flex;
+  min-height: 1.5rem;
+  align-items: center;
+  gap: 1px;
+  margin-top: 0.25rem;
+  margin-inline-start: -0.375rem;
+}
+
+.studio-msg-footer [data-slot='aui_msg-actions'] {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--studio-t2);
+}
+
+.group:hover .studio-msg-footer [data-slot='aui_msg-actions'],
+.studio-msg-footer:focus-within [data-slot='aui_msg-actions'],
+.studio-msg-footer[data-latest] [data-slot='aui_msg-actions'],
+.studio-msg-footer [data-slot='aui_msg-actions']:has([data-state='open']) {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.studio-msg-footer[data-latest] button[data-slot='aui_msg-reactions']:not([data-reacted]) {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.studio-msg-versions {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-inline-start: 0.25rem;
+  color: var(--ui-text-tertiary);
+  font-size: 0.75rem;
+}
+
+.studio-msg-meta {
+  margin-inline-start: 0.5rem;
+  color: var(--ui-text-tertiary);
+  font-size: 0.71875rem;
+}
+
+/* ── Composer (prototype .composer / .cmp-*) ───────────────────────────
+   Scoped to the docked / floating composer; the HUD's Spotlight bar keeps its
+   own geometry (its rules live under [data-hud-shell] in styles.css). */
+
+:where([data-slot='composer-root']:not([data-hud-shell] *)) {
+  --composer-control-size: 1.75rem;
+  --composer-control-primary-size: 2rem;
+  --composer-control-gap: 0.25rem;
+  --composer-row-gap: 0.5rem;
+  --composer-surface-pad-x: 0.5rem;
+  --composer-surface-pad-y: 0.5rem;
+  --composer-input-min-height: 1.5rem;
+}
+
+/* The floating glass card: 22px corners, a hairline ring and the soft drop. */
+[data-slot='composer-root']:not([data-hud-shell] *) {
+  border-radius: 22px;
+}
+
+[data-slot='composer-root']:not([data-hud-shell] *) [data-slot='composer-surface'] {
+  border-color: transparent !important;
+  box-shadow:
+    0 0 0 0.5px var(--ui-line-2),
+    0 10px 32px -14px rgb(0 0 0 / 0.25),
+    0 2px 6px -3px rgb(0 0 0 / 0.08);
+  transition: box-shadow var(--studio-t2) var(--studio-ease);
+}
+
+/* Focus: an accent ring and halo while you type. */
+[data-slot='composer-root']:not([data-hud-shell] *)
+  [data-slot='composer-surface']:has([data-slot='composer-rich-input']:focus) {
+  box-shadow:
+    0 0 0 0.5px color-mix(in srgb, var(--dt-primary) 45%, var(--ui-line-2)),
+    0 0 0 4px color-mix(in srgb, var(--dt-primary) 12%, transparent),
+    0 12px 36px -14px rgb(0 0 0 / 0.28);
+}
+
+/* No painted backdrop inside the grab margin: the dock fade below covers it. */
+[data-slot='composer-root']:not([data-hud-shell] *) > .pointer-events-none {
+  background: none !important;
+}
+
+/* Bottom fade under the whole dock (tray + composer), so scrolled text never
+   meets the chips (prototype .dock::before). Paint only; it takes no input. */
+[data-slot='composer-dock']:not([data-popped-out]):not([data-hud-shell] *)::before {
+  content: '';
+  position: absolute;
+  inset: -1.375rem -0.875rem 0;
+  z-index: -1;
+  pointer-events: none;
+  /* The field the pane paints: under window glass the chat surface token is
+     transparent and the body carries the chrome at the glass keep. */
+  --studio-dock-fade: color-mix(in srgb, var(--ui-bg-chrome) var(--translucency-glass-keep, 100%), transparent);
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--studio-dock-fade) 0%, transparent),
+    var(--studio-dock-fade) 2.125rem
+  );
+}
+
+/* The input: 15px text, 16px from the card's edge, quieter hint. */
+[data-slot='composer-root']:not([data-hud-shell] *) [data-slot='composer-rich-input'] {
+  padding: 0.3125rem 0.5rem 0.125rem;
+  line-height: 1.55;
+}
+
+[data-slot='composer-root']:not([data-hud-shell] *) [data-slot='composer-rich-input']:is(:empty, [data-empty])::before {
+  color: var(--ui-text-quaternary) !important;
+}
+
+/* The row's left cluster sits on the controls' centre line. */
+[data-slot='composer-fade'] div:has(> [data-slot='composer-leading']) {
+  translate: none;
+  align-self: center;
+  align-items: center;
+}
+
+.composer-leading {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.composer-leading button:has(.codicon-add),
+[data-slot='composer-mic'] {
+  color: var(--ui-text-secondary);
+}
+
+/* Pills in the row (prototype .cmp-pill): context gauge, auto-approve,
+   dictation / read-aloud, and the model · effort pill. */
+.composer-pill,
+[data-slot='composer-root']:not([data-hud-shell] *) [data-slot='composer-model-pill'] {
+  display: inline-flex;
+  height: 1.75rem;
+  flex: none;
+  align-items: center;
+  gap: 0.3125rem;
+  border-radius: 999px;
+  padding: 0 0.5rem 0 0.5625rem;
+  color: var(--ui-text-secondary);
+  font-size: 0.78125rem;
+  font-weight: 500;
+  white-space: nowrap;
+  transition:
+    background-color var(--studio-t1),
+    color var(--studio-t1);
+}
+
+[data-slot='composer-root']:not([data-hud-shell] *) [data-slot='composer-model-pill'] {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+button.composer-pill:hover,
+button.composer-pill[data-state='open'],
+[data-slot='composer-root']:not([data-hud-shell] *) [data-slot='composer-model-pill']:is(:hover, [data-state='open']) {
+  background: var(--ui-hover);
+  color: var(--ui-text-primary);
+}
+
+.composer-pill[data-tone='warn'],
+button.composer-pill[data-tone='warn']:hover {
+  color: var(--ui-orange);
+  background: color-mix(in srgb, var(--ui-dot-orange) 12%, transparent);
+}
+
+.composer-pill[data-tone='accent'] {
+  color: var(--ui-accent-text);
+}
+
+.composer-pill-action {
+  display: inline-flex;
+  margin-inline-end: -0.25rem;
+  border-radius: 999px;
+  padding: 0.1875rem;
+  color: inherit;
+}
+
+.composer-pill-action:hover {
+  background: var(--ui-hover);
+}
+
+.composer-model-effort {
+  color: var(--ui-text-tertiary);
+  font-weight: 400;
+}
+
+[data-slot='composer-context-ring'] {
+  gap: 0.3125rem;
+  padding: 0 0.4375rem;
+  font-size: 0.71875rem;
+}
+
+.composer-context-ring {
+  width: 1.125rem;
+  height: 1.125rem;
+  flex: none;
+  color: var(--ui-text-tertiary);
+}
+
+.composer-context-ring path {
+  fill: var(--dt-primary);
+}
+
+.composer-context-ring path[data-high] {
+  fill: var(--ui-orange);
+}
+
+/* The context panel: the statusbar's breakdown, wider, plus the stat tiles. */
+.composer-context-panel [data-slot='context-usage-panel'] {
+  width: auto;
+  padding: 0.875rem 0.875rem 0.75rem;
+}
+
+.composer-context-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  border-radius: 0.5625rem;
+  padding: 0.5rem 0.625rem;
+  background: var(--ui-fill-2);
+}
+
+.composer-context-stat span {
+  color: var(--ui-text-tertiary);
+  font-size: 0.6875rem;
+}
+
+.composer-context-stat b {
+  color: var(--ui-text-primary);
+  font-size: 0.875rem;
+  font-weight: 650;
+}
+
+/* Something is listening (read-aloud or the wake word) — a dot on the mic. */
+.composer-mic-dot {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  width: 0.3125rem;
+  height: 0.3125rem;
+  border-radius: 50%;
+  background: var(--dt-primary);
+}
+
+/* The primary (prototype .send): a 32px circle that springs on press. */
+.composer-send-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+:is([data-slot='composer-send'], [data-slot='composer-talk']):not(:disabled) {
+  transition:
+    transform var(--studio-t2) var(--studio-spring),
+    background-color var(--studio-t2);
+}
+
+:is([data-slot='composer-send'], [data-slot='composer-talk']):not(:disabled):hover {
+  transform: scale(1.06);
+}
+
+:is([data-slot='composer-send'], [data-slot='composer-talk']):not(:disabled):active {
+  transform: scale(0.92);
+}
+
+.composer-send-more {
+  width: 1.25rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  color: var(--ui-text-tertiary);
+}
+
+/* The / @ : popover spans the composer (prototype .cmp-pop): the menu
+   surface, mono commands with their descriptions beside them. */
+[data-slot='composer-root']:not([data-hud-shell] *) [data-slot='composer-completion-drawer'] {
+  left: 5px;
+  right: 5px;
+  width: auto;
+  max-width: none;
+  margin-bottom: 0.5rem;
+  border-color: transparent;
+  border-radius: 0.875rem;
+  padding: 0.375rem;
+  background: var(--ui-menu);
+  box-shadow: var(--elev-pop), var(--hairline-hi);
+  backdrop-filter: blur(36px) saturate(1.8);
+  -webkit-backdrop-filter: blur(36px) saturate(1.8);
+  font-size: 0.8125rem;
+}
+
+[data-slot='composer-completion-drawer'] button > span:nth-child(2):not(:last-child) {
+  min-width: 6.25rem;
+  font-family: var(--dt-font-mono);
+  font-size: 0.78125rem;
+  font-weight: 600;
+}
+
+[data-slot='composer-root']:not([data-hud-shell] *) [data-slot='composer-completion-drawer'] button[data-highlighted] {
+  background: var(--dt-primary);
+}
+
+[data-slot='composer-root']:not([data-hud-shell] *)
+  [data-slot='composer-completion-drawer']
+  button[data-highlighted]
+  * {
+  color: var(--ui-on-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :is([data-slot='composer-send'], [data-slot='composer-talk']):not(:disabled):is(:hover, :active) {
+    transform: none;
+  }
+}
+
+/* ── Activity tray (prototype .tray / .tray-chip / .tray-panel) ───────── */
+
+/* 5px insets: the tray shares the composer surface's edges, which sit inside
+   the composer's transparent grab margin. */
+[data-slot='activity-tray'] {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0 5px 0.5rem;
+}
+
+.tray-notices {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+/* Notices (billing, free tier, metrics consent) as the prototype's banner
+   card: they outrank activity, so they never fold into a chip. */
+.tray-notice {
+  overflow: hidden;
+  border-radius: 0.75rem;
+  background: var(--ui-glass-strong);
+  box-shadow: var(--elev-soft);
+  backdrop-filter: blur(20px) saturate(1.6);
+  -webkit-backdrop-filter: blur(20px) saturate(1.6);
+  animation: studio-fade-up 260ms var(--studio-spring) both;
+}
+
+.tray-row {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.375rem;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 0 2px;
+}
+
+.tray-row::-webkit-scrollbar {
+  display: none;
+}
+
+.tray-spacer {
+  flex: 1;
+  min-width: 0.375rem;
+}
+
+.tray-chip {
+  display: inline-flex;
+  height: 1.75rem;
+  flex: none;
+  cursor: pointer;
+  align-items: center;
+  gap: 0.375rem;
+  border-radius: 999px;
+  padding: 0 0.625rem 0 0.5rem;
+  background: var(--ui-glass-strong);
+  box-shadow: var(--elev-soft);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  color: var(--ui-text-secondary);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  transition:
+    background-color var(--studio-t1),
+    color var(--studio-t1),
+    transform var(--studio-t2) var(--studio-spring);
+  animation: studio-pop-in 260ms var(--studio-spring) both;
+}
+
+.tray-chip:hover {
+  color: var(--ui-text-primary);
+  transform: translateY(-1px);
+}
+
+.tray-chip:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--dt-primary) 60%, transparent);
+  outline-offset: 1px;
+}
+
+.tray-chip .tray-chip-icon {
+  flex: none;
+  color: var(--ui-text-tertiary);
+}
+
+.tray-chip-label {
+  min-width: 0;
+}
+
+.tray-chip[data-tone='warn'] {
+  color: var(--ui-orange);
+}
+
+.tray-chip[data-tone='warn'] .tray-chip-icon {
+  color: var(--ui-dot-orange);
+}
+
+.tray-chip[data-tone='error'] {
+  color: var(--ui-red);
+}
+
+.tray-chip[data-tone='error'] .tray-chip-icon {
+  color: var(--ui-red);
+}
+
+.tray-chip[data-tone='muted'] {
+  color: var(--ui-text-tertiary);
+}
+
+.tray-chip[data-live] .tray-chip-icon {
+  color: var(--dt-primary);
+}
+
+/* The open chip inverts, like a pressed pill. */
+.tray-chip[aria-expanded='true'],
+.tray-chip[aria-expanded='true']:hover {
+  background: var(--ui-text-primary);
+  color: var(--dt-background);
+}
+
+.tray-chip[aria-expanded='true'] .tray-chip-icon,
+.tray-chip[aria-expanded='true'] .tray-chip-diff,
+.tray-chip[aria-expanded='true'] .tray-chip-diff * {
+  color: var(--dt-background);
+}
+
+.tray-chip-diff {
+  font-size: 0.71875rem;
+}
+
+.tray-chip-progress {
+  width: 1.625rem;
+  height: 0.25rem;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--ui-fill);
+}
+
+.tray-chip-progress > i {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--dt-primary);
+  transition: width var(--studio-t3) var(--studio-ease);
+}
+
+.tray-collapse {
+  flex: none;
+  color: var(--ui-text-tertiary);
+}
+
+/* The panel: glass card with the float shadow, one scroll viewport. */
+.tray-panel {
+  position: relative;
+  max-height: min(40vh, 18.75rem);
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  border-radius: 1rem;
+  padding: 0.375rem;
+  padding-inline-end: 2rem;
+  background: var(--ui-glass-strong);
+  box-shadow: var(--elev-float);
+  backdrop-filter: blur(28px) saturate(1.6);
+  -webkit-backdrop-filter: blur(28px) saturate(1.6);
+  animation: studio-drawer-up 260ms var(--studio-spring) both;
+}
+
+.tray-panel[hidden] {
+  display: none;
+}
+
+.tray-panel-close {
+  position: absolute;
+  top: 0.4375rem;
+  inset-inline-end: 0.4375rem;
+  z-index: 1;
+  color: var(--ui-text-tertiary);
+}
+
+.tray-panel-head {
+  display: flex;
+  min-height: 1.75rem;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.125rem 0.5rem 0.25rem;
+  font-size: 0.78125rem;
+}
+
+.tray-panel-head b {
+  font-weight: 600;
+  color: var(--ui-text-primary);
+}
+
+.tray-panel-caption {
+  color: var(--ui-text-tertiary);
+  font-size: 0.75rem;
+}
+
+.tray-panel-row {
+  display: flex;
+  width: 100%;
+  min-height: 1.875rem;
+  cursor: pointer;
+  align-items: center;
+  gap: 0.5625rem;
+  border-radius: 0.5625rem;
+  padding: 0.25rem 0.5rem;
+  color: var(--ui-text-primary);
+  font-size: 0.8125rem;
+  text-align: start;
+}
+
+.tray-panel-row:hover:not([data-static]),
+.tray-panel-row:focus-visible {
+  background: var(--ui-hover);
+  outline: none;
+}
+
+.tray-panel-row[data-static] {
+  cursor: default;
+}
+
+.tray-panel-row-icon {
+  flex: none;
+  color: var(--ui-text-tertiary);
+}
+
+.tray-panel-row-label {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tray-panel-row-meta {
+  min-width: 0;
+  max-width: 45%;
+  overflow: hidden;
+  color: var(--ui-text-tertiary);
+  font-size: 0.6875rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tray-panel-separator {
+  height: 0.5px;
+  margin: 0.3125rem 0.5rem;
+  background: var(--ui-line-2);
+}
+
+/* Status groups inside the panel: rows get the prototype's rounded hover. */
+.tray-panel .status-row {
+  border-radius: 0.5625rem;
+}
+
+@keyframes studio-drawer-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tray-chip,
+  .tray-notice,
+  .tray-panel {
+    animation: none;
+  }
+
+  .tray-chip:hover {
+    transform: none;
+  }
+}
+
+/* ── Approval (prototype .appr): a raised card at the transcript's foot. ── */
+[data-slot='tool-approval-stack'][data-approval-placement='inline'] {
+  max-width: none;
+}
+
+.studio-appr-surface {
+  border-radius: 1rem;
+  background: var(--dt-card);
+  box-shadow:
+    0 0 0 0.5px var(--ui-line-2),
+    0 12px 32px -14px rgb(0 0 0 / 0.28);
+}
+
+.studio-appr-floating {
+  box-shadow:
+    0 0 0 0.5px var(--ui-line-2),
+    var(--elev-float);
+}
+
+.studio-appr {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  padding: 0.875rem 0.875rem 0.75rem;
+}
+
+.studio-appr-head {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+}
+
+.studio-appr-head b {
+  min-width: 0;
+  flex: 1;
+  font-weight: 600;
+}
+
+.studio-appr-icon {
+  display: inline-flex;
+  width: 1.625rem;
+  height: 1.625rem;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  background: color-mix(in srgb, var(--ui-dot-orange) 15%, transparent);
+  color: var(--ui-dot-orange);
+}
+
+.studio-appr-count {
+  color: var(--ui-text-tertiary);
+  font-size: 0.75rem;
+}
+
+.studio-appr-code {
+  max-height: 10rem;
+  margin: 0;
+  overflow: auto;
+  border-radius: 0.5625rem;
+  padding: 0.625rem 0.75rem;
+  background: var(--ui-code-background);
+  box-shadow: inset 0 0 0 0.5px var(--ui-line);
+  color: var(--ui-text-primary);
+  font-family: var(--dt-font-mono, ui-monospace, monospace);
+  font-size: 0.78125rem;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.studio-appr-why {
+  margin: 0;
+  color: var(--ui-text-tertiary);
+  font-size: 0.78125rem;
+}
+
+.studio-appr-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* A shortcut riding in its button's label (prototype .kbd, unboxed). */
+.studio-btn-kbd {
+  font-size: 0.71875rem;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  opacity: 0.6;
+}
+
+/* Two buttons fused into one control (prototype .split-btn). */
+.studio-split {
+  display: inline-flex;
+  min-width: 0;
+}
+
+.studio-split > :first-child {
+  border-start-end-radius: 0;
+  border-end-end-radius: 0;
+}
+
+.studio-split > :last-child {
+  margin-inline-start: 1px;
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+  padding-inline: 0.375rem;
+}
+
+/* ── Clarify (prototype .clarify): a card with a state tag, the question,
+   a hint, ringed option rows with letter tiles, and its own actions. ── */
+[data-slot='clarify-inline'].widget-shell {
+  max-width: 35rem;
+  gap: 0.625rem;
+  padding: 0.875rem;
+}
+
+.studio-clarify-head {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.studio-clarify-count {
+  color: var(--ui-text-tertiary);
+  font-size: 0.75rem;
+}
+
+.studio-clarify-q {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.studio-clarify-hint {
+  color: var(--ui-text-tertiary);
+  font-size: 0.75rem;
+}
+
+[data-clarify-batch-question] {
+  gap: 0.375rem;
+}
+
+[data-clarify-batch-question] [role='group'] {
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+[data-clarify-batch-question] [data-choice] {
+  align-items: center;
+  gap: 0.625rem;
+  border-radius: 0.625rem;
+  padding: 0.5625rem 0.625rem;
+  box-shadow: inset 0 0 0 0.5px var(--ui-line-2);
+  color: var(--ui-text-primary);
+  font-size: 0.8125rem;
+  transition:
+    background-color var(--studio-t1),
+    box-shadow var(--studio-t1);
+}
+
+[data-clarify-batch-question] [data-choice]:not(:disabled):hover,
+[data-clarify-batch-question] [data-choice][data-highlighted] {
+  background: var(--ui-hover);
+}
+
+[data-clarify-batch-question] [data-choice][aria-pressed='true'] {
+  background: var(--ui-accent-softer);
+  box-shadow: inset 0 0 0 1.5px var(--dt-primary);
+}
+
+/* The option's text and its Recommended tag, the tag pushed to the end. */
+[data-clarify-batch-question] [data-choice] > span:last-child {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.studio-rec-tag {
+  margin-inline-start: auto;
+}
+
+/* Letter tiles (prototype .opt .letter). */
+[data-clarify-batch-question] [data-slot='kbd'] {
+  width: 1.375rem;
+  height: 1.375rem;
+  margin-top: 0;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+[data-clarify-batch-question] label {
+  align-items: center;
+  gap: 0.625rem;
+  padding-inline: 0.625rem;
+}
+
+/* ── Error card (prototype .err-card): a neutral card — warn glyph and title,
+   plain body, ONE primary fix, the rest under "More recovery options",
+   Copy details at the end. ── */
+.studio-err-card {
+  display: flex;
+  max-width: 35rem;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.375rem;
+  border-radius: 0.75rem;
+  padding: 0.75rem 0.875rem;
+  background: var(--dt-card);
+  box-shadow:
+    0 0 0 0.5px var(--ui-line-2),
+    0 2px 8px -4px rgb(0 0 0 / 0.08);
+  color: var(--ui-text-primary);
+  font-size: 0.8125rem;
+  line-height: 1.55;
+}
+
+.studio-err-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+}
+
+.studio-err-title > svg {
+  flex: none;
+  color: var(--ui-dot-orange);
+}
+
+.studio-err-body {
+  color: var(--ui-text-secondary);
+}
+
+.studio-err-card details {
+  color: var(--ui-text-tertiary);
+}
+
+.studio-err-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.studio-err-primary {
+  display: contents;
+}
+
+/* Every recovery is a plain button (prototype .btn.plain.sm)… */
+.studio-err-card .aui-error-action {
+  height: 1.5rem;
+  gap: 0.375rem;
+  border: 0;
+  border-radius: 0.375rem;
+  padding: 0 0.5625rem;
+  background: transparent;
+  color: var(--ui-text-primary);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.studio-err-card .aui-error-action:hover {
+  background: var(--ui-hover);
+}
+
+/* …except the one the card leads with (prototype .btn.primary.sm). */
+.studio-err-primary > .aui-error-action {
+  background: var(--dt-primary);
+  box-shadow:
+    inset 0 0.5px 0 rgb(255 255 255 / 0.25),
+    0 1px 2px rgb(0 0 0 / 0.12);
+  color: var(--dt-primary-foreground, #fff);
+}
+
+.studio-err-primary > .aui-error-action:hover {
+  background: var(--dt-primary);
+  filter: brightness(1.06);
+}
+
+.studio-err-more {
+  gap: 0.25rem;
+}
+
+/* The list under "More recovery options": menu rows. */
+.studio-err-menu .aui-error-action {
+  width: 100%;
+  height: 1.75rem;
+  justify-content: flex-start;
+  gap: 0.5rem;
+  border: 0;
+  border-radius: 0.375rem;
+  padding: 0 0.625rem;
+  background: transparent;
+  color: var(--ui-text-primary);
+  font-size: 0.8125rem;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.studio-err-menu .aui-error-action:hover,
+.studio-err-menu .aui-error-action:focus-visible {
+  background: var(--ui-hover);
+  outline: none;
+}
+
+/* ── Pane: the jump-to-latest pill (prototype .to-bottom) — glass, float
+   shadow, no stroke; accent label while an approval waits below. ── */
+.thread-jump-button {
+  height: 1.875rem;
+  gap: 0.375rem;
+  border: 0;
+  padding: 0 0.75rem 0 0.5625rem;
+  background: var(--ui-glass-strong);
+  -webkit-backdrop-filter: blur(20px) saturate(1.6);
+  backdrop-filter: blur(20px) saturate(1.6);
+  box-shadow: var(--elev-float);
+  color: var(--ui-text-secondary);
+  font-size: 0.75rem;
+}
+
+.thread-jump-button:hover {
+  background: var(--ui-glass-strong);
+  color: var(--ui-text-primary);
+}
+
+.thread-jump-button[data-approval] {
+  color: var(--ui-accent-text);
+}
+
+/* The conversation timeline (prototype .timeline-rail): 3px rounded ticks
+   on the hairline colour, the current turn in accent. */
+[data-slot='thread-timeline'] .thread-timeline-tick [data-slot='timeline-bar'] {
+  height: 3px;
+  border-radius: 2px;
+  background: var(--ui-line-2);
+  opacity: 1;
+}
+
+[data-slot='thread-timeline'] .thread-timeline-tick:hover [data-slot='timeline-bar'] {
+  background: var(--ui-text-tertiary);
+}
+
+[data-slot='thread-timeline'] .thread-timeline-tick[aria-current='location'] [data-slot='timeline-bar'] {
+  background: var(--dt-primary);
+}
+
+/* ── Empty chat (prototype .empty): the composer rises to the middle of the
+   pane, the greeting sits above it and the starters below — all placed from
+   one --hero-bottom on the chat surface (the dock's containing block). The
+   blocks are portaled onto the surface by StudioIntro; when the first
+   message mounts the transcript they unmount and the dock glides down. ── */
+[data-chat-surface]:has(> .studio-empty-hello) {
+  --hero-bottom: clamp(
+    1rem,
+    calc(52% - var(--composer-measured-height, 7rem) / 2),
+    calc(100% - var(--composer-measured-height, 7rem) - 15rem)
+  );
+}
+
+[data-chat-surface]:has(> .studio-empty-hello) [data-slot='composer-dock']:not([data-popped-out]) {
+  bottom: var(--hero-bottom);
+}
+
+/* No transcript to fade under a composer that floats mid-pane. */
+[data-chat-surface]:has(> .studio-empty-hello) [data-slot='composer-dock']:not([data-popped-out])::before {
+  display: none;
+}
+
+[data-slot='composer-dock']:not([data-popped-out]) {
+  transition: bottom 420ms var(--studio-ease);
+}
+
+.studio-empty-hello,
+.studio-empty-below {
+  position: absolute;
+  z-index: 20;
+  left: 50%;
+  width: min(var(--composer-width, 47.5rem), calc(100% - 2rem));
+  translate: -50% 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.studio-empty-hello {
+  bottom: calc(var(--hero-bottom) + var(--composer-measured-height, 7rem) + 1.25rem);
+  gap: 0.875rem;
+  text-align: center;
+  animation: studio-fade-up 420ms var(--studio-ease) both;
+}
+
+.studio-empty-mark {
+  width: 3.375rem;
+  height: 3.375rem;
+  filter: drop-shadow(0 0 0.5px var(--ui-line-2)) drop-shadow(0 6px 10px rgb(0 0 0 / 0.14));
+}
+
+.studio-empty-hello h1 {
+  margin: 0;
+  color: var(--ui-text-primary);
+  font-size: 1.875rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+.studio-empty-hello p {
+  max-width: 46ch;
+  margin: 0;
+  color: var(--ui-text-tertiary);
+  font-size: 0.90625rem;
+  text-wrap: balance;
+}
+
+.studio-empty-below {
+  top: calc(100% - var(--hero-bottom) + 1.25rem);
+  gap: 1.375rem;
+  animation: studio-fade-up 520ms var(--studio-ease) 60ms both;
+}
+
+.studio-empty-starters {
+  display: grid;
+  width: 100%;
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+  gap: 0.625rem;
+}
+
+.studio-empty-starters button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  border-radius: 0.8125rem;
+  padding: 0.75rem;
+  background: var(--ui-bg-elevated);
+  box-shadow: inset 0 0 0 0.5px var(--ui-line);
+  color: var(--ui-text-primary);
+  text-align: start;
+  transition:
+    background-color var(--studio-t1),
+    box-shadow var(--studio-t2),
+    transform var(--studio-t2) var(--studio-ease);
+}
+
+.studio-empty-starters button:hover {
+  background: var(--dt-card);
+  box-shadow:
+    0 0 0 0.5px var(--ui-line-2),
+    0 10px 24px -14px rgb(0 0 0 / 0.3);
+  transform: translateY(-2px);
+}
+
+.studio-empty-starters button > svg {
+  color: var(--dt-primary);
+}
+
+.studio-empty-starters b {
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.studio-empty-starters span {
+  color: var(--ui-text-tertiary);
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
+.studio-empty-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.625rem;
+}
+
+.studio-empty-link {
+  display: inline-flex;
+  height: 1.625rem;
+  align-items: center;
+  gap: 0.3125rem;
+  border-radius: 999px;
+  padding: 0 0.5625rem;
+  box-shadow: inset 0 0 0 0.5px var(--ui-line-2);
+  color: var(--ui-text-secondary);
+  font-size: 0.78125rem;
+}
+
+.studio-empty-link:hover {
+  background: var(--ui-hover);
+  color: var(--ui-text-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-slot='composer-dock']:not([data-popped-out]) {
+    transition: none;
+  }
+
+  .studio-empty-hello,
+  .studio-empty-below {
+    animation: none;
+  }
+}
+
+/* ── Code blocks (prototype .codeblock): the code tint with a hairline, an
+   11px corner, and a header row with the language and copy. ── */
+[data-slot='code-card'] {
+  --expandable-fade-from: var(--ui-code-background);
+  border-radius: 0.6875rem;
+  background: var(--ui-code-background);
+  box-shadow: inset 0 0 0 0.5px var(--ui-line);
+}
+
+.studio-code-head {
+  display: flex;
+  height: 2rem;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 0.375rem 0 0.75rem;
+  color: var(--ui-text-tertiary);
+  font-size: 0.75rem;
+}
+
+.studio-code-lang {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.studio-code-copy {
+  height: 1.5rem;
+  gap: 0;
+  border-radius: 0.375rem;
+  padding: 0 0.375rem;
+  color: var(--ui-text-tertiary);
+}
+
+.studio-code-copy:hover {
+  background: var(--ui-hover);
+  color: var(--ui-text-primary);
+}
+
+.studio-code-head + [data-slot='code-card-body'] pre {
+  padding-top: 0.125rem;
+  padding-bottom: 0.8125rem;
+}

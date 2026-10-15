@@ -2,6 +2,7 @@ import { useStore } from '@nanostores/react'
 
 import { Button } from '@/components/ui/button'
 import { Codicon } from '@/components/ui/codicon'
+import { StudioIcon } from '@/components/ui/studio-icon'
 import { Tip, TipKeybindLabel } from '@/components/ui/tooltip'
 import { useI18n } from '@/i18n'
 import { triggerHaptic } from '@/lib/haptics'
@@ -203,7 +204,7 @@ function queueButtonVisible(
   return busy && busyAction !== 'stop' && busyAction !== 'queue' && hasPayload && !cardWaiting
 }
 
-function composerSendLabel(
+export function composerSendLabel(
   busy: boolean,
   busyAction: 'interrupt' | 'steer' | 'queue' | 'stop',
   c: { redirect: string; queueMessage: string; send: string; steer: string; stop: string }
@@ -238,30 +239,24 @@ function renderSteerButton(
 function HudWindowButtons() {
   const { t } = useI18n()
 
+  // Hermes Studio: the prototype HUD's toolbar buttons (`.ibtn`) — reset
+  // draws its retry arrow, exit expands back to the full window.
   return (
     <>
       <Tip label={t.titlebar.resetHudLayout} placement="toolbar">
         <Button
           aria-label={t.titlebar.resetHudLayout}
-          className={cn(GHOST_ICON_BTN, 'p-0')}
           onClick={resetHudLayout}
-          size="icon"
+          size="icon-toolbar"
           type="button"
           variant="ghost"
         >
-          <Codicon name="discard" size="0.875rem" />
+          <StudioIcon name="retry" size={15} />
         </Button>
       </Tip>
       <Tip label={t.titlebar.exitHud} placement="toolbar">
-        <Button
-          aria-label={t.titlebar.exitHud}
-          className={cn(GHOST_ICON_BTN, 'p-0')}
-          onClick={closeHud}
-          size="icon"
-          type="button"
-          variant="ghost"
-        >
-          <Codicon name="screen-normal" size="0.875rem" />
+        <Button aria-label={t.titlebar.exitHud} onClick={closeHud} size="icon-toolbar" type="button" variant="ghost">
+          <StudioIcon name="expand" size={15} />
         </Button>
       </Tip>
     </>
