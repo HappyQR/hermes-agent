@@ -2,6 +2,7 @@ import type { GatewayWsUrlResult } from '@hermes/shared'
 import type { HermesSkin } from '@hermes/shared/skin'
 import type { TranslucencyState } from '@hermes/shared/translucency'
 
+import type { ApplicationMenuModel, MenuCommandPayload } from '../electron/application-menu-model'
 import type { ChallengeOutcome } from '../electron/challenge-window'
 import type { ScreenshotApi } from '../electron/command-screenshot-types'
 import type { HudModifierApi } from '../electron/hud-modifier-types'
@@ -568,6 +569,10 @@ declare global {
       onPreviewNav?: (callback: (command: 'back' | 'forward' | 'reload') => void) => () => void
       onOpenFolderRequested?: (callback: () => void) => () => void
       onOpenUpdatesRequested?: (callback: () => void) => () => void
+      /** macOS application menu: a clicked item's command id (main → renderer). */
+      onMenuCommand?: (callback: (payload: MenuCommandPayload) => void) => () => void
+      /** Publish this window's localized application-menu model (renderer → main). */
+      setMenuModel?: (model: ApplicationMenuModel) => void
       onDeepLink?: (
         callback: (payload: { kind: string; name: string; params: Record<string, string> }) => void
       ) => () => void

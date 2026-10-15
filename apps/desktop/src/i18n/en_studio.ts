@@ -1,4 +1,5 @@
 import { enStudioChat } from './en_studio_chat'
+import { enStudioMenu } from './en_studio_menu'
 import { enStudioOverlays } from './en_studio_overlays'
 import { enStudioPages } from './en_studio_pages'
 import { enStudioSettings } from './en_studio_settings'
@@ -13,5 +14,6 @@ export const enStudio: StudioTranslations = {
   chat: enStudioChat,
   pages: enStudioPages,
   settings: enStudioSettings,
-  overlays: enStudioOverlays
+  overlays: enStudioOverlays,
+  menu: enStudioMenu
 }

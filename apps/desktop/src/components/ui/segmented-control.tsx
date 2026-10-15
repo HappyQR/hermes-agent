@@ -32,7 +32,7 @@ interface ThumbBox {
  * Re-measures on value changes and whenever the track resizes (zoom, font,
  * locale), so the thumb never lands short of its option.
  */
-export function useSegmentThumb(value: string, optionCount: number) {
+export function useSegmentThumb(value: string, optionCount: number, selectedSelector = '[aria-pressed="true"]') {
   const trackRef = useRef<HTMLDivElement>(null)
   const [thumb, setThumb] = useState<null | ThumbBox>(null)
 
@@ -44,7 +44,7 @@ export function useSegmentThumb(value: string, optionCount: number) {
     }
 
     const measure = () => {
-      const pressed = track.querySelector<HTMLElement>('[aria-pressed="true"]')
+      const pressed = track.querySelector<HTMLElement>(selectedSelector)
 
       setThumb(previous => {
         if (!pressed) {
@@ -67,7 +67,7 @@ export function useSegmentThumb(value: string, optionCount: number) {
     observer.observe(track)
 
     return () => observer.disconnect()
-  }, [value, optionCount])
+  }, [value, optionCount, selectedSelector])
 
   return { thumb, trackRef }
 }

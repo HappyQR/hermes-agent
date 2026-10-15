@@ -541,6 +541,15 @@ contextBridge.exposeInMainWorld('hermesDesktop', {
 
     return () => ipcRenderer.removeListener('hermes:open-updates', listener)
   },
+  // macOS application menu (electron/application-menu-host.ts): main sends the
+  // clicked item's id; the renderer publishes its localized model.
+  onMenuCommand: callback => {
+    const listener = (_event, payload) => callback(payload)
+    ipcRenderer.on('hermes:menu-command', listener)
+
+    return () => ipcRenderer.removeListener('hermes:menu-command', listener)
+  },
+  setMenuModel: model => ipcRenderer.send('hermes:menu-model', model),
   onDeepLink: callback => {
     const listener = (_event, payload) => callback(payload)
     ipcRenderer.on('hermes:deep-link', listener)

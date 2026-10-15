@@ -5,6 +5,7 @@ import { SLASH_COMMAND_RE } from '@hermes/shared'
 import type { QuickModelOption } from '@/app/chat/composer/types'
 import type { ClientSessionState } from '@/app/types'
 import { formatRefValue } from '@/components/assistant-ui/directive-text'
+import { translateNow } from '@/i18n'
 import { type ChatMessage, type ChatMessagePart, chatMessageText, textPart } from '@/lib/chat-messages'
 import { foldPersonalityName } from '@/lib/personalities'
 import type { ComposerAttachment } from '@/store/composer'
@@ -63,7 +64,8 @@ export function markReasoningEffortPending(state: ClientSessionState): ClientSes
 }
 
 export function sessionTitle(session: SessionInfo): string {
-  return session.title?.trim() || session.preview?.trim() || 'Untitled session'
+  // Studio: the placeholder follows the UI language (English in the en locale).
+  return session.title?.trim() || session.preview?.trim() || translateNow('studio.shell.untitledSession')
 }
 
 /** What a session is called before it has been sent — and before its composer

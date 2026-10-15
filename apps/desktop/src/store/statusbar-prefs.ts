@@ -12,13 +12,17 @@ const LEGACY_HIDDEN_STORAGE_KEY = 'hermes.desktop.statusbarHidden'
 // opt-in, so many stores hold a `false` the user never chose. v2 is read fresh
 // and the v1 key is deliberately NOT seeded from: every existing install comes
 // back to "on" once, and hiding it again persists here.
-const STATUSBAR_VISIBLE_STORAGE_KEY = 'hermes.desktop.statusbarVisible.v2'
+// Hermes Studio v3: the bar is OFF by default (prototype) — its items live in
+// the toolbar, composer, sidebar account menu and menu bar; Advanced users
+// turn it on from View › Status Bar, Layout ▾ or ⇧⌘S.
+const STATUSBAR_VISIBLE_STORAGE_KEY = 'hermes.desktop.statusbarVisible.v3'
 
-// Whole-bar visibility, VS Code's `workbench.statusBar.visible`. On by default.
-// Hiding it unmounts the bar (its 15s status poll goes with it), so the way back
-// is the `view.toggleStatusbar` keybind or the ⌘K row, never the bar itself.
-// Simple mode rests the bar hidden without touching this preference.
-const $statusbarVisiblePref = persistentAtom(STATUSBAR_VISIBLE_STORAGE_KEY, true, Codecs.bool)
+// Whole-bar visibility, VS Code's `workbench.statusBar.visible`. Hiding it
+// unmounts the bar (the ambient status poll keeps running in
+// StatusSnapshotHost), so the way back is the `view.toggleStatusbar` keybind,
+// the menus or the ⌘K row, never the bar itself. Simple mode rests the bar
+// hidden without touching this preference.
+const $statusbarVisiblePref = persistentAtom(STATUSBAR_VISIBLE_STORAGE_KEY, false, Codecs.bool)
 
 export const $statusbarVisible = modeBound('statusbarVisible', $statusbarVisiblePref, value =>
   $statusbarVisiblePref.set(value)

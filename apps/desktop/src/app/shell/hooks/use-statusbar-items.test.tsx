@@ -406,12 +406,17 @@ describe('free-tier Sign in in every interface mode', () => {
     return $statusbarVisible.get() && chip !== undefined && !chip.hidden
   }
 
-  beforeEach(() => markOnboardingDecided())
+  beforeEach(() => {
+    markOnboardingDecided()
+    // Studio hides the bar by default; these cases are about the chip on it.
+    $statusbarVisible.set(true)
+  })
 
   afterEach(() => {
     $freeTierStatus.set(null)
     setOnboardingSurfaceActive('onboarding', false)
     setInterfaceMode('advanced')
+    $statusbarVisible.set(false)
   })
 
   it.each(INTERFACE_MODES)('shows the Sign in chip to a signed-out free-tier user in %s mode', mode => {
