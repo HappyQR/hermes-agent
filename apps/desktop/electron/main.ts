@@ -1649,7 +1649,7 @@ function getWindowBackgroundColor() {
     return rendererTitleBarTheme.background
   }
 
-  return nativeTheme.shouldUseDarkColors ? '#111111' : '#f7f7f7'
+  return nativeTheme.shouldUseDarkColors ? '#1c1c1e' : '#ffffff' // Studio first-launch surface
 }
 
 // Transparent WCO — renderer chrome shows through. rgba(0,0,0,0) can fall back
