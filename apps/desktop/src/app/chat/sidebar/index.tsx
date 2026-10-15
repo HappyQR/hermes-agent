@@ -48,7 +48,6 @@ import {
   normalizeProfileKey,
   sidebarProfileForScope
 } from '@/store/profile'
-import { $profileRailVisible } from '@/store/profile-rail-prefs'
 import { $projectScope, ALL_PROJECTS, exitProjectScope } from '@/store/project-scope'
 import {
   $activeProjectId,
@@ -105,7 +104,6 @@ import { useGatewaySessionGroups } from './gateway-group-model'
 import { SidebarLoadMoreRow } from './load-more-row'
 import { orderByIds, reconcileOrderIds, resolveManualSessionOrderIds, sameIds } from './order'
 import { filterSessionsByProfileScope } from './profile-scope'
-import { ProfileRail } from './profile-switcher'
 import { ProjectDialog } from './project-dialog'
 import { filterToSessionBearingProjects, resolveLiveProjectFilter } from './project-filter'
 import {
@@ -142,6 +140,7 @@ import { mergeSessionPool } from './studio/session-pool'
 import { compareSourceBuckets, sessionSourceBucket } from './studio/session-source'
 import { SessionsAddButton } from './studio/sessions-add-button'
 import { SessionsFilteredEmpty, SessionsQuietEmpty } from './studio/sessions-empty'
+import { SidebarFooter } from './studio/sidebar-footer'
 import { publishSidebarTopBarActions } from './studio/top-bar'
 import { useMessagingPaging } from './studio/use-messaging-paging'
 import { SidebarViewOptions } from './studio/view-options'
@@ -298,7 +297,6 @@ export function ChatSidebar({
   const [messagingLoadMorePending, setMessagingLoadMorePending] = useState<Record<string, boolean>>({})
   const [recentsLoadMorePending, setRecentsLoadMorePending] = useState(false)
   const activeSidebarSessionId = currentView === 'chat' ? selectedSessionId : null
-  const profileRailVisible = useStore($profileRailVisible)
 
   const dndSensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -1413,13 +1411,7 @@ export function ChatSidebar({
           </div>
         </div>
 
-        {/* Off, the statusbar's profile dropdown (beside the gateway switcher)
-            takes over — the rail is a duplicate door for bot-only setups. */}
-        {profileRailVisible && (
-          <div className="shrink-0 px-0.5 pb-1 pt-0.5">
-            <ProfileRail />
-          </div>
-        )}
+        <SidebarFooter />
       </SidebarContent>
       <ProjectDialog />
       {/* One mount for the whole app. The header of WorktreeDialog tells why. */}

@@ -101,6 +101,8 @@ export const deStudioSidebar: StudioSidebarTranslations = {
   },
   footer: {
     updateAvailable: name => `${name} verfügbar`,
+    updateGeneric: 'Update verfügbar',
+    updateBackend: 'Backend-Update verfügbar',
     updateView: 'Zum Anzeigen klicken',
     updateBehind: count =>
       count === 1

@@ -1,13 +1,13 @@
 import { Codecs, persistentAtom } from '@/lib/persisted'
 import { modeBound } from '@/store/interface-mode'
 
-// The colored profile strip at the sidebar foot. For someone who runs profiles
-// as bots it duplicates the footer's gateway selector, so it can be switched
-// off; while it is off the statusbar grows a profile dropdown beside the
-// gateway switcher so switching profiles never loses its door. On by default.
-// Simple mode rests it hidden (unless it is the only door left) without
-// touching this preference.
-const $profileRailVisiblePref = persistentAtom('hermes.desktop.profileRailVisible', true, Codecs.bool)
+// The colored profile strip at the sidebar foot. Hermes Studio's account button
+// (the sidebar footer's profile & gateway menu) is the profile door, so the
+// rail is opt-in — the account menu's "Show profile rail" (Advanced) brings it
+// back for drag-ordering and dense fleets. Off by default; the key is versioned
+// so an install that had the rail on starts from the Studio default. Simple
+// mode rests it hidden without touching this preference.
+const $profileRailVisiblePref = persistentAtom('hermes.desktop.profileRailVisible.v2', false, Codecs.bool)
 
 export const $profileRailVisible = modeBound('profileRailVisible', $profileRailVisiblePref, value =>
   $profileRailVisiblePref.set(value)

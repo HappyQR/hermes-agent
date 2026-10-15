@@ -100,6 +100,8 @@ export const zhHantStudioSidebar: StudioSidebarTranslations = {
   },
   footer: {
     updateAvailable: name => `${name} 可用`,
+    updateGeneric: '有可用的更新',
+    updateBackend: '後端有可用的更新',
     updateView: '點按查看',
     updateBehind: count => `落後 ${count} 個提交 · 點按查看`,
     updateApplying: '正在更新…',

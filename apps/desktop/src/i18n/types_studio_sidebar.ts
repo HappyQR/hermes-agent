@@ -103,6 +103,10 @@ export interface StudioSidebarTranslations {
   footer: {
     /** `name` is the bold product + version, e.g. "Hermes v0.22.2". */
     updateAvailable: (name: string) => string
+    /** The pill's headline when the update has no release tag to name (main channel). */
+    updateGeneric: string
+    /** The headline when the update is the connected backend's (remote mode). */
+    updateBackend: string
     updateView: string
     updateBehind: (count: number) => string
     updateApplying: string

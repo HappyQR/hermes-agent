@@ -100,6 +100,8 @@ export const arStudioSidebar: StudioSidebarTranslations = {
   },
   footer: {
     updateAvailable: name => `يتوفر ${name}`,
+    updateGeneric: 'يتوفر تحديث',
+    updateBackend: 'يتوفر تحديث للخادم الخلفي',
     updateView: 'انقر للعرض',
     updateBehind: count => `متأخر بـ ${count} من الإيداعات · انقر للعرض`,
     updateApplying: 'جارٍ التحديث…',

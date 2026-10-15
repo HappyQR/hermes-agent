@@ -15,8 +15,13 @@ import { refreshActiveProfile } from '@/store/profile'
  * Extracted into its own hook (rather than left inline in ProfileRail) so the
  * focus/visibility wiring is unit-testable without rendering the whole rail.
  */
-export function useProfileRailRefreshOnActive(): void {
+export function useProfileRailRefreshOnActive(enabled = true): void {
   useEffect(() => {
+    // The sidebar account menu runs this only while the rail is hidden.
+    if (!enabled) {
+      return
+    }
+
     void refreshActiveProfile()
 
     const onActive = () => {
@@ -34,5 +39,5 @@ export function useProfileRailRefreshOnActive(): void {
       window.removeEventListener('focus', onActive)
       document.removeEventListener('visibilitychange', onActive)
     }
-  }, [])
+  }, [enabled])
 }

@@ -116,6 +116,8 @@ export const ruStudioSidebar: StudioSidebarTranslations = {
   },
   footer: {
     updateAvailable: name => `Доступна версия ${name}`,
+    updateGeneric: 'Доступно обновление',
+    updateBackend: 'Доступно обновление бэкенда',
     updateView: 'Нажмите, чтобы посмотреть',
     updateBehind: count =>
       `Отстаёт на ${count} ${plural(count, 'коммит', 'коммита', 'коммитов')} · Нажмите, чтобы посмотреть`,

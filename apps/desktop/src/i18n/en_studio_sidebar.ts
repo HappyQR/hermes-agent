@@ -100,6 +100,8 @@ export const enStudioSidebar: StudioSidebarTranslations = {
   },
   footer: {
     updateAvailable: name => `${name} available`,
+    updateGeneric: 'Update available',
+    updateBackend: 'Backend update available',
     updateView: 'Click to view',
     updateBehind: count =>
       count === 1 ? '1 commit behind · Click to view' : `${count} commits behind · Click to view`,

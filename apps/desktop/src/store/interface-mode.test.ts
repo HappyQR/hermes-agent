@@ -123,7 +123,7 @@ describe('modeBound resolver', () => {
     expect($bound.get()).toBe('technical')
   })
 
-  it('keeps the profile rail available in Simple for multiple profiles or gateways', async () => {
+  it('rests the profile rail hidden in Simple: the sidebar account menu is the door', async () => {
     const { modeBound, setInterfaceMode, setModeContext } = await loadStore()
     const $pref = atom(true)
     const $bound = modeBound('profileRailVisible', $pref, value => $pref.set(value))
@@ -131,17 +131,12 @@ describe('modeBound resolver', () => {
     setInterfaceMode('simple')
     expect($bound.get()).toBe(false)
 
-    setModeContext({ profileCount: 2 })
-    expect($bound.get()).toBe(true)
-
-    setModeContext({ profileCount: 1 })
+    // Not even a fleet brings it back: every gateway's profiles are in the menu.
+    setModeContext({ connectionCount: 2, profileCount: 3 })
     expect($bound.get()).toBe(false)
 
-    setModeContext({ connectionCount: 2 })
+    setInterfaceMode('advanced')
     expect($bound.get()).toBe(true)
-
-    setModeContext({ connectionCount: 1 })
-    expect($bound.get()).toBe(false)
   })
 })
 

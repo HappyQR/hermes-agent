@@ -44,6 +44,7 @@ import {
   sortByProfileOrder
 } from '@/store/profile'
 import { runImportProfileFlow } from '@/store/profile-share'
+import { $sidebarAccountMounted } from '@/store/sidebar-studio'
 
 import { CreateProfileDialog } from '../../profiles/create-profile-dialog'
 import { PROFILES_ROUTE } from '../../routes'
@@ -94,7 +95,11 @@ export function ProfileSwitcher({ compact = false }: { compact?: boolean }) {
     }
 
     lastCreateRef.current = createRequest
-    setCreateOpen(true)
+
+    // The sidebar's account menu answers while it is mounted (Studio).
+    if ($sidebarAccountMounted.get() === 0) {
+      setCreateOpen(true)
+    }
   }, [createRequest])
 
   const connections = registry?.connections

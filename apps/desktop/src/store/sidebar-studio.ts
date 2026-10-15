@@ -199,3 +199,15 @@ export function resetStudioSidebarView(): void {
   $sidebarPreviewLine.set(false)
   setSessionListDensity(SIDEBAR_DEFAULT_DENSITY)
 }
+
+// ── Account menu ─────────────────────────────────────────────────────────────
+
+/** Sidebar account menus mounted in this window. While one is, it owns the
+ *  `profile.create` hotkey, so the status bar's profile picker stands down. */
+export const $sidebarAccountMounted = atom(0)
+
+export function registerSidebarAccount(): () => void {
+  $sidebarAccountMounted.set($sidebarAccountMounted.get() + 1)
+
+  return () => $sidebarAccountMounted.set(Math.max(0, $sidebarAccountMounted.get() - 1))
+}

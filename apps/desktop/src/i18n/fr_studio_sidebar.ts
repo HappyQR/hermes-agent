@@ -101,6 +101,8 @@ export const frStudioSidebar: StudioSidebarTranslations = {
   },
   footer: {
     updateAvailable: name => `${name} disponible`,
+    updateGeneric: 'Mise à jour disponible',
+    updateBackend: 'Mise à jour du backend disponible',
     updateView: 'Cliquez pour voir',
     updateBehind: count =>
       count === 1 ? '1 commit de retard · Cliquez pour voir' : `${count} commits de retard · Cliquez pour voir`,

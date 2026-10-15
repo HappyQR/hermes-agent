@@ -56,6 +56,12 @@ export function installErrorBannerGuard(page: Page): void {
       if (localStorage.getItem('hermes.desktop.statusbarVisible.v3') === null) {
         localStorage.setItem('hermes.desktop.statusbarVisible.v3', 'true')
       }
+
+      // The profile rail is opt-in in Studio (the sidebar account menu is the
+      // door); the fleet/profile specs drive its squares, so show it.
+      if (localStorage.getItem('hermes.desktop.profileRailVisible.v2') === null) {
+        localStorage.setItem('hermes.desktop.profileRailVisible.v2', 'true')
+      }
     } catch {
       // Storage unavailable (about:blank) — nothing to seed.
     }

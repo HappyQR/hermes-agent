@@ -100,6 +100,8 @@ export const jaStudioSidebar: StudioSidebarTranslations = {
   },
   footer: {
     updateAvailable: name => `${name} が利用可能`,
+    updateGeneric: 'アップデートがあります',
+    updateBackend: 'バックエンドのアップデートがあります',
     updateView: 'クリックして表示',
     updateBehind: count => `${count} コミット遅れ · クリックして表示`,
     updateApplying: 'アップデート中…',
