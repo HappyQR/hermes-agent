@@ -1,8 +1,8 @@
 import { useStore } from '@nanostores/react'
 import { useEffect, useState } from 'react'
 
+import { StudioIcon, type StudioIconName } from '@/components/ui/studio-icon'
 import { useI18n } from '@/i18n'
-import { AlertCircle, Clock, type IconComponent } from '@/lib/icons'
 import { cn } from '@/lib/utils'
 import { $petActivity, $petState, type PetState } from '@/store/pet'
 import { $petPluginMessage, type PetMessageTone } from '@/store/pet-plugin-messages'
@@ -30,7 +30,7 @@ type Tone = PetMessageTone
 type Mood = 'failed' | 'idle' | 'review' | 'run' | 'waiting'
 
 interface Spec {
-  glyph?: IconComponent
+  glyph?: StudioIconName
   tone?: Tone
 }
 
@@ -40,8 +40,8 @@ interface Spec {
 const SPECS: Record<Mood, Spec> = {
   run: {},
   review: {},
-  failed: { glyph: AlertCircle, tone: 'error' },
-  waiting: { glyph: Clock, tone: 'wait' },
+  failed: { glyph: 'warn', tone: 'error' },
+  waiting: { glyph: 'clock', tone: 'wait' },
   idle: {}
 }
 
@@ -53,7 +53,7 @@ const TONE_COLOR: Record<Tone, string> = {
   wait: 'var(--ui-yellow)'
 }
 
-const TONE_GLYPH: Partial<Record<Tone, IconComponent>> = { error: AlertCircle, wait: Clock }
+const TONE_GLYPH: Partial<Record<Tone, StudioIconName>> = { error: 'warn', wait: 'clock' }
 
 // Core states that outrank a plugin line: the pet is flagging trouble or the
 // turn is paused on the user, and a plugin must not talk over that.
@@ -152,7 +152,7 @@ export function PetBubble({ peek = false, showStatus = true }: PetBubbleProps = 
         <span className="inline-flex items-start gap-[5px] [overflow-wrap:anywhere]">
           {Glyph && (
             <span className="inline-flex flex-none pt-px">
-              <Glyph className="size-3" style={{ color: TONE_COLOR[pluginLine.tone] }} />
+              <StudioIcon name={Glyph} size={12} style={{ color: TONE_COLOR[pluginLine.tone] }} />
             </span>
           )}
           {pluginLine.text}
@@ -181,7 +181,7 @@ export function PetBubble({ peek = false, showStatus = true }: PetBubbleProps = 
     >
       {Glyph && (
         <span className="inline-flex">
-          <Glyph className="size-[13px]" style={{ color: spec.tone ? TONE_COLOR[spec.tone] : 'currentColor' }} />
+          <StudioIcon name={Glyph} size={13} style={{ color: spec.tone ? TONE_COLOR[spec.tone] : 'currentColor' }} />
         </span>
       )}
       {text}

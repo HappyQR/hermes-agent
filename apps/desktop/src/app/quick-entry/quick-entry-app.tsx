@@ -1,8 +1,8 @@
 import { useEffect, useReducer, useRef, useState } from 'react'
 
 import { BrandMark } from '@/components/brand-mark'
+import { StudioIcon } from '@/components/ui/studio-icon'
 import { translateNow, useI18n } from '@/i18n'
-import { UpDownChevrons } from '@/lib/icons-studio-overlays'
 import { isSubmitEnter } from '@/lib/ime'
 import { formatCombo } from '@/lib/keybinds/combo'
 import {
@@ -193,7 +193,7 @@ export function QuickEntryApp() {
           <span className="relative inline-flex min-w-0 max-w-[16rem] items-center">
             <select
               aria-label={copy.targetLabel}
-              className="h-[1.625rem] min-w-0 max-w-full cursor-default appearance-none truncate rounded-[7px] border-0 bg-(--ui-bg-editor) pl-2.5 pr-6 text-xs text-(--ui-text-primary) shadow-[0_0_0_0.5px_var(--ui-line-2),0_1px_1.5px_rgb(0_0_0/0.06)] outline-none focus-visible:shadow-[0_0_0_0.5px_color-mix(in_srgb,var(--dt-primary)_60%,transparent),0_0_0_3px_color-mix(in_srgb,var(--dt-primary)_25%,transparent)] disabled:opacity-55"
+              className="h-[1.625rem] min-w-0 max-w-full cursor-default appearance-none truncate rounded-[7px] border-0 bg-(--ui-bg-editor) pl-2.5 pr-6 text-[0.8125rem] text-(--ui-text-primary) shadow-[0_0_0_0.5px_var(--ui-line-2),0_1px_1.5px_rgb(0_0_0/0.06)] outline-none focus-visible:shadow-[0_0_0_0.5px_color-mix(in_srgb,var(--dt-primary)_60%,transparent),0_0_0_3px_color-mix(in_srgb,var(--dt-primary)_25%,transparent)] disabled:opacity-55"
               disabled={!state.connected}
               id="quick-entry-target"
               onChange={event => dispatch({ target: event.target.value, type: 'target' })}
@@ -217,10 +217,7 @@ export function QuickEntryApp() {
                 </option>
               ))}
             </select>
-            <UpDownChevrons
-              aria-hidden
-              className="pointer-events-none absolute right-1.5 size-3 text-(--ui-text-tertiary)"
-            />
+            <StudioIcon className="pointer-events-none absolute right-1.5 text-(--ui-text-tertiary)" name="chev-ud" size={12} />
           </span>
           <span className="min-w-0 flex-1 truncate text-right">{hint.join(' · ')}</span>
         </div>

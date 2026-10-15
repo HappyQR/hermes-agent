@@ -5,8 +5,8 @@ import { PetHeartField, playVibeHearts } from '@/components/chat/vibe-hearts'
 import { PetBubble } from '@/components/pet/pet-bubble'
 import { PetSprite } from '@/components/pet/pet-sprite'
 import { type PetZoomAnchor, usePetZoomGesture } from '@/components/pet/use-pet-zoom-gesture'
+import { StudioIcon } from '@/components/ui/studio-icon'
 import { useI18n } from '@/i18n'
-import { Mail } from '@/lib/icons'
 import { isSubmitEnter } from '@/lib/ime'
 import { $petActivity, $petInfo, setPetInfo } from '@/store/pet'
 import { overlayWindowSize } from '@/store/pet-overlay'
@@ -449,7 +449,7 @@ export function PetOverlayApp() {
               onPointerUp={e => e.stopPropagation()}
               type="button"
             >
-              <Mail className="size-[13px]" />
+              <StudioIcon name="mail" size={13} />
             </button>
           )}
         </div>

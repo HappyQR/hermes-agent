@@ -2,11 +2,14 @@
 //
 //   node scripts/studio/shots/run.mjs --shots scripts/studio/shots/overlays-aux.mjs --only toast,quickentry,wake
 //
-// The aux windows (Quick Ask, wake pill) are separate BrowserWindows the
-// harness cannot open, so their views are rendered inside the main window via
-// `?win=` and the app is restored afterwards. Nothing here persists changes.
+// Use a sandbox of your own for these (e.g. --sandbox $S/sandbox-overlays-b --port 18674):
+//  - `quickentry` / `wake` render the `?win=` aux views INSIDE the main window
+//    (the harness cannot open those BrowserWindows), so they leave the app on
+//    that view — run them last.
+//  - `onboarding` expects a sandbox whose provider is NOT configured (drop the
+//    `model:` block from its config.yaml), so the first-run picker is up.
 
-// First button matching one of `names` inside `scope` (the open settings surface).
+// First button matching one of `names` inside `scope`.
 const button = async (scope, names) => {
   for (const name of names) {
     const candidate = scope.getByRole('button', { name, exact: true }).first()
@@ -15,27 +18,23 @@ const button = async (scope, names) => {
   return null
 }
 
-// Render one of the `?win=` aux views in the main window, run `fn`, then reload the app.
-async function inAuxView(page, win, fn) {
-  const home = page.url()
-  const base = home.split('#')[0].split('?')[0]
+// Render one of the `?win=` aux views in the main window (no way back without a reload).
+async function auxView(page, win, size) {
+  const base = page.url().split('#')[0].split('?')[0]
   await page.goto(`${base}?win=${win}`)
+  await page.setViewportSize(size)
   await page.waitForTimeout(1500)
-  try {
-    await fn()
-  } finally {
-    await page.goto(home)
-    await page.waitForTimeout(4000)
-  }
 }
 
 export default {
   // A real ambient toast: Settings › Notifications › Send test notification.
-  async toast(page, { shot, sleep }) {
+  async toast(page, { composer, shot, sleep }) {
+    await sleep(3000)
+    await composer(page)
     await page.evaluate(() => {
       window.location.hash = '#/settings?tab=notifications'
     })
-    await sleep(1500)
+    await sleep(1800)
     const surface = page.locator('[data-overlay-surface]').last()
     const send = await button(surface, ['发送测试通知', 'Send test notification', '发送', 'Send'])
     if (!send) {
@@ -51,27 +50,37 @@ export default {
     await shot(page, 'toast')
   },
 
+  // The first-run provider picker (sandbox without a configured provider).
+  async onboarding(page, { shot, sleep }) {
+    const overlay = page.locator('[data-slot="onboarding-overlay"]')
+    await overlay.waitFor({ state: 'visible', timeout: 60_000 })
+    await sleep(2500)
+    await shot(page, 'onboarding')
+    const more = await button(overlay, ['其他提供方', 'Other providers'])
+    if (more) {
+      await more.click()
+      await sleep(700)
+      await shot(page, 'onboarding-all')
+      // The disclosure persists (localStorage): fold it back.
+      await more.click()
+      await sleep(300)
+    }
+  },
+
   // The Quick Ask capture card, as the `?win=quick` window renders it.
   async quickentry(page, { shot, sleep }) {
-    await inAuxView(page, 'quick', async () => {
-      await page.setViewportSize({ width: 640, height: 168 })
-      await sleep(600)
-      await shot(page, 'quickentry')
-    })
-    await page.setViewportSize({ width: 1440, height: 900 })
+    await auxView(page, 'quick', { width: 640, height: 168 })
+    await sleep(600)
+    await shot(page, 'quickentry')
   },
 
   // The wake pill. Its state comes from main over IPC; pin it for the picture.
   async wake(page, { shot, sleep }) {
-    await inAuxView(page, 'wake', async () => {
-      await page.setViewportSize({ width: 176, height: 52 })
-      await page.evaluate(() => {
-        const surface = document.querySelector('.wake-indicator-surface')
-        if (surface) surface.setAttribute('data-state', 'capturing')
-      })
-      await sleep(700)
-      await shot(page, 'wake')
+    await auxView(page, 'wake', { width: 176, height: 52 })
+    await page.evaluate(() => {
+      document.querySelector('.wake-indicator-surface')?.setAttribute('data-state', 'capturing')
     })
-    await page.setViewportSize({ width: 1440, height: 900 })
+    await sleep(700)
+    await shot(page, 'wake')
   }
 }

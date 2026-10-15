@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { CardStack, type CardStackAction } from '@/components/ui/card-stack'
 import { Codicon } from '@/components/ui/codicon'
 import { CopyButton } from '@/components/ui/copy-button'
+import { StudioIcon, type StudioIconName } from '@/components/ui/studio-icon'
 import { useI18n } from '@/i18n'
 import { triggerHaptic } from '@/lib/haptics'
 import { AlertCircle, AlertTriangle, CheckCircle2, type IconComponent, Info } from '@/lib/icons'
@@ -41,7 +42,14 @@ const tone: Record<NotificationKind, { icon: IconComponent; iconClass: string; v
 }
 
 // Hermes Studio: the toast's 28px icon tile — a soft wash of the kind's colour
-// behind its glyph (prototype .toast .t-ic; accent-soft by default).
+// behind its prototype glyph (.toast .t-ic; accent-soft by default).
+const TILE_GLYPH: Record<NotificationKind, StudioIconName> = {
+  error: 'x-circle',
+  warning: 'warn',
+  info: 'info',
+  success: 'check-circle'
+}
+
 const TILE_TONE: Record<NotificationKind, string> = {
   error: 'bg-[color-mix(in_srgb,var(--ui-red)_13%,transparent)] text-(--ui-red)',
   warning: 'bg-[color-mix(in_srgb,var(--ui-orange)_15%,transparent)] text-(--ui-orange)',
@@ -274,8 +282,6 @@ export function toastTitleClassName() {
 }
 
 function NotificationItem({ notification, stack }: { notification: AppNotification; stack: CardStackAction }) {
-  const styles = tone[notification.kind]
-  const Icon = styles.icon
   const hasDetail = Boolean(notification.detail && notification.detail !== notification.message)
   const { t } = useI18n()
   const copy = t.notifications
@@ -303,7 +309,7 @@ function NotificationItem({ notification, stack }: { notification: AppNotificati
         {notification.icon ? (
           <Codicon name={notification.icon} size="1rem" style={glyphStyle} />
         ) : (
-          <Icon style={glyphStyle} />
+          <StudioIcon name={TILE_GLYPH[notification.kind]} size={16} style={glyphStyle} />
         )}
       </span>
       <div className="flex min-w-0 flex-1 flex-col gap-0.5 pt-px">
@@ -374,7 +380,7 @@ function NotificationItem({ notification, stack }: { notification: AppNotificati
         type="button"
         variant="ghost"
       >
-        <Codicon name="close" size="0.875rem" />
+        <StudioIcon name="x" size={12} />
       </Button>
     </div>
   )
