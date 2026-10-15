@@ -42,6 +42,7 @@ import {
   diffConfig,
   enumOptionsFor,
   getNested,
+  inferFieldSchema,
   isExternalMemoryProvider,
   sectionFieldEntries,
   setNested,
@@ -58,12 +59,32 @@ import { SETTING_IDS, settingElementId } from './settings-manifest'
 import { SharedMetricsSettings } from './shared-metrics-settings'
 import { useSettingDeepLink } from './use-setting-deep-link'
 
+/**
+ * Hermes Studio: what a `layout` receives — the page's ONE config draft (so
+ * several sections of a merged Settings window page never clobber each
+ * other's autosaves) and the field row exactly as the classic page draws it.
+ */
+export interface ConfigSettingsLayoutApi {
+  config: HermesConfigRecord | null
+  /** Schema-known fields per legacy section (empty until config + schema load). */
+  fields: Map<string, [string, ConfigFieldSchema][]>
+  /** Config or schema failed to load; `retry` refetches both. */
+  failed: boolean
+  ready: boolean
+  /** The classic field row for a key (its own schema or one inferred from the value); null when unknown. */
+  renderField: (key: string) => ReactNode
+  retry: () => void
+  scopeProfile: string | undefined
+  updateConfig: (next: HermesConfigRecord) => void
+}
+
 export function ConfigSettings({
   activeSectionId,
   subpage,
   onConfigSaved,
   onMainModelChanged,
-  importInputRef
+  importInputRef,
+  layout
 }: ConfigSettingsProps) {
   // Shared "Applies to" scope (null → the app's active profile). Remount the
   // inner page per scope so every draft/seed/autosave ref resets wholesale
@@ -76,6 +97,7 @@ export function ConfigSettings({
       activeSectionId={activeSectionId}
       importInputRef={importInputRef}
       key={scopeProfile ?? '__active__'}
+      layout={layout}
       onConfigSaved={onConfigSaved}
       onMainModelChanged={onMainModelChanged}
       scopeProfile={scopeProfile}
@@ -91,6 +113,8 @@ interface ConfigSettingsProps {
   onConfigSaved?: () => void
   onMainModelChanged?: (provider: string, model: string) => void
   importInputRef: React.RefObject<HTMLInputElement | null>
+  /** Hermes Studio Settings window: render the page from the draft instead of the classic section. */
+  layout?: (api: ConfigSettingsLayoutApi) => ReactNode
 }
 
 function ConfigSettingsInner({
@@ -99,20 +123,11 @@ function ConfigSettingsInner({
   onConfigSaved,
   onMainModelChanged,
   importInputRef,
+  layout,
   scopeProfile
 }: ConfigSettingsProps & { scopeProfile: string | undefined }) {
   const { t } = useI18n()
   const c = t.settings.config
-  const keepAwakeMode = useStore($keepAwakeMode)
-
-  const keepAwakeOptions = [
-    { id: 'off', label: c.keepAwakeOff },
-    { id: 'while-working', label: c.keepAwakeWhileWorking },
-    { id: 'always', label: c.keepAwakeAlways }
-  ] as const satisfies readonly { id: KeepAwakeMode; label: string }[]
-
-  const disableF12 = useStore($disableF12)
-  const alwaysExternalLinks = useStore($alwaysExternalLinks)
   // The editable draft is local (debounced autosave watches it), but it's seeded
   // from — and saved back through — the shared config cache, so edits are visible
   // in the MCP/model surfaces and reopening the page doesn't reload-flash.
@@ -308,6 +323,13 @@ function ConfigSettingsInner({
     ([key]) => subpage === undefined || configSubpageForField(activeSectionId, key) === subpage
   )
 
+  const loadFailed = (configLoadFailed && !config) || (schemaFailed && !schema)
+
+  const retryLoad = () => {
+    void refetchConfig()
+    void refetchSchema()
+  }
+
   const showModelSettings =
     activeSectionId === 'model' && (subpage === undefined || ['main', 'auxiliary', 'moa'].includes(subpage))
 
@@ -379,6 +401,53 @@ function ConfigSettingsInner({
     e.target.value = ''
   }
 
+  const renderField = (key: string, field: ConfigFieldSchema, draft: HermesConfigRecord) => (
+    <div className="scroll-mt-6 rounded-lg" id={`setting-field-${key}`} key={key}>
+      <ConfigField
+        descriptionExtra={
+          key === 'memory.provider' && isExternalMemoryProvider(getNested(draft, key)) ? (
+            <MemoryConnect profile={scopeProfile} provider={String(getNested(draft, key))} />
+          ) : undefined
+        }
+        enumOptions={
+          key === 'tts.elevenlabs.voice_id'
+            ? enumOptionsFor(key, getNested(draft, key), draft, elevenLabsVoiceOptions ?? undefined)
+            : enumOptionsFor(key, getNested(draft, key), draft)
+        }
+        onChange={value => updateConfig(setNested(draft, key, value))}
+        optionLabels={key === 'tts.elevenlabs.voice_id' ? elevenLabsVoiceLabels : undefined}
+        schema={field}
+        schemaKey={key}
+        value={getNested(draft, key)}
+      />
+      {key === 'memory.provider' && isExternalMemoryProvider(getNested(draft, key)) ? (
+        <ProviderConfigPanel key={String(getNested(draft, key))} profile={scopeProfile} provider={String(getNested(draft, key))} />
+      ) : null}
+    </div>
+  )
+
+  const importInput = (
+    <input accept=".json,application/json" className="hidden" onChange={handleImport} ref={importInputRef} type="file" />
+  )
+
+  if (layout) {
+    return (
+      <>
+        {layout({
+          config,
+          failed: loadFailed,
+          fields: sectionFields,
+          ready: Boolean(config && schema),
+          renderField: key => layoutField(key, sectionFields, schema, config, renderField),
+          retry: retryLoad,
+          scopeProfile,
+          updateConfig
+        })}
+        {importInput}
+      </>
+    )
+  }
+
   // Keep the model controller and pending MoA saves at a stable position when
   // selecting siblings or returning to the first page through the parent.
   const renderPage = (children: ReactNode) => (
@@ -390,30 +459,18 @@ function ConfigSettingsInner({
         </div>
       )}
       {children}
-      <input
-        accept=".json,application/json"
-        className="hidden"
-        onChange={handleImport}
-        ref={importInputRef}
-        type="file"
-      />
+      {importInput}
     </SettingsContent>
   )
 
   if (!config || !schema) {
     // A failed config/schema fetch must surface a retry, not spin forever.
-    if ((configLoadFailed && !config) || (schemaFailed && !schema)) {
+    if (loadFailed) {
       return (
         <div className="flex h-full min-h-0 flex-1">
           <PanelEmpty
             action={
-              <Button
-                onClick={() => {
-                  void refetchConfig()
-                  void refetchSchema()
-                }}
-                size="sm"
-              >
+              <Button onClick={retryLoad} size="sm">
                 {t.skills.refresh}
               </Button>
             }
@@ -442,11 +499,12 @@ function ConfigSettingsInner({
 
   const visibleFields = activeSectionId === 'voice' ? fields.filter(([key]) => voiceFieldVisible(key, config)) : fields
 
-  const showEmptyState =
-    visibleFields.length === 0 &&
-    (subpage === undefined
-      ? activeSectionId !== 'chat'
-      : !showModelSettings && !showDesktopSettings && !showAttachments && !showSharedMetrics)
+  const showEmptyState = emptyStateVisible(visibleFields.length, activeSectionId, subpage, [
+    showModelSettings,
+    showDesktopSettings,
+    showAttachments,
+    showSharedMetrics
+  ])
 
   return renderPage(
     <>
@@ -455,34 +513,9 @@ function ConfigSettingsInner({
           power-user, this-computer-only knobs. */}
       {showDesktopSettings && (
         <>
-          <ListRow
-            action={
-              <SegmentedControl
-                onChange={mode => {
-                  triggerHaptic('selection')
-                  setKeepAwakeMode(mode)
-                }}
-                options={keepAwakeOptions}
-                value={keepAwakeMode}
-              />
-            }
-            description={c.keepAwakeDesc}
-            id={settingElementId(SETTING_IDS.advanced.keepAwake)}
-            title={c.keepAwakeTitle}
-          />
-          <ToggleRow
-            checked={disableF12}
-            description={c.disableF12Desc}
-            id={settingElementId(SETTING_IDS.advanced.disableF12)}
-            label={c.disableF12Title}
-            onChange={setDisableF12}
-          />
-          <ToggleRow
-            checked={alwaysExternalLinks}
-            description={c.alwaysExternalLinksDesc}
-            label={c.alwaysExternalLinksTitle}
-            onChange={setAlwaysExternalLinks}
-          />
+          <KeepAwakeSetting />
+          <DisableF12Setting />
+          <ExternalLinksSetting />
           <QuickEntrySettings />
           <OnboardingSettings />
         </>
@@ -500,43 +533,14 @@ function ConfigSettingsInner({
       {showEmptyState ? (
         <EmptyState description={c.emptyDesc} title={c.emptyTitle} />
       ) : visibleFields.length === 0 ? null : (
-        <div className="grid gap-1">
-          {visibleFields.map(([key, field]) => (
-            <div className="scroll-mt-6 rounded-lg" id={`setting-field-${key}`} key={key}>
-              <ConfigField
-                descriptionExtra={
-                  key === 'memory.provider' && isExternalMemoryProvider(getNested(config, key)) ? (
-                    <MemoryConnect profile={scopeProfile} provider={String(getNested(config, key))} />
-                  ) : undefined
-                }
-                enumOptions={
-                  key === 'tts.elevenlabs.voice_id'
-                    ? enumOptionsFor(key, getNested(config, key), config, elevenLabsVoiceOptions ?? undefined)
-                    : enumOptionsFor(key, getNested(config, key), config)
-                }
-                onChange={value => updateConfig(setNested(config, key, value))}
-                optionLabels={key === 'tts.elevenlabs.voice_id' ? elevenLabsVoiceLabels : undefined}
-                schema={field}
-                schemaKey={key}
-                value={getNested(config, key)}
-              />
-              {key === 'memory.provider' && isExternalMemoryProvider(getNested(config, key)) ? (
-                <ProviderConfigPanel
-                  key={String(getNested(config, key))}
-                  profile={scopeProfile}
-                  provider={String(getNested(config, key))}
-                />
-              ) : null}
-            </div>
-          ))}
-        </div>
+        <div className="grid gap-1">{visibleFields.map(([key, field]) => renderField(key, field, config))}</div>
       )}
     </>
   )
 }
 
 /** Free-form MB cap for Desktop's data-URL attach/preview path (main-process). */
-function AttachmentSizeSetting() {
+export function AttachmentSizeSetting() {
   const { t } = useI18n()
   const c = t.settings.config
   const stored = useStore($dataUrlReadMaxMb)
@@ -602,6 +606,103 @@ function AttachmentSizeSetting() {
       description={c.attachmentSizeDesc}
       id={settingElementId(SETTING_IDS.chat.attachmentSize)}
       title={c.attachmentSizeTitle}
+    />
+  )
+}
+
+/** Whether the classic section page shows its empty state (no fields and no embedded block). */
+function emptyStateVisible(
+  fieldCount: number,
+  sectionId: string,
+  subpage: string | undefined,
+  embeddedBlocks: readonly boolean[]
+): boolean {
+  if (fieldCount > 0) {
+    return false
+  }
+
+  return subpage === undefined ? sectionId !== 'chat' : !embeddedBlocks.some(Boolean)
+}
+
+/** Resolve a key for a layout: its section entry, else its own schema, else one inferred from the value. */
+function layoutField(
+  key: string,
+  sectionFields: Map<string, [string, ConfigFieldSchema][]>,
+  schema: Record<string, ConfigFieldSchema> | null,
+  config: HermesConfigRecord | null,
+  render: (key: string, field: ConfigFieldSchema, draft: HermesConfigRecord) => ReactNode
+): ReactNode {
+  if (!config || !schema) {
+    return null
+  }
+
+  const known = [...sectionFields.values()].flat().find(([candidate]) => candidate === key)?.[1]
+  const value = getNested(config, key)
+  const field = known ?? schema[key] ?? (value === undefined ? undefined : inferFieldSchema(value))
+
+  return field ? render(key, field, config) : null
+}
+
+/** Keep the computer awake (device-local; Electron power save blocker). */
+export function KeepAwakeSetting() {
+  const { t } = useI18n()
+  const c = t.settings.config
+  const keepAwakeMode = useStore($keepAwakeMode)
+
+  const keepAwakeOptions = [
+    { id: 'off', label: c.keepAwakeOff },
+    { id: 'while-working', label: c.keepAwakeWhileWorking },
+    { id: 'always', label: c.keepAwakeAlways }
+  ] as const satisfies readonly { id: KeepAwakeMode; label: string }[]
+
+  return (
+    <ListRow
+      action={
+        <SegmentedControl
+          onChange={mode => {
+            triggerHaptic('selection')
+            setKeepAwakeMode(mode)
+          }}
+          options={keepAwakeOptions}
+          value={keepAwakeMode}
+        />
+      }
+      description={c.keepAwakeDesc}
+      id={settingElementId(SETTING_IDS.advanced.keepAwake)}
+      title={c.keepAwakeTitle}
+    />
+  )
+}
+
+/** Disable the F12 DevTools shortcut (device-local). */
+export function DisableF12Setting() {
+  const { t } = useI18n()
+  const c = t.settings.config
+  const disableF12 = useStore($disableF12)
+
+  return (
+    <ToggleRow
+      checked={disableF12}
+      description={c.disableF12Desc}
+      id={settingElementId(SETTING_IDS.advanced.disableF12)}
+      label={c.disableF12Title}
+      onChange={setDisableF12}
+    />
+  )
+}
+
+/** Always open links in the external browser (device-local). */
+export function ExternalLinksSetting() {
+  const { t } = useI18n()
+  const c = t.settings.config
+  const alwaysExternalLinks = useStore($alwaysExternalLinks)
+
+  return (
+    <ToggleRow
+      checked={alwaysExternalLinks}
+      description={c.alwaysExternalLinksDesc}
+      label={c.alwaysExternalLinksTitle}
+      onChange={setAlwaysExternalLinks}
     />
   )
 }

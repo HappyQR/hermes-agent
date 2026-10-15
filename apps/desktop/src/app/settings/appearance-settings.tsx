@@ -406,72 +406,20 @@ function GlassRow({ children, label }: GlassRowProps) {
   )
 }
 
-interface AppearanceSettingsProps {
-  subpage?: string
-}
-
-export function AppearanceSettings({ subpage }: AppearanceSettingsProps = {}) {
-  const { t, isSavingLocale } = useI18n()
+/**
+ * Theme gallery row: color mode (classic page), one search box that filters
+ * installed themes and live-searches the VS Code Marketplace, and the cards.
+ * `fullPage` clips the gallery inside the classic all-in-one page; the Studio
+ * window draws the color mode as its own cards (`showModes={false}`).
+ */
+function ThemeSettingRow({ fullPage, showModes }: { fullPage: boolean; showModes: boolean }) {
+  const { t } = useI18n()
   const { themeName, mode, resolvedMode, availableThemes, setTheme, setMode } = useTheme()
-  const toolViewMode = useStore($toolViewMode)
-  const toolViewShadowed = useStore($modeShadowed('toolViewMode'))
-  const hideCodeDiffs = useStore($hideCodeDiffs)
-  const hideCodeDiffsShadowed = useStore($modeShadowed('hideCodeDiffs'))
-  const hideThreadTimeline = useStore($hideThreadTimeline)
-  const reasoningCollapsedByDefault = useStore($reasoningCollapsedByDefault)
-  const reasoningCollapsedShadowed = useStore($modeShadowed('reasoningCollapsedByDefault'))
-  const interfaceMode = useStore($interfaceMode)
-  const sessionListDensity = useStore($sessionListDensity)
-  const tabStripDefault = useStore($tabStripDefault)
-  const titlebarAppActionsSide = useStore($titlebarAppActionsSide)
-  const zoomPercent = useStore($zoomPercent)
-  const chatTextScale = useStore($chatTextScale)
-  const embedMode = useStore($embedMode)
-  const embedAllowed = useStore($embedAllowed)
-  const composerPopoutGesturesEnabled = useStore($composerPopoutGesturesEnabled)
-  const fileBrowserOpen = useStore($fileBrowserOpen)
-  const fileBrowserShadowed = useStore($modeShadowed('fileBrowserOpen'))
-  const translucency = useStore($translucency)
-  const glassMode = translucency.mode === 'glass' && GLASS_SUPPORTED
-  const userBubbleTransparency = useStore($userBubbleTransparency)
-  const textDirection = useStore($textDirection)
-  const reactionsEnabled = useStore($reactionsEnabled)
-  const tipsEnabled = useStore($tipsEnabled)
-  const toursEnabled = useStore($toursEnabled)
-  const spentTips = useStore($spentTipCount)
-  const vibeHeartsEnabled = useStore($vibeHeartsEnabled)
-  const backdrop = useStore($backdrop)
-  const introSplash = useStore($introSplash)
-  const showModelPricing = useStore($showModelPricing)
   const installs = useStore($marketplaceInstalls)
   const profiles = useStore($profiles)
   const activeProfileKey = normalizeProfileKey(useStore($activeGatewayProfile))
-  const a = t.settings.appearance
-
-  // A pointer held on the intensity slider when this overlay closes (Escape
-  // mid-drag) never delivers its pointerup here, which would strand the peek
-  // counter above zero and ghost the NEXT settings overlay. Leaving a subpage
-  // also unmounts its sliders, so drop every outstanding hold on that change.
-  useEffect(() => resetTranslucencyPeek, [subpage])
-
-  // Shared by the mode/frost/area pickers: apply the choice, then show it
-  // through the overlay it just altered (a pulse, not a hold — see the peek
-  // notes on the slider itself).
-  const pickTranslucency =
-    <T,>(set: (value: T) => void) =>
-    (value: T) => {
-      triggerHaptic('selection')
-      set(value)
-
-      if (translucency.intensity > 0) {
-        pulseTranslucencyPeek()
-      }
-    }
-
   const [query, setQuery] = useState('')
-  const show = (id: AppearanceSubpageId) => subpage === undefined || subpage === id
-
-  useSettingDeepLink('config:appearance', page => page !== undefined && show(page as AppearanceSubpageId))
+  const a = t.settings.appearance
 
   // One box does double duty: filter installed themes live (below), and run a
   // name search against the VS Code Marketplace (the Cmd-K "Install theme…"
@@ -492,11 +440,306 @@ export function AppearanceSettings({ subpage }: AppearanceSettingsProps = {}) {
   // Themes save per profile. Surface that only when the user actually has more
   // than one profile (single-profile installs never see the distinction).
   const showProfileNote = profiles.length > 1
-
-  const activeProfileName =
-    profiles.find(profile => normalizeProfileKey(profile.name) === activeProfileKey)?.name ?? activeProfileKey
-
+  const activeProfileName = activeProfileNameOf(profiles, activeProfileKey)
   const modeOptions = MODE_OPTIONS.map(({ id, icon }) => ({ icon, id, label: t.settings.modeOptions[id].label }))
+
+  return (
+        <ListRow
+          action={
+            showModes ? (
+              <SegmentedControl
+                onChange={id => {
+                  triggerHaptic('crisp')
+                  setMode(id)
+                }}
+                options={modeOptions}
+                value={mode}
+              />
+            ) : undefined
+          }
+          below={
+            <>
+              {/* One search box: filters your installed themes (the grid)
+                  and live-searches the VS Code Marketplace below. */}
+              <SearchField
+                containerClassName="mt-3 w-full"
+                inputClassName="flex-1"
+                onChange={setQuery}
+                placeholder={a.themeSearchPlaceholder}
+                value={query}
+              />
+
+              {/* The dedicated theme page uses the page scroller rather
+                  than clipping its gallery inside another scroll area. */}
+              <div className={cn('mt-3', fullPage && 'max-h-96 overflow-y-auto pr-1')}>
+                {filteredThemes.length === 0 ? (
+                  needle ? (
+                    <p className="text-[length:var(--conversation-caption-font-size)] text-(--ui-text-tertiary)">
+                      No installed themes match "{query.trim()}".
+                    </p>
+                  ) : null
+                ) : (
+                  <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                    {filteredThemes.map(theme => {
+                      const active = themeName === theme.name
+                      const removable = isUserTheme(theme.name)
+
+                      return (
+                        <div className="group relative" key={theme.name}>
+                          <button
+                            className={cn('w-full p-2 text-left', selectableCardClass({ active, prominent: true }))}
+                            onClick={() => {
+                              triggerHaptic('crisp')
+                              setTheme(theme.name)
+                            }}
+                            type="button"
+                          >
+                            <ThemePreview mode={resolvedMode} name={theme.name} />
+                            <div className="mt-3 px-1">
+                              <div className="truncate text-[length:var(--conversation-text-font-size)] font-medium">
+                                {theme.label}
+                              </div>
+                              <div className="mt-0.5 line-clamp-2 text-[length:var(--conversation-caption-font-size)] leading-(--conversation-caption-line-height) text-(--ui-text-tertiary)">
+                                {theme.description}
+                              </div>
+                            </div>
+                          </button>
+                          {removable && (
+                            <button
+                              aria-label={a.removeTheme}
+                              className="absolute right-1.5 top-1.5 grid size-6 place-items-center rounded-md bg-(--ui-bg-elevated)/80 text-(--ui-text-tertiary) opacity-0 backdrop-blur-sm transition hover:text-(--ui-red) focus-visible:opacity-100 group-hover:opacity-100"
+                              onClick={() => {
+                                triggerHaptic('crisp')
+                                removeUserTheme(theme.name)
+
+                                // Re-normalize off the now-missing skin → default.
+                                if (active) {
+                                  setTheme(theme.name)
+                                }
+                              }}
+                              type="button"
+                            >
+                              <Trash2 className="size-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+                <MarketplaceThemeResults installs={installs} onInstalled={name => setTheme(name)} query={query} />
+              </div>
+              {showProfileNote && (
+                <p className="mt-3 text-[length:var(--conversation-caption-font-size)] leading-(--conversation-caption-line-height) text-(--ui-text-tertiary)">
+                  {a.themeProfileNote(activeProfileName)}
+                </p>
+              )}
+            </>
+          }
+          description={a.themeDesc}
+          id={settingElementId(ids.theme)}
+          title={a.themeTitle}
+          wide
+        />
+  )
+}
+
+/** Window translucency: Clear (one lever) or Glass (tint, fade, frost, area), with the live peek. */
+function TranslucencySettingRow() {
+  const { t } = useI18n()
+  const a = t.settings.appearance
+  const translucency = useStore($translucency)
+  const glassMode = translucency.mode === 'glass' && GLASS_SUPPORTED
+
+  // Shared by the mode/frost/area pickers: apply the choice, then show it
+  // through the overlay it just altered (a pulse, not a hold — see the peek
+  // notes on the slider itself).
+  const pickTranslucency =
+    <T,>(set: (value: T) => void) =>
+    (value: T) => {
+      triggerHaptic('selection')
+      set(value)
+
+      if (translucency.intensity > 0) {
+        pulseTranslucencyPeek()
+      }
+    }
+
+  return (
+        <ListRow
+          action={
+            <div
+              className="flex items-center gap-3"
+              // Arms the peek for the overlay this row lives in — the
+              // ghosting rules in styles.css scope to it, so no other
+              // overlay pays for an opacity transition it never uses.
+              data-translucency-peek-scope=""
+            >
+              {GLASS_SUPPORTED && (
+                <SegmentedControl
+                  onChange={pickTranslucency(setTranslucencyMode)}
+                  options={[
+                    { id: 'clear' as const, label: a.translucencyModeClear },
+                    { id: 'glass' as const, label: a.translucencyModeGlass }
+                  ]}
+                  value={translucency.mode}
+                />
+              )}
+              {/* Clear has one lever and it belongs beside the mode. Glass
+                  has four controls, so they move into the labelled panel
+                  below rather than crowding this line with an unlabelled
+                  slider that means something different. */}
+              {!glassMode && (
+                <TranslucencySlider
+                  label={a.translucencyTitle}
+                  onChange={setTranslucency}
+                  value={translucency.intensity}
+                />
+              )}
+            </div>
+          }
+          below={
+            glassMode ? (
+              <div className="mt-3 flex flex-col gap-2.5" data-translucency-peek-scope="">
+                <GlassRow label={a.translucencyTintTitle}>
+                  <TranslucencySlider
+                    label={a.translucencyTintTitle}
+                    onChange={setTranslucency}
+                    value={translucency.intensity}
+                  />
+                </GlassRow>
+                <GlassRow label={a.translucencyFadeTitle}>
+                  <TranslucencySlider
+                    label={a.translucencyFadeTitle}
+                    onChange={setTranslucencyFade}
+                    value={translucency.fade}
+                  />
+                </GlassRow>
+                <GlassRow label={a.translucencyFrostTitle}>
+                  <SegmentedControl
+                    onChange={pickTranslucency(setTranslucencyMaterial)}
+                    // Windows renders four rungs as three backdrops, so it
+                    // is offered three; a frost saved on a Mac highlights
+                    // the rung that renders the same backdrop here.
+                    options={glassMaterialsFor(GLASS_IS_WINDOWS).map(material => ({
+                      id: material,
+                      label: a.translucencyFrost[material]
+                    }))}
+                    value={glassMaterialForPicker(translucency.material, GLASS_IS_WINDOWS)}
+                  />
+                </GlassRow>
+                <GlassRow label={a.translucencyScopeTitle}>
+                  <SegmentedControl
+                    onChange={pickTranslucency(setTranslucencyScope)}
+                    options={GLASS_SCOPES.map(scope => ({
+                      id: scope,
+                      label: a.translucencyScope[scope]
+                    }))}
+                    value={translucency.scope}
+                  />
+                </GlassRow>
+              </div>
+            ) : undefined
+          }
+          description={glassMode ? a.translucencyGlassDesc : a.translucencyDesc}
+          id={settingElementId(ids.translucency)}
+          title={a.translucencyTitle}
+        />
+  )
+}
+
+// Every row the page can draw, with the legacy sub-page that shows it. The
+// Hermes Studio Settings window composes rows into its own sections through
+// `rows` (render exactly these, no page chrome); without it `subpage` filters
+// as before.
+const ROW_SUBPAGE = {
+  language: 'general',
+  theme: 'theme',
+  uiScale: 'typography',
+  chatTextScale: 'typography',
+  chatFont: 'typography',
+  terminalFont: 'typography',
+  interfaceMode: 'window-layout',
+  sessionDensity: 'window-layout',
+  tabStrip: 'window-layout',
+  appActions: 'window-layout',
+  minimizeToTray: 'window-layout',
+  translucency: 'window-layout',
+  userBubble: 'chat-display',
+  textDirection: 'chat-display',
+  backdrop: 'window-layout',
+  hideThreadTimeline: 'chat-display',
+  introSplash: 'general',
+  modelPricing: 'general',
+  fileBrowser: 'window-layout',
+  composerPopout: 'window-layout',
+  resumeLastSession: 'general',
+  reactions: 'chat-display',
+  tips: 'general',
+  tours: 'general',
+  vibeHearts: 'chat-display',
+  toolView: 'chat-display',
+  hideCodeDiffs: 'chat-display',
+  reasoningCollapsed: 'chat-display',
+  embeds: 'chat-display',
+  pet: 'pet'
+} as const satisfies Record<string, AppearanceSubpageId>
+
+export type AppearanceRowId = keyof typeof ROW_SUBPAGE
+
+interface AppearanceSettingsProps {
+  subpage?: string
+  /** Hermes Studio: exactly these rows (in the page's own order), without page chrome. */
+  rows?: readonly AppearanceRowId[]
+}
+
+const activeProfileNameOf = (profiles: readonly { name: string }[], key: string) =>
+  profiles.find(profile => normalizeProfileKey(profile.name) === key)?.name ?? key
+
+export function AppearanceSettings({ subpage, rows }: AppearanceSettingsProps = {}) {
+  const { t, isSavingLocale } = useI18n()
+  const toolViewMode = useStore($toolViewMode)
+  const toolViewShadowed = useStore($modeShadowed('toolViewMode'))
+  const hideCodeDiffs = useStore($hideCodeDiffs)
+  const hideCodeDiffsShadowed = useStore($modeShadowed('hideCodeDiffs'))
+  const hideThreadTimeline = useStore($hideThreadTimeline)
+  const reasoningCollapsedByDefault = useStore($reasoningCollapsedByDefault)
+  const reasoningCollapsedShadowed = useStore($modeShadowed('reasoningCollapsedByDefault'))
+  const interfaceMode = useStore($interfaceMode)
+  const sessionListDensity = useStore($sessionListDensity)
+  const tabStripDefault = useStore($tabStripDefault)
+  const titlebarAppActionsSide = useStore($titlebarAppActionsSide)
+  const zoomPercent = useStore($zoomPercent)
+  const chatTextScale = useStore($chatTextScale)
+  const embedMode = useStore($embedMode)
+  const embedAllowed = useStore($embedAllowed)
+  const composerPopoutGesturesEnabled = useStore($composerPopoutGesturesEnabled)
+  const fileBrowserOpen = useStore($fileBrowserOpen)
+  const fileBrowserShadowed = useStore($modeShadowed('fileBrowserOpen'))
+  const userBubbleTransparency = useStore($userBubbleTransparency)
+  const textDirection = useStore($textDirection)
+  const reactionsEnabled = useStore($reactionsEnabled)
+  const tipsEnabled = useStore($tipsEnabled)
+  const toursEnabled = useStore($toursEnabled)
+  const spentTips = useStore($spentTipCount)
+  const vibeHeartsEnabled = useStore($vibeHeartsEnabled)
+  const backdrop = useStore($backdrop)
+  const introSplash = useStore($introSplash)
+  const showModelPricing = useStore($showModelPricing)
+  const a = t.settings.appearance
+  // The whole page with its heading (no sub-page, no Studio row list).
+  const fullPage = subpage === undefined && !rows
+
+  // A pointer held on the intensity slider when this overlay closes (Escape
+  // mid-drag) never delivers its pointerup here, which would strand the peek
+  // counter above zero and ghost the NEXT settings overlay. Leaving a subpage
+  // also unmounts its sliders, so drop every outstanding hold on that change.
+  useEffect(() => resetTranslucencyPeek, [subpage])
+
+  const show = (id: AppearanceSubpageId) => subpage === undefined || subpage === id
+  const row = (id: AppearanceRowId) => (rows ? rows.includes(id) : show(ROW_SUBPAGE[id]))
+
+  useSettingDeepLink('config:appearance', page => page !== undefined && show(page as AppearanceSubpageId))
 
   const toolOptions = [
     { id: 'product', label: a.product },
@@ -551,7 +794,7 @@ export function AppearanceSettings({ subpage }: AppearanceSettingsProps = {}) {
   return (
     <SettingsContent>
       <div>
-        {subpage === undefined && (
+        {fullPage && (
           <>
             <SectionHeading icon={Palette} title={a.title} />
             <p className="max-w-2xl text-[length:var(--conversation-caption-font-size)] leading-(--conversation-caption-line-height) text-(--ui-text-tertiary)">
@@ -560,8 +803,8 @@ export function AppearanceSettings({ subpage }: AppearanceSettingsProps = {}) {
           </>
         )}
 
-        <div className={subpage === undefined ? 'mt-2' : undefined}>
-          {show('general') && (
+        <div className={fullPage ? 'mt-2' : undefined}>
+          {row('language') && (
             <ListRow
               action={<LanguageSwitcher />}
               description={isSavingLocale ? t.language.saving : t.language.description}
@@ -570,149 +813,57 @@ export function AppearanceSettings({ subpage }: AppearanceSettingsProps = {}) {
             />
           )}
 
-          {show('theme') && (
+          {row('theme') && <ThemeSettingRow fullPage={fullPage} showModes={!rows} />}
+
+          {row('uiScale') && (
             <ListRow
               action={
                 <SegmentedControl
                   onChange={id => {
-                    triggerHaptic('crisp')
-                    setMode(id)
+                    triggerHaptic('selection')
+                    setZoomPercent(Number(id))
                   }}
-                  options={modeOptions}
-                  value={mode}
+                  options={uiScaleOptions}
+                  value={matchedScalePreset ?? ('' as UiScalePreset)}
                 />
               }
-              below={
-                <>
-                  {/* One search box: filters your installed themes (the grid)
-                      and live-searches the VS Code Marketplace below. */}
-                  <SearchField
-                    containerClassName="mt-3 w-full"
-                    inputClassName="flex-1"
-                    onChange={setQuery}
-                    placeholder={a.themeSearchPlaceholder}
-                    value={query}
-                  />
-
-                  {/* The dedicated theme page uses the page scroller rather
-                      than clipping its gallery inside another scroll area. */}
-                  <div className={cn('mt-3', subpage === undefined && 'max-h-96 overflow-y-auto pr-1')}>
-                    {filteredThemes.length === 0 ? (
-                      needle ? (
-                        <p className="text-[length:var(--conversation-caption-font-size)] text-(--ui-text-tertiary)">
-                          No installed themes match "{query.trim()}".
-                        </p>
-                      ) : null
-                    ) : (
-                      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                        {filteredThemes.map(theme => {
-                          const active = themeName === theme.name
-                          const removable = isUserTheme(theme.name)
-
-                          return (
-                            <div className="group relative" key={theme.name}>
-                              <button
-                                className={cn('w-full p-2 text-left', selectableCardClass({ active, prominent: true }))}
-                                onClick={() => {
-                                  triggerHaptic('crisp')
-                                  setTheme(theme.name)
-                                }}
-                                type="button"
-                              >
-                                <ThemePreview mode={resolvedMode} name={theme.name} />
-                                <div className="mt-3 px-1">
-                                  <div className="truncate text-[length:var(--conversation-text-font-size)] font-medium">
-                                    {theme.label}
-                                  </div>
-                                  <div className="mt-0.5 line-clamp-2 text-[length:var(--conversation-caption-font-size)] leading-(--conversation-caption-line-height) text-(--ui-text-tertiary)">
-                                    {theme.description}
-                                  </div>
-                                </div>
-                              </button>
-                              {removable && (
-                                <button
-                                  aria-label={a.removeTheme}
-                                  className="absolute right-1.5 top-1.5 grid size-6 place-items-center rounded-md bg-(--ui-bg-elevated)/80 text-(--ui-text-tertiary) opacity-0 backdrop-blur-sm transition hover:text-(--ui-red) focus-visible:opacity-100 group-hover:opacity-100"
-                                  onClick={() => {
-                                    triggerHaptic('crisp')
-                                    removeUserTheme(theme.name)
-
-                                    // Re-normalize off the now-missing skin → default.
-                                    if (active) {
-                                      setTheme(theme.name)
-                                    }
-                                  }}
-                                  type="button"
-                                >
-                                  <Trash2 className="size-3.5" />
-                                </button>
-                              )}
-                            </div>
-                          )
-                        })}
-                      </div>
-                    )}
-                    <MarketplaceThemeResults installs={installs} onInstalled={name => setTheme(name)} query={query} />
-                  </div>
-                  {showProfileNote && (
-                    <p className="mt-3 text-[length:var(--conversation-caption-font-size)] leading-(--conversation-caption-line-height) text-(--ui-text-tertiary)">
-                      {a.themeProfileNote(activeProfileName)}
-                    </p>
-                  )}
-                </>
-              }
-              description={a.themeDesc}
-              id={settingElementId(ids.theme)}
-              title={a.themeTitle}
-              wide
+              description={a.uiScaleDesc(zoomPercent)}
+              id={settingElementId(ids.uiScale)}
+              title={a.uiScaleTitle}
             />
           )}
 
-          {show('typography') && (
-            <>
-              <ListRow
-                action={
-                  <SegmentedControl
-                    onChange={id => {
-                      triggerHaptic('selection')
-                      setZoomPercent(Number(id))
-                    }}
-                    options={uiScaleOptions}
-                    value={matchedScalePreset ?? ('' as UiScalePreset)}
-                  />
-                }
-                description={a.uiScaleDesc(zoomPercent)}
-                id={settingElementId(ids.uiScale)}
-                title={a.uiScaleTitle}
-              />
-
-              <ListRow
-                action={
-                  <SegmentedControl
-                    onChange={value => {
-                      triggerHaptic('selection')
-                      setChatTextScale(Number(value))
-                    }}
-                    options={CHAT_TEXT_SCALE_PRESETS.map(value => ({ id: String(value), label: `${value}%` }))}
-                    value={String(chatTextScale)}
-                  />
-                }
-                description={a.chatTextScaleDesc}
-                id={settingElementId(ids.chatTextScale)}
-                title={a.chatTextScaleTitle}
-              />
-
-              <div id={settingElementId(ids.chatFont)}>
-                <ChatFontSetting />
-              </div>
-
-              <div id={settingElementId(ids.terminalFont)}>
-                <TerminalFontSetting />
-              </div>
-            </>
+          {row('chatTextScale') && (
+            <ListRow
+              action={
+                <SegmentedControl
+                  onChange={value => {
+                    triggerHaptic('selection')
+                    setChatTextScale(Number(value))
+                  }}
+                  options={CHAT_TEXT_SCALE_PRESETS.map(value => ({ id: String(value), label: `${value}%` }))}
+                  value={String(chatTextScale)}
+                />
+              }
+              description={a.chatTextScaleDesc}
+              id={settingElementId(ids.chatTextScale)}
+              title={a.chatTextScaleTitle}
+            />
           )}
 
-          {show('window-layout') && (
+          {row('chatFont') && (
+            <div id={settingElementId(ids.chatFont)}>
+              <ChatFontSetting />
+            </div>
+          )}
+
+          {row('terminalFont') && (
+            <div id={settingElementId(ids.terminalFont)}>
+              <TerminalFontSetting />
+            </div>
+          )}
+
+          {row('interfaceMode') && (
             <ListRow
               action={
                 <SegmentedControl
@@ -730,7 +881,7 @@ export function AppearanceSettings({ subpage }: AppearanceSettingsProps = {}) {
             />
           )}
 
-          {show('window-layout') && (
+          {row('sessionDensity') && (
             <ListRow
               action={
                 <SegmentedControl
@@ -748,7 +899,7 @@ export function AppearanceSettings({ subpage }: AppearanceSettingsProps = {}) {
             />
           )}
 
-          {show('window-layout') && (
+          {row('tabStrip') && (
             <ListRow
               action={
                 <SegmentedControl
@@ -766,7 +917,7 @@ export function AppearanceSettings({ subpage }: AppearanceSettingsProps = {}) {
             />
           )}
 
-          {show('window-layout') && (
+          {row('appActions') && (
             <ListRow
               action={
                 <SegmentedControl
@@ -784,7 +935,7 @@ export function AppearanceSettings({ subpage }: AppearanceSettingsProps = {}) {
             />
           )}
 
-          {show('window-layout') && (
+          {row('minimizeToTray') && (
             <div id={settingElementId(ids.minimizeToTray)}>
               <MinimizeToTraySetting />
             </div>
@@ -792,89 +943,9 @@ export function AppearanceSettings({ subpage }: AppearanceSettingsProps = {}) {
 
           {/* Linux has neither half of this setting (see TRANSLUCENCY_SUPPORTED),
               so the row is absent there rather than offering a dead lever. */}
-          {show('window-layout') && TRANSLUCENCY_SUPPORTED && (
-            <ListRow
-              action={
-                <div
-                  className="flex items-center gap-3"
-                  // Arms the peek for the overlay this row lives in — the
-                  // ghosting rules in styles.css scope to it, so no other
-                  // overlay pays for an opacity transition it never uses.
-                  data-translucency-peek-scope=""
-                >
-                  {GLASS_SUPPORTED && (
-                    <SegmentedControl
-                      onChange={pickTranslucency(setTranslucencyMode)}
-                      options={[
-                        { id: 'clear' as const, label: a.translucencyModeClear },
-                        { id: 'glass' as const, label: a.translucencyModeGlass }
-                      ]}
-                      value={translucency.mode}
-                    />
-                  )}
-                  {/* Clear has one lever and it belongs beside the mode. Glass
-                      has four controls, so they move into the labelled panel
-                      below rather than crowding this line with an unlabelled
-                      slider that means something different. */}
-                  {!glassMode && (
-                    <TranslucencySlider
-                      label={a.translucencyTitle}
-                      onChange={setTranslucency}
-                      value={translucency.intensity}
-                    />
-                  )}
-                </div>
-              }
-              below={
-                glassMode ? (
-                  <div className="mt-3 flex flex-col gap-2.5" data-translucency-peek-scope="">
-                    <GlassRow label={a.translucencyTintTitle}>
-                      <TranslucencySlider
-                        label={a.translucencyTintTitle}
-                        onChange={setTranslucency}
-                        value={translucency.intensity}
-                      />
-                    </GlassRow>
-                    <GlassRow label={a.translucencyFadeTitle}>
-                      <TranslucencySlider
-                        label={a.translucencyFadeTitle}
-                        onChange={setTranslucencyFade}
-                        value={translucency.fade}
-                      />
-                    </GlassRow>
-                    <GlassRow label={a.translucencyFrostTitle}>
-                      <SegmentedControl
-                        onChange={pickTranslucency(setTranslucencyMaterial)}
-                        // Windows renders four rungs as three backdrops, so it
-                        // is offered three; a frost saved on a Mac highlights
-                        // the rung that renders the same backdrop here.
-                        options={glassMaterialsFor(GLASS_IS_WINDOWS).map(material => ({
-                          id: material,
-                          label: a.translucencyFrost[material]
-                        }))}
-                        value={glassMaterialForPicker(translucency.material, GLASS_IS_WINDOWS)}
-                      />
-                    </GlassRow>
-                    <GlassRow label={a.translucencyScopeTitle}>
-                      <SegmentedControl
-                        onChange={pickTranslucency(setTranslucencyScope)}
-                        options={GLASS_SCOPES.map(scope => ({
-                          id: scope,
-                          label: a.translucencyScope[scope]
-                        }))}
-                        value={translucency.scope}
-                      />
-                    </GlassRow>
-                  </div>
-                ) : undefined
-              }
-              description={glassMode ? a.translucencyGlassDesc : a.translucencyDesc}
-              id={settingElementId(ids.translucency)}
-              title={a.translucencyTitle}
-            />
-          )}
+          {row('translucency') && TRANSLUCENCY_SUPPORTED && <TranslucencySettingRow />}
 
-          {show('chat-display') && (
+          {row('userBubble') && (
             <ListRow
               action={
                 // Same peek as the window lever: the bubble being tuned sits
@@ -894,7 +965,7 @@ export function AppearanceSettings({ subpage }: AppearanceSettingsProps = {}) {
             />
           )}
 
-          {show('chat-display') && (
+          {row('textDirection') && (
             <ListRow
               action={
                 <SegmentedControl
@@ -912,7 +983,7 @@ export function AppearanceSettings({ subpage }: AppearanceSettingsProps = {}) {
             />
           )}
 
-          {show('window-layout') && (
+          {row('backdrop') && (
             <ToggleRow
               checked={backdrop}
               description={a.backdropDesc}
@@ -922,7 +993,7 @@ export function AppearanceSettings({ subpage }: AppearanceSettingsProps = {}) {
             />
           )}
 
-          {show('chat-display') && (
+          {row('hideThreadTimeline') && (
             <ToggleRow
               checked={hideThreadTimeline}
               description={a.hideThreadTimelineDesc}
@@ -932,7 +1003,7 @@ export function AppearanceSettings({ subpage }: AppearanceSettingsProps = {}) {
             />
           )}
 
-          {show('general') && (
+          {row('introSplash') && (
             <ToggleRow
               checked={introSplash}
               description={a.introSplashDesc}
@@ -942,7 +1013,7 @@ export function AppearanceSettings({ subpage }: AppearanceSettingsProps = {}) {
             />
           )}
 
-          {show('general') && (
+          {row('modelPricing') && (
             <ToggleRow
               checked={showModelPricing}
               description={a.modelPricingDesc}
@@ -955,7 +1026,7 @@ export function AppearanceSettings({ subpage }: AppearanceSettingsProps = {}) {
           {/* The same state as the titlebar toggle / ⌘J, which persists across
               launches — so this is the file browser's standing default. Simple
               mode shadows it; a flip there only lasts the session, so say so. */}
-          {show('window-layout') && (
+          {row('fileBrowser') && (
             <ToggleRow
               checked={fileBrowserOpen}
               description={withModeNote(a.fileBrowserDesc, fileBrowserShadowed)}
@@ -965,7 +1036,7 @@ export function AppearanceSettings({ subpage }: AppearanceSettingsProps = {}) {
             />
           )}
 
-          {show('window-layout') && (
+          {row('composerPopout') && (
             <ToggleRow
               checked={composerPopoutGesturesEnabled}
               description={a.composerPopoutDesc}
@@ -975,9 +1046,9 @@ export function AppearanceSettings({ subpage }: AppearanceSettingsProps = {}) {
             />
           )}
 
-          {show('general') && <ResumeLastSessionSetting />}
+          {row('resumeLastSession') && <ResumeLastSessionSetting />}
 
-          {show('chat-display') && (
+          {row('reactions') && (
             <ToggleRow
               checked={reactionsEnabled}
               description={a.reactionsDesc}
@@ -987,7 +1058,7 @@ export function AppearanceSettings({ subpage }: AppearanceSettingsProps = {}) {
             />
           )}
 
-          {show('general') && (
+          {row('tips') && (
             <ToggleRow
               below={
                 // A tip shows once (✕ or timer), so this is the only way to a
@@ -1002,7 +1073,7 @@ export function AppearanceSettings({ subpage }: AppearanceSettingsProps = {}) {
             />
           )}
 
-          {show('general') && (
+          {row('tours') && (
             <ToggleRow
               checked={toursEnabled}
               description={a.toursDesc}
@@ -1012,7 +1083,7 @@ export function AppearanceSettings({ subpage }: AppearanceSettingsProps = {}) {
             />
           )}
 
-          {show('chat-display') && (
+          {row('vibeHearts') && (
             <ToggleRow
               checked={vibeHeartsEnabled}
               description={a.vibeHeartsDesc}
@@ -1022,7 +1093,7 @@ export function AppearanceSettings({ subpage }: AppearanceSettingsProps = {}) {
             />
           )}
 
-          {show('chat-display') && (
+          {row('toolView') && (
             <ListRow
               action={
                 <SegmentedControl
@@ -1040,7 +1111,7 @@ export function AppearanceSettings({ subpage }: AppearanceSettingsProps = {}) {
             />
           )}
 
-          {show('chat-display') && (
+          {row('hideCodeDiffs') && (
             <ToggleRow
               checked={hideCodeDiffs}
               description={withModeNote(a.hideCodeDiffsDesc, hideCodeDiffsShadowed)}
@@ -1050,7 +1121,7 @@ export function AppearanceSettings({ subpage }: AppearanceSettingsProps = {}) {
             />
           )}
 
-          {show('chat-display') && (
+          {row('reasoningCollapsed') && (
             <ToggleRow
               checked={reasoningCollapsedByDefault}
               description={withModeNote(a.reasoningCollapsedDesc, reasoningCollapsedShadowed)}
@@ -1060,7 +1131,7 @@ export function AppearanceSettings({ subpage }: AppearanceSettingsProps = {}) {
             />
           )}
 
-          {show('chat-display') && (
+          {row('embeds') && (
             <ListRow
               action={
                 <SegmentedControl
@@ -1087,8 +1158,8 @@ export function AppearanceSettings({ subpage }: AppearanceSettingsProps = {}) {
         </div>
       </div>
 
-      {show('pet') && (
-        <div className={subpage === undefined ? 'mt-6' : undefined} id={settingElementId(ids.pet)}>
+      {row('pet') && (
+        <div className={fullPage ? 'mt-6' : undefined} id={settingElementId(ids.pet)}>
           <PetSettings />
         </div>
       )}
@@ -1097,7 +1168,7 @@ export function AppearanceSettings({ subpage }: AppearanceSettingsProps = {}) {
           plugin that used to inject nodes into this page. Top-level page only:
           a deep-link subpage shows one built-in section, and a plugin card is
           not that section. */}
-      {subpage === undefined && <AppearanceExtraSlot />}
+      {fullPage && <AppearanceExtraSlot />}
     </SettingsContent>
   )
 }
