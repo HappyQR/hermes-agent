@@ -12,6 +12,8 @@
 
 import { useStore } from '@nanostores/react'
 
+import { inspectorGroup } from '@/app/shell/inspector/inspector-state'
+import { inspectorKindOf } from '@/app/shell/inspector/kinds'
 import { findGroup } from '@/components/pane-shell/tree/model'
 import {
   $activeTreeGroup,
@@ -230,6 +232,11 @@ function existingPreviewAnchor(tabId: string): string | undefined {
   return head && head.id !== tabId ? previewPaneId(head.id) : undefined
 }
 
+/** Studio: the inspector pane a preview docks against (its first non-preview pane). */
+function inspectorDockAnchor(): string | undefined {
+  return inspectorGroup()?.panes.find(id => inspectorKindOf(id) !== 'preview')
+}
+
 /** Keep pane contributions mirroring `$previewTabs`, keep the store's selection
  *  and the tree's active pane agreeing, and front a tile when its tab is
  *  selected. Call once from the root. */
@@ -352,8 +359,12 @@ const watchPreviewTileMirror = paneMirror<{ id: string }>({
   // along). Every SUBSEQUENT preview stacks into that zone as a center tab:
   // without the anchor each opened file split a new zone off the right edge
   // (#93610), turning three file opens into three ever-narrower columns.
-  dir: tab => (existingPreviewAnchor(tab.id) ? 'center' : 'right'),
-  anchor: tab => existingPreviewAnchor(tab.id),
+  // Hermes Studio: with an inspector, the first preview opens IN it (a tab of
+  // the Preview segment) and folds with it on ⌘J; without one (a custom
+  // layout) the upstream rule above stands.
+  dir: tab => (existingPreviewAnchor(tab.id) || inspectorDockAnchor() ? 'center' : 'right'),
+  anchor: tab => existingPreviewAnchor(tab.id) ?? inspectorDockAnchor(),
+  placement: () => (inspectorDockAnchor() ? 'right' : undefined),
   minWidth: '22rem',
   title: previewTitle,
   tabLead: tabId => <PreviewTabLead tabId={tabId} />,

@@ -91,7 +91,7 @@ import { usePanelTitlebar } from './panel-titlebar'
 import { tabStripVisibleForZone } from './strip-visibility'
 import { useActiveTabVisible } from './tab-strip-scroll'
 import { paneChrome } from './track-model'
-import { ZONE_BAND_LEFT, ZONE_BAND_RIGHT, zoneBand, ZoneBandRow } from './zone-band'
+import { ZONE_BAND_LEFT, ZONE_BAND_RIGHT, ZONE_TABS_ROW_HEIGHT, zoneBand, ZoneBandRow } from './zone-band'
 
 /** Right-click zone menu: the tab verbs (close this / others / to the right /
  *  all) plus the strip's own chrome toggles. Same items and icons as a session
@@ -310,7 +310,9 @@ export function TreeGroup({
   const active = paneFor(activeId)
   const isEmpty = shown.length === 0
   const sidebarGroup = !node.panes.some(id => id === 'workspace' || paneChrome(paneFor(id)).placement === 'main')
-  const band = topEdge ? zoneBand(shown, activeId, paneFor) : null
+  const band = topEdge ? zoneBand(node.panes, shown, activeId, paneFor) : null
+  const stripPanes = band?.stripPanes?.(shown, activeId) ?? shown
+  const tabsRowHeight = band ? ZONE_TABS_ROW_HEIGHT : 28
   const tabsBelowControls = topEdge && (Boolean(band) || sidebarGroup || measuredBelowControls)
   const tabsInTitlebar = topEdge && !tabsBelowControls
   const pageHeader = band ? undefined : paneChrome(active).headerContent
@@ -389,13 +391,9 @@ export function TreeGroup({
   // it is the resolver's call, not this component's — see strip-visibility.ts
   // for the precedence. The same resolver answers for the toggle command, so
   // the keystroke and the screen always agree about which way "toggle" points.
-  const stripVisible = tabStripVisibleForZone({
-    active: activeId,
-    isCollapsePane,
-    mode: node.tabStrip,
-    paneFor,
-    shown
-  })
+  const stripVisible = band?.stripPanes
+    ? stripPanes.length > 0
+    : tabStripVisibleForZone({ active: activeId, isCollapsePane, mode: node.tabStrip, paneFor, shown })
 
   // A group collapses ALONG its parent split's axis. In a row that means the
   // WIDTH collapses — a full-width horizontal header would strand a tall
@@ -569,7 +567,7 @@ export function TreeGroup({
           data-panel-header=""
           style={
             topEdge
-              ? { background: band?.surface, height: TITLEBAR_HEIGHT + (tabsBelowControls && headerVisible ? 28 : 0) }
+              ? { background: band?.surface, height: TITLEBAR_HEIGHT + (tabsBelowControls && headerVisible ? tabsRowHeight : 0) }
               : undefined
           }
         >
@@ -580,7 +578,7 @@ export function TreeGroup({
               style={{ width: band ? ZONE_BAND_LEFT : 'var(--panel-titlebar-left, 100%)' }}
             />
           )}
-          {band && <ZoneBandRow band={band} />}
+          {band && <ZoneBandRow band={band} context={{ activeId, groupId: node.id, panes: node.panes, shown }} />}
           {pageHeader && headerVisible ? (
             <div
               className={cn(
@@ -595,6 +593,7 @@ export function TreeGroup({
             <ZoneMenu {...zoneMenu}>
               <PaneTabStrip
                 className={cn('flex-1', tabsBelowControls && 'absolute inset-x-0 bottom-0')}
+                data-zone-strip={band?.stripVariant}
                 // data-zone-tabstrip: a drop over here STACKS (drag-session reads it).
                 data-zone-tabstrip={node.id}
                 listRef={tabsRef}
@@ -630,7 +629,7 @@ export function TreeGroup({
                   </>
                 }
               >
-                {shown.map((paneId, index) => {
+                {stripPanes.map((paneId, index) => {
                   const isActive = paneId === activeId && !node.minimized
                   const chrome = paneChrome(paneFor(paneId))
                   const closeable = closeableTab(paneId)
@@ -905,7 +904,7 @@ export function TreeGroup({
             className="absolute inset-x-0 bottom-0 z-50 flex cursor-grab items-center justify-center outline-1 -outline-offset-2 outline-dashed backdrop-blur-[2px]"
             onPointerDown={e => startPaneDrag(activeId, e, undefined, undefined, tabText(activeId))}
             style={{
-              top: topEdge ? TITLEBAR_HEIGHT + (tabsBelowControls && headerVisible ? 28 : 0) : headerVisible ? 28 : 0,
+              top: topEdge ? TITLEBAR_HEIGHT + (tabsBelowControls && headerVisible ? tabsRowHeight : 0) : headerVisible ? 28 : 0,
               background:
                 'color-mix(in srgb, var(--ui-accent) 6%, color-mix(in srgb, var(--ui-bg-chrome) 55%, transparent))',
               outlineColor: 'color-mix(in srgb, var(--ui-accent) 55%, transparent)'

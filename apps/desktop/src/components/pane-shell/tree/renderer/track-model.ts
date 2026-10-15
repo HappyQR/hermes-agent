@@ -43,6 +43,16 @@ export interface PaneSizing {
   maxHeight?: string
 }
 
+/** Studio: what a zone band is rendered with (see zone-band.tsx). */
+export interface ZoneBandContext {
+  activeId: string
+  groupId: string
+  /** Every pane in the zone, hidden ones included. */
+  panes: readonly string[]
+  /** The panes currently shown as tabs. */
+  shown: readonly string[]
+}
+
 /** Chrome behavior flags a pane contributes. Read via `paneChrome`. */
 interface PaneChrome extends PaneSizing {
   /** Leaves the grid on narrow viewports; revealed as an edge overlay. */
@@ -98,7 +108,7 @@ interface PaneChrome extends PaneSizing {
   /** Page-owned controls in the panel's normal tab-header space. */
   headerContent?: () => React.ReactNode
   /** Studio: content for the zone's top-edge titlebar band (see zone-band.tsx). */
-  band?: () => React.ReactNode
+  band?: React.ComponentType<ZoneBandContext>
   /** Studio: the band's surface color. */
   bandSurface?: string
   /** A lead NODE for this pane's TAB, rendered before the label. A session
