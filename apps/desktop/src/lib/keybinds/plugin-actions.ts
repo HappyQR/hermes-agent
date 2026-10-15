@@ -64,6 +64,12 @@ export function registerBuiltinActionRunner(next: BuiltinActionRunner): () => vo
   }
 }
 
+/** Studio: runs a built-in action for a user-initiated control (toolbar, menu
+ *  bar) through the shortcut's own handler; false while the shell is not mounted. */
+export function runBuiltinAction(id: string): boolean {
+  return runner?.(id) ?? false
+}
+
 export function listPluginAppActions(): PluginAppActionInfo[] {
   // Action ids contain dots, so read the block rather than a dot-path key.
   const labels: Record<string, string | undefined> = runtimeTranslations().keybinds.actions
