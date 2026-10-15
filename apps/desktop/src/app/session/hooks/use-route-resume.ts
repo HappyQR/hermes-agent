@@ -88,7 +88,14 @@ function rawHashLooksLikeSession(): boolean {
     !hash.startsWith('/settings') &&
     !hash.startsWith('/capabilities') &&
     !hash.startsWith('/messaging') &&
-    !hash.startsWith('/artifacts')
+    !hash.startsWith('/artifacts') &&
+    // Studio workspace pages (Automations and its /cron, /webhooks aliases).
+    !hash.startsWith('/automations') &&
+    !hash.startsWith('/cron') &&
+    !hash.startsWith('/webhooks') &&
+    // ... and Memory with its /starmap alias.
+    !hash.startsWith('/memory') &&
+    !hash.startsWith('/starmap')
   )
 }
 

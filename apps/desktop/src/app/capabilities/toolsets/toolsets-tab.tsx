@@ -1,8 +1,7 @@
-import { compactNumber } from '@hermes/shared'
 import { useStore } from '@nanostores/react'
 import { useCallback, useMemo, useState } from 'react'
 
-import { CountSkeleton } from '@/components/ui/skeleton'
+import { PopupSelect } from '@/components/studio/pages/controls'
 import { type ProfileScope, setToolsetEnabled } from '@/hermes'
 import { useI18n } from '@/i18n'
 import { isDesktopToolsetVisible } from '@/lib/desktop-toolsets'
@@ -12,21 +11,15 @@ import { invalidateSlashCompletions } from '@/lib/slash-completion-cache'
 import { notify, notifyError } from '@/store/notifications'
 import type { ToolsetInfo } from '@/types/hermes'
 
-import {
-  CapRow,
-  DetailColumn,
-  ListColumn,
-  ListStrip,
-  ListStripMenu,
-  type ListStripMenuToggle,
-  MasterDetail
-} from '../../master-detail'
-import { asText, toolNames, toolsetDisplayLabel } from '../../settings/helpers'
-import { CapabilityEmpty, SortButton } from '../primitives'
+import { toolsetDisplayLabel } from '../../settings/helpers'
+import { CapBulkMenu, type CapBulkToggle } from '../studio/bulk-menu'
+import { CapabilityPageEmpty } from '../studio/empty'
+import { ToolSheet } from '../studio/tool-sheet'
+import { CapToolbarSlot } from '../studio/toolbar-slots'
+import { ToolsList } from '../studio/tools-list'
 
 import { useToolCalls } from './tool-calls'
-import { ToolsetDetail } from './toolset-detail'
-import { filteredToolsets, toolsetCalls, TOOLSETS_QUERY_KEY, toolsetsQueryKey } from './toolsets-data'
+import { filteredToolsets, TOOLSETS_QUERY_KEY, toolsetsQueryKey } from './toolsets-data'
 
 // Sort direction for the Tools list — persisted so the tab remembers
 // most/least-used across navigations and restarts.
@@ -40,10 +33,11 @@ interface ToolsetsTabProps {
   query: string
 }
 
-/** THE Tools tab: the toolset list with its usage badges, and the inspector
- *  that mounts each toolset's settings panels. */
+/** THE Tools tab: the toolset list with its usage, and the tool sheet that
+ *  mounts each toolset's settings panels. */
 export function ToolsetsTab({ profile, query, toolsets }: ToolsetsTabProps) {
   const { t } = useI18n()
+  const c = t.studio.pages.capabilities
   const toolsetsSortDesc = useStore($toolsetsSortDesc)
   const toolCalls = useToolCalls(profile)
   const [bulkBusy, setBulkBusy] = useState(false)
@@ -72,11 +66,10 @@ export function ToolsetsTab({ profile, query, toolsets }: ToolsetsTabProps) {
   // current query would be a lie.
   const bulkToolsets = useMemo(() => toolsets.filter(ts => isDesktopToolsetVisible(ts.name)), [toolsets])
 
-  // Keep a valid selection: fall back to the first visible row when the
-  // current selection is filtered out (or nothing is selected yet).
+  // The open sheet follows the live list (a profile switch drops it).
   const activeToolset = useMemo(
-    () => visibleToolsets.find(ts => ts.name === selectedToolset) ?? visibleToolsets[0] ?? null,
-    [selectedToolset, visibleToolsets]
+    () => toolsets.find(ts => ts.name === selectedToolset) ?? null,
+    [selectedToolset, toolsets]
   )
 
   // Single toggles are optimistic and silent on success (the row repaints
@@ -128,7 +121,7 @@ export function ToolsetsTab({ profile, query, toolsets }: ToolsetsTabProps) {
   }
 
   // One switch line covering enable-all/disable-all.
-  const bulkSwitch: ListStripMenuToggle = {
+  const bulkSwitch: CapBulkToggle = {
     checked: bulkToolsets.length > 0 && bulkToolsets.every(ts => ts.enabled),
     disabled: bulkBusy,
     label: t.skills.all,
@@ -139,58 +132,44 @@ export function ToolsetsTab({ profile, query, toolsets }: ToolsetsTabProps) {
       )
   }
 
-  if (visibleToolsets.length === 0) {
-    return <CapabilityEmpty noun="tools" query={query} />
-  }
+  const sortOptions = [
+    { id: 'most' as const, label: c.sort.most },
+    { id: 'least' as const, label: c.sort.least }
+  ]
 
   return (
-    <MasterDetail resizeId="capabilities-split" split="wide">
-      <ListColumn
-        header={
-          <ListStrip
-            left={<SortButton desc={toolsetsSortDesc} onFlip={() => $toolsetsSortDesc.set(!$toolsetsSortDesc.get())} />}
-            right={<ListStripMenu label={t.skills.tabToolsets} toggle={bulkSwitch} />}
-          />
-        }
-      >
-        {visibleToolsets.map(toolset => {
-          const label = toolsetDisplayLabel(toolset)
-          const calls = toolCalls ? toolsetCalls(toolset, toolCalls) : null
-
-          return (
-            <CapRow
-              active={activeToolset?.name === toolset.name}
-              busy={bulkBusy}
-              enabled={toolset.enabled}
-              key={toolset.name}
-              meta={
-                calls === null ? (
-                  <CountSkeleton />
-                ) : calls > 0 ? (
-                  `×${compactNumber(calls)}`
-                ) : (
-                  `${toolNames(toolset).length} tools`
-                )
-              }
-              onSelect={() => setSelectedToolset(toolset.name)}
-              onToggle={checked => void handleToggleToolset(toolset, checked)}
-              subtitle={asText(toolset.description)}
-              title={label}
-              toggleLabel={t.skills.toggleToolset(label, !toolset.enabled)}
-            />
-          )
-        })}
-      </ListColumn>
-      <DetailColumn footer={t.skills.changesApplyNewSessions}>
-        {activeToolset && (
-          <ToolsetDetail
-            onConfiguredChange={refreshToolsets}
-            profile={profile}
-            toolCalls={toolCalls ?? {}}
-            toolset={activeToolset}
-          />
-        )}
-      </DetailColumn>
-    </MasterDetail>
+    <>
+      <CapToolbarSlot name="start">
+        <PopupSelect<'least' | 'most'>
+          aria-label={c.sortLabel}
+          onChange={next => $toolsetsSortDesc.set(next === 'most')}
+          options={sortOptions}
+          value={toolsetsSortDesc ? 'most' : 'least'}
+        />
+        <CapBulkMenu label={c.bulkMenu} toggle={{ ...bulkSwitch, label: c.bulkAllTools }} />
+      </CapToolbarSlot>
+      {visibleToolsets.length === 0 ? (
+        <CapabilityPageEmpty none={c.tools.emptyNone} query={query} />
+      ) : (
+        <ToolsList
+          busy={bulkBusy}
+          onOpen={toolset => setSelectedToolset(toolset.name)}
+          onToggle={(toolset, enabled) => void handleToggleToolset(toolset, enabled)}
+          toolCalls={toolCalls}
+          toolsets={visibleToolsets}
+        />
+      )}
+      <ToolSheet
+        onConfiguredChange={refreshToolsets}
+        onOpenChange={open => {
+          if (!open) {
+            setSelectedToolset(null)
+          }
+        }}
+        profile={profile}
+        toolCalls={toolCalls ?? {}}
+        toolset={activeToolset}
+      />
+    </>
   )
 }

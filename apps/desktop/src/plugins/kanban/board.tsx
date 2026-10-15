@@ -283,6 +283,8 @@ function Card({
             selected && 'border-(--dt-composer-ring) bg-[color-mix(in_srgb,var(--dt-composer-ring)_7%,transparent)]',
             dragging && 'opacity-40'
           )}
+          data-selected={selected ? 'true' : undefined}
+          data-slot="kanban-card"
           draggable
           onClick={event => (event.metaKey || event.ctrlKey ? onToggleSelect(task.id) : onOpen(task.id))}
           onDragEnd={() => setDragging(false)}
@@ -433,6 +435,7 @@ function Column({
           'flex h-full w-8 shrink-0 flex-col items-center gap-1.5 rounded-lg p-2 transition-colors hover:bg-(--ui-bg-quinary)',
           wash
         )}
+        data-slot="kanban-rail"
         onClick={onToggle}
         type="button"
       >
@@ -453,15 +456,22 @@ function Column({
     <div
       {...dragHandlers}
       className={cn('group/col flex h-full w-64 shrink-0 flex-col rounded-lg p-2 transition-colors', wash)}
+      data-over={over && !locked ? 'true' : undefined}
+      data-slot="kanban-column"
     >
-      <header className="mb-1.5 flex h-5 items-center gap-1.5 px-1">
+      <header className="mb-1.5 flex h-5 items-center gap-1.5 px-1" data-slot="kanban-column-head">
         <span className="size-1.5 rounded-full" style={{ backgroundColor: meta.tone }} />
         <Tip label={columnHelp(k, column.name)}>
-          <span className="cursor-help text-[0.6875rem] font-medium uppercase tracking-wide text-(--ui-text-tertiary)">
+          <span
+            className="cursor-help text-[0.6875rem] font-medium uppercase tracking-wide text-(--ui-text-tertiary)"
+            data-slot="kanban-column-label"
+          >
             {label}
           </span>
         </Tip>
-        <span className="text-[0.625rem] tabular-nums text-(--ui-text-quaternary)">{column.tasks.length}</span>
+        <span className="text-[0.625rem] tabular-nums text-(--ui-text-quaternary)" data-slot="kanban-column-count">
+          {column.tasks.length}
+        </span>
         <button
           aria-label={k.collapse(label)}
           className="ml-auto grid size-5 place-items-center rounded text-(--ui-text-tertiary) opacity-0 transition-opacity hover:bg-(--chrome-action-hover) hover:text-foreground focus-visible:opacity-100 group-hover/col:opacity-100"
@@ -1334,12 +1344,22 @@ export function KanbanBoardPage() {
   }
 
   return (
-    <div className="relative flex h-full flex-col overflow-hidden bg-(--ui-surface-background)">
-      <header className="flex shrink-0 flex-wrap items-center gap-2 px-4 py-2">
-        <h1 className="text-sm font-semibold text-foreground">{k.title}</h1>
-        <span className="rounded-full bg-(--ui-bg-quaternary) px-1.5 py-px text-[0.625rem] tabular-nums text-(--ui-text-tertiary)">
-          {total}
-        </span>
+    <div
+      className="relative flex h-full flex-col overflow-hidden bg-(--ui-surface-background)"
+      data-slot="kanban-board"
+    >
+      <header className="flex shrink-0 flex-wrap items-center gap-2 px-4 py-2" data-slot="kanban-head">
+        <div className="flex min-w-0 flex-col" data-slot="kanban-title">
+          <div className="flex items-center gap-2">
+            <h1 className="text-sm font-semibold text-foreground">{k.title}</h1>
+            <span className="rounded-full bg-(--ui-bg-quaternary) px-1.5 py-px text-[0.625rem] tabular-nums text-(--ui-text-tertiary)">
+              {total}
+            </span>
+          </div>
+          <p className="m-0 hidden" data-slot="kanban-subtitle">
+            {k.subtitle}
+          </p>
+        </div>
         {/* The full page projects this into its page header; a split tile has
             none, so the switcher stays here in the row. */}
         <WorkspacePageHeaderControl id="kanban:board-switcher">
@@ -1402,6 +1422,7 @@ export function KanbanBoardPage() {
       ) : (
         <div
           className={cn('flex flex-1 gap-2 overflow-x-auto px-4 pt-1 pb-3', grabbing && 'cursor-grabbing')}
+          data-slot="kanban-lanes"
           onMouseDown={onMouseDown}
           ref={lanesRef}
         >

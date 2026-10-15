@@ -116,10 +116,14 @@ export type DesktopFeatureArea =
 const ROUTE_AREAS: Record<string, DesktopFeatureArea> = {
   agents: 'agents',
   artifacts: 'artifacts',
+  // Studio: the Automations page (/cron and /webhooks render it too).
+  automations: 'cron',
   capabilities: 'capabilities',
   'command-center': 'command_center',
   cron: 'cron',
   kanban: 'kanban',
+  // Studio: the Memory page (/starmap renders it too).
+  memory: 'starmap',
   messaging: 'messaging',
   profiles: 'profiles',
   'session-import': 'session_import',

@@ -1,6 +1,7 @@
 import { memo, useCallback, useEffect, useMemo, useRef } from 'react'
 
-import { Codicon } from '@/components/ui/codicon'
+import { StudioIcon } from '@/components/ui/studio-icon'
+import { useI18n } from '@/i18n'
 
 import type { TimeAxis } from './time-axis'
 
@@ -109,6 +110,8 @@ export const Timeline = memo(function Timeline({
   revealStore,
   ringStops = []
 }: TimelineProps) {
+  const { t } = useI18n()
+  const m = t.studio.pages.memory
   const trackRef = useRef<HTMLDivElement | null>(null)
   const draggingRef = useRef(false)
   const markerRefs = useRef<HTMLDivElement[]>([])
@@ -183,16 +186,16 @@ export const Timeline = memo(function Timeline({
   return (
     <div className="pointer-events-auto flex w-[28rem] max-w-full items-center gap-3 [-webkit-app-region:no-drag]">
       <button
-        aria-label={playing ? 'Pause' : 'Play timeline'}
-        className="flex size-5 shrink-0 items-center justify-center text-foreground/75 transition-colors hover:text-foreground"
+        aria-label={playing ? m.pause : m.play}
+        className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-[7px] text-foreground/85 transition-colors hover:bg-foreground/10 hover:text-foreground"
         onClick={onTogglePlay}
         type="button"
       >
-        <Codicon name={playing ? 'debug-pause' : 'triangle-right'} size={playing ? '0.8rem' : '0.95rem'} />
+        <StudioIcon name={playing ? 'pause' : 'play'} size={15} />
       </button>
 
       <div
-        aria-label="Timeline scrubber"
+        aria-label={m.timeline}
         aria-valuemax={100}
         aria-valuemin={0}
         aria-valuenow={Math.round(revealStore.get() * 100)}

@@ -3,8 +3,6 @@ import { deleteLearningNode, type ProfileScope } from '@/hermes'
 import { type Translations, useI18n } from '@/i18n'
 import { notify } from '@/store/notifications'
 
-export const ARCHIVE_SKILL_DESCRIPTION = 'The skill is archived and can be restored with `hermes curator restore`.'
-
 export function notifySkillArchived(t: Translations): void {
   notify({ kind: 'success', message: t.skills.skillArchivedMessage, title: t.skills.skillArchivedTitle })
 }
@@ -54,8 +52,8 @@ export function ArchiveSkillConfirmDialog({
 
   return (
     <ConfirmDialog
-      confirmLabel="Archive"
-      description={ARCHIVE_SKILL_DESCRIPTION}
+      confirmLabel={t.studio.pages.memory.archiveConfirm}
+      description={t.studio.pages.memory.archiveBody}
       destructive
       dismissOnConfirm
       onClose={onClose}
@@ -72,7 +70,7 @@ export function ArchiveSkillConfirmDialog({
         )
       }}
       open={open}
-      title={`Archive ${skillName}?`}
+      title={t.studio.pages.memory.archiveTitle(skillName)}
     />
   )
 }

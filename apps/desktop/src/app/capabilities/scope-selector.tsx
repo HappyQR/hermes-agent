@@ -54,6 +54,8 @@ export function useCapabilityScope({
   fixedConnection?: string
   fixedProfile?: string
 }): CapabilityScope {
+  const { t } = useI18n()
+  const scopeCopy = t.studio.pages.capabilities
   const activeProfile = useStore($activeGatewayProfile)
   const { key: locationKey, search } = useLocation()
 
@@ -136,7 +138,7 @@ export function useCapabilityScope({
         key: `${agent.connectionId}::${agent.profile}`,
         label:
           agent.connectionId === activeId
-            ? `${agent.profile} — ${agent.connectionLabel} (current)`
+            ? scopeCopy.scopeCurrent(`${agent.profile} — ${agent.connectionLabel}`)
             : `${agent.profile} — ${agent.connectionLabel}`,
         value: `${agent.connectionId}::${agent.profile}`
       }))
@@ -144,10 +146,10 @@ export function useCapabilityScope({
 
     return (profilesData?.profiles ?? []).map(p => ({
       key: p.name,
-      label: p.is_default ? 'Hermes (default)' : p.name,
+      label: p.is_default ? scopeCopy.scopeDefault : p.name,
       value: p.name
     }))
-  }, [multiConnection, profilesData, rosterData])
+  }, [multiConnection, profilesData, rosterData, scopeCopy])
 
   // The selector's current value must match one option's value exactly. On the
   // roster path an ambient (non-override) scope is the active gateway's

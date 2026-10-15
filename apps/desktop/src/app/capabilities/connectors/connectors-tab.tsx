@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 
 import { Button } from '@/components/ui/button'
+import { StudioIcon } from '@/components/ui/studio-icon'
 import type { HermesGateway, ProfileScope } from '@/hermes'
 import { useI18n } from '@/i18n'
 import { $freeTierStatus } from '@/store/free-tier'
@@ -10,9 +11,10 @@ import { notifyError } from '@/store/notifications'
 
 import { installBundledEntry } from '../mcp/install-catalog-entry'
 import { useMcpServers } from '../mcp/use-mcp-servers'
+import { StudioConnectorsDirectory as ConnectorsDirectory } from '../studio/connectors-grid'
+import { useInCapabilitiesToolbar } from '../studio/toolbar-slots'
 
 import { AddServerDialog } from './add-dialog'
-import { ConnectorsDirectory } from './connectors-directory'
 import { $abandonedConnects } from './data/account-operations'
 import { claimRouteLink } from './data/deep-link'
 import { useHostedActions } from './data/hosted-actions'
@@ -47,7 +49,8 @@ export interface ConnectorsTabProps {
 
 export function ConnectorsTab({ gateway, profile }: ConnectorsTabProps) {
   const { t } = useI18n()
-  const copy = t.connectorsPage
+  // Inside the Capabilities page the toolbar hosts search and Add; the page scrolls.
+  const inPage = useInCapabilitiesToolbar()
 
   const hosted = useHostedConnectors(profile)
   const mcp = useMcpServers({ gateway, profile })
@@ -177,11 +180,12 @@ export function ConnectorsTab({ gateway, profile }: ConnectorsTabProps) {
   const busyKey = installing ?? (busySlug === null ? null : hostedCardKey(busySlug))
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-3 px-4 pb-2">
+    <div className={inPage ? 'flex min-w-0 flex-col gap-3' : 'flex h-full min-h-0 flex-col gap-3 px-4 pb-2'}>
       <ConnectorsDirectory
         addYourOwn={
-          <Button disabled={mcp.profilePending} onClick={() => setAddOpen(true)} size="xs" variant="outline">
-            {copy.add.action}
+          <Button disabled={mcp.profilePending} onClick={() => setAddOpen(true)} variant="outline">
+            <StudioIcon name="plus" size={14} />
+            {t.studio.pages.capabilities.connectors.addCustom}
           </Button>
         }
         busyKey={busyKey}

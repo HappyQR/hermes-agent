@@ -61,6 +61,9 @@ interface EmbeddedHubPickerProps {
   /** Capabilities profile-scope override — installs land in THIS profile;
    *  undefined/null targets the app-wide active profile. */
   profile?: ProfileScope
+  /** `sheet`: just the live hub frame, always open, filling its host (the
+   *  Studio Skills Hub sheet owns the title, hint and Update all). */
+  variant?: 'docked' | 'sheet'
 }
 
 /** The Skills Hub browser for the Skills tab: a resizable iframe of the live
@@ -71,7 +74,8 @@ interface EmbeddedHubPickerProps {
 export const EmbeddedHubPicker = memo(function EmbeddedHubPicker({
   hidden = false,
   installedNames,
-  profile
+  profile,
+  variant = 'docked'
 }: EmbeddedHubPickerProps) {
   const { t } = useI18n()
   const h = t.skills.hub
@@ -84,7 +88,7 @@ export const EmbeddedHubPicker = memo(function EmbeddedHubPicker({
   // site — on every visit. Same contract as DetailPane.
   const heightOverride = useStore($paneHeightOverride(HUB_PANE_ID))
   const height = heightOverride ?? HUB_DEFAULT_PX
-  const open = height > HUB_COLLAPSED_PX
+  const open = variant === 'sheet' || height > HUB_COLLAPSED_PX
   const [dragging, setDragging] = useState(false)
   const sectionRef = useRef<HTMLElement>(null)
 
@@ -166,6 +170,19 @@ export const EmbeddedHubPicker = memo(function EmbeddedHubPicker({
   const updateAll = () => {
     notify({ kind: 'success', title: h.updateStarted, message: h.actionLog })
     void updateHubSkills(profile).catch(err => notifyError(err, h.actionFailed))
+  }
+
+  if (variant === 'sheet') {
+    return (
+      <div className="relative min-h-0 flex-1 overflow-hidden" data-slot="hub-picker-frame">
+        <iframe
+          className="absolute top-0 left-0 h-[133.34%] w-[133.34%] origin-top-left scale-75 border-0 bg-transparent"
+          sandbox="allow-scripts allow-same-origin"
+          src={HUB_PICKER_URL}
+          title={h.pickerTitle}
+        />
+      </div>
+    )
   }
 
   return (

@@ -1,15 +1,19 @@
+import { translateNow } from '@/i18n'
 import { fmtDate } from '@/lib/time'
 import type { StarmapNode } from '@/types/hermes'
 
+// Canvas copy resolves at paint time, so a language switch repaints in the new locale.
+const badge = (key: string): string => translateNow(`studio.pages.memory.badges.${key}`)
+
 export function formatDate(ts?: null | number): string {
   if (!ts) {
-    return 'unknown'
+    return badge('unknown')
   }
 
   try {
     return fmtDate.format(new Date(ts * 1000))
   } catch {
-    return 'unknown'
+    return badge('unknown')
   }
 }
 
@@ -19,16 +23,16 @@ export function metaBadges(n: StarmapNode): string[] {
   const out: string[] = [formatDate(n.timestamp)]
 
   if (n.kind === 'memory') {
-    out.push(n.memorySource === 'profile' ? 'profile memory' : 'memory')
+    out.push(badge(n.memorySource === 'profile' ? 'profileMemory' : 'memory'))
   } else {
     out.push(n.category)
 
     if (n.createdBy === 'agent' || n.createdBy === 'learn') {
-      out.push('learned')
+      out.push(badge('learned'))
     }
 
     if (n.pinned) {
-      out.push('pinned')
+      out.push(badge('pinned'))
     }
   }
 

@@ -11,15 +11,21 @@ import { lazy, type ReactNode, Suspense } from 'react'
 
 import { ContribBoundary, ContribRender } from '@/contrib/react/boundary'
 import { useContributions } from '@/contrib/react/use-contributions'
+import { translateNow } from '@/i18n'
 import { $routeTiles, closeRouteTile, type RouteTile } from '@/store/route-tiles'
 
 import {
   $routesVersion,
   ARTIFACTS_ROUTE,
+  AUTOMATIONS_ROUTE,
   CAPABILITIES_ROUTE,
   contributedRoutes,
+  CRON_ROUTE,
+  MEMORY_ROUTE,
   MESSAGING_ROUTE,
-  ROUTES_AREA
+  ROUTES_AREA,
+  STARMAP_ROUTE,
+  WEBHOOKS_ROUTE
 } from '../routes'
 
 import { paneMirror } from './pane-mirror'
@@ -27,12 +33,22 @@ import { paneMirror } from './pane-mirror'
 const CapabilitiesView = lazy(async () => ({ default: (await import('../capabilities')).CapabilitiesView }))
 const MessagingView = lazy(async () => ({ default: (await import('../messaging')).MessagingView }))
 const ArtifactsView = lazy(async () => ({ default: (await import('../artifacts')).ArtifactsView }))
+const AutomationsView = lazy(async () => ({ default: (await import('../automations')).AutomationsView }))
+const MemoryView = lazy(async () => ({ default: (await import('../memory')).MemoryView }))
+
+const automationsTitle = () => translateNow('studio.pages.automations.title')
+const memoryTitle = () => translateNow('studio.pages.memory.title')
 
 // Built-in page views + their pane titles, keyed by route.
-const BUILTIN_PAGES: Record<string, { render: () => ReactNode; title: string }> = {
+const BUILTIN_PAGES: Record<string, { render: () => ReactNode; title: string | (() => string) }> = {
   [ARTIFACTS_ROUTE]: { render: () => <ArtifactsView />, title: 'Artifacts' },
   [MESSAGING_ROUTE]: { render: () => <MessagingView />, title: 'Messaging' },
-  [CAPABILITIES_ROUTE]: { render: () => <CapabilitiesView />, title: 'Capabilities' }
+  [CAPABILITIES_ROUTE]: { render: () => <CapabilitiesView />, title: 'Capabilities' },
+  [AUTOMATIONS_ROUTE]: { render: () => <AutomationsView />, title: automationsTitle },
+  [CRON_ROUTE]: { render: () => <AutomationsView />, title: automationsTitle },
+  [WEBHOOKS_ROUTE]: { render: () => <AutomationsView defaultTab="webhook" />, title: automationsTitle },
+  [MEMORY_ROUTE]: { render: () => <MemoryView />, title: memoryTitle },
+  [STARMAP_ROUTE]: { render: () => <MemoryView />, title: memoryTitle }
 }
 
 /** Humanize a route path into a tab title: `/my-atlas` → `My Atlas`. */
@@ -47,8 +63,10 @@ const humanizePath = (path: string): string =>
 /** Title for a route tile: the built-in name, the contribution's own `title`,
  *  else a humanized path — never the internal `${source}:${id}` key. */
 function routeTitle(path: string): string {
-  if (BUILTIN_PAGES[path]) {
-    return BUILTIN_PAGES[path].title
+  const builtin = BUILTIN_PAGES[path]
+
+  if (builtin) {
+    return typeof builtin.title === 'function' ? builtin.title() : builtin.title
   }
 
   return contributedRoutes().find(r => r.path === path)?.title ?? humanizePath(path)
