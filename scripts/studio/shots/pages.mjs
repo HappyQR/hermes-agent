@@ -83,11 +83,30 @@ async function waitForBoot(page, sleep) {
   }
 }
 
+// A prompt left over from an earlier run (the browser's "stay signed in"
+// consent) would cover every page: answer it once, for good.
+async function dismissPrompts(page, sleep) {
+  const never = page.getByRole('button', { name: /不再显示|Don.t show again/ })
+
+  if ((await never.count()) > 0) {
+    await never.first().click({ timeout: 3000 }).catch(() => undefined)
+    await sleep(500)
+  }
+}
+
 async function go(page, sleep, route, wait = 1600) {
   if (!warmed) {
     warmed = true
     await waitForBoot(page, sleep)
     await sleep(2000)
+    await dismissPrompts(page, sleep)
+    // Pages read best full width: close an inspector an earlier run left open
+    // (the inspector shots open their own).
+    const closeInspector = page.locator('[data-slot="inspector-header"] button').last()
+    if ((await closeInspector.count()) > 0) {
+      await closeInspector.click({ timeout: 3000 }).catch(() => undefined)
+      await sleep(600)
+    }
   }
 
   await page.evaluate(target => {
@@ -262,7 +281,18 @@ export default {
     await openSession(page, '分组重构')
     await page.keyboard.press('Meta+Shift+L')
     await sleep(2500)
+    await dismissPrompts(page, sleep)
     await shot(page, 'inspector-preview')
+    // Leave the sandbox as found: close the Browser again.
+    await page.keyboard.press('Meta+Shift+L')
+    await sleep(800)
+  },
+  // Closes a Browser tab an earlier run left open (and answers its prompt).
+  async 'reset-browser'(page, { sleep, openSession }) {
+    await openSession(page, '分组重构')
+    await dismissPrompts(page, sleep)
+    await page.keyboard.press('Meta+Shift+L')
+    await sleep(1200)
   },
   async 'inspector-agents'(page, { shot, sleep }) {
     await go(page, sleep, '/agents', 2000)
