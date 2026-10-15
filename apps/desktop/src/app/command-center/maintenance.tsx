@@ -257,69 +257,126 @@ export function MaintenancePanel({ onManageMemory }: { onManageMemory?: () => vo
           </FormCell>
         )}
 
-        {!curator ? (
-          <FormCell>
-            <PageLoader className="min-h-16" label={mm.curator} />
-          </FormCell>
-        ) : (
-          <FormRow
-            description={`${mm.curatorDesc} · ${curator.last_run_at ? mm.curatorLastRun(curator.last_run_at) : mm.curatorNeverRan}`}
-            title={mm.curator}
-          >
-            <Badge variant={!curator.enabled ? 'muted' : curator.paused ? 'warn' : 'success'}>
-              {!curator.enabled ? mm.curatorDisabled : curator.paused ? mm.curatorPaused : mm.curatorActive}
-            </Badge>
-            {curator.enabled && (
-              <Button disabled={curatorBusy} onClick={() => void toggleCurator()} size="sm" variant="ghost">
-                {curator.paused ? mm.resume : mm.pause}
-              </Button>
-            )}
-            <Button disabled={busy} onClick={() => void launch(mm.curator, runCurator)} size="sm" variant="secondary">
-              {mm.runNow}
-            </Button>
-          </FormRow>
-        )}
+        <CuratorRow
+          busy={busy}
+          curator={curator}
+          curatorBusy={curatorBusy}
+          onRun={() => void launch(mm.curator, runCurator)}
+          onToggle={() => void toggleCurator()}
+        />
 
-        {!memory ? (
-          <FormCell>
-            <PageLoader className="min-h-16" label={mm.memoryData} />
-          </FormCell>
-        ) : (
-          <FormRow
-            description={[
-              `MEMORY.md ${memory.builtin_files.memory > 0 ? formatBytes(memory.builtin_files.memory) : mm.empty}`,
-              `USER.md ${memory.builtin_files.user > 0 ? formatBytes(memory.builtin_files.user) : mm.empty}`,
-              mm.memoryProvider(memory.active || mm.builtinMemory)
-            ].join(' · ')}
-            title={mm.memoryData}
-          >
-            {onManageMemory && (
-              <Button onClick={onManageMemory} size="sm" variant="ghost">
-                {t.studio.overlays.system.manageMemory}
-              </Button>
-            )}
-            <Button
-              className="text-destructive hover:text-destructive"
-              disabled={memoryBusy || memory.builtin_files.memory <= 0}
-              onClick={() => void doResetMemory('memory', mm.memoryFile)}
-              size="sm"
-              variant="ghost"
-            >
-              {mm.resetMemory}
-            </Button>
-            <Button
-              className="text-destructive hover:text-destructive"
-              disabled={memoryBusy || memory.builtin_files.user <= 0}
-              onClick={() => void doResetMemory('user', mm.userFile)}
-              size="sm"
-              variant="ghost"
-            >
-              {mm.resetUser}
-            </Button>
-          </FormRow>
-        )}
+        <MemoryDataRow
+          busy={memoryBusy}
+          memory={memory}
+          onManage={onManageMemory}
+          onReset={(target, label) => void doResetMemory(target, label)}
+        />
       </FormGroup>
     </>
+  )
+}
+
+function CuratorRow({
+  busy,
+  curator,
+  curatorBusy,
+  onRun,
+  onToggle
+}: {
+  busy: boolean
+  curator: CuratorStatusResponse | null
+  curatorBusy: boolean
+  onRun: () => void
+  onToggle: () => void
+}) {
+  const { t } = useI18n()
+  const mm = t.commandCenter.maintenance
+
+  if (!curator) {
+    return (
+      <FormCell>
+        <PageLoader className="min-h-16" label={mm.curator} />
+      </FormCell>
+    )
+  }
+
+  return (
+    <FormRow
+      description={`${mm.curatorDesc} · ${curator.last_run_at ? mm.curatorLastRun(curator.last_run_at) : mm.curatorNeverRan}`}
+      title={mm.curator}
+    >
+      <Badge variant={!curator.enabled ? 'muted' : curator.paused ? 'warn' : 'success'}>
+        {!curator.enabled ? mm.curatorDisabled : curator.paused ? mm.curatorPaused : mm.curatorActive}
+      </Badge>
+      {curator.enabled && (
+        <Button disabled={curatorBusy} onClick={onToggle} size="sm" variant="ghost">
+          {curator.paused ? mm.resume : mm.pause}
+        </Button>
+      )}
+      <Button disabled={busy} onClick={onRun} size="sm" variant="secondary">
+        {mm.runNow}
+      </Button>
+    </FormRow>
+  )
+}
+
+function MemoryDataRow({
+  busy,
+  memory,
+  onManage,
+  onReset
+}: {
+  busy: boolean
+  memory: MemoryStatusResponse | null
+  onManage?: () => void
+  onReset: (target: 'memory' | 'user', label: string) => void
+}) {
+  const { t } = useI18n()
+  const mm = t.commandCenter.maintenance
+
+  if (!memory) {
+    return (
+      <FormCell>
+        <PageLoader className="min-h-16" label={mm.memoryData} />
+      </FormCell>
+    )
+  }
+
+  const size = (bytes: number) => (bytes > 0 ? formatBytes(bytes) : mm.empty)
+
+  return (
+    <FormRow
+      description={[
+        `MEMORY.md ${size(memory.builtin_files.memory)}`,
+        `USER.md ${size(memory.builtin_files.user)}`,
+        mm.memoryProvider(memory.active || mm.builtinMemory)
+      ].join(' · ')}
+      title={mm.memoryData}
+    >
+      {onManage && (
+        <Button onClick={onManage} size="sm" variant="ghost">
+          {t.studio.overlays.system.manageMemory}
+        </Button>
+      )}
+      <Button
+        className="text-destructive hover:text-destructive"
+        disabled={busy || memory.builtin_files.memory <= 0}
+        onClick={() => onReset('memory', mm.memoryFile)}
+        size="sm"
+        variant="ghost"
+      >
+        {mm.resetMemory}
+      </Button>
+      <Button
+        className="text-destructive hover:text-destructive"
+        disabled={busy || memory.builtin_files.user <= 0}
+        onClick={() => onReset('user', mm.userFile)}
+        size="sm"
+        variant="ghost"
+      >
+        {mm.resetUser}
+      </Button>
+    </FormRow>
   )
 }
 
