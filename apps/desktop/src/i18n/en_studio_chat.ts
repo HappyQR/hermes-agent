@@ -49,7 +49,6 @@ export const enStudioChat: StudioChatTranslations = {
     clarifyHintMulti: 'Select all that apply, or type your own answer',
     recommended: 'Recommended',
     moreRecovery: 'More recovery options',
-    copyDetails: 'Copy details',
     preparingReply: 'Hermes is preparing a reply',
     timelineLabel: 'Conversation timeline',
     editAndRerun: 'Edit and rerun',

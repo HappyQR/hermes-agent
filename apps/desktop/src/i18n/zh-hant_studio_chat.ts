@@ -49,7 +49,6 @@ export const zhHantStudioChat: StudioChatTranslations = {
     clarifyHintMulti: '可多選，或直接輸入你的答案',
     recommended: '推薦',
     moreRecovery: '更多復原方式',
-    copyDetails: '複製詳細資訊',
     preparingReply: 'Hermes 正在準備回覆',
     timelineLabel: '對話時間軸',
     editAndRerun: '編輯並重新執行',

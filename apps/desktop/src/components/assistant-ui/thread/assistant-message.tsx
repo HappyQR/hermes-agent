@@ -9,7 +9,7 @@ import {
   useThreadRuntime
 } from '@assistant-ui/react'
 import { useStore } from '@nanostores/react'
-import { type FC, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { type FC, type ReactElement, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { useInRouterContext, useNavigate } from 'react-router'
 
 import { requestModelMenuToggle } from '@/app/chat/composer/focus'
@@ -24,6 +24,7 @@ import {
   messageContentText,
   pickPrimaryPreviewTarget
 } from '@/components/assistant-ui/thread/content'
+import { RecoveryMore } from '@/components/assistant-ui/thread/error-recovery-more'
 import { MessageHoverTime } from '@/components/assistant-ui/thread/message-hover-time'
 import { MESSAGE_PARTS_COMPONENTS } from '@/components/assistant-ui/thread/message-parts'
 import { ReactionPicker } from '@/components/assistant-ui/thread/message-reactions'
@@ -39,6 +40,7 @@ import { formatElapsed } from '@/components/chat/activity-timer'
 import { PreviewAttachment } from '@/components/chat/preview-attachment'
 import { Codicon } from '@/components/ui/codicon'
 import { CopyButton } from '@/components/ui/copy-button'
+import { StudioIcon } from '@/components/ui/studio-icon'
 import { useI18n } from '@/i18n'
 import {
   errorRecoveryPlan,
@@ -314,10 +316,7 @@ const AssistantMessageBody: FC<AssistantMessageProps & { collapsedNotice?: null 
             <AssistantStatusSlot />
             <AssistantPreviewEmbeds />
             <MessagePrimitive.Error>
-              <ErrorPrimitive.Root
-                className="mt-1.5 flex flex-col gap-1.5 rounded-lg border border-[color-mix(in_srgb,var(--dt-destructive)_35%,transparent)] bg-[color-mix(in_srgb,var(--dt-destructive)_7%,transparent)] px-3 py-2 text-[0.78rem] leading-5 text-[color-mix(in_srgb,var(--dt-destructive)_78%,var(--ui-text-secondary))]"
-                role="alert"
-              >
+              <ErrorPrimitive.Root className="studio-err-card" role="alert">
                 <div className="flex items-start gap-1.5">
                   <div className="min-w-0 flex-1">
                     <ErrorCardHeadline />
@@ -601,8 +600,11 @@ const ErrorCardHeadline: FC = () => {
 
   return (
     <>
-      <div className="font-medium">{title}</div>
-      <div>{body}</div>
+      <div className="studio-err-title">
+        <StudioIcon name="warn" size={16} />
+        {title}
+      </div>
+      <div className="studio-err-body">{body}</div>
       {errorText && (
         <details className="mt-0.5 min-w-0 text-[0.72rem] opacity-70">
           <summary className="cursor-pointer select-none">{t.assistant.thread.errorDetails}</summary>
@@ -933,75 +935,104 @@ const ErrorRecoveryActions: FC = () => {
   // Retry will work instead of guessing (#98852). Informational only: no automatic retry.
   const limitReset = formatLimitReset(surface?.resetsAt)
 
+  const reauthLabel = isOAuthReauthSurface(surface) ? surface.providerLabel || surface.provider : ''
+
+  // Hermes Studio: the card leads with ONE fix — the first that applies, in
+  // this order — and lists the rest under "More recovery options".
+  const recoveries: [boolean, ReactElement][] = [
+    [
+      plan.signInAgain && isOAuthReauthSurface(surface),
+      <button className="aui-error-action" key="sign-in" onClick={signInAgain} type="button">
+        <KeyRound className="size-3" />
+        {copy.errorSignInAgain(reauthLabel)}
+      </button>
+    ],
+    [
+      plan.signInFreeTier,
+      <button className="aui-error-action" key="free-tier" onClick={signInFreeTier} type="button">
+        <KeyRound className="size-3" />
+        {copy.errorSignInFreeTier}
+      </button>
+    ],
+    [
+      plan.updateApiKey && inRouter,
+      <SettingsLinkAction
+        icon={<KeyRound className="size-3" />}
+        key="api-key"
+        label={copy.errorUpdateApiKey}
+        to={updateApiKeyRoute(surface)}
+      />
+    ],
+    [plan.editMessage, <EditPreviousMessageAction key="edit" label={copy.editMessage} />],
+    [plan.compress, <CompressConversationAction key="compress" label={copy.errorCompressConversation} />],
+    [
+      plan.chooseModel,
+      <button className="aui-error-action" key="choose-model" onClick={chooseModel} type="button">
+        {copy.errorChooseModel}
+      </button>
+    ],
+    [
+      plan.openHermesFolder && localFolders,
+      <button className="aui-error-action" key="folder" onClick={() => void openHermesFolder()} type="button">
+        {copy.errorOpenHermesFolder}
+      </button>
+    ],
+    [
+      plan.startNewSession,
+      <button className="aui-error-action" key="new-session" onClick={startNewSession} type="button">
+        {copy.errorStartNewSession}
+      </button>
+    ],
+    [
+      plan.retry,
+      <ActionBarPrimitive.Reload asChild key="retry">
+        <button
+          className="aui-error-action"
+          onClick={() => {
+            triggerHaptic('submit')
+            recordAction(DESKTOP_BUTTON_ACTIONS.messageRetry, 'click')
+          }}
+          type="button"
+        >
+          <RefreshCwIcon className="size-3" />
+          {copy.errorRetry}
+        </button>
+      </ActionBarPrimitive.Reload>
+    ],
+    [plan.switchProvider && inRouter, <SwitchProviderAction key="switch" label={copy.errorSwitchProvider} />],
+    [
+      localFolders,
+      <button className="aui-error-action" key="logs" onClick={() => void openLogs()} type="button">
+        {remoteConnection ? copy.errorOpenDesktopLogs : copy.errorOpenLogs}
+      </button>
+    ],
+    [
+      true,
+      <button
+        className="aui-error-action"
+        key="diagnostics"
+        onClick={() => requestSendDiagnostics(diagnosticsText())}
+        type="button"
+      >
+        <Upload className="size-3" />
+        {copy.errorSendDiagnostics}
+      </button>
+    ]
+  ]
+
+  const [primary, ...more] = recoveries.filter(([on]) => on).map(([, node]) => node)
+
   return (
-    <div className="flex flex-wrap items-center gap-1.5">
-      {plan.editMessage && <EditPreviousMessageAction label={copy.editMessage} />}
-      {plan.compress && <CompressConversationAction label={copy.errorCompressConversation} />}
-      {plan.chooseModel && (
-        <button className="aui-error-action" onClick={chooseModel} type="button">
-          {copy.errorChooseModel}
-        </button>
-      )}
-      {plan.startNewSession && (
-        <button className="aui-error-action" onClick={startNewSession} type="button">
-          {copy.errorStartNewSession}
-        </button>
-      )}
-      {plan.signInAgain && isOAuthReauthSurface(surface) && (
-        <button className="aui-error-action" onClick={signInAgain} type="button">
-          <KeyRound className="size-3" />
-          {copy.errorSignInAgain(surface.providerLabel || surface.provider)}
-        </button>
-      )}
-      {plan.signInFreeTier && (
-        <button className="aui-error-action" onClick={signInFreeTier} type="button">
-          <KeyRound className="size-3" />
-          {copy.errorSignInFreeTier}
-        </button>
-      )}
-      {plan.updateApiKey && inRouter && (
-        <SettingsLinkAction
-          icon={<KeyRound className="size-3" />}
-          label={copy.errorUpdateApiKey}
-          to={updateApiKeyRoute(surface)}
-        />
-      )}
-      {plan.openHermesFolder && localFolders && (
-        <button className="aui-error-action" onClick={() => void openHermesFolder()} type="button">
-          {copy.errorOpenHermesFolder}
-        </button>
-      )}
-      {plan.retry && (
-        <ActionBarPrimitive.Reload asChild>
-          <button
-            className="aui-error-action"
-            onClick={() => {
-              triggerHaptic('submit')
-              recordAction(DESKTOP_BUTTON_ACTIONS.messageRetry, 'click')
-            }}
-            type="button"
-          >
-            <RefreshCwIcon className="size-3" />
-            {copy.errorRetry}
-          </button>
-        </ActionBarPrimitive.Reload>
-      )}
+    <div className="studio-err-actions">
+      <span className="studio-err-primary">{primary}</span>
       {plan.retry && limitReset && (
         <span className="px-1 text-xs text-muted-foreground" data-testid="error-limit-reset">
           {copy.errorLimitResets(limitReset)}
         </span>
       )}
       {plan.retry && surface?.resetsAt !== undefined && <ScheduledRetryAction resetsAt={surface.resetsAt} />}
-      {plan.switchProvider && inRouter && <SwitchProviderAction label={copy.errorSwitchProvider} />}
-      {localFolders && (
-        <button className="aui-error-action" onClick={() => void openLogs()} type="button">
-          {remoteConnection ? copy.errorOpenDesktopLogs : copy.errorOpenLogs}
-        </button>
-      )}
-      <button className="aui-error-action" onClick={() => requestSendDiagnostics(diagnosticsText())} type="button">
-        <Upload className="size-3" />
-        {copy.errorSendDiagnostics}
-      </button>
+      {more.length > 0 && <RecoveryMore label={t.studio.chat.transcript.moreRecovery}>{more}</RecoveryMore>}
+      <span className="flex-1" />
       <CopyButton
         appearance="inline"
         className="aui-error-action"

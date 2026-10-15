@@ -49,7 +49,6 @@ export const ruStudioChat: StudioChatTranslations = {
     clarifyHintMulti: 'Выберите все подходящие варианты или введите свой ответ',
     recommended: 'Рекомендуется',
     moreRecovery: 'Другие способы восстановления',
-    copyDetails: 'Скопировать подробности',
     preparingReply: 'Hermes готовит ответ',
     timelineLabel: 'Хронология разговора',
     editAndRerun: 'Изменить и перезапустить',

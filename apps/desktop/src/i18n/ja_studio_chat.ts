@@ -49,7 +49,6 @@ export const jaStudioChat: StudioChatTranslations = {
     clarifyHintMulti: '当てはまるものをすべて選ぶか、答えを入力してください',
     recommended: 'おすすめ',
     moreRecovery: 'その他の復旧方法',
-    copyDetails: '詳細をコピー',
     preparingReply: 'Hermes が返信を準備しています',
     timelineLabel: '会話のタイムライン',
     editAndRerun: '編集して再実行',

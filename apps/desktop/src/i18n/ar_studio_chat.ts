@@ -49,7 +49,6 @@ export const arStudioChat: StudioChatTranslations = {
     clarifyHintMulti: 'اختر كل ما ينطبق، أو اكتب إجابتك',
     recommended: 'موصى به',
     moreRecovery: 'خيارات استرداد أخرى',
-    copyDetails: 'نسخ التفاصيل',
     preparingReply: 'يُعدّ Hermes ردًا',
     timelineLabel: 'المخطط الزمني للمحادثة',
     editAndRerun: 'تعديل وإعادة التشغيل',

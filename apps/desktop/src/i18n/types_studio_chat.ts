@@ -26,7 +26,6 @@ export interface StudioChatTranscriptTranslations {
   clarifyHintMulti: string
   recommended: string
   moreRecovery: string
-  copyDetails: string
   /** The visible waiting line before the first token. */
   preparingReply: string
   timelineLabel: string

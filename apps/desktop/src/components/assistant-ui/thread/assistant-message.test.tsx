@@ -232,6 +232,11 @@ describe('stopped reply marker', () => {
   })
 })
 
+/** The error card leads with one fix; the others sit under this trigger. */
+function openMoreRecoveries() {
+  fireEvent.click(screen.getByRole('button', { name: en.studio.chat.transcript.moreRecovery }))
+}
+
 describe('ownership refusal recovery (#106217)', () => {
   it('offers Start new session and suppresses Retry for live-owner refusals', async () => {
     render(<Harness assistant={ownershipRefusalMessage()} />)
@@ -296,7 +301,9 @@ describe('code-keyed error card copy and actions', () => {
     render(<Harness assistant={failedMessage({ code: 'context_overflow', layer: 'provider', retryable: true })} />)
 
     expect(await screen.findByText(copy(codes.context_overflow.title))).toBeTruthy()
+    // Compress leads; starting over is one of the other recoveries.
     expect(screen.getByRole('button', { name: 'Compress conversation' })).toBeTruthy()
+    openMoreRecoveries()
     expect(screen.getByRole('button', { name: 'Start new session' })).toBeTruthy()
     expect(screen.queryByRole('button', { name: 'Retry' })).toBeNull()
   })
@@ -413,9 +420,12 @@ describe('rejected API key recovery', () => {
 
     expect(await screen.findByText(copy(en.assistant.thread.errorAuthKinds.api_key.title, 'OpenAI'))).toBeTruthy()
     // Fixing the key changes the outcome, so Retry stays as the follow-up click.
+    openMoreRecoveries()
     expect(screen.getByRole('button', { name: 'Retry' })).toBeTruthy()
+    fireEvent.keyDown(document.activeElement ?? document.body, { key: 'Escape' })
 
-    screen.getByRole('button', { name: 'Update API key' }).click()
+    // The key is the fix the card leads with.
+    ;(await screen.findByRole('button', { name: 'Update API key' })).click()
     await waitFor(() =>
       expect(screen.getByTestId('location').textContent).toMatch(/\?tab=providers&pview=keys&key=OPENAI_API_KEY$/)
     )
@@ -465,11 +475,12 @@ describe('expired OAuth grant recovery', () => {
     render(<Harness assistant={oauthExpiredMessage()} />)
 
     expect(await screen.findByText(/Nous Portal sign-in has expired/)).toBeTruthy()
-    // Signing in changes the outcome, so Retry stays as the follow-up click.
-    expect(screen.getByRole('button', { name: 'Retry' })).toBeTruthy()
-
+    // Signing in leads; it changes the outcome, so Retry stays as the follow-up click.
     screen.getByRole('button', { name: 'Sign in to Nous Portal again' }).click()
     expect(startManualProviderOAuth).toHaveBeenCalledWith('nous', undefined)
+
+    openMoreRecoveries()
+    expect(screen.getByRole('button', { name: 'Retry' })).toBeTruthy()
   })
 })
 
