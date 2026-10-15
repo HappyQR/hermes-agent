@@ -5,7 +5,8 @@ import { PetHeartField, playVibeHearts } from '@/components/chat/vibe-hearts'
 import { PetBubble } from '@/components/pet/pet-bubble'
 import { PetSprite } from '@/components/pet/pet-sprite'
 import { type PetZoomAnchor, usePetZoomGesture } from '@/components/pet/use-pet-zoom-gesture'
-import { Mail } from '@/lib/icons'
+import { StudioIcon } from '@/components/ui/studio-icon'
+import { useI18n } from '@/i18n'
 import { isSubmitEnter } from '@/lib/ime'
 import { $petActivity, $petInfo, setPetInfo } from '@/store/pet'
 import { overlayWindowSize } from '@/store/pet-overlay'
@@ -63,6 +64,8 @@ interface DragState {
 }
 
 export function PetOverlayApp() {
+  const { t } = useI18n()
+  const copy = t.studio.overlays.aux.pet
   const info = useStore($petInfo)
   const [composerOpen, setComposerOpen] = useState(false)
   const [draft, setDraft] = useState('')
@@ -391,6 +394,7 @@ export function PetOverlayApp() {
     >
       {composerOpen && (
         <input
+          className="mb-2 h-7 w-[11.5rem] rounded-[7px] border-0 bg-(--ui-bg-editor) px-2.5 text-xs text-(--ui-text-primary) shadow-[0_0_0_0.5px_var(--ui-line-2),0_6px_18px_-6px_rgb(0_0_0/0.3)] outline-none placeholder:text-(--ui-text-quaternary) focus:shadow-[0_0_0_0.5px_color-mix(in_srgb,var(--dt-primary)_60%,transparent),0_0_0_3px_color-mix(in_srgb,var(--dt-primary)_25%,transparent)]"
           onChange={e => setDraft(e.target.value)}
           onKeyDown={e => {
             if (isSubmitEnter(e) && !e.shiftKey) {
@@ -400,20 +404,8 @@ export function PetOverlayApp() {
               setComposerOpen(false)
             }
           }}
-          placeholder="Message…"
+          placeholder={copy.messagePlaceholder}
           ref={inputRef}
-          style={{
-            background: 'var(--ui-bg-elevated)',
-            border: '1px solid var(--ui-stroke-secondary)',
-            borderRadius: 2,
-            boxShadow: '0 6px 18px rgba(0,0,0,0.28)',
-            color: 'var(--foreground)',
-            fontSize: 12,
-            marginBottom: 8,
-            outline: 'none',
-            padding: '4px 8px',
-            width: 184
-          }}
           value={draft}
         />
       )}
@@ -450,30 +442,14 @@ export function PetOverlayApp() {
               stopPropagation keeps a click from starting a window drag. */}
           {unread && (
             <button
-              aria-label="Open in Hermes"
+              aria-label={copy.openInHermes}
+              className="absolute top-0 right-0 inline-flex size-6 cursor-pointer items-center justify-center rounded-full border-0 bg-(--ui-bg-editor) p-0 text-(--ui-text-primary) shadow-(--elev-float)"
               onClick={openApp}
               onPointerDown={e => e.stopPropagation()}
               onPointerUp={e => e.stopPropagation()}
-              style={{
-                alignItems: 'center',
-                background: 'var(--ui-bg-elevated)',
-                border: '1px solid var(--ui-stroke-secondary)',
-                borderRadius: 999,
-                boxShadow: '0 4px 14px rgba(0,0,0,0.22)',
-                color: 'var(--foreground)',
-                cursor: 'pointer',
-                display: 'inline-flex',
-                height: 24,
-                justifyContent: 'center',
-                padding: 0,
-                position: 'absolute',
-                right: 0,
-                top: 0,
-                width: 24
-              }}
               type="button"
             >
-              <Mail style={{ height: 13, width: 13 }} />
+              <StudioIcon name="mail" size={13} />
             </button>
           )}
         </div>

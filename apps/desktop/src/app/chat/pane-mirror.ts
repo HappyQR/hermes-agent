@@ -42,6 +42,9 @@ export interface PaneMirror<T> {
   /** Center docks: the strip slot (stack before this pane id). */
   before?: (tile: T) => null | string | undefined
   minWidth: string
+  /** Studio: the tile's placement (default `main`) — `right` for previews
+   *  docked into the inspector, so they fold with it. */
+  placement?: (key: string) => string | undefined
   title: (key: string) => string
   /** Custom lead NODE for the tile's tab (rendered before the label). A live,
    *  self-subscribing component (e.g. a session's status dot) so the strip needn't
@@ -139,7 +142,7 @@ export function paneMirror<T>(cfg: PaneMirror<T>): () => void {
           // Every mirrored tile is a full workspace surface docked beside main —
           // and closeable, which is what keeps its tab when it lands in a zone of
           // its own (see strip-visibility.ts).
-          placement: 'main',
+          placement: cfg.placement?.(key) ?? 'main',
           tabDrag: cfg.tabDrag
             ? (event: ReactPointerEvent<HTMLElement>, onTap: () => void) => cfg.tabDrag!(key, event, onTap)
             : undefined, // returns boolean (handled) — see PaneChrome.tabDrag

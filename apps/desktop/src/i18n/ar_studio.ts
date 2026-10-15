@@ -1,4 +1,5 @@
 import { arStudioChat } from './ar_studio_chat'
+import { arStudioMenu } from './ar_studio_menu'
 import { arStudioOverlays } from './ar_studio_overlays'
 import { arStudioPages } from './ar_studio_pages'
 import { arStudioSettings } from './ar_studio_settings'
@@ -13,5 +14,6 @@ export const arStudio: StudioTranslations = {
   chat: arStudioChat,
   pages: arStudioPages,
   settings: arStudioSettings,
-  overlays: arStudioOverlays
+  overlays: arStudioOverlays,
+  menu: arStudioMenu
 }

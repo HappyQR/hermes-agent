@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 
 import { ActionStatus } from '@/components/ui/action-status'
 import { Button } from '@/components/ui/button'
@@ -14,21 +14,16 @@ import { Field, FieldHint } from '@/components/ui/field'
 import { SanitizedInput } from '@/components/ui/sanitized-input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { createProfile, updateProfileSoul } from '@/hermes'
 import { useI18n } from '@/i18n'
 import { AlertTriangle } from '@/lib/icons'
 import { slug } from '@/lib/sanitize'
 import type { ProfileInfo } from '@/types/hermes'
 
-const PROFILE_NAME_RE = /^[a-z0-9][a-z0-9_-]{0,63}$/
+import { useCreateProfile } from './use-create-profile'
 
-export function isValidProfileName(name: string): boolean {
-  return PROFILE_NAME_RE.test(name.trim())
-}
-
-// Self-contained create flow (name + clone toggle + optional SOUL.md). Owns the
-// createProfile/updateProfileSoul calls so every caller just refreshes/selects
-// via onCreated. SOUL left blank keeps the cloned/blank persona untouched.
+// Self-contained create flow (name + clone toggle + optional SOUL.md); the
+// logic lives in useCreateProfile, shared with the Profiles sheet's inline
+// pane. SOUL left blank keeps the cloned/blank persona untouched.
 export function CreateProfileDialog({
   onClose,
   onCreated,
@@ -42,56 +37,14 @@ export function CreateProfileDialog({
 }) {
   const { t } = useI18n()
   const p = t.profiles
-  const [name, setName] = useState('')
-  const [cloneFrom, setCloneFrom] = useState<null | string>('default')
-  const [soul, setSoul] = useState('')
-  const [status, setStatus] = useState<'done' | 'idle' | 'saving'>('idle')
-  const [error, setError] = useState<null | string>(null)
+  const form = useCreateProfile({ onCreated, onDone: onClose })
+  const { busy, cloneFrom, error, invalid, name, reset, setCloneFrom, setName, setSoul, soul, status, trimmed } = form
 
   useEffect(() => {
-    if (!open) {
-      return
+    if (open) {
+      reset()
     }
-
-    setName('')
-    setCloneFrom('default')
-    setSoul('')
-    setError(null)
-    setStatus('idle')
-  }, [open])
-
-  const trimmed = name.trim()
-  const invalid = trimmed !== '' && !isValidProfileName(trimmed)
-  const busy = status === 'saving' || status === 'done'
-
-  async function handleSubmit(event: React.FormEvent) {
-    event.preventDefault()
-
-    if (!trimmed || invalid) {
-      setError(invalid ? p.invalidName(p.nameHint) : p.nameRequired)
-
-      return
-    }
-
-    setStatus('saving')
-    setError(null)
-
-    try {
-      const result = await createProfile({ name: trimmed, clone_from: cloneFrom, ...(soul.trim() ? { soul } : {}) })
-
-      // Older remote backends do not accept an initial persona in the create request.
-      if (soul.trim() && !result.soul_set) {
-        await updateProfileSoul(trimmed, soul, trimmed)
-      }
-
-      await onCreated?.(trimmed)
-      setStatus('done')
-      window.setTimeout(onClose, 800)
-    } catch (err) {
-      setStatus('idle')
-      setError(err instanceof Error ? err.message : p.failedCreate)
-    }
-  }
+  }, [open, reset])
 
   return (
     <Dialog onOpenChange={value => !value && !busy && onClose()} open={open}>
@@ -101,7 +54,7 @@ export function CreateProfileDialog({
           <DialogDescription>{p.createDesc}</DialogDescription>
         </DialogHeader>
 
-        <form className="grid gap-4" onSubmit={handleSubmit}>
+        <form className="grid gap-4" onSubmit={event => void form.submit(event)}>
           <Field htmlFor="new-profile-name" label={p.nameLabel}>
             <SanitizedInput
               aria-invalid={invalid}

@@ -5,36 +5,19 @@ import { registerBundledPresets } from '@/components/pane-shell/tree/presets'
 // Layout presets — CHAT (main) always dominates.
 // ---------------------------------------------------------------------------
 
-// The REAL default: sessions left, chat main, and the right sidebars in column
-// order main | … | review | file-browser (files outermost). Each is its OWN
-// zone. Review collapses to nothing while its pane is hidden (⌘G off).
-//
-// Preview tiles are DYNAMIC panes (like session tiles), so no preset names one:
-// they're registered by watchPreviewTiles as tabs open, and dockPaneBeside lands
-// each one directly beside the file tree wherever that currently lives — so a
-// file double-click still slides a preview open as its own pane next to the
-// tree, never as a tab stacked into the files sidebar.
+// The REAL default (Hermes Studio): sessions | chat | inspector. The inspector is
+// ONE zone holding the tooling — files, changes and the terminal (+ logs, the
+// running agents and every preview tile join it at runtime) — switched by the
+// segmented header in its titlebar band (app/shell/inspector). Ids are a
+// contract (tools/set_theme_tool.py names presets; grp-* ids are stable).
 export const DEFAULT_TREE = split(
   'row',
   [
     group(['sessions'], { id: 'grp-sessions' }),
     group(['workspace'], { id: 'grp-main' }),
-    split(
-      'column',
-      [
-        split(
-          'row',
-          [group(['review'], { id: 'grp-review' }), group(['files'], { id: 'grp-files' })],
-          [1, 1.2],
-          'spl-rail'
-        ),
-        group(['terminal'], { id: 'grp-terminal' })
-      ],
-      [1.6, 1],
-      'spl-right'
-    )
+    group(['files', 'review', 'terminal'], { active: 'files', id: 'grp-inspector' })
   ],
-  [1, 3.4, 1.25],
+  [1, 3.4, 1.4],
   'spl-root'
 )
 
@@ -47,19 +30,13 @@ const FOCUS_TREE = split(
   [1, 4.6]
 )
 
-// Basic is sessions and chat with the tooling RESTING in its own slots: the
-// terminal a collapsed rail under the chat (its column carries the chat, so
-// ⌘J folding the right side can never take the rail with it), review and
-// files a right column that ⌘J / ⌘G open. A tree that simply omitted them was
-// a lie — applying it adopts every missing pane back in as workspace tabs,
-// which is Focus.
+// Basic is sessions and chat with the tooling RESTING in its own slot: the
+// inspector zone, closed until ⌘J / ⌘G / ⌃` opens it on that segment. A tree
+// that simply omitted the tooling was a lie — applying it adopts every missing
+// pane back in as workspace tabs, which is Focus.
 export const BASIC_TREE = split(
   'row',
-  [
-    group(['sessions']),
-    split('column', [group(['workspace']), group(['terminal'])], [3, 1]),
-    split('row', [group(['review']), group(['files'])], [1, 1.2])
-  ],
+  [group(['sessions']), group(['workspace']), group(['files', 'review', 'terminal'])],
   [1, 3.4, 1.25]
 )
 

@@ -2,7 +2,26 @@
 import type { StudioShellTranslations } from './types_studio_shell'
 
 export const arStudioShell: StudioShellTranslations = {
+  untitledSession: 'جلسة بلا عنوان',
   layout: 'التخطيط',
+  inspector: {
+    label: 'المفتش',
+    close: 'إغلاق المفتش',
+    preview: 'معاينة',
+    files: 'الملفات',
+    review: 'التغييرات',
+    terminal: 'الطرفية',
+    agents: 'الوكلاء'
+  },
+  presets: {
+    'sidebar-left': 'الشريط الجانبي يسارًا',
+    'sidebar-right': 'الشريط الجانبي يمينًا',
+    default: 'الافتراضي',
+    basic: 'أساسي',
+    focus: 'تركيز',
+    'terminal-deck': 'منصة الطرفية',
+    quad: 'رباعي'
+  },
   toolbar: {
     newSessionTitle: 'جلسة جديدة',
     layoutMenu: 'التخطيط والتقسيم',

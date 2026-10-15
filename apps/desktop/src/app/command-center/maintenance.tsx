@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { FormCell, FormGroup, FormRow } from '@/app/overlays/studio/form-group'
 import { PageLoader } from '@/components/page-loader'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -21,7 +22,6 @@ import {
 } from '@/hermes'
 import { useI18n } from '@/i18n'
 import { AlertCircle } from '@/lib/icons'
-import { cn } from '@/lib/utils'
 import { upsertDesktopActionTask } from '@/store/activity'
 import { confirm } from '@/store/confirm'
 import { notify, notifyError } from '@/store/notifications'
@@ -50,7 +50,7 @@ function formatBytes(size: number): string {
  *  `backup` / `debug share` / `curator` / `memory` (the dashboard System page's
  *  ops section). Spawn-based actions tail their logs inline via the shared
  *  /api/actions status endpoint. */
-export function MaintenancePanel() {
+export function MaintenancePanel({ onManageMemory }: { onManageMemory?: () => void } = {}) {
   const { t } = useI18n()
   const mm = t.commandCenter.maintenance
 
@@ -192,35 +192,26 @@ export function MaintenancePanel() {
     [mm]
   )
 
+  const busy = actionStatus?.running === true
+
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto pb-2">
+    <>
       {error && (
-        <span className="inline-flex items-center gap-1 text-[length:var(--conversation-caption-font-size)] text-destructive">
+        <span className="inline-flex items-center gap-1 text-[0.71875rem] text-destructive">
           <AlertCircle className="size-3.5" />
           {error}
         </span>
       )}
 
-      <section>
-        <SectionLabel>{mm.runOps}</SectionLabel>
-        <OpRow
-          description={mm.doctorDesc}
-          disabled={actionStatus?.running === true}
-          label={mm.doctor}
-          onRun={() => void launch(mm.doctor, runDoctor)}
-        />
+      <FormGroup>
+        <OpRow description={mm.doctorDesc} disabled={busy} label={mm.doctor} onRun={() => void launch(mm.doctor, runDoctor)} />
         <OpRow
           description={mm.securityAuditDesc}
-          disabled={actionStatus?.running === true}
+          disabled={busy}
           label={mm.securityAudit}
           onRun={() => void launch(mm.securityAudit, runSecurityAudit)}
         />
-        <OpRow
-          description={mm.backupDesc}
-          disabled={actionStatus?.running === true}
-          label={mm.backup}
-          onRun={() => void launch(mm.backup, runBackup)}
-        />
+        <OpRow description={mm.backupDesc} disabled={busy} label={mm.backup} onRun={() => void launch(mm.backup, runBackup)} />
         <OpRow
           description={mm.debugShareDesc}
           disabled={sharing}
@@ -229,13 +220,11 @@ export function MaintenancePanel() {
         />
 
         {share && Object.keys(share.urls).length > 0 && (
-          <div className="mt-2 rounded-lg border border-(--ui-stroke-tertiary) bg-(--ui-bg-quinary) p-3">
-            <div className="mb-1.5 text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-              {mm.debugShareLinks}
-            </div>
+          <FormCell>
+            <div className="mb-1 text-[0.71875rem] font-semibold text-(--ui-text-tertiary)">{mm.debugShareLinks}</div>
             {Object.entries(share.urls).map(([key, url]) => (
               <div className="flex items-center justify-between gap-2 py-1" key={key}>
-                <span className="min-w-0 truncate font-mono text-[0.7rem]">
+                <span className="min-w-0 truncate font-mono text-[0.71875rem]">
                   {key}: {url}
                 </span>
                 <Button
@@ -250,113 +239,148 @@ export function MaintenancePanel() {
                 </Button>
               </div>
             ))}
-          </div>
+          </FormCell>
         )}
 
         {actionStatus && (
-          <div className="mt-2">
-            <div className="mb-1.5 flex items-center gap-2 text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+          <FormCell>
+            <div className="mb-1.5 flex items-center gap-2 text-[0.71875rem] font-semibold text-(--ui-text-tertiary)">
               {mm.viewLog}
-              {actionStatus.running && <span className="normal-case tracking-normal">{mm.running}</span>}
+              {actionStatus.running && <span className="font-normal">{mm.running}</span>}
             </div>
             <pre
-              className="max-h-48 overflow-auto whitespace-pre-wrap wrap-break-word rounded-lg border border-(--ui-stroke-tertiary) bg-(--ui-bg-quinary) p-3 font-mono text-[0.65rem] leading-relaxed text-(--ui-text-tertiary)"
+              className="max-h-48 overflow-auto rounded-[0.5rem] bg-(--ui-code-background) p-2.5 font-mono text-[0.6875rem] leading-relaxed whitespace-pre-wrap wrap-break-word text-(--ui-text-secondary) shadow-[0_0_0_0.5px_var(--ui-line-2)]"
               data-selectable-text="true"
             >
               {actionStatus.lines.join('\n')}
             </pre>
-          </div>
+          </FormCell>
         )}
-      </section>
 
-      <section>
-        <SectionLabel>{mm.curator}</SectionLabel>
-        {!curator ? (
-          <PageLoader className="min-h-16" label={mm.curator} />
-        ) : (
-          <div className="flex items-center justify-between gap-3 py-2">
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="text-[length:var(--conversation-text-font-size)] font-medium">{mm.curator}</span>
-                <Badge
-                  className={cn(
-                    !curator.enabled
-                      ? 'bg-(--ui-bg-quinary) text-(--ui-text-tertiary)'
-                      : curator.paused
-                        ? 'bg-amber-500/15 text-amber-400'
-                        : 'bg-emerald-500/15 text-emerald-400'
-                  )}
-                >
-                  {!curator.enabled ? mm.curatorDisabled : curator.paused ? mm.curatorPaused : mm.curatorActive}
-                </Badge>
-              </div>
-              <div className="mt-0.5 text-[length:var(--conversation-caption-font-size)] text-(--ui-text-tertiary)">
-                {mm.curatorDesc}
-                {' · '}
-                {curator.last_run_at ? mm.curatorLastRun(curator.last_run_at) : mm.curatorNeverRan}
-              </div>
-            </div>
-            <div className="flex shrink-0 items-center gap-1.5">
-              {curator.enabled && (
-                <Button disabled={curatorBusy} onClick={() => void toggleCurator()} size="xs" variant="text">
-                  {curator.paused ? mm.resume : mm.pause}
-                </Button>
-              )}
-              <Button
-                disabled={actionStatus?.running === true}
-                onClick={() => void launch(mm.curator, runCurator)}
-                size="xs"
-                variant="textStrong"
-              >
-                {mm.runNow}
-              </Button>
-            </div>
-          </div>
-        )}
-      </section>
+        <CuratorRow
+          busy={busy}
+          curator={curator}
+          curatorBusy={curatorBusy}
+          onRun={() => void launch(mm.curator, runCurator)}
+          onToggle={() => void toggleCurator()}
+        />
 
-      <section>
-        <SectionLabel>{mm.memoryData}</SectionLabel>
-        {!memory ? (
-          <PageLoader className="min-h-16" label={mm.memoryData} />
-        ) : (
-          <div>
-            <div className="py-1 text-[length:var(--conversation-caption-font-size)] text-(--ui-text-tertiary)">
-              {mm.memoryDataDesc}
-              {' · '}
-              {mm.memoryProvider(memory.active || mm.builtinMemory)}
-            </div>
-            <MemoryFileRow
-              busy={memoryBusy}
-              label={mm.memoryFile}
-              onReset={() => void doResetMemory('memory', mm.memoryFile)}
-              resetLabel={mm.resetMemory}
-              size={memory.builtin_files.memory}
-              sizeLabel={memory.builtin_files.memory > 0 ? formatBytes(memory.builtin_files.memory) : mm.empty}
-            />
-            <MemoryFileRow
-              busy={memoryBusy}
-              label={mm.userFile}
-              onReset={() => void doResetMemory('user', mm.userFile)}
-              resetLabel={mm.resetUser}
-              size={memory.builtin_files.user}
-              sizeLabel={memory.builtin_files.user > 0 ? formatBytes(memory.builtin_files.user) : mm.empty}
-            />
-          </div>
-        )}
-      </section>
-    </div>
+        <MemoryDataRow
+          busy={memoryBusy}
+          memory={memory}
+          onManage={onManageMemory}
+          onReset={(target, label) => void doResetMemory(target, label)}
+        />
+      </FormGroup>
+    </>
   )
 }
 
-function SectionLabel({ children }: { children: string }) {
+function CuratorRow({
+  busy,
+  curator,
+  curatorBusy,
+  onRun,
+  onToggle
+}: {
+  busy: boolean
+  curator: CuratorStatusResponse | null
+  curatorBusy: boolean
+  onRun: () => void
+  onToggle: () => void
+}) {
+  const { t } = useI18n()
+  const mm = t.commandCenter.maintenance
+
+  if (!curator) {
+    return (
+      <FormCell>
+        <PageLoader className="min-h-16" label={mm.curator} />
+      </FormCell>
+    )
+  }
+
   return (
-    <div className="mb-1.5 text-[0.625rem] font-medium uppercase tracking-[0.08em] text-(--ui-text-tertiary)">
-      {children}
-    </div>
+    <FormRow
+      description={`${mm.curatorDesc} · ${curator.last_run_at ? mm.curatorLastRun(curator.last_run_at) : mm.curatorNeverRan}`}
+      title={mm.curator}
+    >
+      <Badge variant={!curator.enabled ? 'muted' : curator.paused ? 'warn' : 'success'}>
+        {!curator.enabled ? mm.curatorDisabled : curator.paused ? mm.curatorPaused : mm.curatorActive}
+      </Badge>
+      {curator.enabled && (
+        <Button disabled={curatorBusy} onClick={onToggle} size="sm" variant="ghost">
+          {curator.paused ? mm.resume : mm.pause}
+        </Button>
+      )}
+      <Button disabled={busy} onClick={onRun} size="sm" variant="secondary">
+        {mm.runNow}
+      </Button>
+    </FormRow>
   )
 }
 
+function MemoryDataRow({
+  busy,
+  memory,
+  onManage,
+  onReset
+}: {
+  busy: boolean
+  memory: MemoryStatusResponse | null
+  onManage?: () => void
+  onReset: (target: 'memory' | 'user', label: string) => void
+}) {
+  const { t } = useI18n()
+  const mm = t.commandCenter.maintenance
+
+  if (!memory) {
+    return (
+      <FormCell>
+        <PageLoader className="min-h-16" label={mm.memoryData} />
+      </FormCell>
+    )
+  }
+
+  const size = (bytes: number) => (bytes > 0 ? formatBytes(bytes) : mm.empty)
+
+  return (
+    <FormRow
+      description={[
+        `MEMORY.md ${size(memory.builtin_files.memory)}`,
+        `USER.md ${size(memory.builtin_files.user)}`,
+        mm.memoryProvider(memory.active || mm.builtinMemory)
+      ].join(' · ')}
+      title={mm.memoryData}
+    >
+      {onManage && (
+        <Button onClick={onManage} size="sm" variant="ghost">
+          {t.studio.overlays.system.manageMemory}
+        </Button>
+      )}
+      <Button
+        className="text-destructive hover:text-destructive"
+        disabled={busy || memory.builtin_files.memory <= 0}
+        onClick={() => onReset('memory', mm.memoryFile)}
+        size="sm"
+        variant="ghost"
+      >
+        {mm.resetMemory}
+      </Button>
+      <Button
+        className="text-destructive hover:text-destructive"
+        disabled={busy || memory.builtin_files.user <= 0}
+        onClick={() => onReset('user', mm.userFile)}
+        size="sm"
+        variant="ghost"
+      >
+        {mm.resetUser}
+      </Button>
+    </FormRow>
+  )
+}
+
+/** One maintenance op: title + description, and a "Run" button named after the op. */
 function OpRow({
   description,
   disabled,
@@ -368,53 +392,13 @@ function OpRow({
   label: string
   onRun: () => void
 }) {
-  return (
-    <div className="flex items-center justify-between gap-3 py-2">
-      <div className="min-w-0">
-        <div className="text-[length:var(--conversation-text-font-size)] font-medium">{label}</div>
-        <div className="mt-0.5 text-[length:var(--conversation-caption-font-size)] text-(--ui-text-tertiary)">
-          {description}
-        </div>
-      </div>
-      <Button disabled={disabled} onClick={onRun} size="xs" variant="textStrong">
-        {label}
-      </Button>
-    </div>
-  )
-}
+  const { t } = useI18n()
 
-function MemoryFileRow({
-  busy,
-  label,
-  onReset,
-  resetLabel,
-  size,
-  sizeLabel
-}: {
-  busy: boolean
-  label: string
-  onReset: () => void
-  resetLabel: string
-  size: number
-  sizeLabel: string
-}) {
   return (
-    <div className="flex items-center justify-between gap-3 py-2">
-      <div className="min-w-0">
-        <span className="text-[length:var(--conversation-text-font-size)] font-medium">{label}</span>
-        <span className="ml-2 text-[length:var(--conversation-caption-font-size)] text-(--ui-text-tertiary)">
-          {sizeLabel}
-        </span>
-      </div>
-      <Button
-        className="text-destructive hover:text-destructive"
-        disabled={busy || size <= 0}
-        onClick={onReset}
-        size="xs"
-        variant="text"
-      >
-        {resetLabel}
+    <FormRow description={description} title={label}>
+      <Button aria-label={label} disabled={disabled} onClick={onRun} size="sm" variant="secondary">
+        {t.studio.overlays.system.run}
       </Button>
-    </div>
+    </FormRow>
   )
 }

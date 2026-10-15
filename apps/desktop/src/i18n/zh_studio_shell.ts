@@ -2,7 +2,26 @@
 import type { StudioShellTranslations } from './types_studio_shell'
 
 export const zhStudioShell: StudioShellTranslations = {
+  untitledSession: '未命名会话',
   layout: '布局',
+  inspector: {
+    label: '检查器',
+    close: '关闭检查器',
+    preview: '预览',
+    files: '文件',
+    review: '变更',
+    terminal: '终端',
+    agents: '代理'
+  },
+  presets: {
+    'sidebar-left': '侧边栏在左',
+    'sidebar-right': '侧边栏在右',
+    default: '默认',
+    basic: '基础',
+    focus: '专注',
+    'terminal-deck': '终端台',
+    quad: '四宫格'
+  },
   toolbar: {
     newSessionTitle: '新会话',
     layoutMenu: '布局与分屏',

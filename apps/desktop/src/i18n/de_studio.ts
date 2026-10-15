@@ -1,4 +1,5 @@
 import { deStudioChat } from './de_studio_chat'
+import { deStudioMenu } from './de_studio_menu'
 import { deStudioOverlays } from './de_studio_overlays'
 import { deStudioPages } from './de_studio_pages'
 import { deStudioSettings } from './de_studio_settings'
@@ -13,5 +14,6 @@ export const deStudio: StudioTranslations = {
   chat: deStudioChat,
   pages: deStudioPages,
   settings: deStudioSettings,
-  overlays: deStudioOverlays
+  overlays: deStudioOverlays,
+  menu: deStudioMenu
 }

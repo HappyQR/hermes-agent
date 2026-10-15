@@ -1,26 +1,13 @@
 import { useStore } from '@nanostores/react'
 import { useEffect, useRef } from 'react'
-import type { NavigateFunction } from 'react-router'
 
 import { $freshSessionRequest, refreshActiveProfile } from '@/store/profile'
 
 import { resetProjectTreeState } from '../right-sidebar/files/use-project-tree'
-import { SETTINGS_ROUTE } from '../routes'
 
 import { $restartPreviewServer } from './panes'
 
 type RestartPreviewServer = NonNullable<ReturnType<typeof $restartPreviewServer.get>>
-
-// Palette "Keyboard shortcuts" entry dispatches a custom event (contributions
-// don't have router access); listen and navigate to the settings keybinds tab.
-export function useOpenKeybindsListener(navigate: NavigateFunction) {
-  useEffect(() => {
-    const onOpenKeybinds = () => navigate(`${SETTINGS_ROUTE}?tab=keybinds`)
-    window.addEventListener('hermes:open-keybinds', onOpenKeybinds)
-
-    return () => window.removeEventListener('hermes:open-keybinds', onOpenKeybinds)
-  }, [navigate])
-}
 
 // Dev-only: install the credit-notice demo trigger (Ctrl+Shift+C / ⌘K palette
 // / window.__creditsDemo). Dynamic import inside the DEV guard so the module

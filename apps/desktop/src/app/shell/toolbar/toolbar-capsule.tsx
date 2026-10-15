@@ -8,7 +8,8 @@ import { useI18n } from '@/i18n'
 import { triggerHaptic } from '@/lib/haptics'
 import { runBuiltinAction } from '@/lib/keybinds/plugin-actions'
 import { cn } from '@/lib/utils'
-import { $fileBrowserOpen } from '@/store/layout'
+
+import { $inspectorShown } from '../inspector/inspector-state'
 
 import { LayoutMenuItems } from './layout-menu'
 import { ToolbarMenu } from './toolbar-kit'
@@ -17,7 +18,7 @@ import { ToolbarMenu } from './toolbar-kit'
 export function ToolbarCapsule() {
   const { t } = useI18n()
   const copy = t.studio.shell.toolbar
-  const inspectorOpen = useStore($fileBrowserOpen)
+  const inspectorOpen = useStore($inspectorShown)
   const inspectorLabel = inspectorOpen ? copy.hideInspector : copy.showInspector
 
   return (

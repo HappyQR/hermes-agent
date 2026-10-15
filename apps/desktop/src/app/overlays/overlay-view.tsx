@@ -8,6 +8,8 @@ import { ESCAPE_PRIORITY, isTopEscapeLayer, pushEscapeLayer } from '@/lib/escape
 import { triggerHaptic } from '@/lib/haptics'
 import { cn } from '@/lib/utils'
 
+import { OverlaySheetFrame, type OverlaySheetSize, OverlayWindowFrame } from './studio/overlay-frames'
+
 // Shared top clearance for overlay content that sits *beside* the floating
 // close button (which is absolute at `0.1875rem + titlebar/2`, -translate-y-1/2,
 // so it costs no layout space): a Panel's header and the split layout's left
@@ -30,6 +32,13 @@ interface OverlayViewProps {
   /** Controls rendered on the close button's row, to its left. They ride the
    *  titlebar strip, so keep them titlebar-sized and quiet. */
   titlebarActions?: ReactNode
+  /** Hermes Studio: `card` (default) is the full-window card; `window` a
+   *  floating macOS window (Settings); `sheet` a top-anchored macOS sheet
+   *  (route sheets). `window`/`sheet` draw no close button or edge badge —
+   *  the page renders its own chrome. */
+  variant?: 'card' | 'sheet' | 'window'
+  /** Width preset for `variant="sheet"`. */
+  size?: OverlaySheetSize
 }
 
 export function OverlayView({
@@ -40,7 +49,9 @@ export function OverlayView({
   edgeBadge,
   headerContent,
   rootClassName,
-  titlebarActions
+  titlebarActions,
+  variant = 'card',
+  size
 }: OverlayViewProps) {
   const closeOverlay = () => {
     triggerHaptic('close')
@@ -70,6 +81,27 @@ export function OverlayView({
       releaseLayer()
     }
   }, [onClose])
+
+  if (variant === 'window') {
+    return (
+      <OverlayWindowFrame onBackdropClose={closeOverlay} rootClassName={rootClassName} titlebarHeight={TITLEBAR_HEIGHT}>
+        {children}
+      </OverlayWindowFrame>
+    )
+  }
+
+  if (variant === 'sheet') {
+    return (
+      <OverlaySheetFrame
+        onBackdropClose={closeOverlay}
+        rootClassName={rootClassName}
+        size={size}
+        titlebarHeight={TITLEBAR_HEIGHT}
+      >
+        {children}
+      </OverlaySheetFrame>
+    )
+  }
 
   return (
     <div

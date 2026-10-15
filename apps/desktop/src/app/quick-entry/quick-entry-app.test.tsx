@@ -1,8 +1,9 @@
 /** Regression coverage for #77429: native picker options must paint a readable surface. */
 
-import { act, cleanup, render, screen } from '@testing-library/react'
+import { act, cleanup, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { formatCombo } from '@/lib/keybinds/combo'
 import type { QuickEntryStatePush } from '@/store/quick-entry'
 
 import { QuickEntryApp } from './quick-entry-app'
@@ -17,6 +18,12 @@ describe('QuickEntryApp', () => {
     window.hermesDesktop = {
       quickEntry: {
         dismiss: vi.fn(),
+        getSettings: vi.fn(async () => ({
+          enabled: true,
+          error: null,
+          registered: true,
+          shortcut: 'CommandOrControl+Shift+Space'
+        })),
         onShown: vi.fn(() => vi.fn()),
         onState: vi.fn(callback => {
           pushState = callback
@@ -52,5 +59,13 @@ describe('QuickEntryApp', () => {
       expect(option.style.color).toBe('var(--ui-text-primary, var(--foreground))')
       expect(option.style.backgroundColor).toBe('var(--ui-bg-elevated, var(--background))')
     }
+  })
+
+  it('names the live global shortcut in the hint line', async () => {
+    render(<QuickEntryApp />)
+
+    const combo = formatCombo('mod+shift+space')
+
+    await waitFor(() => expect(screen.getByText(text => text.includes(combo))).toBeTruthy())
   })
 })

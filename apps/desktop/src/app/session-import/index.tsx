@@ -1,14 +1,20 @@
-import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  type InfiniteData,
+  useInfiniteQuery,
+  type UseInfiniteQueryResult,
+  useQuery,
+  useQueryClient
+} from '@tanstack/react-query'
 import { useEffect, useRef, useState } from 'react'
 
 import { MarkdownTextContent } from '@/components/assistant-ui/markdown-text'
 import { Button } from '@/components/ui/button'
-import { Codicon } from '@/components/ui/codicon'
 import { EmptyState } from '@/components/ui/empty-state'
 import { ErrorState } from '@/components/ui/error-state'
 import { Loader } from '@/components/ui/loader'
 import { SearchField } from '@/components/ui/search-field'
 import { SegmentedControl } from '@/components/ui/segmented-control'
+import { StudioIcon } from '@/components/ui/studio-icon'
 import { useI18n } from '@/i18n'
 import { cn } from '@/lib/utils'
 import { setSessionOwnerHint } from '@/store/session'
@@ -16,6 +22,8 @@ import type { SessionOwnerRoute } from '@/store/session-request-router'
 
 import { OverlayView } from '../overlays/overlay-view'
 import { PanelEmpty } from '../overlays/panel'
+import { SheetFooter, SheetHeader } from '../overlays/studio/sheet-header'
+import { CARD_SURFACE_CLASS } from '../overlays/studio/stat-card'
 
 import { type ForeignImportResult, type ForeignPage, type ForeignPreview, foreignRequest } from './api'
 
@@ -28,6 +36,7 @@ interface SessionImportViewProps {
 export function SessionImportView({ owner, onClose, onOpenSession }: SessionImportViewProps) {
   const { t, locale } = useI18n()
   const copy = t.sessionImport
+  const studio = t.studio.overlays.import
   const queryClient = useQueryClient()
   const [source, setSource] = useState<'all' | 'claude' | 'codex'>('all')
   const [search, setSearch] = useState('')
@@ -110,166 +119,94 @@ export function SessionImportView({ owner, onClose, onOpenSession }: SessionImpo
     }
   }
 
-  return (
-    <OverlayView
-      onClose={onClose}
-      rootClassName="bg-(--ui-bg-elevated)"
-      titlebarActions={
-        <Button
-          aria-label={t.common.refresh}
-          disabled={sessions.isFetching}
-          onClick={() => {
-            void sessions.refetch()
+  const profileName = owner.targetProfile ?? owner.profile
 
-            if (current) {
-              void preview.refetch()
-            }
-          }}
-          size="icon-titlebar"
-          variant="ghost"
-        >
-          <Codicon name="refresh" />
-        </Button>
-      }
-    >
-      <section aria-label={copy.title} className="session-import flex h-full min-h-0 flex-col">
-        <header className="px-8 pb-6 pt-12">
-          <h1 className="text-3xl font-semibold tracking-tight text-(--ui-text-primary)">{copy.title}</h1>
-          <p className="mt-2 text-sm text-(--ui-text-secondary)">{copy.subtitle}</p>
-          <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-(--ui-text-secondary)">
-            <span className="inline-flex items-center gap-2">
-              <Codicon name="device-desktop" />
-              {copy.readingFrom} {host ?? copy.connectedComputer}
-            </span>
-            <span className="inline-flex items-center gap-2">
-              <Codicon name="account" />
-              {copy.destination} {owner.targetProfile ?? owner.profile}
-            </span>
-          </div>
-        </header>
-        <div className="grid min-h-0 flex-1 grid-cols-[minmax(17rem,0.85fr)_minmax(0,1.6fr)] border-t border-(--ui-stroke-tertiary) max-[760px]:grid-cols-1">
-          <aside
+  return (
+    <OverlayView onClose={onClose} rootClassName="h-[min(40rem,100%)]" size="wide" variant="sheet">
+      <section aria-label={copy.title} className="session-import flex min-h-0 flex-1 flex-col">
+        <SheetHeader
+          closeLabel={t.common.close}
+          glyph="import"
+          onClose={onClose}
+          right={
+            <Button
+              aria-label={t.common.refresh}
+              className="size-7 text-(--ui-text-tertiary) hover:bg-(--ui-hover) hover:text-(--ui-text-primary)"
+              disabled={sessions.isFetching}
+              onClick={() => {
+                void sessions.refetch()
+
+                if (current) {
+                  void preview.refetch()
+                }
+              }}
+              size="icon-sm"
+              variant="ghost"
+            >
+              <StudioIcon name="retry" size={14} />
+            </Button>
+          }
+          subtitle={studio.subtitle(host ?? copy.connectedComputer)}
+          title={copy.title}
+          tone="blue"
+        />
+        <div className="flex min-h-0 flex-1 gap-3.5 px-[1.125rem] pb-1 pt-1">
+          <aside className={cn('flex w-[15.625rem] shrink-0 flex-col gap-1.5 max-[760px]:w-full', selected && 'max-[760px]:hidden')}>
+            <SegmentedControl
+              aria-label={studio.sourceLabel}
+              className="auto-cols-auto"
+              onChange={value => {
+                setSource(value)
+                setSelected(null)
+                setError('')
+              }}
+              options={[
+                { id: 'all', label: copy.all },
+                { id: 'claude', label: 'Claude Code' },
+                { id: 'codex', label: 'Codex' }
+              ]}
+              size="sm"
+              value={source}
+            />
+            {rows.length > 0 && (
+              <SearchField
+                aria-label={copy.search}
+                containerClassName="w-full shrink-0"
+                onChange={setSearch}
+                placeholder={copy.search}
+                value={search}
+                variant="filled"
+              />
+            )}
+            <ImportList
+              onPick={id => {
+                setSelected(id)
+                setError('')
+              }}
+              rows={visible}
+              searching={Boolean(search)}
+              selected={selected}
+              sessions={sessions}
+              unreadable={unreadable}
+            />
+          </aside>
+          <main
             className={cn(
-              'flex min-h-0 flex-col bg-(--ui-sidebar-surface-background)',
-              selected && 'max-[760px]:hidden'
+              'flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden px-3.5 py-3',
+              CARD_SURFACE_CLASS,
+              !selected && 'max-[760px]:hidden'
             )}
           >
-            <div className="flex flex-col gap-5 px-6 pb-4 pt-6">
-              <SegmentedControl
-                onChange={value => {
-                  setSource(value)
-                  setSelected(null)
-                  setError('')
-                }}
-                options={[
-                  { id: 'all', label: copy.all },
-                  { id: 'claude', label: 'Claude Code' },
-                  { id: 'codex', label: 'Codex' }
-                ]}
-                value={source}
-              />
-              {rows.length > 0 && (
-                <SearchField
-                  aria-label={copy.search}
-                  containerClassName="opacity-100"
-                  onChange={setSearch}
-                  placeholder={copy.search}
-                  value={search}
-                />
-              )}
-            </div>
-            <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-5">
-              {sessions.isPending && <Loader className="mx-auto my-12" label={copy.scanning} />}
-              {sessions.isError && (
-                <ErrorState className="p-5" description={copy.scanHelp} title={copy.scanError}>
-                  <Button onClick={() => void sessions.refetch()} variant="secondary">
-                    {t.common.retry}
-                  </Button>
-                </ErrorState>
-              )}
-              {!sessions.isPending && !sessions.isError && visible.length === 0 && (
-                <div className="p-5">
-                  <EmptyState
-                    description={search ? copy.searchHelp : copy.emptyHelp}
-                    title={search ? copy.noMatches : copy.empty}
-                  />
-                </div>
-              )}
-              {visible.map((row, index) => {
-                const date = new Date(row.mtime * 1000).toLocaleDateString(locale, {
-                  month: 'short',
-                  day: 'numeric'
-                })
-
-                const previous = visible[index - 1]
-
-                const newDate =
-                  !previous ||
-                  new Date(previous.mtime * 1000).toDateString() !== new Date(row.mtime * 1000).toDateString()
-
-                return (
-                  <div key={row.id}>
-                    {newDate && <p className="px-3 pb-2 pt-5 text-xs font-medium text-(--ui-text-secondary)">{date}</p>}
-                    <button
-                      aria-pressed={selected === row.id}
-                      className={cn(
-                        'w-full cursor-pointer rounded-md px-3 py-4 text-start transition-colors hover:bg-(--chrome-action-hover) focus-visible:outline-2 focus-visible:outline-(--ui-accent)',
-                        selected === row.id && 'bg-(--chrome-action-hover)'
-                      )}
-                      onClick={() => {
-                        setSelected(row.id)
-                        setError('')
-                      }}
-                      type="button"
-                    >
-                      <span className="mb-2 flex items-center gap-2 text-xs text-(--ui-text-secondary)">
-                        <Codicon name="comment-discussion" />
-                        {row.label}
-                        <span className="ms-auto tabular-nums">
-                          {row.turn_count} {copy.messages}
-                        </span>
-                      </span>
-                      <span className="line-clamp-2 text-sm font-medium leading-5 text-(--ui-text-primary)">
-                        {row.title}
-                      </span>
-                      <span className="mt-1 block truncate text-xs leading-5 text-(--ui-text-secondary)">
-                        {row.cwd || row.excerpt}
-                      </span>
-                    </button>
-                  </div>
-                )
-              })}
-              {unreadable > 0 && <p className="px-3 py-4 text-xs text-(--ui-text-secondary)">{copy.skipped}</p>}
-              {sessions.hasNextPage && (
-                <div className="flex justify-center pt-4">
-                  <Button
-                    disabled={sessions.isFetchingNextPage}
-                    onClick={() => void sessions.fetchNextPage()}
-                    variant="text"
-                  >
-                    {copy.more}
-                  </Button>
-                </div>
-              )}
-            </div>
-          </aside>
-          <main className={cn('flex min-h-0 min-w-0 flex-col', !selected && 'max-[760px]:hidden')}>
             {!current ? (
               <PanelEmpty description={copy.chooseHelp} icon="comment-discussion" title={copy.choose} />
             ) : (
               <>
-                <div className="px-8 pb-5 pt-6">
-                  <div className="mb-4 hidden max-[760px]:block">
-                    <Button onClick={() => setSelected(null)} variant="text">
-                      {t.common.back}
-                    </Button>
-                  </div>
-                  <h2 className="text-xl font-medium leading-7 tracking-tight">{current.title}</h2>
-                  <p className="mt-2 text-xs text-(--ui-text-secondary)">
-                    {current.label} · {current.turn_count} {copy.messages}
-                  </p>
+                <div className="hidden pb-2 max-[760px]:block">
+                  <Button onClick={() => setSelected(null)} size="sm" variant="ghost">
+                    {t.common.back}
+                  </Button>
                 </div>
-                <div aria-live="polite" className="min-h-0 flex-1 overflow-y-auto px-8 pb-8" key={current.id}>
+                <div aria-live="polite" className="min-h-0 flex-1 overflow-y-auto" key={current.id}>
                   {preview.isPending && <Loader className="mx-auto my-12" label={copy.previewLoading} />}
                   {preview.isError && (
                     <ErrorState description={copy.previewHelp} title={copy.previewError}>
@@ -279,16 +216,16 @@ export function SessionImportView({ owner, onClose, onOpenSession }: SessionImpo
                     </ErrorState>
                   )}
                   {preview.data && (
-                    <div className="max-w-prose space-y-7">
+                    <div className="flex flex-col gap-3 text-[0.8125rem] leading-[1.6]">
                       {preview.data.truncated && (
-                        <p className="text-xs text-(--ui-text-secondary)">{copy.previewLimit}</p>
+                        <p className="m-0 text-xs text-(--ui-text-tertiary)">{copy.previewLimit}</p>
                       )}
                       {preview.data.messages.map((message, index) => (
                         <article className="min-w-0" key={index}>
-                          <p className="mb-2 text-xs font-semibold text-(--ui-text-secondary)">
+                          <p className="m-0 font-semibold text-(--ui-text-primary)">
                             {message.role === 'user' ? copy.you : current.label}
                           </p>
-                          <div className="text-sm leading-6 wrap-anywhere">
+                          <div className="wrap-anywhere text-(--ui-text-primary)">
                             <MarkdownTextContent isRunning={false} previewOnly text={message.content} />
                           </div>
                         </article>
@@ -296,25 +233,123 @@ export function SessionImportView({ owner, onClose, onOpenSession }: SessionImpo
                     </div>
                   )}
                 </div>
-                <footer className="flex flex-wrap items-center justify-between gap-4 border-t border-(--ui-stroke-tertiary) px-8 py-5">
-                  <p className="max-w-xs text-xs leading-5 text-(--ui-text-secondary)">
-                    {preview.data?.already_imported ? copy.snapshot : copy.copyNotice}
-                  </p>
-                  <Button disabled={pending || !preview.data || preview.isError} onClick={() => void continueSession()}>
-                    {pending ? copy.importing : preview.data?.already_imported ? copy.open : copy.continue}
-                    <Codicon name="arrow-right" />
-                  </Button>
-                  {error && (
-                    <div className="w-full text-sm text-destructive" role="alert">
-                      {copy.importError} {error}
-                    </div>
-                  )}
-                </footer>
+                <div className="mt-2.5 flex shrink-0 gap-2.5 rounded-[10px] bg-(--ui-accent-softer) px-3 py-2.5 text-xs leading-relaxed text-(--ui-text-secondary)">
+                  <StudioIcon className="mt-0.5 text-(--ui-accent-text)" name="info" size={15} />
+                  <span>{preview.data?.already_imported ? copy.snapshot : copy.copyNotice}</span>
+                </div>
               </>
             )}
           </main>
         </div>
+        <SheetFooter>
+          <span className="truncate text-xs text-(--ui-text-tertiary)">{studio.importInto(profileName)}</span>
+          <span className="flex-1" />
+          {error && (
+            <span className="min-w-0 truncate text-xs text-destructive" role="alert">
+              {copy.importError} {error}
+            </span>
+          )}
+          <Button onClick={onClose} size="sm" variant="secondary">
+            {t.common.cancel}
+          </Button>
+          <Button
+            disabled={!current || pending || !preview.data || preview.isError}
+            onClick={() => void continueSession()}
+            size="sm"
+          >
+            {pending ? copy.importing : preview.data?.already_imported ? copy.open : copy.continue}
+          </Button>
+        </SheetFooter>
       </section>
     </OverlayView>
+  )
+}
+
+type ForeignSessionsQuery = UseInfiniteQueryResult<InfiniteData<ForeignPage>>
+
+/** The left column: loading / error / empty states, date-grouped rows, skipped note and Load more. */
+function ImportList({
+  onPick,
+  rows,
+  searching,
+  selected,
+  sessions,
+  unreadable
+}: {
+  onPick: (id: string) => void
+  rows: ForeignPage['sessions']
+  searching: boolean
+  selected: null | string
+  sessions: ForeignSessionsQuery
+  unreadable: number
+}) {
+  const { t, locale } = useI18n()
+  const copy = t.sessionImport
+
+  return (
+    <div className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto overscroll-contain">
+      {sessions.isPending && <Loader className="mx-auto my-12" label={copy.scanning} />}
+      {sessions.isError && (
+        <ErrorState className="p-5" description={copy.scanHelp} title={copy.scanError}>
+          <Button onClick={() => void sessions.refetch()} variant="secondary">
+            {t.common.retry}
+          </Button>
+        </ErrorState>
+      )}
+      {!sessions.isPending && !sessions.isError && rows.length === 0 && (
+        <div className="p-3">
+          <EmptyState
+            description={searching ? copy.searchHelp : copy.emptyHelp}
+            title={searching ? copy.noMatches : copy.empty}
+          />
+        </div>
+      )}
+      {rows.map((row, index) => {
+        const date = new Date(row.mtime * 1000).toLocaleDateString(locale, { month: 'short', day: 'numeric' })
+        const previous = rows[index - 1]
+
+        const newDate =
+          !previous ||
+          new Date(previous.mtime * 1000).toDateString() !== new Date(row.mtime * 1000).toDateString()
+
+        return (
+          <div key={row.id}>
+            {newDate && (
+              <p className="m-0 px-1 pb-1 pt-2 text-[0.6875rem] font-semibold text-(--ui-text-tertiary)">{date}</p>
+            )}
+            <button
+              aria-pressed={selected === row.id}
+              className={cn(
+                'flex w-full cursor-pointer flex-col gap-0.5 rounded-[9px] px-2.5 py-[7px] text-start transition-colors hover:bg-(--ui-hover) focus-visible:outline-2 focus-visible:outline-(--ui-accent)',
+                selected === row.id && 'bg-(--ui-selected) hover:bg-(--ui-selected)'
+              )}
+              onClick={() => onPick(row.id)}
+              type="button"
+            >
+              <span className="line-clamp-2 text-[0.8125rem] font-semibold leading-5 text-(--ui-text-primary)">
+                {row.title}
+              </span>
+              <span className="block truncate text-[0.71875rem] leading-4 text-(--ui-text-tertiary)">
+                {row.label} · {row.turn_count} {copy.messages}
+                {row.cwd || row.excerpt ? ` · ${row.cwd || row.excerpt}` : ''}
+              </span>
+            </button>
+          </div>
+        )
+      })}
+      {unreadable > 0 && <p className="m-0 px-1 py-3 text-xs text-(--ui-text-tertiary)">{copy.skipped}</p>}
+      {sessions.hasNextPage && (
+        <div className="flex justify-center pt-2">
+          <Button
+            disabled={sessions.isFetchingNextPage}
+            onClick={() => void sessions.fetchNextPage()}
+            size="sm"
+            variant="ghost"
+          >
+            {copy.more}
+          </Button>
+        </div>
+      )}
+    </div>
   )
 }

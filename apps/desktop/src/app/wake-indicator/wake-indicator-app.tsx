@@ -2,9 +2,11 @@ import './wake-indicator.css'
 
 import { useEffect, useState } from 'react'
 
+import { useI18n } from '@/i18n'
 import type { WakeIndicatorState } from '@/lib/wake-indicator'
 
 export function WakeIndicatorApp() {
+  const { t } = useI18n()
   const [state, setState] = useState<WakeIndicatorState>('hidden')
 
   useEffect(() => {
@@ -36,7 +38,16 @@ export function WakeIndicatorApp() {
 
   return (
     <main aria-hidden className="wake-indicator-surface" data-state={state}>
-      <div className="wake-indicator-light" />
+      <div className="wake-indicator-light">
+        <span className="wake-indicator-bars">
+          <i />
+          <i />
+          <i />
+          <i />
+          <i />
+        </span>
+        <span className="wake-indicator-label">{t.studio.overlays.aux.wake.listening}</span>
+      </div>
     </main>
   )
 }

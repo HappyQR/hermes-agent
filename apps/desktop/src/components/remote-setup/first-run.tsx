@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import type { ReactElement } from 'react'
 
-import { BrandMark } from '@/components/brand-mark'
 import { Button } from '@/components/ui/button'
 import { useI18n } from '@/i18n'
 import { Loader2 } from '@/lib/icons'
+import { cn } from '@/lib/utils'
+
+import { BOOT_CARD_CLASS, BOOT_COLUMN_CLASS, BOOT_SURFACE_CLASS, BootHero } from '../studio-onboarding/boot-kit'
 
 import { RemoteSetupFields } from './fields'
 import { useRemoteSetup } from './use-remote-setup'
@@ -39,20 +41,14 @@ export function FirstRunRemoteSetup({ onBack }: FirstRunRemoteSetupProps): React
   }
 
   return (
-    <div className="fixed inset-0 z-(--z-setup) flex items-center justify-center bg-background/90 p-4 backdrop-blur-md">
-      <div className="flex w-full max-w-xl flex-col rounded-xl border border-(--stroke-nous) bg-card p-8 shadow-nous">
-        <div className="flex items-start gap-4">
-          <BrandMark className="size-11 shrink-0" />
-          <div className="min-w-0">
-            <h2 className="text-xl font-semibold tracking-tight">{copy.remoteSetupTitle}</h2>
-            <p className="mt-1.5 text-sm text-muted-foreground">{copy.remoteSetupDesc}</p>
-          </div>
-        </div>
-        <div className="mt-6">
+    <div className={cn('fixed inset-0 z-(--z-setup) flex items-center justify-center overflow-y-auto p-5', BOOT_SURFACE_CLASS)}>
+      <div className={cn(BOOT_COLUMN_CLASS, 'w-[min(36rem,100%)]')}>
+        <BootHero lead={copy.remoteSetupDesc} title={copy.remoteSetupTitle} />
+        <div className={cn('mt-1 w-full p-5 text-left', BOOT_CARD_CLASS)}>
           <RemoteSetupFields disabled={applying} setup={setup} />
-          {error ? <div className="mt-3 text-sm text-destructive">{error}</div> : null}
+          {error ? <div className="mt-3 text-sm text-(--ui-red)">{error}</div> : null}
         </div>
-        <div className="mt-7 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex w-full flex-wrap items-center justify-between gap-3">
           <Button disabled={applying} onClick={onBack} size="sm" variant="ghost">
             {copy.backToSetup}
           </Button>
