@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 
+import { StudioIcon, type StudioIconName } from '@/components/ui/studio-icon'
 import type { IconComponent } from '@/lib/icons'
 import { cn } from '@/lib/utils'
 
@@ -56,17 +57,24 @@ const SIZE_CLASS: Record<TileSize, string> = {
   54: 'size-[54px] rounded-[14px] [&>svg]:size-[30px]'
 }
 
+// Glyph box per tile size (prototype .set-ico 14px, sheet tile 16px, hero 30px).
+const GLYPH_SIZE: Record<TileSize, number> = { 22: 14, 24: 14, 28: 16, 30: 16, 36: 20, 38: 20, 44: 24, 54: 30 }
+
 interface IconTileProps {
   className?: string
   /** Custom glyph content (a brand mark, a letter) instead of `icon`. */
   children?: ReactNode
+  /** A prototype glyph (components/ui/studio-icon); preferred over `icon`. */
+  glyph?: StudioIconName
   icon?: IconComponent
   size?: TileSize
   tone?: TileTone
 }
 
 /** A coloured rounded-square icon tile: settings categories, sheet headers, choices. */
-export function IconTile({ className, children, icon: Icon, size = 22, tone = 'accent' }: IconTileProps) {
+export function IconTile({ className, children, glyph, icon: Icon, size = 22, tone = 'accent' }: IconTileProps) {
+  const content = glyph ? <StudioIcon name={glyph} size={GLYPH_SIZE[size]} /> : Icon ? <Icon /> : children
+
   return (
     <span
       aria-hidden
@@ -79,7 +87,7 @@ export function IconTile({ className, children, icon: Icon, size = 22, tone = 'a
       data-slot="icon-tile"
       data-tone={tone}
     >
-      {Icon ? <Icon /> : children}
+      {content}
     </span>
   )
 }
