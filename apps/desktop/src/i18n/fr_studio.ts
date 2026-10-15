@@ -1,4 +1,5 @@
 import { frStudioChat } from './fr_studio_chat'
+import { frStudioMenu } from './fr_studio_menu'
 import { frStudioOverlays } from './fr_studio_overlays'
 import { frStudioPages } from './fr_studio_pages'
 import { frStudioSettings } from './fr_studio_settings'
@@ -13,5 +14,6 @@ export const frStudio: StudioTranslations = {
   chat: frStudioChat,
   pages: frStudioPages,
   settings: frStudioSettings,
-  overlays: frStudioOverlays
+  overlays: frStudioOverlays,
+  menu: frStudioMenu
 }

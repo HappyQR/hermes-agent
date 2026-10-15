@@ -1,5 +1,6 @@
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import type * as Nanostores from 'nanostores'
+import { MemoryRouter } from 'react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { deleteProfile, getProfileSoul, updateProfileSoul } from '@/hermes'
@@ -45,9 +46,23 @@ vi.mock('@/store/gateway', () => ({
   retireLocalProfileGateways: vi.fn()
 }))
 
+// The sheet's 操作 menu reads the connection identity (launch routes, the
+// multi-gateway gate) and offers export/import; neither is under test here.
+vi.mock('@/store/connections', async () => {
+  const { atom } = await import('nanostores')
+
+  return { $activeConnectionId: atom<null | string>(null), $hasMultipleConnections: atom(false) }
+})
+
+vi.mock('@/store/profile-share', () => ({
+  runExportProfileFlow: vi.fn(),
+  runImportProfileFlow: vi.fn()
+}))
+
 const {
   $activeGatewayProfile: activeGateway,
   $profileColors,
+  $profiles,
   $showAllProfiles
 } = vi.hoisted(() => {
   const { atom } = require('nanostores') as typeof Nanostores
@@ -55,6 +70,9 @@ const {
   return {
     $activeGatewayProfile: atom<string>('default'),
     $profileColors: atom<Record<string, string>>({}),
+    // The sheet's model row hands the profile to the settings scope store,
+    // which derives from the roster at import time.
+    $profiles: atom<ProfileInfo[]>([]),
     $showAllProfiles: atom<boolean>(false)
   }
 })
@@ -62,6 +80,7 @@ const {
 vi.mock('@/store/profile', () => ({
   $activeGatewayProfile: activeGateway,
   $profileColors,
+  $profiles,
   // `session-states` -> `preview` -> `layout` reaches this mock now that the
   // right rail is scoped per profile; layout.ts derives its grouping from it.
   $showAllProfiles,
@@ -70,7 +89,8 @@ vi.mock('@/store/profile', () => ({
     (profile.display_name ?? '').trim() || profile.name,
   refreshProfiles: vi.fn(async () => [] as ProfileInfo[]),
   selectProfile: vi.fn(),
-  setActiveProfile: vi.fn()
+  setActiveProfile: vi.fn(),
+  setProfileColor: vi.fn()
 }))
 
 // The one non-default profile these tests act on. Its name doubles as the row's
@@ -103,7 +123,11 @@ function realClick(el: HTMLElement) {
 // mount setState isn't left unwrapped.
 async function renderProfilesView() {
   await act(async () => {
-    render(<ProfilesView onClose={vi.fn()} />)
+    render(
+      <MemoryRouter>
+        <ProfilesView onClose={vi.fn()} />
+      </MemoryRouter>
+    )
   })
 }
 

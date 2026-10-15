@@ -1,8 +1,31 @@
+import { type TileTone } from '@/app/overlays/studio/icon-tile'
 import { RowButton } from '@/components/ui/row-button'
+import { StudioIcon, type StudioIconName } from '@/components/ui/studio-icon'
 import { useI18n } from '@/i18n'
 import { Check, ChevronRight, Terminal } from '@/lib/icons'
 import { PROVIDER_DISPLAY_NAMES } from '@/lib/model-status-label'
 import type { OAuthProvider } from '@/types/hermes'
+
+import { ChoiceRow } from '../studio-onboarding/boot-kit'
+
+/** `row` (default): the compact list row Settings › Providers uses. `choice`:
+ *  the onboarding picker's large choice card (Hermes Studio). */
+export type ProviderRowVariant = 'choice' | 'row'
+
+const CHOICE_TRAIL = (
+  <StudioIcon
+    className="text-(--ui-text-tertiary) transition group-hover:translate-x-0.5 group-hover:text-(--ui-text-primary)"
+    name="chev-r"
+    size={14}
+  />
+)
+
+// The tile a sign-in flow wears in the choice picker.
+const FLOW_TILE: Record<OAuthProvider['flow'], { glyph: StudioIconName; tone: TileTone }> = {
+  device_code: { glyph: 'key', tone: 'purple' },
+  external: { glyph: 'terminal', tone: 'graphite' },
+  pkce: { glyph: 'globe', tone: 'indigo' }
+}
 
 // Titles live in PROVIDER_DISPLAY_NAMES (shared with the model pill); this is
 // only the featured order. Both Anthropic entries sit at the bottom: the API-key
@@ -27,14 +50,36 @@ export const sortProviders = (providers: OAuthProvider[]) =>
 
 export function FeaturedProviderRow({
   onSelect,
-  provider
+  provider,
+  variant = 'row'
 }: {
   onSelect: (provider: OAuthProvider) => void
   provider: OAuthProvider
+  variant?: ProviderRowVariant
 }) {
   const { t } = useI18n()
   const freeTier = provider.status?.free_tier === true
   const loggedIn = provider.status?.logged_in && !freeTier
+
+  if (variant === 'choice') {
+    // The recommended path wears the accent ring, like the prototype's
+    // preselected choice — it is still a one-click action, not a selection.
+    return (
+      <ChoiceRow
+        description={freeTier ? t.freeTier.providerRowPitch : t.onboarding.featuredPitch}
+        media={
+          <span className="inline-flex size-[38px] shrink-0 overflow-hidden rounded-[10px] shadow-[0_0_0_0.5px_var(--ui-line-2)]">
+            <img alt="" className="size-full" src={assetPath('apple-touch-icon.png')} />
+          </span>
+        }
+        onClick={() => onSelect(provider)}
+        selected
+        title={freeTier ? t.freeTier.providerRowTitle : providerTitle(provider)}
+        titleAside={freeTier ? <FreeTierTag /> : loggedIn ? <ConnectedTag /> : <RecommendedTag />}
+        trailing={CHOICE_TRAIL}
+      />
+    )
+  }
 
   return (
     <button
@@ -69,6 +114,16 @@ export function FeaturedProviderRow({
   )
 }
 
+function RecommendedTag() {
+  const { t } = useI18n()
+
+  return (
+    <span className="inline-flex h-5 items-center rounded-[6px] bg-primary px-[7px] text-[0.71875rem] font-semibold text-primary-foreground">
+      {t.onboarding.recommended}
+    </span>
+  )
+}
+
 // The free tier is an identity without an account: never "Connected", never the account's name.
 function FreeTierTag() {
   const { t } = useI18n()
@@ -95,7 +150,34 @@ const PROVIDER_ROW_CLASS =
   'group flex w-full items-center justify-between gap-3 rounded-[6px] px-3 py-2.5 text-left transition-colors hover:bg-(--ui-control-hover-background)'
 
 /** Quick-key row for API-key providers (Fireworks leads the expanded list after Nous, OpenRouter further down). */
-export function KeyProviderRow({ onClick, pitch, title }: { onClick: () => void; pitch: string; title: string }) {
+export function KeyProviderRow({
+  glyph = 'key',
+  onClick,
+  pitch,
+  title,
+  tone = 'orange',
+  variant = 'row'
+}: {
+  glyph?: StudioIconName
+  onClick: () => void
+  pitch: string
+  title: string
+  tone?: TileTone
+  variant?: ProviderRowVariant
+}) {
+  if (variant === 'choice') {
+    return (
+      <ChoiceRow
+        description={pitch}
+        glyph={glyph}
+        onClick={onClick}
+        title={title}
+        tone={tone}
+        trailing={CHOICE_TRAIL}
+      />
+    )
+  }
+
   return (
     <RowButton className={PROVIDER_ROW_CLASS} onClick={onClick}>
       <div className="min-w-0">
@@ -107,39 +189,64 @@ export function KeyProviderRow({ onClick, pitch, title }: { onClick: () => void;
   )
 }
 
-export function FireworksProviderRow({ onClick }: { onClick: () => void }) {
+export function FireworksProviderRow({ onClick, variant }: { onClick: () => void; variant?: ProviderRowVariant }) {
   const { t } = useI18n()
 
-  return <KeyProviderRow onClick={onClick} pitch={t.onboarding.fireworksPitch} title="Fireworks AI" />
+  return <KeyProviderRow onClick={onClick} pitch={t.onboarding.fireworksPitch} title="Fireworks AI" variant={variant} />
 }
 
 /** Onboarding row for the managed local runtime: no account, no key — the
  *  destination is the Local Models pane where install/download live. */
-export function LocalModelsProviderRow({ onClick }: { onClick: () => void }) {
+export function LocalModelsProviderRow({ onClick, variant }: { onClick: () => void; variant?: ProviderRowVariant }) {
   const { t } = useI18n()
 
   return (
-    <KeyProviderRow onClick={onClick} pitch={t.onboarding.localModelsPitch} title={t.onboarding.localModelsTitle} />
+    <KeyProviderRow
+      glyph="drive"
+      onClick={onClick}
+      pitch={t.onboarding.localModelsPitch}
+      title={t.onboarding.localModelsTitle}
+      tone="graphite"
+      variant={variant}
+    />
   )
 }
 
-export function OpenRouterProviderRow({ onClick }: { onClick: () => void }) {
+export function OpenRouterProviderRow({ onClick, variant }: { onClick: () => void; variant?: ProviderRowVariant }) {
   const { t } = useI18n()
 
-  return <KeyProviderRow onClick={onClick} pitch={t.onboarding.openRouterPitch} title="OpenRouter" />
+  return <KeyProviderRow onClick={onClick} pitch={t.onboarding.openRouterPitch} title="OpenRouter" variant={variant} />
 }
 
 export function ProviderRow({
   onSelect,
-  provider
+  provider,
+  variant = 'row'
 }: {
   onSelect: (provider: OAuthProvider) => void
   provider: OAuthProvider
+  variant?: ProviderRowVariant
 }) {
   const { t } = useI18n()
   const freeTier = provider.status?.free_tier === true
   const loggedIn = provider.status?.logged_in && !freeTier
   const Trail = provider.flow === 'external' ? Terminal : ChevronRight
+
+  if (variant === 'choice') {
+    const tile = FLOW_TILE[provider.flow] ?? FLOW_TILE.pkce
+
+    return (
+      <ChoiceRow
+        description={t.onboarding.flowSubtitles[provider.flow]}
+        glyph={tile.glyph}
+        onClick={() => onSelect(provider)}
+        title={freeTier ? t.freeTier.providerRowTitle : providerTitle(provider)}
+        titleAside={freeTier ? <FreeTierTag /> : loggedIn ? <ConnectedTag /> : null}
+        tone={tile.tone}
+        trailing={CHOICE_TRAIL}
+      />
+    )
+  }
 
   return (
     <RowButton className={PROVIDER_ROW_CLASS} onClick={() => onSelect(provider)}>

@@ -1,4 +1,5 @@
 import { ruStudioChat } from './ru_studio_chat'
+import { ruStudioMenu } from './ru_studio_menu'
 import { ruStudioOverlays } from './ru_studio_overlays'
 import { ruStudioPages } from './ru_studio_pages'
 import { ruStudioSettings } from './ru_studio_settings'
@@ -13,5 +14,6 @@ export const ruStudio: StudioTranslations = {
   chat: ruStudioChat,
   pages: ruStudioPages,
   settings: ruStudioSettings,
-  overlays: ruStudioOverlays
+  overlays: ruStudioOverlays,
+  menu: ruStudioMenu
 }

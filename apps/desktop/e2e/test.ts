@@ -13,7 +13,7 @@
  * per-spec setup needed.
  */
 
-import { test as base, expect, type Page, type ElectronApplication, _electron } from '@playwright/test'
+import { _electron, test as base, type ElectronApplication, expect, type Page } from '@playwright/test'
 
 // Track error messages per test so afterEach can assert + report.
 const seenErrors: string[] = []
@@ -50,7 +50,18 @@ export function installErrorBannerGuard(page: Page): void {
   // Use a MutationObserver to catch error banners as they appear.
   // We inject this via addInitScript so it runs before any app code.
   page.addInitScript(() => {
+    // Hermes Studio hides the status bar by default; these specs read gateway
+    // readiness from it, so turn it on before the app boots (unless a spec set it).
+    try {
+      if (localStorage.getItem('hermes.desktop.statusbarVisible.v3') === null) {
+        localStorage.setItem('hermes.desktop.statusbarVisible.v3', 'true')
+      }
+    } catch {
+      // Storage unavailable (about:blank) — nothing to seed.
+    }
+
     const seen: string[] = []
+
     ;(window as unknown as { __ERROR_BANNER_GUARD__?: string[] }).__ERROR_BANNER_GUARD__ = seen
 
     const observer = new MutationObserver(() => {
@@ -123,6 +134,8 @@ export const test = base.extend({
   // Override the page fixture to auto-install the guard.
   page: async ({ page }, use) => {
     installErrorBannerGuard(page)
+    // Playwright's fixture `use`, not a React hook.
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     await use(page)
   },
 })
@@ -136,6 +149,8 @@ export const test = base.extend({
 // Uses `activePage` (set by installErrorBannerGuard) instead of the
 // default `page` fixture — Electron tests create their own page via
 // app.firstWindow(), so the default `page` fixture is undefined.
+// Playwright requires the fixtures argument to be a destructuring pattern.
+// eslint-disable-next-line no-empty-pattern
 base.afterEach(async ({}, testInfo) => {
   const wasAllowed = errorBannersAllowed
   // Reset for the next test.
@@ -144,6 +159,7 @@ base.afterEach(async ({}, testInfo) => {
   if (wasAllowed) {
     // Test opted out — clear any collected errors without asserting.
     seenErrors.length = 0
+
     return
   }
 
@@ -163,4 +179,4 @@ base.afterAll(async () => {
   activePage = null
 })
 
-export { expect, type Page, type ElectronApplication, _electron }
+export { _electron, type ElectronApplication, expect, type Page }

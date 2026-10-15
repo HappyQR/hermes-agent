@@ -28,6 +28,7 @@ import type { HermesConfigRecord, SessionInfo } from '@/types/hermes'
 
 import { EmptyState, ListRow, SectionHeading, SettingsContent, SettingsSkeleton, ToggleRow } from './primitives'
 import { SETTING_IDS, settingElementId } from './settings-manifest'
+import { useSettingsWindow } from './studio/window-context'
 import { useDeepLinkHighlight } from './use-deep-link-highlight'
 import { useSettingDeepLink } from './use-setting-deep-link'
 
@@ -54,6 +55,9 @@ export function SessionsSettings({ subpage }: SessionsSettingsProps = {}) {
 function ArchivedSessionsSettings({ includeDefaultDirectory }: { includeDefaultDirectory: boolean }) {
   const { t } = useI18n()
   const s = t.settings.sessions
+  // The Settings window gives auto-archive and the archive list their own
+  // sections (Settings › Sessions & Archive); here only the list remains.
+  const windowed = useSettingsWindow()
   const [sessions, setLocalSessions] = useState<SessionInfo[]>([])
   const [loading, setLoading] = useState(true)
   const [busyId, setBusyId] = useState<string | null>(null)
@@ -146,16 +150,20 @@ function ArchivedSessionsSettings({ includeDefaultDirectory }: { includeDefaultD
     <SettingsContent>
       {includeDefaultDirectory && <DefaultProjectDirSetting />}
 
-      <AutoArchiveSetting />
+      {!windowed && <AutoArchiveSetting />}
 
-      <SectionHeading
-        icon={Archive}
-        meta={sessions.length ? String(sessions.length) : undefined}
-        title={s.archivedTitle}
-      />
-      <p className="mb-2 text-[length:var(--conversation-caption-font-size)] text-(--ui-text-tertiary)">
-        {s.archivedIntro}
-      </p>
+      {!windowed && (
+        <>
+          <SectionHeading
+            icon={Archive}
+            meta={sessions.length ? String(sessions.length) : undefined}
+            title={s.archivedTitle}
+          />
+          <p className="mb-2 text-[length:var(--conversation-caption-font-size)] text-(--ui-text-tertiary)">
+            {s.archivedIntro}
+          </p>
+        </>
+      )}
 
       {sessions.length === 0 ? (
         <EmptyState description={s.emptyArchivedDesc} title={s.emptyArchivedTitle} />
@@ -213,9 +221,10 @@ function ArchivedSessionsSettings({ includeDefaultDirectory }: { includeDefaultD
 // (sessions.auto_archive in config.yaml + SessionDB.maybe_auto_archive); this
 // just toggles the config keys, so CLI / gateway / Desktop all honour one
 // setting. Pins are exempt on the backend, so pinned chats survive regardless.
-function AutoArchiveSetting() {
+export function AutoArchiveSetting() {
   const { t } = useI18n()
   const s = t.settings.sessions
+  const windowed = useSettingsWindow()
   const [config, setConfig] = useState<HermesConfigRecord | null>(null)
   const [enabled, setEnabled] = useState(false)
   const [days, setDays] = useState(DEFAULT_AUTO_ARCHIVE_DAYS)
@@ -285,7 +294,7 @@ function AutoArchiveSetting() {
   }
 
   return (
-    <div className="mb-6">
+    <div className={windowed ? undefined : 'mb-6'}>
       <ToggleRow
         checked={enabled}
         description={s.autoArchiveDesc}
@@ -327,6 +336,7 @@ function AutoArchiveSetting() {
 function DefaultProjectDirSetting() {
   const { t } = useI18n()
   const s = t.settings.sessions
+  const windowed = useSettingsWindow()
   const [dir, setDir] = useState<null | string>(null)
   const [fallback, setFallback] = useState<string>('')
   const [busy, setBusy] = useState(false)
@@ -408,29 +418,43 @@ function DefaultProjectDirSetting() {
     }
   }, [s])
 
+  const actions = (
+    <div className="flex items-center gap-3">
+      <Button disabled={busy} onClick={() => void choose()} size="sm" type="button" variant="textStrong">
+        <FolderOpen className="size-3.5" />
+        <span>{dir ? s.change : s.choose}</span>
+      </Button>
+      {dir && (
+        <Button disabled={busy} onClick={() => void clear()} size="sm" type="button" variant="text">
+          {s.clear}
+        </Button>
+      )}
+    </div>
+  )
+
+  // The Settings window: one row — the setting's name, the folder in use, and the actions.
+  if (windowed) {
+    return (
+      <ListRow
+        action={actions}
+        description={
+          <>
+            {s.defaultDirDesc}
+            <span className="block font-mono">{dir || s.defaultsTo(fallback || '~')}</span>
+          </>
+        }
+        title={s.defaultDirTitle}
+      />
+    )
+  }
+
   return (
     <div className="mb-6">
       <SectionHeading icon={FolderOpen} page title={s.defaultDirTitle} />
       <p className="mb-2 text-[length:var(--conversation-caption-font-size)] text-(--ui-text-tertiary)">
         {s.defaultDirDesc}
       </p>
-      <ListRow
-        action={
-          <div className="flex items-center gap-3">
-            <Button disabled={busy} onClick={() => void choose()} size="sm" type="button" variant="textStrong">
-              <FolderOpen className="size-3.5" />
-              <span>{dir ? s.change : s.choose}</span>
-            </Button>
-            {dir && (
-              <Button disabled={busy} onClick={() => void clear()} size="sm" type="button" variant="text">
-                {s.clear}
-              </Button>
-            )}
-          </div>
-        }
-        description={dir || s.defaultsTo(fallback || '~')}
-        title={dir ? dir : s.notSet}
-      />
+      <ListRow action={actions} description={dir || s.defaultsTo(fallback || '~')} title={dir ? dir : s.notSet} />
     </div>
   )
 }

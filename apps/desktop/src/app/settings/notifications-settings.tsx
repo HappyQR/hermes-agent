@@ -21,6 +21,7 @@ import { notify } from '@/store/notifications'
 import { CONTROL_TEXT } from './constants'
 import { ListRow, SectionHeading, SettingsContent, ToggleRow } from './primitives'
 import { notificationKindSettingId, SETTING_IDS, settingElementId } from './settings-manifest'
+import { useSettingsWindow } from './studio/window-context'
 import { useSettingDeepLink } from './use-setting-deep-link'
 
 const CAPTION = 'text-[length:var(--conversation-caption-font-size)] text-(--ui-text-tertiary)'
@@ -40,6 +41,8 @@ export function NotificationsSettings({ subpage }: NotificationsSettingsProps = 
   const copy = t.settings.notifications
   const showAlerts = subpage === undefined || subpage === 'alerts'
   const showSounds = subpage === undefined || subpage === 'sounds'
+  // The Settings window shows the intro as the section note and the test as a row.
+  const windowed = useSettingsWindow()
 
   useSettingDeepLink('notifications', page => subpage === undefined || page === subpage)
 
@@ -54,7 +57,7 @@ export function NotificationsSettings({ subpage }: NotificationsSettingsProps = 
       {showAlerts && (
         <>
           {subpage === undefined && <SectionHeading icon={Bell} title={copy.title} />}
-          <Caption className="mb-2 leading-(--conversation-caption-line-height)">{copy.intro}</Caption>
+          {!windowed && <Caption className="mb-2 leading-(--conversation-caption-line-height)">{copy.intro}</Caption>}
 
           <ToggleRow
             checked={prefs.enabled}
@@ -126,7 +129,9 @@ export function NotificationsSettings({ subpage }: NotificationsSettingsProps = 
         />
       )}
 
-      {showAlerts && (
+      {showAlerts && windowed && <TestNotificationRow onTest={() => void runTest()} />}
+
+      {showAlerts && !windowed && (
         <div className="mt-4 flex flex-col gap-2">
           <Button className="self-start" onClick={() => void runTest()} size="sm" type="button" variant="outline">
             <Bell />
@@ -136,5 +141,23 @@ export function NotificationsSettings({ subpage }: NotificationsSettingsProps = 
         </div>
       )}
     </SettingsContent>
+  )
+}
+
+/** The Settings window's "Send a test notification" row. */
+function TestNotificationRow({ onTest }: { onTest: () => void }) {
+  const { t } = useI18n()
+  const copy = t.settings.notifications
+
+  return (
+    <ListRow
+      action={
+        <Button onClick={onTest} size="sm" type="button" variant="secondary">
+          {t.studio.settings.rows.sendTestAction}
+        </Button>
+      }
+      description={copy.focusedHint}
+      title={copy.test}
+    />
   )
 }

@@ -225,3 +225,9 @@ export function applyLayoutPreset(id: string, tree: LayoutNode) {
 
   asLayoutIntent(() => applyTree(geometry, id, specs.get(id)?.resting))
 }
+
+/** Studio: a bundled preset's name in the UI language (`names` = the locale's
+ *  preset names by id); user presets and plugin presets keep their own title. */
+export function presetTitle(preset: { id: string; title?: string }, names: Readonly<Record<string, string>>): string {
+  return names[preset.id] ?? preset.title ?? preset.id
+}

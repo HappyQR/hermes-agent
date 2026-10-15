@@ -6,6 +6,7 @@ import { useOnProfileSwitch } from '@/app/hooks/use-on-profile-switch'
 import { useRouteOverlayActive } from '@/app/hooks/use-route-overlay-active'
 import { PetHeartField } from '@/components/chat/vibe-hearts'
 import { PetBubble } from '@/components/pet/pet-bubble'
+import { useI18n } from '@/i18n'
 import { persistString, storedString } from '@/lib/storage'
 import { $changeEventsAvailable, $petChange } from '@/store/live-sync'
 import {
@@ -38,6 +39,12 @@ const POSITION_KEY = 'hermes.desktop.pet-position.v2'
 
 // Stand-in pet size for the pre-load clamp (real size flows in with `info`).
 const NOMINAL_PET_PX = 96
+
+// Below this much pointer travel a press is a click (say something), not a drag.
+const CLICK_SLOP_PX = 3
+
+// How long a click's speech bubble stays up.
+const PEEK_MS = 2600
 
 interface Point {
   x: number
@@ -100,7 +107,60 @@ function loadPosition(): Point {
  * Promotion to a separate frameless OS-level window is a follow-up — the
  * sprite + state logic here is reused as-is, only the host changes.
  */
+/** The pet's display name for its accessible label (falls back to its slug). */
+function petName(info: { displayName?: null | string; slug?: null | string }): string {
+  return info.displayName || info.slug || ''
+}
+
+/** One press on the pet: where it grabbed, where it started and whether it has travelled. */
+interface PetDrag {
+  dx: number
+  dy: number
+  moved: boolean
+  startX: number
+  startY: number
+  x: number
+  y: number
+}
+
+/** Marks the press as a drag once the pointer travels past the click slop. */
+function noteTravel(drag: PetDrag, e: { clientX: number; clientY: number }) {
+  if (Math.hypot(e.clientX - drag.startX, e.clientY - drag.startY) > CLICK_SLOP_PX) {
+    drag.moved = true
+  }
+}
+
+/**
+ * A press that never travelled is a click: the pet speaks up instead of
+ * persisting a position it never left. A drag commits where it was dropped.
+ */
+function finishPress(drag: PetDrag, onClick: () => void, onDrop: (at: { x: number; y: number }) => void) {
+  if (drag.moved) {
+    onDrop({ x: drag.x, y: drag.y })
+  } else {
+    onClick()
+  }
+}
+
+/** Click the pet and it says how things are going (or hello), for a moment. */
+function usePetPeek(): [boolean, () => void] {
+  const [peeking, setPeeking] = useState(false)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+
+  useEffect(() => () => clearTimeout(timerRef.current), [])
+
+  const peek = useCallback(() => {
+    clearTimeout(timerRef.current)
+    setPeeking(true)
+    timerRef.current = setTimeout(() => setPeeking(false), PEEK_MS)
+  }, [])
+
+  return [peeking, peek]
+}
+
 export function FloatingPet() {
+  const { t } = useI18n()
+  const [peeking, peek] = usePetPeek()
   const { requestGateway } = useGatewayRequest()
   const { resolvedMode } = useTheme()
   const gatewayState = useStore($gatewayState)
@@ -125,10 +185,11 @@ export function FloatingPet() {
   const shadowW = Math.round(petW * 0.55)
   const shadowH = Math.max(3, Math.round(shadowW * 0.28))
   const shadowAlpha = resolvedMode === 'light' ? 0.2 : 0.55
+
   // Live drag offset (pointer → element top-left). Drag updates the DOM
   // directly to avoid a React re-render (and canvas reflow) per pointermove —
   // state is only committed on release.
-  const dragRef = useRef<{ dx: number; dy: number; x: number; y: number } | null>(null)
+  const dragRef = useRef<PetDrag | null>(null)
 
   // Keep the *whole* pet on-screen at its current size, so growing it near an
   // edge can't leave the window cropping it. Shared by drag + the reclamp effect.
@@ -356,7 +417,15 @@ export function FloatingPet() {
       return
     }
 
-    dragRef.current = { dx: e.clientX - rect.left, dy: e.clientY - rect.top, x: rect.left, y: rect.top }
+    dragRef.current = {
+      dx: e.clientX - rect.left,
+      dy: e.clientY - rect.top,
+      moved: false,
+      startX: e.clientX,
+      startY: e.clientY,
+      x: rect.left,
+      y: rect.top
+    }
     el.setPointerCapture(e.pointerId)
     el.style.cursor = 'grabbing'
   }, [])
@@ -369,6 +438,8 @@ export function FloatingPet() {
       if (!drag || !el) {
         return
       }
+
+      noteTravel(drag, e)
 
       const next = clamp({ x: e.clientX - drag.dx, y: e.clientY - drag.dy })
       drag.x = next.x
@@ -386,23 +457,28 @@ export function FloatingPet() {
     [clamp, petW]
   )
 
-  const onPointerUp = useCallback((e: React.PointerEvent) => {
-    const drag = dragRef.current
+  const onPointerUp = useCallback(
+    (e: React.PointerEvent) => {
+      const drag = dragRef.current
 
-    if (drag) {
-      dragRef.current = null
-      const committed = { x: drag.x, y: drag.y }
-      setPosition(committed)
-      persistString(POSITION_KEY, JSON.stringify(committed))
-    }
+      if (drag) {
+        dragRef.current = null
 
-    const el = containerRef.current
+        finishPress(drag, peek, committed => {
+          setPosition(committed)
+          persistString(POSITION_KEY, JSON.stringify(committed))
+        })
+      }
 
-    if (el) {
-      el.style.cursor = 'grab'
-      el.releasePointerCapture?.(e.pointerId)
-    }
-  }, [])
+      const el = containerRef.current
+
+      if (el) {
+        el.style.cursor = 'grab'
+        el.releasePointerCapture?.(e.pointerId)
+      }
+    },
+    [peek]
+  )
 
   // Alt+wheel over the pet resizes it (persisted via the same path as the
   // settings slider). Zoom toward the cursor — shift the top-left so the pixel
@@ -466,10 +542,18 @@ export function FloatingPet() {
 
   return (
     <div
+      aria-label={t.studio.overlays.aux.pet.label(petName(info))}
+      onKeyDown={event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          peek()
+        }
+      }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       ref={containerRef}
+      role="button"
       style={{
         cursor: 'grab',
         left: position.x,
@@ -480,6 +564,7 @@ export function FloatingPet() {
         userSelect: 'none',
         zIndex: 60
       }}
+      tabIndex={0}
     >
       <div
         aria-hidden
@@ -512,7 +597,8 @@ export function FloatingPet() {
       {/* Plugin lines (ctx.pet.say) float above the pet, upright (outside the
           mirrored sprite wrapper) and grown toward the window's middle so a pet
           parked at an edge never pushes its bubble off-screen. Core status
-          lines stay in the pop-out overlay; in-window the app is the surface. */}
+          lines stay in the pop-out overlay; in-window the app is the surface,
+          except for a moment after the pet is clicked. */}
       <div
         style={{
           bottom: '100%',
@@ -523,7 +609,7 @@ export function FloatingPet() {
           ...(position.x + petW / 2 < (window.innerWidth || 800) / 2 ? { left: 0 } : { right: 0 })
         }}
       >
-        <PetBubble showStatus={false} />
+        <PetBubble peek={peeking} showStatus={false} />
       </div>
     </div>
   )

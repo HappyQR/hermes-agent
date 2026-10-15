@@ -20,6 +20,7 @@ import {
 } from '@/lib/keybinds/actions'
 import { formatCombo } from '@/lib/keybinds/combo'
 import { arraysEqual } from '@/lib/storage'
+import { cn } from '@/lib/utils'
 import {
   $bindings,
   $capture,
@@ -35,7 +36,11 @@ import {
 import { HudModifierSettings } from './hud-modifier-settings'
 import { SettingsBreadcrumbContext, SettingsContent } from './primitives'
 import { ScreenshotSettings } from './screenshot-settings'
+import { useSettingsWindow } from './studio/window-context'
 import { useSettingDeepLink } from './use-setting-deep-link'
+
+// A shortcut row inside the Settings window's grouped card (prototype .f-row).
+const WINDOW_ROW = 'min-h-[2.375rem] px-3.5 py-1 shadow-[inset_0_0.5px_0_var(--ui-line)]'
 
 interface KeybindSettingsProps {
   subpage?: string
@@ -66,6 +71,9 @@ export function KeybindSettings({ subpage }: KeybindSettingsProps = {}) {
 function ShortcutSettings({ includeScreenshot }: { includeScreenshot: boolean }) {
   const { t } = useI18n()
   const hasBreadcrumb = useContext(SettingsBreadcrumbContext)
+  // The Settings window: section title + note above, search as the first row,
+  // categories as group strips, Reset all as the last row.
+  const windowed = useSettingsWindow()
   const bindings = useStore($bindings)
   const k = t.keybinds
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set())
@@ -129,7 +137,7 @@ function ShortcutSettings({ includeScreenshot }: { includeScreenshot: boolean })
 
   return (
     <SettingsContent>
-      <div className="flex items-center justify-between gap-3 pb-3">
+      <div className={cn('flex items-center justify-between gap-3 pb-3', windowed && 'hidden')}>
         <div className="min-w-0">
           {!hasBreadcrumb && <h2 className="text-sm font-semibold text-foreground">{k.title}</h2>}
           <p className="mt-0.5 text-[0.72rem] text-muted-foreground">
@@ -151,18 +159,19 @@ function ShortcutSettings({ includeScreenshot }: { includeScreenshot: boolean })
           <ScreenshotSettings />
         )}
 
-      <div className="pb-3">
+      <div className={windowed ? 'px-3.5 py-2.5' : 'pb-3'}>
         <SearchField
           aria-label={k.search}
           containerClassName="w-full"
           onChange={setQuery}
           placeholder={k.search}
           value={query}
+          variant={windowed ? 'filled' : undefined}
         />
       </div>
 
       {isSearching ? (
-        <div className="px-2 py-1.5">
+        <div className={windowed ? undefined : 'px-2 py-1.5'}>
           {filteredActions?.length === 0 && filteredReadonly?.length === 0 ? (
             <p className="px-2.5 py-4 text-center text-[0.82rem] text-muted-foreground">—</p>
           ) : (
@@ -177,7 +186,7 @@ function ShortcutSettings({ includeScreenshot }: { includeScreenshot: boolean })
           )}
         </div>
       ) : (
-        <div className="px-2 py-1.5">
+        <div className={windowed ? undefined : 'px-2 py-1.5'}>
           {KEYBIND_CATEGORIES.map(category => {
             const actions = actionList.filter(
               action => action.category === category && action.id !== KEYBIND_PANEL_ACTION
@@ -205,18 +214,39 @@ function ShortcutSettings({ includeScreenshot }: { includeScreenshot: boolean })
           })}
         </div>
       )}
+      {windowed && (
+        <div className="flex min-h-[2.625rem] items-center justify-end px-3.5 py-2 shadow-[inset_0_0.5px_0_var(--ui-line)]">
+          <Button onClick={resetAllBindings} size="sm" type="button" variant="secondary">
+            {t.studio.settings.rows.resetShortcutsAction}
+          </Button>
+        </div>
+      )}
     </SettingsContent>
   )
 }
 
 function CategoryHeader({ label, onToggle, open }: { label: string; onToggle: () => void; open: boolean }) {
+  const windowed = useSettingsWindow()
+
   return (
     <button
-      className="group/kbd-cat flex w-fit min-w-0 items-center gap-1 px-2.5 pb-1 pt-3 text-left leading-none"
+      className={cn(
+        'group/kbd-cat flex min-w-0 items-center gap-1 text-left leading-none',
+        windowed
+          ? 'min-h-[1.875rem] w-full bg-(--ui-fill-2) px-3.5 shadow-[inset_0_0.5px_0_var(--ui-line)]'
+          : 'w-fit px-2.5 pb-1 pt-3'
+      )}
       onClick={onToggle}
       type="button"
     >
-      <span className="min-w-0 truncate text-[0.64rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground/70">
+      <span
+        className={cn(
+          'min-w-0 truncate',
+          windowed
+            ? 'text-xs font-semibold text-(--ui-text-primary)'
+            : 'text-[0.64rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground/70'
+        )}
+      >
         {label}
       </span>
       <DisclosureCaret
@@ -246,9 +276,23 @@ function KeybindRow({ action }: { action: KeybindActionMeta }) {
     .flatMap(combo => conflictsFor(action.id, combo).map(other => k.actions[other] ?? other))
     .find(Boolean)
 
+  const windowed = useSettingsWindow()
+
   return (
-    <div className="group flex items-center gap-2.5 rounded-lg px-2.5 py-1 transition-colors hover:bg-(--chrome-action-hover)">
-      <span className="min-w-0 flex-1 truncate text-[0.82rem] text-foreground/90">{label}</span>
+    <div
+      className={cn(
+        'group flex items-center gap-2.5 transition-colors',
+        windowed ? WINDOW_ROW : 'rounded-lg px-2.5 py-1 hover:bg-(--chrome-action-hover)'
+      )}
+    >
+      <span
+        className={cn(
+          'min-w-0 flex-1 truncate',
+          windowed ? 'text-[0.8125rem] text-(--ui-text-primary)' : 'text-[0.82rem] text-foreground/90'
+        )}
+      >
+        {label}
+      </span>
 
       {conflict && (
         <span className="flex size-4 items-center justify-center text-amber-500/90" title={k.conflictWith(conflict)}>
@@ -315,10 +359,18 @@ function ReadonlyRow({ shortcut }: { shortcut: KeybindReadonly }) {
   const { t } = useI18n()
   const k = t.keybinds
   const label = k.actions[shortcut.id] ?? shortcut.id
+  const windowed = useSettingsWindow()
 
   return (
-    <div className="flex items-center gap-2.5 rounded-lg px-2.5 py-1">
-      <span className="min-w-0 flex-1 truncate text-[0.82rem] text-foreground/75">{label}</span>
+    <div className={cn('flex items-center gap-2.5', windowed ? WINDOW_ROW : 'rounded-lg px-2.5 py-1')}>
+      <span
+        className={cn(
+          'min-w-0 flex-1 truncate',
+          windowed ? 'text-[0.8125rem] text-(--ui-text-secondary)' : 'text-[0.82rem] text-foreground/75'
+        )}
+      >
+        {label}
+      </span>
       <div className="flex shrink-0 items-center gap-1">
         {shortcut.keys.map(key => (
           <KbdCombo combo={key} key={key} />

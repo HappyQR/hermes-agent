@@ -225,16 +225,26 @@ export function formatModifierToken(mod: string): string {
   return mod
 }
 
-// Per-key display tokens, e.g. ["⌘", "K"] on macOS, ["Ctrl", "K"] elsewhere —
-// one cap per token for <KbdGroup>.
+// Apple's modifier order for displayed shortcuts: ⌃ ⌥ ⇧ ⌘ (⇧⌘K, not ⌘⇧K).
+const MAC_MODIFIER_ORDER = ['ctrl', 'alt', 'shift', 'mod']
+
+const macModifierRank = (mod: string) => {
+  const rank = MAC_MODIFIER_ORDER.indexOf(mod)
+
+  return rank === -1 ? MAC_MODIFIER_ORDER.length : rank
+}
+
+// Per-key display tokens, e.g. ["⇧", "⌘", "K"] on macOS, ["Ctrl", "Shift", "K"]
+// elsewhere — one cap per token for <KbdGroup>.
 export function comboTokens(combo: string): string[] {
   const parts = combo.split('+')
   const base = parts.pop() ?? ''
+  const mods = IS_MAC ? [...parts].sort((a, b) => macModifierRank(a) - macModifierRank(b)) : parts
 
-  return [...parts.map(formatModifierToken), labelForBase(base)]
+  return [...mods.map(formatModifierToken), labelForBase(base)]
 }
 
-// Human-readable label, e.g. "⌘⇧K" on macOS, "Ctrl+Shift+K" elsewhere.
+// Human-readable label, e.g. "⇧⌘K" on macOS, "Ctrl+Shift+K" elsewhere.
 export function formatCombo(combo: string): string {
   const tokens = comboTokens(combo)
 

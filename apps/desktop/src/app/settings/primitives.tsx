@@ -11,12 +11,26 @@ import { cn } from '@/lib/utils'
 
 import { PAGE_INSET_X } from '../layout-constants'
 
+import { SettingsWindowContext } from './studio/window-context'
+import {
+  WindowListRow,
+  WindowListRowSkeleton,
+  WindowSectionHeading,
+  WindowSettingsSection,
+  WindowSettingsSkeleton
+} from './studio/window-primitives'
+
 // The settings shell owns page titles; embedded callers retain their headings.
 export const SettingsBreadcrumbContext = createContext(false)
 
 // `bare` drops the page gutters + tall bottom pad for embedding in a tighter
 // surface (e.g. the boot-failure recovery card owns its own padding).
 export function SettingsContent({ children, bare = false }: { children: ReactNode; bare?: boolean }) {
+  // The Settings window owns the one scroller and the gutters.
+  if (useContext(SettingsWindowContext)) {
+    return <>{children}</>
+  }
+
   return (
     <section className="min-h-0 overflow-hidden">
       <div className={cn('h-full min-h-0 overflow-y-auto', bare ? 'px-5 pb-6' : cn('pb-20', PAGE_INSET_X))}>
@@ -68,6 +82,10 @@ export function SectionHeading({
   const hasBreadcrumb = useContext(SettingsBreadcrumbContext)
   const showTitle = !page || !hasBreadcrumb
 
+  if (useContext(SettingsWindowContext)) {
+    return <WindowSectionHeading aside={aside} meta={meta} page={page} title={title} />
+  }
+
   if (!showTitle && !aside && !meta) {
     return null
   }
@@ -102,6 +120,14 @@ export function SettingsSection({
   meta?: string
   title: string
 }) {
+  if (useContext(SettingsWindowContext)) {
+    return (
+      <WindowSettingsSection aside={aside} meta={meta} title={title}>
+        {children}
+      </WindowSettingsSection>
+    )
+  }
+
   return (
     <section className="mb-6">
       <SectionHeading aside={aside} icon={icon} meta={meta} title={title} />
@@ -172,6 +198,22 @@ export function ListRow({
   wide?: boolean
   className?: string
 }) {
+  if (useContext(SettingsWindowContext)) {
+    return (
+      <WindowListRow
+        action={action}
+        below={below}
+        className={className}
+        data-tour={dataTour}
+        description={description}
+        hint={hint}
+        id={id}
+        title={title}
+        wide={wide}
+      />
+    )
+  }
+
   return (
     // Container-queried, not viewport-queried: the label/control split keys on
     // the row's own pane width, so a narrow detail column (messaging, split
@@ -282,6 +324,10 @@ export function SectionHeadingSkeleton() {
 }
 
 export function ListRowSkeleton({ wide = false }: { wide?: boolean }) {
+  if (useContext(SettingsWindowContext)) {
+    return <WindowListRowSkeleton wide={wide} />
+  }
+
   return (
     <div className="@container">
       <div className={cn('grid gap-3 py-3', !wide && [LIST_ROW_COLUMNS, '@2xl:items-center'])}>
@@ -305,6 +351,10 @@ export function SettingsSkeleton({
   search?: boolean
   sections?: { heading?: boolean; rows: number }[]
 }) {
+  if (useContext(SettingsWindowContext)) {
+    return <WindowSettingsSkeleton sections={sections} />
+  }
+
   return (
     <SettingsContent>
       {search && <Skeleton className="mb-3 h-8 w-full" />}

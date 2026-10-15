@@ -40,6 +40,7 @@ import {
 import { $gatewayState } from '@/store/session'
 
 import { ListRow, SectionHeading, ToggleRow } from './primitives'
+import { useSettingsWindow } from './studio/window-context'
 
 /**
  * Appearance opt-in for the floating petdex mascot. A thin view over the shared
@@ -51,6 +52,7 @@ import { ListRow, SectionHeading, ToggleRow } from './primitives'
 export function PetSettings() {
   const { t } = useI18n()
   const copy = t.settings.appearance.pet
+  const windowed = useSettingsWindow()
   const { requestGateway } = useGatewayRequest()
   const gatewayState = useStore($gatewayState)
   const gallery = useStore($petGallery)
@@ -118,9 +120,12 @@ export function PetSettings() {
   return (
     <div>
       <SectionHeading icon={PawPrint} page title={copy.title} />
-      <p className="max-w-2xl text-[length:var(--conversation-caption-font-size)] leading-(--conversation-caption-line-height) text-(--ui-text-tertiary)">
-        {copy.intro}
-      </p>
+      {/* The Settings window shows the intro as its section note. */}
+      {!windowed && (
+        <p className="max-w-2xl text-[length:var(--conversation-caption-font-size)] leading-(--conversation-caption-line-height) text-(--ui-text-tertiary)">
+          {copy.intro}
+        </p>
+      )}
 
       {staleBackend && (
         <p className="mt-2 rounded-lg border border-(--ui-stroke-tertiary) bg-(--ui-bg-quinary) px-3 py-2 text-[length:var(--conversation-caption-font-size)] leading-(--conversation-caption-line-height) text-(--ui-text-tertiary)">

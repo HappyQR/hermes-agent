@@ -1,51 +1,51 @@
 import { useStore } from '@nanostores/react'
-import type * as React from 'react'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { CodeEditor } from '@/components/chat/code-editor'
+import { type PanelMenuItem, PanelRowMenu } from '@/app/overlays/panel'
+import { SheetFooter, SheetHeader } from '@/app/overlays/studio/sheet-header'
 import { PageLoader } from '@/components/page-loader'
+import { ActionsContextMenu, renderActionItem } from '@/components/ui/actions-menu'
 import { Button } from '@/components/ui/button'
-import { ProfileGlyph } from '@/components/ui/profile-glyph'
-import { getProfileSoul, type ProfileInfo, updateProfileSoul } from '@/hermes'
+import { RowButton } from '@/components/ui/row-button'
+import { SearchField } from '@/components/ui/search-field'
+import { StudioIcon } from '@/components/ui/studio-icon'
+import type { ProfileInfo } from '@/hermes'
 import { useI18n } from '@/i18n'
-import { displayPath } from '@/lib/display-path'
-import { AlertTriangle, Save } from '@/lib/icons'
-import { resolveProfileColor } from '@/lib/profile-color'
+import { triggerHaptic } from '@/lib/haptics'
 import { normalize } from '@/lib/text'
-import { notify, notifyError } from '@/store/notifications'
-import { $profileColors, profileLabel, refreshProfiles } from '@/store/profile'
+import { cn } from '@/lib/utils'
+import { notifyError } from '@/store/notifications'
+import { profileLabel, refreshProfiles } from '@/store/profile'
+import { $profileRailVisible } from '@/store/profile-rail-prefs'
+import { $profileRemoteOverrides, refreshProfileRemoteOverrides } from '@/store/profile-remote-override'
+import { runImportProfileFlow } from '@/store/profile-share'
 
+import { ProfileRemoteOverrideDialog } from '../chat/sidebar/profile-remote-override-dialog'
 import { useRefreshHotkey } from '../hooks/use-refresh-hotkey'
-import {
-  Panel,
-  PanelAddButton,
-  PanelBody,
-  PanelDetail,
-  PanelEmpty,
-  PanelHeader,
-  PanelList,
-  PanelListRow,
-  type PanelMenuItem,
-  PanelMeta,
-  PanelPill,
-  PanelSectionLabel
-} from '../overlays/panel'
+import { OverlayView } from '../overlays/overlay-view'
 
-import { CreateProfileDialog } from './create-profile-dialog'
+import { CreateProfilePane } from './create-profile-pane'
 import { DeleteProfileDialog } from './delete-profile-dialog'
+import { ProfileAvatar } from './profile-avatar'
+import { ProfileDetail } from './profile-detail'
 import { RenameProfileDialog } from './rename-profile-dialog'
+import { useSoulEditor } from './use-soul-editor'
 
 interface ProfilesViewProps {
   onClose: () => void
 }
 
+const NEW_PROFILE = '\u0000new'
+
+/** 配置档案 — the Profiles sheet: list, detail, SOUL.md, and the rail's profile actions. */
 export function ProfilesView({ onClose }: ProfilesViewProps) {
   const { t } = useI18n()
   const p = t.profiles
+  const sp = t.studio.overlays.profiles
+  const railVisible = useStore($profileRailVisible)
   const [profiles, setProfiles] = useState<null | ProfileInfo[]>(null)
   const [selectedName, setSelectedName] = useState<null | string>(null)
   const [query, setQuery] = useState('')
-  const [createOpen, setCreateOpen] = useState(false)
   const [pendingRename, setPendingRename] = useState<null | ProfileInfo>(null)
   const [pendingDelete, setPendingDelete] = useState<null | ProfileInfo>(null)
 
@@ -54,12 +54,13 @@ export function ProfilesView({ onClose }: ProfilesViewProps) {
       const list = await refreshProfiles()
       setProfiles(list)
       setSelectedName(current => {
-        if (current && list.some(p => p.name === current)) {
+        if (current === NEW_PROFILE || (current && list.some(profile => profile.name === current))) {
           return current
         }
 
-        return list.find(p => p.is_default)?.name ?? list[0]?.name ?? null
+        return list.find(profile => profile.is_default)?.name ?? list[0]?.name ?? null
       })
+      void refreshProfileRemoteOverrides(list.map(profile => profile.name))
     } catch (err) {
       notifyError(err, p.failedLoad)
     }
@@ -71,29 +72,32 @@ export function ProfilesView({ onClose }: ProfilesViewProps) {
     void refresh()
   }, [refresh])
 
+  const creating = selectedName === NEW_PROFILE
+
   const selected = useMemo(() => {
-    if (!profiles) {
+    if (!profiles || creating) {
       return null
     }
 
-    return profiles.find(p => p.name === selectedName) ?? profiles[0] ?? null
-  }, [profiles, selectedName])
+    return profiles.find(profile => profile.name === selectedName) ?? profiles[0] ?? null
+  }, [creating, profiles, selectedName])
+
+  const soul = useSoulEditor(selected?.name ?? null)
 
   const visibleProfiles = useMemo(() => {
-    const q = normalize(query)
+    const needle = normalize(query)
 
-    if (!profiles || !q) {
+    if (!profiles || !needle) {
       return profiles ?? []
     }
 
     return profiles.filter(
-      profile => profile.name.toLowerCase().includes(q) || (profile.model ?? '').toLowerCase().includes(q)
+      profile => profile.name.toLowerCase().includes(needle) || (profile.model ?? '').toLowerCase().includes(needle)
     )
   }, [profiles, query])
 
   // The shared Create/Rename dialogs own the createProfile / renameProfile /
-  // updateProfileSoul calls; the panel just selects the resulting profile and
-  // re-pulls the list.
+  // updateProfileSoul calls; the sheet just selects the result and re-pulls.
   const selectAndRefresh = useCallback(
     async (name: string) => {
       setSelectedName(name)
@@ -102,33 +106,40 @@ export function ProfilesView({ onClose }: ProfilesViewProps) {
     [refresh]
   )
 
+  const close = () => {
+    triggerHaptic('close')
+    onClose()
+  }
+
   return (
-    <Panel closeLabel={p.close} onClose={onClose}>
+    <OverlayView closeLabel={p.close} onClose={onClose} rootClassName="h-[min(40rem,100%)]" size="wide" variant="sheet">
+      <SheetHeader
+        closeLabel={p.close}
+        glyph="people"
+        onClose={close}
+        subtitle={sp.subtitle}
+        title={p.title}
+        tone="indigo"
+      />
+
       {!profiles ? (
         <PageLoader label={p.loading} />
-      ) : profiles.length === 0 ? (
-        <PanelEmpty
-          action={
-            <Button onClick={() => setCreateOpen(true)} size="sm">
-              {p.newProfile}
-            </Button>
-          }
-          description={p.createDesc}
-          icon="organization"
-          title={p.noProfiles}
-        />
       ) : (
-        <>
-          <PanelHeader subtitle={p.count(profiles.length)} title={p.title} />
-          <PanelBody>
-            <PanelList
-              onSearchChange={setQuery}
-              searchLabel={p.search}
-              searchPlaceholder={p.search}
-              searchValue={query}
-            >
+        <div className="flex min-h-0 flex-1 gap-3.5 px-[1.125rem] pb-3 pt-1 max-[47.5rem]:flex-col">
+          <aside className="flex w-[13.125rem] shrink-0 flex-col gap-1.5 max-[47.5rem]:max-h-[40%] max-[47.5rem]:w-full">
+            {profiles.length > 6 && (
+              <SearchField
+                aria-label={p.search}
+                containerClassName="w-full shrink-0"
+                onChange={setQuery}
+                placeholder={p.search}
+                value={query}
+                variant="filled"
+              />
+            )}
+            <div className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto overscroll-contain">
               {visibleProfiles.map(profile => (
-                <ProfileRow
+                <ProfileListRow
                   active={selected?.name === profile.name}
                   key={profile.name}
                   menuItems={
@@ -138,28 +149,72 @@ export function ProfilesView({ onClose }: ProfilesViewProps) {
                         [{ icon: 'edit', label: p.renameMenu, onSelect: () => setPendingRename(profile) }]
                       : [
                           { icon: 'edit', label: p.renameMenu, onSelect: () => setPendingRename(profile) },
-                          {
-                            icon: 'trash',
-                            label: t.common.delete,
-                            onSelect: () => setPendingDelete(profile),
-                            tone: 'danger'
-                          }
+                          { icon: 'trash', label: t.common.delete, onSelect: () => setPendingDelete(profile), tone: 'danger' }
                         ]
                   }
                   onSelect={() => setSelectedName(profile.name)}
                   profile={profile}
                 />
               ))}
-              <PanelAddButton label={p.newProfile} onClick={() => setCreateOpen(true)} />
-            </PanelList>
+              <button
+                className={cn(
+                  'flex min-h-11 w-full items-center gap-2.5 rounded-[9px] px-2 py-1.5 text-left transition-colors hover:bg-(--ui-hover)',
+                  creating && 'bg-(--ui-selected)'
+                )}
+                onClick={() => setSelectedName(NEW_PROFILE)}
+                type="button"
+              >
+                <span className="inline-flex size-[30px] shrink-0 items-center justify-center rounded-[8px] bg-(--ui-fill) text-(--ui-text-secondary)">
+                  <StudioIcon name="plus" size={15} />
+                </span>
+                <span className="text-[0.8125rem] font-semibold text-(--ui-text-primary)">{p.newProfile}</span>
+              </button>
+            </div>
+            <Button
+              className="justify-start"
+              onClick={() => void runImportProfileFlow().then(name => (name ? selectAndRefresh(name) : undefined))}
+              size="sm"
+              variant="ghost"
+            >
+              <StudioIcon name="import" size={13} />
+              {sp.importShort}
+            </Button>
+          </aside>
 
-            {selected ? (
-              <ProfileDetail key={selected.name} profile={selected} />
+          <main className="flex min-h-0 min-w-0 flex-1 flex-col gap-3 overflow-y-auto overscroll-contain pb-1">
+            {creating ? (
+              <CreateProfilePane onCreated={selectAndRefresh} profiles={profiles} />
+            ) : selected ? (
+              <ProfileDetail
+                key={selected.name}
+                onDelete={() => setPendingDelete(selected)}
+                onRename={() => setPendingRename(selected)}
+                profile={selected}
+                soul={soul}
+              />
             ) : (
-              <PanelEmpty description={p.selectPrompt} icon="account" />
+              <p className="m-auto max-w-xs text-center text-[0.8125rem] text-(--ui-text-tertiary)">{p.createDesc}</p>
             )}
-          </PanelBody>
-        </>
+          </main>
+        </div>
+      )}
+
+      {selected && !creating && (
+        <SheetFooter className="shadow-[inset_0_0.5px_0_var(--ui-line)]">
+          <span className="text-xs text-(--ui-text-tertiary)">{sp.exportNote}</span>
+          <span className="flex-1" />
+          <Button onClick={close} size="sm" variant="secondary">
+            {t.common.done}
+          </Button>
+          <Button
+            aria-label={p.saveSoul}
+            disabled={!soul.dirty || soul.saving || soul.loading}
+            onClick={() => void soul.save()}
+            size="sm"
+          >
+            {soul.saving ? p.saving : t.common.save}
+          </Button>
+        </SheetFooter>
       )}
 
       <RenameProfileDialog
@@ -168,13 +223,6 @@ export function ProfilesView({ onClose }: ProfilesViewProps) {
         onClose={() => setPendingRename(null)}
         onRenamed={selectAndRefresh}
         open={pendingRename !== null}
-      />
-
-      <CreateProfileDialog
-        onClose={() => setCreateOpen(false)}
-        onCreated={selectAndRefresh}
-        open={createOpen}
-        profiles={profiles ?? []}
       />
 
       <DeleteProfileDialog
@@ -186,11 +234,15 @@ export function ProfilesView({ onClose }: ProfilesViewProps) {
         open={pendingDelete !== null}
         profile={pendingDelete}
       />
-    </Panel>
+
+      {/* The rail mounts the one "Connect to a remote host" dialog; with the
+          rail hidden, this sheet hosts it so the 操作 menu item still works. */}
+      {!railVisible && <ProfileRemoteOverrideDialog profileNames={(profiles ?? []).map(profile => profile.name)} />}
+    </OverlayView>
   )
 }
 
-function ProfileRow({
+function ProfileListRow({
   active,
   menuItems,
   onSelect,
@@ -201,169 +253,53 @@ function ProfileRow({
   onSelect: () => void
   profile: ProfileInfo
 }) {
-  const colors = useStore($profileColors)
-
-  return (
-    <PanelListRow
-      active={active}
-      lead={
-        <ProfileGlyph
-          aria-hidden="true"
-          color={resolveProfileColor(profile.name, colors)}
-          isDefault={profile.is_default}
-          name={profile.name}
-        />
-      }
-      menuItems={menuItems}
-      menuLabel={profileLabel(profile)}
-      onSelect={onSelect}
-      rowKey={profile.name}
-      title={profileLabel(profile)}
-    />
-  )
-}
-
-function ProfileDetail({ profile }: { profile: ProfileInfo }) {
   const { t } = useI18n()
-  const p = t.profiles
+  const sp = t.studio.overlays.profiles
+  const remote = useStore($profileRemoteOverrides)[profile.name]
+  const label = profileLabel(profile)
+
+  const meta = [profile.is_default ? t.profiles.defaultBadge : '', remote ? sp.remote : '', profile.model ?? '']
+    .filter(Boolean)
+    .join(' · ')
 
   return (
-    <PanelDetail>
-      <header className="space-y-3">
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <h3 className="text-[0.95rem] font-semibold tracking-tight text-foreground">{profileLabel(profile)}</h3>
-            {profile.is_default && <PanelPill tone="good">{p.defaultBadge}</PanelPill>}
-            {profile.has_env && <PanelPill tone="muted">.env</PanelPill>}
-          </div>
-          <p
-            className="mt-1 truncate font-mono text-[0.66rem] text-muted-foreground/55"
-            title={displayPath(profile.path)}
-          >
-            {displayPath(profile.path)}
-          </p>
-        </div>
-
-        <PanelMeta
-          rows={[
-            {
-              label: p.modelLabel,
-              value: profile.model ? (
-                <span className="font-mono">
-                  {profile.model}
-                  {profile.provider ? <span className="text-muted-foreground/55"> · {profile.provider}</span> : null}
-                </span>
-              ) : (
-                <span className="text-muted-foreground/55">{p.notSet}</span>
-              )
-            },
-            { label: p.skillsLabel, value: profile.skill_count }
-          ]}
-        />
-      </header>
-
-      <SoulEditor profileName={profile.name} />
-    </PanelDetail>
-  )
-}
-
-function SoulEditor({ profileName }: { profileName: string }) {
-  const { t } = useI18n()
-  const p = t.profiles
-  const [content, setContent] = useState('')
-  const [original, setOriginal] = useState('')
-  const [missing, setMissing] = useState(false)
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState<null | string>(null)
-  const requestRef = useRef<string>(profileName)
-
-  // eslint-disable-next-line no-restricted-syntax -- legitimate non-atom ref write (see eslint rule comment)
-  useEffect(() => {
-    requestRef.current = profileName
-    setLoading(true)
-    setError(null)
-    setContent('')
-    setOriginal('')
-    setMissing(false)
-
-    void (async () => {
-      try {
-        const soul = await getProfileSoul(profileName)
-
-        if (requestRef.current === profileName) {
-          setContent(soul.content)
-          setOriginal(soul.content)
-          setMissing(soul.exists === false)
-        }
-      } catch (err) {
-        if (requestRef.current === profileName) {
-          setError(err instanceof Error ? err.message : p.failedLoadSoul)
-        }
-      } finally {
-        if (requestRef.current === profileName) {
-          setLoading(false)
-        }
+    <ActionsContextMenu
+      ariaLabel={label}
+      contentClassName="w-40"
+      items={kit =>
+        menuItems.map(item =>
+          renderActionItem(kit, {
+            icon: item.icon,
+            key: item.label,
+            label: item.label,
+            onSelect: item.onSelect,
+            variant: item.tone === 'danger' ? 'destructive' : 'default'
+          })
+        )
       }
-    })()
-  }, [p, profileName])
-
-  const dirty = content !== original
-
-  async function handleSave() {
-    setSaving(true)
-    setError(null)
-
-    try {
-      await updateProfileSoul(profileName, content)
-      setOriginal(content)
-      setMissing(false)
-      notify({ kind: 'success', title: p.soulSaved, message: profileName })
-    } catch (err) {
-      setError(err instanceof Error ? err.message : p.failedSaveSoul)
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  return (
-    <section className="space-y-2">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <div>
-          <PanelSectionLabel className="text-[0.7rem] tracking-[0.14em]">SOUL.md</PanelSectionLabel>
-          <p className="text-xs text-muted-foreground">{missing ? p.soulMissing : p.soulDesc}</p>
+    >
+      <div
+        className={cn(
+          'group/row relative flex w-full items-center rounded-[9px] transition-colors',
+          active ? 'bg-(--ui-selected)' : 'hover:bg-(--ui-hover)'
+        )}
+        data-panel-row={profile.name}
+      >
+        <RowButton
+          aria-label={label}
+          className="flex min-h-11 min-w-0 flex-1 items-center gap-2.5 rounded-[9px] px-2 py-1.5 text-left"
+          onClick={onSelect}
+        >
+          <ProfileAvatar profile={profile} />
+          <span className="flex min-w-0 flex-col">
+            <span className="truncate text-[0.8125rem] font-semibold text-(--ui-text-primary)">{label}</span>
+            {meta && <span className="truncate text-[0.71875rem] text-(--ui-text-tertiary)">{meta}</span>}
+          </span>
+        </RowButton>
+        <div className="shrink-0 pr-1">
+          <PanelRowMenu items={menuItems} label={label} />
         </div>
-        {dirty && <span className="text-[0.65rem] text-muted-foreground">{p.unsavedChanges}</span>}
       </div>
-
-      {loading ? (
-        <PageLoader className="min-h-44" label={p.loadingSoul} />
-      ) : (
-        <div className="min-h-48">
-          <CodeEditor
-            filePath="SOUL.md"
-            framed
-            initialValue={content}
-            key={profileName}
-            onChange={setContent}
-            onSave={() => void handleSave()}
-          />
-        </div>
-      )}
-
-      {error && (
-        <div className="flex items-start gap-2 rounded bg-destructive/10 px-3 py-2 text-xs text-destructive">
-          <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
-          <span>{error}</span>
-        </div>
-      )}
-
-      <div className="flex justify-end">
-        <Button disabled={!dirty || saving || loading} onClick={() => void handleSave()} size="sm">
-          <Save />
-          {saving ? p.saving : p.saveSoul}
-        </Button>
-      </div>
-    </section>
+    </ActionsContextMenu>
   )
 }

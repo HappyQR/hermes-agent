@@ -66,6 +66,8 @@ interface UpdateStatusInput {
   status: DesktopUpdateStatus | null
   target: UpdateTarget
   u: Translations['updates']
+  /** Localized lines for the unsupported reasons the main process names (its message is English). */
+  reasons?: { commitBuild: string; packageOwner: string }
   /** Names the pinned release when a source install is current on stable. */
   latestRelease?: (version: string) => string
   /** Names a move back to an older stable release the checkout already contains. */
@@ -103,10 +105,28 @@ function availableLine(
   return behind > 0 ? u.updateReady(behind) : u.updateReadyUnknown
 }
 
+// The main process explains an unsupported updater in English; the reasons it
+// names read in the UI language, anything else keeps its own message.
+function unsupportedLine(
+  status: DesktopUpdateStatus | null,
+  u: Translations['updates'],
+  reasons: UpdateStatusInput['reasons']
+): string {
+  const known =
+    status?.reason === 'commit-build'
+      ? reasons?.commitBuild
+      : status?.reason === 'bundled-not-appinstaller'
+        ? reasons?.packageOwner
+        : undefined
+
+  return known ?? status?.message ?? u.unsupportedMessage
+}
+
 function ordinaryUpdateStatus({
   apply,
   checking,
   latestRelease,
+  reasons,
   rollback,
   status,
   target,
@@ -120,7 +140,7 @@ function ordinaryUpdateStatus({
   const applying = apply.applying || apply.stage === 'restart'
 
   if (!supported) {
-    return { applying, line: status?.message ?? u.unsupportedMessage, supported, tone: 'unsupported', updateAvailable }
+    return { applying, line: unsupportedLine(status, u, reasons), supported, tone: 'unsupported', updateAvailable }
   }
 
   if (status?.error) {
@@ -324,6 +344,10 @@ export function UpdateStatusCard({
     apply,
     checking,
     latestRelease: t.settings.about.channel.latestRelease,
+    reasons: {
+      commitBuild: t.studio.overlays.updates.commitBuildNoUpdates,
+      packageOwner: t.studio.overlays.updates.managedByPackageOwner
+    },
     rollback: t.settings.about.channel.rollbackBody,
     status,
     target,

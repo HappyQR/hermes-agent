@@ -57,6 +57,19 @@ one-off at the call site.
 - **Panes are working context.** Preview, files, review, and terminal remain
   attached to the current task. Their state survives temporary hiding and chat
   switches where the underlying tool is meant to persist.
+- **One inspector (Hermes Studio).** Preview, files, changes, the terminal and
+  the running agents share one right-hand zone, switched by its segmented
+  header (`app/shell/inspector`). ⌘J shows/hides it; each kind's own command
+  (⇧⌘L, ⌘G, ⌃`, Show Files, Agents) opens it on that kind and hides it when
+  that kind is already showing. Layouts without an inspector keep the per-pane
+  toggles.
+- **Status bar is opt-in (Hermes Studio).** Off by default; Advanced users turn
+  it on from View › Status Bar, the toolbar's Layout ▾ or ⇧⌘S. Its items have
+  homes in the toolbar, composer, account menu and menu bar, and the ambient
+  status poll runs in `StatusSnapshotHost` whether or not the bar is shown.
+- **The menu bar is a real surface (macOS).** The application menu is built
+  from the renderer's localized model (`app/shell/native-menu*`,
+  `electron/application-menu*`) and runs the same actions as the shortcuts.
 - **One action, one home.** A command may have keyboard, palette, and visible
   affordances, but they invoke the same action and state. Do not fork behavior
   per entry point.
@@ -293,21 +306,46 @@ blurred backdrop.
 
 ## Panel titlebars
 
-Top-edge panels extend into the native titlebar band. Their tab strips remain
-inside their own zones so tab drops, focus, and split boundaries use the same
-geometry. Panels without room beside the measured window controls place their
-tabs on a full-width row below the controls. Minimized row groups use vertical
-restore rails, including groups with multiple tabs. Sidebar buttons and shortcuts
-restore minimized or fully hidden side groups without changing the selected tab.
-Lower panels keep local headers. Empty header space moves the window;
-tabs and actions remain no-drag, with native-control space reserved from the
-existing traffic-light and Window Controls Overlay measurements.
+Hermes Studio: on macOS the titlebar band is 52px (`TITLEBAR_HEIGHT`, kept equal
+in `src/app/shell/titlebar.ts` and `electron/main.ts`), the traffic lights sit
+at x 20 centred in it, and toolbar controls are 28px with 16px glyphs. Other
+platforms keep the 34px caption band.
 
-The left cluster shows sidebar, settings, layout editor, and HUD controls. Flip
-and the right-sidebar toggle sit on the right; haptics remain in settings.
-In Simple interface mode only sidebar, settings and the layout editor render,
-and the reserved cluster width shrinks with them (`TITLEBAR_FIXED_TOOLS` is the
-one table both the buttons and the width reservation read).
+Top-edge panels extend into the band. Their tab strips remain inside their own
+zones so tab drops, focus, and split boundaries use the same geometry. Lower
+panels keep local headers. Empty header space moves the window; tabs and
+actions remain no-drag, with native-control space reserved from the existing
+traffic-light and Window Controls Overlay measurements. Minimized row groups
+use vertical restore rails.
+
+A zone may **own its band** (`components/pane-shell/tree/renderer/zone-band.tsx`):
+a pane declares `band` (+ `bandSurface`) in its chrome, or the app registers a
+rule for a pane set (`registerZoneBand`). The band fills the strip between the
+window-control reservations (at least 16px left, 12px right), moves the window,
+and its controls opt out of the drag region (`studio/shell.css`). A zone with a
+band keeps its tab strip on a 34px row below it — attached tabs that open into
+the content — and a lone pane there shows no strip: the band carries its
+handles.
+
+- **Sessions zone** — the sidebar's top bar: [hide sidebar ⌘B][new chat ⌘N].
+- **Workspace zone** — the toolbar (`app/shell/toolbar`): the focused chat's
+  title ▾ (the tab's session verbs), project / branch / PR chips, the live pill
+  (running timer or sub-agent count), and the `Capsule` [Layout ▾ | inspector
+  toggle ⌘J]. Pages fade their title in once their large heading scrolls away
+  (`useToolbarPageTitle`) and keep `WORKSPACE_PAGE_HEADER_AREA` after it. A
+  hairline appears once the zone's content scrolls under the band.
+- **Inspector zone** — an icon segmented control over the kinds it can show,
+  the current kind's name and a close ×. Its strip lists only the current
+  kind's panes as chips (`data-zone-strip="chips"`): preview tabs with "+", or
+  terminal + logs.
+
+The fixed window cluster shows [show sidebar][new chat] beside the traffic
+lights only while the sidebar's band is gone (sidebar hidden, or the window too
+narrow to dock it); the toggle carries the unread count. Settings, the layout
+editor, HUD, flip and the right-side toggle are not window-cluster tools: they
+live in Layout ▾, the account menu and the menu bar. `TITLEBAR_FIXED_TOOLS` is
+the one table the pair and its width reservation read; `titleBar.*` slots keep
+their API. Tab labels read in sentence case.
 Holding Cmd (Ctrl off macOS) reveals small slot numbers over the target strip's
 status dots after 400ms, without changing tab widths. Hints follow the same
 binding and hovered/focused-zone resolver as the number shortcuts.
@@ -440,14 +478,18 @@ from their root base tokens; do not multiply the global tokens or nest CSS zoom.
 
 ## Iconography & brand
 
-- **Tabler** is the default component/chrome set. Import its curated aliases and
-  `iconSize` scale from `src/lib/icons.ts`; do not import icon packages directly
-  in feature code.
+- **`StudioIcon`** (`src/components/ui/studio-icon.tsx`) is Hermes Studio's
+  set: SF Symbols–style line glyphs (24px grid, round caps, currentColor)
+  generated from the design prototype (`scripts/studio/port-icons.mjs`). Use
+  it wherever a Studio surface draws an icon the prototype has.
+- **Tabler** is the default component/chrome set elsewhere. Import its curated
+  aliases and `iconSize` scale from `src/lib/icons.ts`; do not import icon
+  packages directly in feature code.
 - **`Codicon`** is the compact editor/tool/status vocabulary. Use
   `src/components/ui/codicon.tsx`, including `codiconIcon()` where a
   Tabler-shaped component is required.
 - Pick the vocabulary by semantic context and reuse the existing icon for an
-  action. Do not introduce a third icon set or mix styles within one control
+  action. Do not introduce another icon set or mix styles within one control
   group.
 - **`BrandMark`** (`src/components/brand-mark.tsx`) is the brand glyph — the
   `nous-girl` mark on a fixed tile, theme-aware: black girl on white in light
@@ -465,7 +507,9 @@ from their root base tokens; do not multiply the global tokens or nest CSS zoom.
 - Animated integer counts reuse `AnimatedInt` in `src/components/ui/diff-count.tsx`.
   Its spring updates the DOM directly without per-frame React renders.
 - Quick, functional transitions (~100ms on controls). Respect
-  `prefers-reduced-motion` for anything beyond a fade.
+  `prefers-reduced-motion` for anything beyond a fade. Studio curves are
+  `--studio-ease` / `--studio-spring`; "running" is the shared `.studio-ring-run`
+  spinner (toolbar live pill, session rows, agents).
 - Choreographed exits (e.g. onboarding's "matrix" fade-down) stagger per-element
   then settle the surface — the outer container's fade is *delayed* so it
   doesn't swallow the inner animation. Don't let a global fade race the detail.
