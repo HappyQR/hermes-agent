@@ -1,7 +1,9 @@
 import { useStore } from '@nanostores/react'
 import { useEffect, useState } from 'react'
 
+import { useI18n } from '@/i18n'
 import { AlertCircle, Clock, type IconComponent } from '@/lib/icons'
+import { cn } from '@/lib/utils'
 import { $petActivity, $petState, type PetState } from '@/store/pet'
 import { $petPluginMessage, type PetMessageTone } from '@/store/pet-plugin-messages'
 
@@ -24,54 +26,26 @@ import { $petPluginMessage, type PetMessageTone } from '@/store/pet-plugin-messa
 
 type Tone = PetMessageTone
 
+/** The moods that speak. `idle` only speaks when the pet is clicked (`peek`). */
+type Mood = 'failed' | 'idle' | 'review' | 'run' | 'waiting'
+
 interface Spec {
-  lines: string[]
   glyph?: IconComponent
   tone?: Tone
 }
 
-// Phrasings per mood, picked at random (no immediate repeat) for a bit of life.
-// Keep them short — the bubble is tiny and never wraps.
-const SPECS: Partial<Record<PetState, Spec>> = {
-  run: {
-    lines: [
-      'working…',
-      'on it…',
-      'crunching…',
-      'tinkering…',
-      'cooking…',
-      'in the weeds…',
-      'wiring it up…',
-      'making moves…',
-      'heads down…',
-      'hammering away…'
-    ]
-  },
-  review: {
-    lines: [
-      'thinking…',
-      'reading…',
-      'reviewing…',
-      'pondering…',
-      'connecting dots…',
-      'sizing it up…',
-      'tracing it…',
-      'mulling…',
-      'scheming…',
-      'hmm…'
-    ]
-  },
-  failed: {
-    glyph: AlertCircle,
-    lines: ['hit a snag', 'welp', 'that broke', 'oof', 'snagged'],
-    tone: 'error'
-  },
-  waiting: {
-    glyph: Clock,
-    lines: ['your turn', 'all yours', 'over to you', 'ball’s in your court', 'awaiting orders'],
-    tone: 'wait'
-  }
+// Phrasings per mood live in i18n (t.studio.overlays.aux.pet.lines), picked at
+// random (no immediate repeat) for a bit of life. Keep them short — the
+// bubble is tiny and never wraps.
+const SPECS: Record<Mood, Spec> = {
+  run: {},
+  review: {},
+  failed: { glyph: AlertCircle, tone: 'error' },
+  waiting: { glyph: Clock, tone: 'wait' },
+  idle: {}
 }
+
+const SPEAKING_STATES: ReadonlySet<PetState> = new Set(['run', 'review', 'failed', 'waiting'])
 
 const TONE_COLOR: Record<Tone, string> = {
   error: 'var(--ui-red)',
@@ -85,17 +59,10 @@ const TONE_GLYPH: Partial<Record<Tone, IconComponent>> = { error: AlertCircle, w
 // turn is paused on the user, and a plugin must not talk over that.
 const PRIORITY_TONES: ReadonlySet<Tone | undefined> = new Set(['error', 'wait'])
 
-const BUBBLE_SURFACE = {
-  // Solid, theme-driven surface (the prior --ui-bg-card mixes in
-  // `transparent`, so the bubble was see-through).
-  background: 'var(--ui-bg-elevated)',
-  border: '1px solid var(--ui-stroke-secondary)',
-  boxShadow: '0 4px 14px rgba(0,0,0,0.22)',
-  color: 'var(--foreground)',
-  fontSize: 11,
-  fontWeight: 500,
-  pointerEvents: 'none'
-} as const
+// Hermes Studio: the prototype's speech bubble (.pet .bubble-say) — a solid
+// card surface with the float shadow, popping in with the spring.
+const BUBBLE_SURFACE =
+  'pointer-events-none bg-(--ui-bg-editor) text-xs font-medium text-(--ui-text-primary) shadow-(--elev-float) motion-safe:animate-[studio-pop-in_240ms_cubic-bezier(0.34,1.32,0.64,1)_both]'
 
 // Random pick that avoids repeating the line we're already showing.
 function pick(lines: string[], prev: string): string {
@@ -116,42 +83,57 @@ export interface PetBubbleProps {
   /** Render the core status lines (working…, your turn). The overlay passes
    *  true; the in-window pet leaves them to the app and shows plugin lines only. */
   showStatus?: boolean
+  /** The pet was just clicked: say the status line now — or, at idle, a
+   *  greeting — even where status lines are otherwise left to the app. */
+  peek?: boolean
 }
 
-export function PetBubble({ showStatus = true }: PetBubbleProps = {}) {
+function moodFor(state: PetState, awaitingInput: boolean | undefined, peek: boolean): Mood | null {
+  if (SPEAKING_STATES.has(state)) {
+    return state as Mood
+  }
+
+  if (state === 'idle' && awaitingInput) {
+    return 'waiting'
+  }
+
+  return peek ? 'idle' : null
+}
+
+export function PetBubble({ peek = false, showStatus = true }: PetBubbleProps = {}) {
+  const { t } = useI18n()
+  const moodLines = t.studio.overlays.aux.pet.lines
   const state = useStore($petState)
   const activity = useStore($petActivity)
   const pluginLine = useStore($petPluginMessage)
   const [line, setLine] = useState('')
 
   // Finish beats are carried by the sprite/mail icon; idle only speaks up when
-  // it's actually the user's turn. Everything else maps to a mood spec.
-  const specKey: null | PetState =
-    state in SPECS ? state : state === 'idle' && activity.awaitingInput ? 'waiting' : null
-
+  // it's actually the user's turn (or the pet was clicked). Everything else
+  // maps to a mood.
+  const specKey = moodFor(state, activity.awaitingInput, peek)
+  const lines = specKey ? moodLines[specKey] : null
   const rotating = specKey === 'run' || specKey === 'review'
 
   // Pick a fresh line on every mood change, then keep rotating (random, no
   // repeat) only while the agent is actively working/thinking.
   useEffect(() => {
-    const spec = specKey ? SPECS[specKey] : null
-
-    if (!spec) {
+    if (!lines) {
       setLine('')
 
       return
     }
 
-    setLine(prev => pick(spec.lines, prev))
+    setLine(prev => pick(lines, prev))
 
-    if (!rotating || spec.lines.length <= 1) {
+    if (!rotating || lines.length <= 1) {
       return
     }
 
-    const id = window.setInterval(() => setLine(prev => pick(spec.lines, prev)), 2600)
+    const id = window.setInterval(() => setLine(prev => pick(lines, prev)), 2600)
 
     return () => window.clearInterval(id)
-  }, [specKey, rotating])
+  }, [lines, rotating])
 
   const spec = specKey ? SPECS[specKey] : null
 
@@ -160,38 +142,17 @@ export function PetBubble({ showStatus = true }: PetBubbleProps = {}) {
 
     return (
       <div
+        className={cn(BUBBLE_SURFACE, 'inline-flex w-max max-w-[13.75rem] flex-col gap-[3px] rounded-[12px] px-2.5 py-1.5 leading-[1.3]')}
         data-pet-plugin={pluginLine.pluginId}
         data-slot="pet-plugin-bubble"
-        style={{
-          ...BUBBLE_SURFACE,
-          borderRadius: 10,
-          display: 'inline-flex',
-          flexDirection: 'column',
-          gap: 3,
-          lineHeight: 1.3,
-          maxWidth: 220,
-          padding: '5px 8px',
-          width: 'max-content'
-        }}
       >
-        <span
-          style={{
-            color: 'var(--ui-text-secondary, var(--muted-foreground))',
-            fontSize: 9,
-            fontWeight: 600,
-            letterSpacing: 0.2,
-            lineHeight: 1,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap'
-          }}
-        >
+        <span className="truncate text-[0.5625rem] font-semibold leading-none tracking-[0.2px] text-(--ui-text-secondary)">
           {pluginLine.pluginName}
         </span>
-        <span style={{ alignItems: 'flex-start', display: 'inline-flex', gap: 5, overflowWrap: 'anywhere' }}>
+        <span className="inline-flex items-start gap-[5px] [overflow-wrap:anywhere]">
           {Glyph && (
-            <span style={{ display: 'inline-flex', flex: 'none', paddingTop: 1 }}>
-              <Glyph style={{ color: TONE_COLOR[pluginLine.tone], height: 12, width: 12 }} />
+            <span className="inline-flex flex-none pt-px">
+              <Glyph className="size-3" style={{ color: TONE_COLOR[pluginLine.tone] }} />
             </span>
           )}
           {pluginLine.text}
@@ -200,31 +161,27 @@ export function PetBubble({ showStatus = true }: PetBubbleProps = {}) {
     )
   }
 
-  if (!spec || !showStatus) {
+  if (!spec || !(showStatus || peek)) {
     return null
   }
 
   const Glyph = spec.glyph
-  const text = line || spec.lines[0]
+  const text = line || lines?.[0] || ''
   const hasText = Boolean(text)
 
   return (
     <div
-      style={{
-        ...BUBBLE_SURFACE,
-        alignItems: 'center',
-        borderRadius: hasText ? 10 : 999,
-        display: 'inline-flex',
-        gap: hasText ? 5 : 0,
-        lineHeight: 1,
+      className={cn(
+        BUBBLE_SURFACE,
+        'inline-flex items-center whitespace-nowrap leading-none',
         // Glyph-only bubbles collapse to a tight, symmetric badge.
-        padding: hasText ? '5px 8px' : 5,
-        whiteSpace: 'nowrap'
-      }}
+        hasText ? 'gap-[5px] rounded-[12px] px-2.5 py-1.5' : 'rounded-full p-[5px]'
+      )}
+      data-slot="pet-bubble"
     >
       {Glyph && (
-        <span style={{ display: 'inline-flex' }}>
-          <Glyph style={{ color: spec.tone ? TONE_COLOR[spec.tone] : 'currentColor', height: 13, width: 13 }} />
+        <span className="inline-flex">
+          <Glyph className="size-[13px]" style={{ color: spec.tone ? TONE_COLOR[spec.tone] : 'currentColor' }} />
         </span>
       )}
       {text}
