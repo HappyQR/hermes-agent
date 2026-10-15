@@ -24,41 +24,29 @@ export function setTitlebarAppActionsSide(side: TitlebarAppActionsSide) {
 }
 
 /**
- * The fixed titlebar tools and which of them are instrumentation. ONE table:
- * the buttons spread their entry to render, the width reservation counts the
- * same entries, so a tool Simple hides also releases the space it held.
- * Settings and Layout never carry a tier — they are the way back.
+ * The fixed titlebar tools. ONE table: the buttons spread their entry to
+ * render, the width reservation counts the same entries. Studio keeps only
+ * the pair beside the traffic lights ([show sidebar][new chat], shown while
+ * the sidebar's own band is gone); app actions moved to the toolbar capsule,
+ * the account menu and the menu bar, so the side preference no longer moves
+ * anything (kept for settings/merge compatibility).
  */
 export const TITLEBAR_FIXED_TOOLS = {
-  'flip-panes': { tier: 'advanced' },
-  hud: { tier: 'advanced' },
-  layout: {},
-  'right-sidebar': { tier: 'advanced' },
-  settings: {},
+  'new-chat': {},
   sidebar: {}
 } satisfies Record<string, Tiered>
 
 export type TitlebarFixedToolId = keyof typeof TITLEBAR_FIXED_TOOLS
 
-/** The app actions that follow `side`; the sidebar toggle is always left, flip and the right-sidebar toggle always right. */
-const APP_ACTION_IDS: readonly TitlebarFixedToolId[] = ['settings', 'layout', 'hud']
-const RIGHT_FIXED_IDS: readonly TitlebarFixedToolId[] = ['flip-panes', 'right-sidebar']
-
-/** Button counts for the two titlebar clusters, for the mode that is rendering them. */
+/** Button counts for the two titlebar clusters (the left pair at most). */
 export function titlebarAppActionsClusterCounts(
-  side: TitlebarAppActionsSide,
+  _side: TitlebarAppActionsSide,
   leftExtras = 0,
   rightExtras = 0,
   mode: InterfaceMode = DEFAULT_INTERFACE_MODE
 ): { left: number; right: number } {
   const shown = shownInMode(mode)
-  const sidebar = 1
-  const appActions = APP_ACTION_IDS.filter(id => shown(TITLEBAR_FIXED_TOOLS[id])).length
-  const rightFixed = RIGHT_FIXED_IDS.filter(id => shown(TITLEBAR_FIXED_TOOLS[id])).length
+  const fixed = Object.values(TITLEBAR_FIXED_TOOLS).filter(tool => shown(tool)).length
 
-  if (side === 'left') {
-    return { left: sidebar + appActions + leftExtras, right: rightFixed + rightExtras }
-  }
-
-  return { left: sidebar + leftExtras, right: appActions + rightFixed + rightExtras }
+  return { left: fixed + leftExtras, right: rightExtras }
 }

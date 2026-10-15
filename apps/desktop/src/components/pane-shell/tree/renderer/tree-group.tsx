@@ -91,6 +91,7 @@ import { usePanelTitlebar } from './panel-titlebar'
 import { tabStripVisibleForZone } from './strip-visibility'
 import { useActiveTabVisible } from './tab-strip-scroll'
 import { paneChrome } from './track-model'
+import { ZONE_BAND_LEFT, ZONE_BAND_RIGHT, zoneBand, ZoneBandRow } from './zone-band'
 
 /** Right-click zone menu: the tab verbs (close this / others / to the right /
  *  all) plus the strip's own chrome toggles. Same items and icons as a session
@@ -309,9 +310,10 @@ export function TreeGroup({
   const active = paneFor(activeId)
   const isEmpty = shown.length === 0
   const sidebarGroup = !node.panes.some(id => id === 'workspace' || paneChrome(paneFor(id)).placement === 'main')
-  const tabsBelowControls = topEdge && (sidebarGroup || measuredBelowControls)
+  const band = topEdge ? zoneBand(shown, activeId, paneFor) : null
+  const tabsBelowControls = topEdge && (Boolean(band) || sidebarGroup || measuredBelowControls)
   const tabsInTitlebar = topEdge && !tabsBelowControls
-  const pageHeader = paneChrome(active).headerContent
+  const pageHeader = band ? undefined : paneChrome(active).headerContent
 
   // What the strip's "+" makes. The pane you are LOOKING AT answers first (a
   // Browser tab makes another Browser, even stacked into the chat strip), then
@@ -565,11 +567,20 @@ export function TreeGroup({
         <div
           className="relative flex min-w-0 shrink-0 bg-(--ui-sidebar-surface-background)"
           data-panel-header=""
-          style={topEdge ? { height: TITLEBAR_HEIGHT + (tabsBelowControls && headerVisible ? 28 : 0) } : undefined}
+          style={
+            topEdge
+              ? { background: band?.surface, height: TITLEBAR_HEIGHT + (tabsBelowControls && headerVisible ? 28 : 0) }
+              : undefined
+          }
         >
           {topEdge && (
-            <div aria-hidden="true" className="shrink-0" style={{ width: 'var(--panel-titlebar-left, 100%)' }} />
+            <div
+              aria-hidden="true"
+              className="shrink-0"
+              style={{ width: band ? ZONE_BAND_LEFT : 'var(--panel-titlebar-left, 100%)' }}
+            />
           )}
+          {band && <ZoneBandRow band={band} />}
           {pageHeader && headerVisible ? (
             <div
               className={cn(
@@ -764,7 +775,7 @@ export function TreeGroup({
               (#112964). Keep one fixed handle OUTSIDE the list. When the tabs
               drop below the controls the band above them is free — the handle
               stays flexible and the whole row moves the window. */}
-          {topEdge && (
+          {topEdge && !band && (
             <div
               aria-hidden="true"
               className={cn(
@@ -779,7 +790,11 @@ export function TreeGroup({
             />
           )}
           {topEdge && (
-            <div aria-hidden="true" className="shrink-0" style={{ width: 'var(--panel-titlebar-right, 0px)' }} />
+            <div
+              aria-hidden="true"
+              className="shrink-0"
+              style={{ width: band ? ZONE_BAND_RIGHT : 'var(--panel-titlebar-right, 0px)' }}
+            />
           )}
         </div>
       )}

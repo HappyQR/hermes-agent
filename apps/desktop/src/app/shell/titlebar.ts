@@ -1,15 +1,20 @@
 import type { HermesConnection } from '@/global'
+import { isMacPlatform } from '@/lib/platform'
 
-export const TITLEBAR_HEIGHT = 34
+// Hermes Studio: macOS gets the 52px unified toolbar band (prototype .tb/.sb-top);
+// other platforms keep the caption-height band their native controls are sized for.
+// Keep in sync with TITLEBAR_HEIGHT in electron/main.ts.
+export const TITLEBAR_HEIGHT = isMacPlatform() ? 52 : 34
 /** Permanent native drag target beside a top-edge tab strip. */
 export const TITLEBAR_DRAG_HANDLE_WIDTH = 48
 export const MACOS_TRAFFIC_LIGHTS_HEIGHT = 14
-/** Titlebar tool hit target (both axes). */
-export const TITLEBAR_CONTROL_SIZE = 24
-/** Codicon glyph box in titlebar clusters — optical match to traffic-light row. */
-export const TITLEBAR_ICON_SIZE = 13.9
+/** Titlebar tool hit target (both axes) — the prototype's 28px .ibtn. */
+export const TITLEBAR_CONTROL_SIZE = 28
+/** Codicon glyph box in titlebar clusters (prototype toolbar glyphs are 16px). */
+export const TITLEBAR_ICON_SIZE = 16
 export const TITLEBAR_ICON_BADGE_SCALE = 0.65
-export const TITLEBAR_CONTROL_OFFSET_X = 74
+// Traffic lights span 52px from their x; the first control sits 12px after the third light.
+export const TITLEBAR_CONTROL_OFFSET_X = 64
 export const TITLEBAR_CONTROL_HEIGHT = TITLEBAR_CONTROL_SIZE
 export const TITLEBAR_CONTROLS_TOP = (TITLEBAR_HEIGHT - TITLEBAR_CONTROL_HEIGHT) / 2
 
@@ -18,7 +23,7 @@ export function titlebarIconSizeCss(scale = 1): string {
   return `${TITLEBAR_ICON_SIZE * scale}px`
 }
 
-export const TITLEBAR_FALLBACK_WINDOW_BUTTON_X = 24
+export const TITLEBAR_FALLBACK_WINDOW_BUTTON_X = 20
 // Edge inset used when no left-side native controls take up that space —
 // Windows/Linux (native overlay is on the right) and macOS fullscreen
 // (traffic lights are hidden). Matches the right-cluster's 0.75rem padding.

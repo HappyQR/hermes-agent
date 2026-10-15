@@ -1,1 +1,25 @@
 /* Hermes Studio — shell styles (fork-owned; loaded after foundation.css). */
+
+/* Zone titlebar bands (components/pane-shell/tree/renderer/zone-band.tsx) move the
+   window; anything interactive inside them must still take clicks. */
+[data-zone-band] :is(a, button, input, select, textarea, [role='button'], [role='combobox'], [role='tab'], [role='tablist']) {
+  -webkit-app-region: no-drag;
+}
+
+/* Toolbar live pill pops in like the prototype's .tb-live. */
+.studio-live-pill {
+  animation: studio-pop-in 240ms var(--studio-spring) both;
+}
+
+/* The toolbar band grows a hairline once the zone's content scrolls under it
+   (prototype .tb.scrolled). */
+[data-panel-header]:has(> [data-zone-band] [data-slot='studio-toolbar'][data-scrolled])::after {
+  position: absolute;
+  inset-inline: 0;
+  bottom: -0.5px;
+  z-index: 5;
+  height: 0.5px;
+  pointer-events: none;
+  content: '';
+  background: var(--ui-line-2);
+}

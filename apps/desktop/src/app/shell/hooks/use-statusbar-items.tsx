@@ -769,7 +769,7 @@ export function useStatusbarItems({
     [coreRightStatusbarItems, extraRightItems]
   )
 
-  return { leftStatusbarItems, statusbarItems }
+  return { currentCwd, leftStatusbarItems, statusbarItems }
 }
 
 function StatusbarGatewaySwitcher() {

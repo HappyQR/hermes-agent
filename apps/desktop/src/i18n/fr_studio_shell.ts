@@ -2,5 +2,31 @@
 import type { StudioShellTranslations } from './types_studio_shell'
 
 export const frStudioShell: StudioShellTranslations = {
-  layout: 'Disposition'
+  layout: 'Disposition',
+  toolbar: {
+    newSessionTitle: 'Nouvelle session',
+    layoutMenu: 'Disposition et partage',
+    showInspector: 'Afficher l’inspecteur',
+    hideInspector: 'Masquer l’inspecteur',
+    singlePane: 'Volet unique',
+    splitWith: 'Partager côte à côte',
+    noOtherSessions: 'Aucune autre session',
+    layoutTemplates: 'Modèles de disposition',
+    saveLayoutAs: 'Enregistrer la disposition actuelle comme modèle…',
+    editLayout: 'Modifier la disposition…',
+    resetLayout: 'Réinitialiser la disposition',
+    tabBar: 'Barre d’onglets',
+    tabBarAuto: 'Automatique',
+    tabBarAlways: 'Toujours afficher',
+    tabBarNever: 'Ne jamais afficher',
+    showStatusBar: 'Afficher la barre d’état',
+    hideStatusBar: 'Masquer la barre d’état',
+    projectChip: 'Projet et dossier de travail',
+    branchChip: 'Branche et arbre de travail',
+    pullRequest: 'Pull request',
+    reviewChanges: 'Examiner les modifications',
+    newWorktree: 'Nouvel arbre de travail…',
+    copyWorktreePath: 'Copier le chemin de l’arbre de travail',
+    viewRunningAgents: 'Voir les agents en cours'
+  }
 }

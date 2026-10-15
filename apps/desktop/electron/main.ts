@@ -1415,11 +1415,11 @@ const BOOT_FAKE_STEP_MS = (() => {
 
 const APP_NAME: string = IDENTITY_APP_NAME || process.env.HERMES_DESKTOP_APP_NAME || PRODUCT_IDENTITY.displayName
 const HUD_WINDOW_TITLE = `${APP_NAME} HUD`
-const TITLEBAR_HEIGHT = 34
+const TITLEBAR_HEIGHT = process.platform === 'darwin' ? 52 : 34 // Studio: 52px macOS toolbar band (= src/app/shell/titlebar.ts)
 const MACOS_TRAFFIC_LIGHTS_HEIGHT = 14
 
 const WINDOW_BUTTON_POSITION = {
-  x: 24,
+  x: 20,
   y: TITLEBAR_HEIGHT / 2 - MACOS_TRAFFIC_LIGHTS_HEIGHT / 2
 }
 
