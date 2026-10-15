@@ -148,6 +148,7 @@ import { startWorkspaceSession } from '../session/workspace-session-target'
 import { PluginInstallModal } from '../settings/plugin-install-modal'
 import { useOverlayRouting } from '../shell/hooks/use-overlay-routing'
 import { useWindowControlsOverlayWidth } from '../shell/hooks/use-window-controls-overlay-width'
+import { StatusSnapshotHost } from '../shell/status-snapshot-host'
 import {
   TITLEBAR_CHROME_CHANGED_EVENT,
   titlebarControlsPosition,
@@ -156,6 +157,7 @@ import {
   titlebarToolsWidthCss
 } from '../shell/titlebar'
 import { TitlebarControls } from '../shell/titlebar-controls'
+import { ToolbarSurface } from '../shell/toolbar/workspace-toolbar'
 import { WslgWindowControls } from '../shell/wslg-window-controls'
 import { UpdatesOverlay } from '../updates-overlay'
 
@@ -1191,6 +1193,18 @@ export function ContribWiring({ children }: { children: ReactNode }) {
     [actions, agentsOpen, chatOpen, commandCenterOpen]
   )
 
+  const toolbarNode = useMemo(
+    () => (
+      <ToolbarSurface
+        actions={actions}
+        agentsOpen={agentsOpen}
+        chatOpen={chatOpen}
+        commandCenterOpen={commandCenterOpen}
+      />
+    ),
+    [actions, agentsOpen, chatOpen, commandCenterOpen]
+  )
+
   // The voice cap changes only on config load; the gateway instance + all
   // chat reactivity are subscribed inside ChatRoutesSurface / ChatView.
   const chatRoutesNode = useMemo(
@@ -1203,9 +1217,10 @@ export function ContribWiring({ children }: { children: ReactNode }) {
       chatRoutes: chatRoutesNode,
       sidebar: sidebarNode,
       statusbar: statusbarNode,
-      terminal: terminalNode
+      terminal: terminalNode,
+      toolbar: toolbarNode
     }),
-    [chatRoutesNode, sidebarNode, statusbarNode, terminalNode]
+    [chatRoutesNode, sidebarNode, statusbarNode, terminalNode, toolbarNode]
   )
 
   // The REAL titlebar tool clusters (sidebar/flip toggles, haptics, keybinds,
@@ -1269,12 +1284,9 @@ export function ContribWiring({ children }: { children: ReactNode }) {
             the clusters are `fixed`, so without this they'd float over the
             surface as orphaned buttons. */}
         {!isHudWindow() && !isBrowserWindow() && (
-          <TitlebarControls
-            leftTools={leftTitlebarTools}
-            onOpenSettings={() => navigate(SETTINGS_ROUTE)}
-            tools={rightTitlebarTools}
-          />
+          <TitlebarControls leftTools={leftTitlebarTools} tools={rightTitlebarTools} />
         )}
+        {!isHudWindow() && !isBrowserWindow() && <StatusSnapshotHost requestGateway={actions.requestGateway} />}
         {!isHudWindow() && customWindowControls && (
           <WslgWindowControls
             isFullscreen={Boolean(connection?.isFullscreen)}

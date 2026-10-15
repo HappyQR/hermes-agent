@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { registry } from '@/contrib/registry'
 import { I18nProvider } from '@/i18n'
-import { setTitlebarAppActionsSide } from '@/store/titlebar-app-actions'
+import { setPaneOpen } from '@/store/panes'
 
 import { ROUTES_AREA } from '../routes'
 
@@ -28,7 +28,7 @@ function renderControls(pathname: string, props?: { leftTools?: TitlebarTool[]; 
     <MemoryRouter initialEntries={[pathname]}>
       <I18nProvider configClient={null} initialLocale="en">
         <NavigateProbe />
-        <TitlebarControls leftTools={props?.leftTools} onOpenSettings={() => {}} tools={props?.tools} />
+        <TitlebarControls leftTools={props?.leftTools} tools={props?.tools} />
       </I18nProvider>
     </MemoryRouter>
   )
@@ -187,22 +187,36 @@ describe('TitlebarControls fixed clusters', () => {
   })
 })
 
-describe('titlebar app-action cluster', () => {
+describe('Studio window cluster', () => {
   afterEach(() => {
-    setTitlebarAppActionsSide('right')
+    setPaneOpen('chat-sidebar', true)
     cleanup()
   })
 
-  it('moves settings, layout, and HUD to the left when the appearance setting says left', () => {
-    setTitlebarAppActionsSide('left')
+  it('leaves [show sidebar][new chat] to the sidebar band while the sidebar is open', () => {
     renderControls('/')
 
     const left = screen.getByLabelText('Window controls')
-    const right = screen.getByLabelText('App controls')
 
-    expect(within(left).getByLabelText('Open settings')).toBeTruthy()
-    expect(within(left).getByLabelText('Layout editor')).toBeTruthy()
-    expect(within(left).getByLabelText('HUD mode')).toBeTruthy()
-    expect(within(right).queryByLabelText('Open settings')).toBeNull()
+    expect(within(left).queryByLabelText('Show sidebar')).toBeNull()
+    expect(within(left).queryByLabelText('New session')).toBeNull()
+  })
+
+  it('shows the pair beside the traffic lights once the sidebar is hidden', () => {
+    setPaneOpen('chat-sidebar', false)
+    renderControls('/')
+
+    const left = screen.getByLabelText('Window controls')
+
+    expect(within(left).getByLabelText('Show sidebar')).toBeTruthy()
+    expect(within(left).getByLabelText('New session')).toBeTruthy()
+  })
+
+  it('keeps app actions out of the window clusters (they live in the toolbar and menus)', () => {
+    renderControls('/')
+
+    for (const label of ['Open settings', 'Layout editor', 'HUD mode']) {
+      expect(screen.queryByLabelText(label)).toBeNull()
+    }
   })
 })
