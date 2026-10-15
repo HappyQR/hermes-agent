@@ -1,5 +1,6 @@
 'use client'
 
+import { Badge } from '@/components/ui/badge'
 import { Kbd } from '@/components/ui/kbd'
 import { useI18n } from '@/i18n'
 import { cn } from '@/lib/utils'
@@ -21,9 +22,9 @@ export function ChoiceLabel({ choice }: { choice: string }) {
   return (
     <>
       {bare}{' '}
-      <span className="studio-tag studio-rec-tag" data-tone="accent" title={RECOMMENDED_LABEL}>
+      <Badge className="studio-rec-tag" title={RECOMMENDED_LABEL}>
         {t.studio.chat.transcript.recommended}
-      </span>
+      </Badge>
     </>
   )
 }
