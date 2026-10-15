@@ -9,7 +9,6 @@ import { useSessionView } from '@/app/chat/session-view'
 import { SCAFFOLD_LABEL_CLASS, ScaffoldRow } from '@/components/chat/scaffold-row'
 import { Button } from '@/components/ui/button'
 import { CardStack, type CardStackAction } from '@/components/ui/card-stack'
-import { Codicon } from '@/components/ui/codicon'
 import {
   Dialog,
   DialogContent,
@@ -18,10 +17,8 @@ import {
   DialogHeader,
   DialogTitle
 } from '@/components/ui/dialog'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { useI18n } from '@/i18n'
 import { triggerHaptic } from '@/lib/haptics'
-import { ChevronDown, Loader2 } from '@/lib/icons'
 import { releaseApprovalKey } from '@/lib/keybinds/approval-keys'
 import { cn } from '@/lib/utils'
 import { $gateway } from '@/store/gateway'
@@ -39,10 +36,10 @@ import { $showToolActivity } from '@/store/tool-activity'
 import { setToolDisclosureOpen } from '@/store/tool-view'
 
 import { isApprovalActivity } from './approval-activity'
+import { type ApprovalChoice, StudioApprovalBody } from './approval-studio'
 import { toolEntryDisclosureId } from './fallback-model/targets'
 import { isToolCallPart, summarizeToolRun } from './run-summary'
 
-type ApprovalChoice = 'once' | 'session' | 'always' | 'deny'
 export const ApprovalPlacementContext = createContext<'inline' | 'floating'>('inline')
 
 // One transcript-owned host for the session. Execution rows never mount,
@@ -210,10 +207,7 @@ export function ApprovalQueue({
             notifyError(error, t.assistant.approval.sendFailed)
           })
       }}
-      surfaceClassName={cn(
-        'rounded-xl border bg-(--ui-chat-surface-background)',
-        floating ? 'border-(--stroke-nous) shadow-nous' : 'border-(--ui-stroke-secondary)'
-      )}
+      surfaceClassName={cn('studio-appr-surface', floating && 'studio-appr-floating')}
       swipeDirections={['left']}
     >
       {(request, action) => (
@@ -276,24 +270,6 @@ const ApprovalCard: FC<ApprovalCardProps> = ({ request, total, position, stack }
     }
   }, [])
 
-  // false when the backend won't honor a permanent allow → hide "Always allow".
-  const allowPermanent = request.allowPermanent !== false
-  const choices = request.choices ?? (request.smartDenied ? ['once', 'deny'] : undefined)
-  const allowSession = choices ? choices.includes('session') : true
-  const allowAlways = choices ? choices.includes('always') : allowPermanent
-  const hasMoreOptions = allowSession || allowAlways
-  const hasCommand = request.command.trim().length > 0
-  // A plugin `approve` rule escalates through the same gate with a synthetic
-  // display target (`<tool> (plugin approval rule)`) while the real command /
-  // change lives in `description` — the user approves a label they cannot act
-  // on otherwise. Show the description whenever the command is missing or one
-  // of these synthetic labels; a real command keeps rendering as the command.
-  const SYNTHETIC_COMMAND_RE = /^<[^>]+> \(/
-
-  const showsDescription = !hasCommand || SYNTHETIC_COMMAND_RE.test(request.command.trim())
-
-  const details = showsDescription ? request.description.trim() : request.command.trim()
-
   const respond = useCallback(
     async (choice: ApprovalChoice) => {
       const pending = sessionApprovalRequests(request.sessionId).get()
@@ -334,59 +310,15 @@ const ApprovalCard: FC<ApprovalCardProps> = ({ request, total, position, stack }
       onPointerDownCapture={rememberFocusOrigin}
       ref={cardRef}
     >
-      <div className="flex items-center gap-2 px-2.5 pt-2 text-xs text-(--ui-text-secondary)">
-        <Codicon name="terminal" size="0.875rem" />
-        <span>{showsDescription ? copy.commandDetails : copy.command}</span>
-        {total > 1 && (
-          <span className="ml-auto text-[0.6875rem] tabular-nums text-(--ui-text-tertiary)">
-            {position} / {total}
-          </span>
-        )}
-      </div>
-      {details.length > 0 && (
-        <pre className="m-0 max-h-40 overflow-auto whitespace-pre-wrap break-words px-2.5 py-2 font-mono text-xs leading-relaxed text-(--ui-text-primary)">
-          {details}
-        </pre>
-      )}
-      <div className="flex items-center justify-end gap-1.5 px-2 pb-2 pt-1" data-slot="tool-approval-actions">
-        <Button data-approval-deny="" disabled={busy} onClick={() => void respond('deny')} size="sm" variant="text">
-          {submitting === 'deny' ? <Loader2 className="size-3 animate-spin" /> : copy.reject}
-        </Button>
-        {hasMoreOptions && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button aria-label={copy.moreOptions} disabled={busy} size="sm" variant="secondary">
-                {copy.alwaysAllowMenu}
-                <ChevronDown className="size-3" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="min-w-44">
-              {allowSession && (
-                <DropdownMenuItem onSelect={() => void respond('session')}>{copy.allowSession}</DropdownMenuItem>
-              )}
-              {allowAlways && (
-                <DropdownMenuItem
-                  onSelect={() => {
-                    // Defer one tick so the menu fully unmounts before the dialog
-                    // mounts — otherwise Radix's focus-return races the dialog and
-                    // dismisses it via onInteractOutside.
-                    setTimeout(() => setConfirmAlways(true), 0)
-                  }}
-                >
-                  {copy.alwaysAllowMenu}
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuItem onSelect={() => void respond('deny')} variant="destructive">
-                {copy.reject}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
-        <Button data-approval-run="" disabled={busy} onClick={() => void respond('once')} size="sm">
-          {submitting === 'once' ? <Loader2 className="size-3 animate-spin" /> : copy.run}
-          <span className="opacity-60">↵</span>
-        </Button>
-      </div>
+      <StudioApprovalBody
+        busy={busy}
+        onAlwaysAllow={() => setConfirmAlways(true)}
+        onRespond={choice => void respond(choice)}
+        position={position}
+        request={request}
+        submitting={submitting}
+        total={total}
+      />
 
       <Dialog onOpenChange={setConfirmAlways} open={confirmAlways}>
         <DialogContent className="max-w-md">

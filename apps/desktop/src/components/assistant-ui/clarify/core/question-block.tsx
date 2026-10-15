@@ -32,6 +32,7 @@ export function QuestionBlock({
 }: QuestionBlockProps) {
   const { t } = useI18n()
   const copy = t.assistant.clarify
+  const studio = t.studio.chat.transcript
   const choices = question.choices ?? []
   const otherActive = cursor === choices.length
 
@@ -42,19 +43,14 @@ export function QuestionBlock({
       onFocus={onActivate}
       onPointerDown={onActivate}
     >
-      <div className="flex items-start gap-2">
-        <span className="flex-1 whitespace-pre-wrap font-medium leading-(--conversation-line-height)">
-          {question.question}
+      <span className="studio-clarify-q whitespace-pre-wrap leading-(--conversation-line-height)">
+        {question.question}
+      </span>
+      {choices.length > 0 ? (
+        <span className="studio-clarify-hint" data-clarify-select-mode={question.multiSelect ? 'multi' : 'single'}>
+          {question.multiSelect ? studio.clarifyHintMulti : studio.clarifyHint}
         </span>
-        {choices.length > 0 ? (
-          <span
-            className="mt-px shrink-0 rounded-sm bg-(--chrome-action-hover) px-1 py-px text-[0.625rem] text-(--ui-text-tertiary)"
-            data-clarify-select-mode={question.multiSelect ? 'multi' : 'single'}
-          >
-            {question.multiSelect ? copy.multiSelectHint : copy.singleSelectHint}
-          </span>
-        ) : null}
-      </div>
+      ) : null}
 
       {choices.length > 0 ? (
         <div className="grid gap-px" role="group">

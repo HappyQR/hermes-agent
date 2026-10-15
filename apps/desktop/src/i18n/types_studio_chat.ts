@@ -12,6 +12,24 @@ export interface StudioChatTranscriptTranslations {
   delegateRunning: (count: number) => string
   delegateAllDone: string
   openAgents: string
+  approvalTitle: string
+  /** The approval title when what waits is not a plain command (plugin rule, config change). */
+  approvalTitleAction: string
+  /** The approval card's menu row opening the approval mode choice. */
+  approvalMode: string
+  needsChoice: string
+  answered: string
+  questions: (count: number) => string
+  /** Under a single-choice question. */
+  clarifyHint: string
+  /** Under a multi-choice question. */
+  clarifyHintMulti: string
+  recommended: string
+  moreRecovery: string
+  copyDetails: string
+  /** The visible waiting line before the first token. */
+  preparingReply: string
+  timelineLabel: string
   /** The user bubble's edit action (the bubble itself is "Edit message"). */
   editAndRerun: string
   /** Under the inline edit: what sending an edit does (later messages go). */

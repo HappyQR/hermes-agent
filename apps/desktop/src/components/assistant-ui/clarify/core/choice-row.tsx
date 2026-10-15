@@ -1,14 +1,17 @@
 'use client'
 
 import { Kbd } from '@/components/ui/kbd'
+import { useI18n } from '@/i18n'
 import { cn } from '@/lib/utils'
 import { bareChoice, RECOMMENDED_LABEL } from '@/store/clarify'
 
 export const letterFor = (index: number): string => String.fromCharCode(65 + index)
 
 // The backend tags the agent's preferred option (`mark_recommended`); the card
-// renders the label in tertiary text so the option itself still reads first.
+// shows it as a localized "Recommended" tag after the option, so the option
+// itself still reads first.
 export function ChoiceLabel({ choice }: { choice: string }) {
+  const { t } = useI18n()
   const bare = bareChoice(choice)
 
   if (bare === choice) {
@@ -17,7 +20,10 @@ export function ChoiceLabel({ choice }: { choice: string }) {
 
   return (
     <>
-      {bare} <span className="text-(--ui-text-tertiary)">{RECOMMENDED_LABEL}</span>
+      {bare}{' '}
+      <span className="studio-tag studio-rec-tag" data-tone="accent" title={RECOMMENDED_LABEL}>
+        {t.studio.chat.transcript.recommended}
+      </span>
     </>
   )
 }
