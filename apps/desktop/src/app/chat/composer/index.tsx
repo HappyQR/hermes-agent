@@ -6,7 +6,6 @@ import {
   type KeyboardEvent,
   useCallback,
   useEffect,
-  useId,
   useMemo,
   useRef
 } from 'react'
@@ -44,9 +43,11 @@ import { $threadScrolledUpBySession } from '@/store/thread-scroll'
 import { $autoSpeakReplies } from '@/store/voice-prefs'
 import { useTheme } from '@/themes'
 
+import { ActivityTray } from './activity-tray'
 import { AttachmentList } from './attachments'
 import { deriveBusySubmitState } from './busy-submit-state'
 import { ComposerDockGlow, QueuedEditBanner } from './chat-bar-parts'
+import { ComposerLeading, StudioComposerControls } from './composer-row'
 import {
   acceptsTriggerCompletion,
   COMPOSER_FADE_BACKGROUND,
@@ -57,9 +58,7 @@ import {
   shouldDisableComposerInput,
   slashArgStage
 } from './composer-utils'
-import { ContextMenu } from './context-menu'
 import { COMPOSER_AREAS } from './contrib'
-import { ComposerControls } from './controls'
 import { ComposerDirectiveActions } from './directive-actions'
 import { COMPOSER_DROP_ACTIVE_CLASS, COMPOSER_DROP_FADE_CLASS } from './drop-affordance'
 import { markActiveComposer, onComposerAttachImagesRequest } from './focus'
@@ -84,7 +83,6 @@ import { useEmojiCompletions } from './hooks/use-emoji-completions'
 import { useComposerMicroActions } from './hooks/use-micro-actions'
 import { useMiddlewareSubmit } from './hooks/use-middleware-submit'
 import { useSlashCompletions } from './hooks/use-slash-completions'
-import { useStatusDrawer } from './hooks/use-status-drawer'
 import { useSessionStatusPresence } from './hooks/use-status-presence'
 import { shouldConvertPasteToAttachment } from './large-paste'
 import { ActionBadges } from './micro-actions'
@@ -103,8 +101,6 @@ import {
 } from './rich-editor'
 import { useComposerScope, useComposerSurfaceId } from './scope'
 import { ComposerStatusStack } from './status-stack'
-import { CodingStatusRow } from './status-stack/coding-row'
-import { StatusDrawerContent, StatusDrawerToggle } from './status-stack/drawer'
 import { SuggestionPills } from './suggestion-pills'
 import { extractClipboardImageBlobs, openDirectiveScope } from './text-utils'
 import { ComposerTriggerPopover } from './trigger-popover'
@@ -118,7 +114,6 @@ import {
   resolveExactLinkPaste,
   selectionLinkLabel
 } from './url-refs'
-import { VoiceActivity, VoicePlaybackActivity } from './voice-activity'
 
 export function ChatBar({
   busy,
@@ -180,9 +175,6 @@ export function ChatBar({
   const awaitingInput = useStore(scope.$awaitingInput)
   const blockingPrompt = useStore(useMemo(() => sessionBlockingPrompt(sessionId ?? null), [sessionId]))
   const activeQueueSessionKey = queueSessionKey || sessionId || freshDraftKey || null
-  const { collapsed: statusDrawerCollapsed, toggle: toggleStatusDrawer } = useStatusDrawer(activeQueueSessionKey)
-  const statusDrawerId = useId()
-  const codingDrawerId = useId()
 
   const requestBusyConfig = useCallback<GatewayRequester>(
     (method, params) => (gateway ? gateway.request(method, params) : Promise.reject(new Error('Gateway unavailable'))),
@@ -449,7 +441,7 @@ export function ChatBar({
 
   // Resting / reconnecting / starting placeholder text, re-rolled only on a real
   // conversation change.
-  const placeholder = useComposerPlaceholder({ disabled, reconnecting, sessionId })
+  const placeholder = useComposerPlaceholder({ busy, disabled, reconnecting, sessionId })
 
   // Trigger / completion engine: @// detection, the adapter-driven item list,
   // popover selection, and chip insertion. The keydown nav block below consumes
@@ -1063,14 +1055,14 @@ export function ChatBar({
   } = useComposerDrop({ cwd, insertInlineRefs, onAttachDroppedItems, recordUndoPoint, requestMainFocus, sessionId })
 
   // A bot chat is a companion conversation, not a working session, so it has no
-  // repo to speak of — see the blank repoPath handed to CodingStatusRow below.
+  // repo to speak of — see the blank repoPath handed to the tray's git chip.
   // Three stores: the scope set records the answer, and resolving this runtime
   // id to the stored one it is filed under reads the other two.
   const botChat = useStoresSelector([$botChatSessionIds, $sessionStates, $sessionTiles], () =>
     isBotChatSession(sessionId)
   )
 
-  // Branch / worktree hand-offs (CodingStatusRow). Owns the worktree open +
+  // Branch / worktree hand-offs (the tray's git chip). Owns the worktree open +
   // branch-off/convert/list/switch actions; draft travels into the new session.
   const { handleBranchOff, handleConvertBranch, handleListBranches, handleSwitchBranch, openInWorktree } =
     useComposerBranch({ clearDraft, cwd, draftRef })
@@ -1109,19 +1101,21 @@ export function ChatBar({
   voiceStopRef.current = { active: voiceConversationActive, end: endConversation }
 
   const contextMenu = (
-    <ContextMenu
+    <ComposerLeading
       onInsertText={insertText}
       onOpenUrlDialog={openUrlDialog}
       onPasteClipboardImage={onPasteClipboardImage}
       onPickFiles={onPickFiles}
       onPickFolders={onPickFolders}
       onPickImages={onPickImages}
+      popout={popoutAllowed ? { onToggle: handleComposerToggle, poppedOut } : undefined}
       state={state}
+      voiceActivityState={voiceActivityState}
     />
   )
 
   const controls = (
-    <ComposerControls
+    <StudioComposerControls
       autoSpeak={autoSpeak}
       busy={busy}
       busyAction={busyAction}
@@ -1143,10 +1137,13 @@ export function ChatBar({
       hasComposerPayload={hasComposerPayload}
       hideModelPill={guidedChat}
       minimal={minimal || chatOnboardingSolo}
+      onCompress={() => void Promise.resolve(onSubmit('/compress'))}
       onDictate={dictate}
       onQueue={queueDraft}
+      onRedirect={canSteer ? () => steerDraft('interrupt') : undefined}
       onSteer={canSteer ? () => steerDraft('steer') : undefined}
       onToggleAutoSpeak={handleToggleAutoSpeak}
+      requestGateway={requestBusyConfig}
       state={state}
       voiceStatus={voiceStatus}
     />
@@ -1312,31 +1309,50 @@ export function ChatBar({
             />
             <OnboardingSkip sessionId={statusSessionId} />
           </div>
-          {/* Session-scoped status stack (todos, subagents, background tasks,
-              queue). An in-flow dock child: the dock is bottom-anchored, so it
-              grows upward over the thread and the dock's own measurement covers
-              it. Collapses to nothing when every status is empty. */}
-          <StatusDrawerContent collapsed={statusDrawerCollapsed} id={statusDrawerId}>
-            <ComposerStatusStack
-              onSubmit={onSubmit}
-              queue={renderComposerQueueSlot({
-                activeQueueSessionKey,
-                beginQueuedEdit,
-                busy,
-                drainNextQueued,
-                exitQueuedEdit,
-                gateway,
-                queueEdit,
-                queueParked,
-                queuedPrompts,
-                sendQueuedNow,
-                sessionId,
-                steerQueuedNow,
-                t
-              })}
-              sessionId={statusSessionId}
-            />
-          </StatusDrawerContent>
+          {/* Session-scoped status (todos, subagents, background tasks, queue),
+              laid out as the activity tray: an in-flow dock child, so it grows
+              upward over the thread and the dock's measurement covers it. */}
+          <ComposerStatusStack
+            layout={sections => (
+              <ActivityTray
+                coding={
+                  codingRowShown
+                    ? {
+                        onBranchOff: handleBranchOff,
+                        onConvertBranch: handleConvertBranch,
+                        onListBranches: handleListBranches,
+                        onOpenWorktree: openInWorktree,
+                        // A tile reviews ITS worktree; main follows the active session (null).
+                        onReview: () => toggleReview(scope.target === 'main' ? null : (cwd ?? null), scope.target),
+                        onSwitchBranch: handleSwitchBranch,
+                        // Blank in a bot chat: no repo, and no probing git / GitHub for one.
+                        repoPath: botChat ? undefined : cwd
+                      }
+                    : null
+                }
+                sections={sections}
+                sessionId={statusSessionId}
+                sessionKey={activeQueueSessionKey}
+              />
+            )}
+            onSubmit={onSubmit}
+            queue={renderComposerQueueSlot({
+              activeQueueSessionKey,
+              beginQueuedEdit,
+              busy,
+              drainNextQueued,
+              exitQueuedEdit,
+              gateway,
+              queueEdit,
+              queueParked,
+              queuedPrompts,
+              sendQueuedNow,
+              sessionId,
+              steerQueuedNow,
+              t
+            })}
+            sessionId={statusSessionId}
+          />
           <ComposerPrimitive.Root
             className={cn(
               'group/composer relative w-full overflow-visible rounded-2xl',
@@ -1352,7 +1368,7 @@ export function ChatBar({
             data-hud-grabbing={hudGrabbing ? '' : undefined}
             data-popped-out={poppedOut ? '' : undefined}
             data-slot="composer-root"
-            data-status-stack={statusStackVisible && !statusDrawerCollapsed ? '' : undefined}
+            data-status-stack={statusStackVisible ? '' : undefined}
             data-thread-scrolled-up={scrolledUp ? '' : undefined}
             data-tip-region=""
             data-tour={composerTourMarker}
@@ -1431,13 +1447,6 @@ export function ChatBar({
               />
             )}
             <div className="relative w-full rounded-[inherit]">
-              {!hudMode && !guidedChat && (
-                <StatusDrawerToggle
-                  collapsed={statusDrawerCollapsed}
-                  controls={`${statusDrawerId} ${codingDrawerId}`}
-                  onToggle={toggleStatusDrawer}
-                />
-              )}
               {hudMode && busy && <span aria-hidden className="arc-border arc-composer" />}
               <div
                 className={cn(
@@ -1455,25 +1464,6 @@ export function ChatBar({
                 ref={composerSurfaceRef}
               >
                 <div aria-hidden className={composerInputBacking} />
-                {codingRowShown && (
-                  <StatusDrawerContent collapsed={statusDrawerCollapsed} id={codingDrawerId}>
-                    <CodingStatusRow
-                      onBranchOff={handleBranchOff}
-                      onConvertBranch={handleConvertBranch}
-                      onListBranches={handleListBranches}
-                      // A tile's rail reviews ITS worktree: pin the pane's scope to
-                      // this surface's cwd. Main keeps the classic follow-the-
-                      // active-session scope (null).
-                      onOpen={() => toggleReview(scope.target === 'main' ? null : (cwd ?? null), scope.target)}
-                      onOpenWorktree={openInWorktree}
-                      onSwitchBranch={handleSwitchBranch}
-                      // Blank in a bot chat: the row hides itself without a repo,
-                      // and stops probing git / GitHub for a surface that has no
-                      // branch to show. Cheaper than a second composer.
-                      repoPath={botChat ? undefined : cwd}
-                    />
-                  </StatusDrawerContent>
-                )}
                 <div
                   className={cn(
                     'relative z-1 flex min-h-0 w-full flex-col gap-(--composer-row-gap) overflow-hidden rounded-[inherit] px-(--composer-surface-pad-x) py-(--composer-surface-pad-y) transition-opacity duration-200 ease-out',
@@ -1492,8 +1482,6 @@ export function ChatBar({
                     onUndone={clearDraft}
                     readLiveText={syncDraftFromEditor}
                   />
-                  <VoiceActivity state={voiceActivityState} />
-                  <VoicePlaybackActivity />
                   {queueEdit && editingQueuedPrompt && <QueuedEditBanner onExit={exitQueuedEdit} />}
                   {attachments.length > 0 && <AttachmentList attachments={attachments} onRemove={onRemoveAttachment} />}
                   <div

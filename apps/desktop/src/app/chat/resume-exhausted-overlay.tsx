@@ -22,12 +22,14 @@ export function ResumeExhaustedOverlay({
   return (
     <div className="absolute inset-0 z-10 grid place-items-center bg-(--ui-chat-surface-background) px-8 py-10">
       <ErrorState className="max-w-sm" description={t.desktop.resumeStrandedBody} title={t.desktop.resumeStrandedTitle}>
-        <div className="grid justify-items-center gap-1.5">
-          <Button onClick={() => requestFreshSession()} size="sm" variant="outline">
-            {t.assistant.thread.errorStartNewSession}
-          </Button>
-          <Button onClick={() => onRetryResume(sessionId)} size="sm" variant="outline">
+        {/* Hermes Studio: Retry leads (the prototype's one primary fix);
+            starting over sits beside it. */}
+        <div className="flex flex-wrap justify-center gap-2">
+          <Button onClick={() => onRetryResume(sessionId)} size="sm">
             {t.desktop.resumeRetry}
+          </Button>
+          <Button onClick={() => requestFreshSession()} size="sm" variant="secondary">
+            {t.assistant.thread.errorStartNewSession}
           </Button>
         </div>
       </ErrorState>

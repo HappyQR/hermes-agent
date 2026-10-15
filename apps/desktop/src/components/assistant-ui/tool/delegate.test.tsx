@@ -1,5 +1,6 @@
-import { cleanup, render } from '@testing-library/react'
+import { cleanup, render, screen } from '@testing-library/react'
 import { atom } from 'nanostores'
+import { MemoryRouter } from 'react-router'
 import { afterEach, describe, expect, it } from 'vitest'
 
 import { type SessionView, SessionViewProvider } from '@/app/chat/session-view'
@@ -96,5 +97,30 @@ describe('delegate card fade', () => {
     // The card wrapper itself carries no mark — the fade is per surface, never
     // on a container (styles.css invariant).
     expect(container.querySelector('[data-delegate-card]')?.hasAttribute('data-conversation-scaffold')).toBe(false)
+  })
+})
+
+describe('delegate card head', () => {
+  it('counts the children and links to the Agents view only inside a router', () => {
+    const { unmount } = renderCard()
+
+    expect(screen.getByText('Spawned 1 subagent')).toBeTruthy()
+    // A call with no result yet dispatched its child: it is running.
+    expect(screen.getByText(/running|All done/)).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'View in Agents' })).toBeNull()
+    unmount()
+
+    render(
+      <MemoryRouter>
+        <I18nProvider configClient={null} initialLocale="en">
+          <SessionViewProvider value={view()}>
+            <DelegateTool args={{ tasks: [{ goal: 'One' }, { goal: 'Two' }] }} result={undefined} toolCallId="call-2" />
+          </SessionViewProvider>
+        </I18nProvider>
+      </MemoryRouter>
+    )
+
+    expect(screen.getByText('Spawned 2 subagents')).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'View in Agents' })).toBeTruthy()
   })
 })

@@ -52,6 +52,7 @@ export const zhHantAssistant = {
         endpoint: 'Hermes 無法連線至你的自訂模型伺服器。請確認它正在執行，然後重新傳送訊息。',
         streaming: '回覆完成前連線已中斷。請重試以重新傳送。'
       },
+      errorDetails: '詳細資訊',
       errorCodes: {
         provider_policy_blocked: {
           title: '帳戶設定封鎖了此模型',

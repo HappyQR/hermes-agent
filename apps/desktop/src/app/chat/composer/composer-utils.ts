@@ -42,6 +42,11 @@ export const COMPOSER_FOLD_VOICE_PX = 260
 // spare at any width the layout tree allows (~74 all-in).
 export const COMPOSER_MINIMAL_PX = 180
 
+// Hermes Studio stacks the row by default (input above, controls below), so the
+// controls have the composer's whole width: the model pill keeps its label down
+// to here — context gauge, "model · effort", mic and send fit in ~360px.
+export const COMPOSER_STACKED_COMPACT_PILL_PX = 400
+
 // A single editor line is ~28px (--composer-input-min-height 1.625rem + 0.5rem
 // vertical padding). Anything taller means the text wrapped to a second line,
 // which is when the composer should expand to the stacked layout.

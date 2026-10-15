@@ -3634,6 +3634,7 @@ export const ruOverrides = {
   },
   assistant: {
     thread: {
+      errorDetails: 'Подробности',
       loadingSession: 'Загрузка сеанса',
       showEarlier: 'Показать ранние сообщения',
       loadingResponse: 'Hermes загружает ответ',

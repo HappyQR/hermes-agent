@@ -1,8 +1,9 @@
 import type { ModelOptionsResult } from '@hermes/shared'
 import { useStore } from '@nanostores/react'
 import { useQueryClient } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 
+import { ModelMenuExtras } from '@/app/chat/composer/model-menu-extras'
 import { useSessionView } from '@/app/chat/session-view'
 import { Codicon } from '@/components/ui/codicon'
 import { DropdownMenuItem, dropdownMenuRow } from '@/components/ui/dropdown-menu'
@@ -36,6 +37,7 @@ export function ModelMenuPanel({ onFollowDefaultModel, ...props }: ModelMenuPane
   const view = useSessionView()
   const modelSource = useStore($currentModelSource)
   const { activeSessionId, controller } = useModelMenuController(props)
+  const extras = useContext(ModelMenuExtras)
   // Same condition as the pill's pin dot: a draft whose next session.create
   // ships the manual pick instead of the Settings default (#107410).
   const pinnedDraft = view.kind === 'primary' && !activeSessionId && modelSource === 'manual'
@@ -79,6 +81,7 @@ export function ModelMenuPanel({ onFollowDefaultModel, ...props }: ModelMenuPane
       controller={controller}
       footer={
         <>
+          {extras}
           {pinnedDraft && onFollowDefaultModel && (
             <DropdownMenuItem
               className={cn(dropdownMenuRow, 'text-(--ui-text-tertiary)')}

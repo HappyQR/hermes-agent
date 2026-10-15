@@ -27,6 +27,7 @@ export const arAssistant = {
       credentialsHeading: 'بيانات الاعتماد'
     },
     thread: {
+      errorDetails: 'التفاصيل',
       loadingSession: 'جار تحميل الجلسة...',
       showEarlier: 'عرض الرسائل الأقدم',
       loadingResponse: 'جار تحميل الرد...',

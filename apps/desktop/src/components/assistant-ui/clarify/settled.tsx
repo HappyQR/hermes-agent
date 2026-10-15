@@ -7,6 +7,7 @@ import { useI18n } from '@/i18n'
 import { CircleLetterA, MessageQuestion } from '@/lib/icons'
 import { cn } from '@/lib/utils'
 
+import { ClarifyHead } from './core/clarify-head'
 import { ClarifyLine, ClarifyShell } from './core/shell'
 import { readClarifyResult } from './parse'
 
@@ -14,6 +15,7 @@ import { readClarifyResult } from './parse'
 export function ClarifyToolSettled(props: ToolCallMessagePartProps) {
   const { t } = useI18n()
   const copy = t.assistant.clarify
+  const studio = t.studio.chat.transcript
   const { outcome, responses } = readClarifyResult(props.result)
   // Skip (the card's or the composer's) and a stopped turn both end the batch
   // as `cancelled`: the user chose not to answer, so it reads as skipped.
@@ -25,6 +27,7 @@ export function ClarifyToolSettled(props: ToolCallMessagePartProps) {
 
   return (
     <ClarifyShell className="my-1.5 grid gap-2.5" data-clarify-settled="">
+      <ClarifyHead count={studio.questions(responses.length)} state={cancelled ? 'skipped' : 'answered'} />
       {responses.map((row, index) => {
         const answer = Array.isArray(row.answer) ? row.answer.join(', ') : (row.answer ?? '')
         const blank = !answer.trim()

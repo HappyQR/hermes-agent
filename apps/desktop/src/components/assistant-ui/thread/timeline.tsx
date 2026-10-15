@@ -306,7 +306,7 @@ const ActiveThreadTimeline: FC = () => {
 
   return (
     <div
-      aria-label="Conversation timeline"
+      aria-label={t.studio.chat.transcript.timelineLabel}
       data-slot="thread-timeline"
       data-suppress-pane-reveal=""
       ref={root}

@@ -22,23 +22,16 @@ const PILL = cn(
   'text-(--ui-text-tertiary) hover:bg-(--chrome-action-hover) hover:text-foreground'
 )
 
-/**
- * Composer reasoning selector: the active model's effort level as its own
- * pill next to the model pill, opening the same Thinking / Fast / Effort rows
- * the catalog offers per model — without having to find the model's row and
- * hover its submenu. Hidden when the catalog says the model has no reasoning
- * control, and while there is no live menu (gateway closed).
- *
- * Reads THIS surface's SessionView (primary or tile), like the model pill.
- */
-export function ReasoningPill({ disabled, model }: { disabled: boolean; model: ChatBarState['model'] }) {
+/** The active model's effort as a short label (+ tooltip), or null when the
+ *  model has no reasoning control or no live menu. Shared by this pill and the
+ *  merged "model · effort" pill. */
+export function useReasoningSummary(model: ChatBarState['model']) {
   const copy = useI18n().t.shell.modelOptions
   const view = useSessionView()
   const reasoningEffort = useStore(view.$reasoningEffort)
   const reasoningEffortWire = useStore(view.$reasoningEffortWire)
   const pending = useStore(view.$reasoningEffortPending)
   const defaultEffort = useStore($defaultReasoningEffort)
-  const [open, setOpen] = useState(false)
 
   if (!model.reasoningMenuContent || model.supportsReasoning === false) {
     return null
@@ -58,6 +51,28 @@ export function ReasoningPill({ disabled, model }: { disabled: boolean; model: C
     : clamp
       ? `${copy.effort}: ${copy[clamp.effort]} (${copy.sendsOnRoute(copy[clamp.wire])})`
       : `${copy.effort}: ${label}`
+
+  return { clamp, effort, label, pending, title }
+}
+
+/**
+ * Composer reasoning selector: the active model's effort level as its own
+ * pill next to the model pill, opening the same Thinking / Fast / Effort rows
+ * the catalog offers per model — without having to find the model's row and
+ * hover its submenu. Hidden when the catalog says the model has no reasoning
+ * control, and while there is no live menu (gateway closed).
+ *
+ * Reads THIS surface's SessionView (primary or tile), like the model pill.
+ */
+export function ReasoningPill({ disabled, model }: { disabled: boolean; model: ChatBarState['model'] }) {
+  const summary = useReasoningSummary(model)
+  const [open, setOpen] = useState(false)
+
+  if (!summary) {
+    return null
+  }
+
+  const { label, pending, title } = summary
 
   // Closing the menu ends its claim on the keyboard: Radix restores focus to
   // this pill (a toolbar button), so without the release the Enter that

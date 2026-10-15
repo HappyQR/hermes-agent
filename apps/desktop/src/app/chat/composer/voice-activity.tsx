@@ -163,7 +163,7 @@ function PlaybackWaveform({ audioElement }: { audioElement: HTMLAudioElement | n
   return <canvas aria-hidden="true" className="block h-4 w-[88px]" ref={canvasRef} />
 }
 
-export function VoiceActivity({ state }: { state: VoiceActivityState }) {
+export function VoiceActivity({ compact = false, state }: { compact?: boolean; state: VoiceActivityState }) {
   const { t } = useI18n()
 
   if (state.status === 'idle') {
@@ -172,6 +172,25 @@ export function VoiceActivity({ state }: { state: VoiceActivityState }) {
 
   const recording = state.status === 'recording'
   const title = recording ? t.composer.dictating : t.composer.transcribing
+
+  // Hermes Studio: a pill in the composer row (prototype "正在听写…") — the
+  // streaming partial text is announced, not painted, so the row never grows.
+  if (compact) {
+    return (
+      <span aria-live="polite" className="composer-pill" data-slot="composer-dictation" data-tone="accent" role="status">
+        {recording ? (
+          <VoiceLevelBars active level={state.level} />
+        ) : (
+          <Loader2 className={cn('animate-spin', iconSize.xs)} />
+        )}
+        <span>{title}</span>
+        <span aria-hidden="true" className="font-mono text-[0.6875rem] tabular-nums opacity-80">
+          {formatElapsed(state.elapsedSeconds)}
+        </span>
+        {state.partial && <span className="sr-only">{state.partial}</span>}
+      </span>
+    )
+  }
 
   return (
     <div
@@ -205,7 +224,7 @@ export function VoiceActivity({ state }: { state: VoiceActivityState }) {
   )
 }
 
-export function VoicePlaybackActivity() {
+export function VoicePlaybackActivity({ compact = false }: { compact?: boolean }) {
   const { t } = useI18n()
   const playback = useStore($voicePlayback)
 
@@ -220,6 +239,23 @@ export function VoicePlaybackActivity() {
     : playback.source === 'voice-conversation'
       ? t.composer.speakingResponse
       : t.composer.readingAloud
+
+  if (compact) {
+    return (
+      <span aria-live="polite" className="composer-pill" data-slot="composer-playback" data-tone="accent" role="status">
+        {preparing ? <Loader2 className={cn('animate-spin', iconSize.xs)} /> : <Volume2 className={iconSize.xs} />}
+        <span>{title}</span>
+        <button
+          aria-label={t.composer.stopShort}
+          className="composer-pill-action"
+          onClick={stopVoicePlayback}
+          type="button"
+        >
+          <VolumeX className={iconSize.xs} />
+        </button>
+      </span>
+    )
+  }
 
   return (
     <div
@@ -247,7 +283,7 @@ export function VoicePlaybackActivity() {
         variant="ghost"
       >
         <VolumeX className={iconSize.xs} />
-        Stop
+        {t.composer.stopShort}
       </Button>
     </div>
   )

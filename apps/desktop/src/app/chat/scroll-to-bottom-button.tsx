@@ -3,8 +3,8 @@ import { useReducedMotion } from 'motion/react'
 import { useMemo, useRef } from 'react'
 
 import { useTranscriptWindow } from '@/components/assistant-ui/thread/transcript-window'
-import { Codicon } from '@/components/ui/codicon'
 import { AnimatedInt } from '@/components/ui/diff-count'
+import { StudioIcon } from '@/components/ui/studio-icon'
 import { useI18n } from '@/i18n'
 import { triggerHaptic } from '@/lib/haptics'
 import { useStoreSelector } from '@/lib/use-session-slice'
@@ -17,28 +17,7 @@ import {
 } from '@/store/thread-scroll'
 
 import { useComposerSurfaceId } from './composer/scope'
-
-// Attribute-safe selector fragment. jsdom (vitest) does not ship `CSS.escape`.
-const cssEscape = (value: string): string => {
-  if (typeof CSS !== 'undefined' && typeof CSS.escape === 'function') {
-    return CSS.escape(value)
-  }
-
-  return value.replace(/[^a-zA-Z0-9_:-]/g, ch => `\\${ch}`)
-}
-
-// The pending-approval stack renders once per pane, tagged with the owning
-// session so a split view can't jump one pane's arrow into a sibling's
-// approval. `nearest` keeps this a minimal scroll within the transcript's own
-// scroll container instead of an unqualified scrollIntoView, which would also
-// nudge any overflow-hidden ancestor's programmatic scroll offset.
-function findSessionApprovalStack(sessionId: string | null): HTMLElement | null {
-  if (!sessionId) {
-    return null
-  }
-
-  return document.querySelector<HTMLElement>(`[data-approval-stack][data-session-id="${cssEscape(sessionId)}"]`)
-}
+import { findSessionApprovalStack } from './decision-anchor'
 
 /**
  * Floating "jump to bottom" control. Sits centered just above the composer,
@@ -107,6 +86,7 @@ export function ScrollToBottomButton({ sessionId }: { sessionId: string | null }
           : 'border-border/65 text-muted-foreground hover:text-foreground',
         !visible && 'pointer-events-none'
       )}
+      data-approval={visibleApproval ? '' : undefined}
       data-state={state}
       onClick={() => {
         triggerHaptic('selection')
@@ -127,7 +107,7 @@ export function ScrollToBottomButton({ sessionId }: { sessionId: string | null }
       tabIndex={visible ? 0 : -1}
       type="button"
     >
-      <Codicon name="arrow-down" size="0.875rem" />
+      <StudioIcon name="arrow-down" size={13} />
       {visibleApproval || count <= 0 ? (
         <span>{label}</span>
       ) : (
