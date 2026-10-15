@@ -22,9 +22,7 @@ export function useOverlayRouting() {
   const commandCenterOpen = currentView === 'command-center'
   const agentsOpen = currentView === 'agents'
   const starmapOpen = currentView === 'starmap'
-  const cronOpen = currentView === 'cron'
   const profilesOpen = currentView === 'profiles'
-  const webhooksOpen = currentView === 'webhooks'
   const chatOpen = currentView === 'chat'
   const overlayOpen = isOverlayView(currentView)
 
@@ -75,7 +73,6 @@ export function useOverlayRouting() {
     closeOverlayToPreviousRoute,
     commandCenterInitialSection,
     commandCenterOpen,
-    cronOpen,
     currentView,
     openAgents,
     openCommandCenterSection,
@@ -84,7 +81,6 @@ export function useOverlayRouting() {
     resetOverlayReturnRoute,
     settingsOpen,
     starmapOpen,
-    toggleCommandCenter,
-    webhooksOpen
+    toggleCommandCenter
   }
 }

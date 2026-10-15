@@ -18,6 +18,9 @@ export const MESSAGING_ROUTE = '/messaging'
 export const WEBHOOKS_ROUTE = '/webhooks'
 export const ARTIFACTS_ROUTE = '/artifacts'
 export const CRON_ROUTE = '/cron'
+// Studio: the Automations page (scheduled jobs · webhooks · blueprints). `/cron`
+// and `/webhooks` render the same page on their tab.
+export const AUTOMATIONS_ROUTE = '/automations'
 export const PROFILES_ROUTE = '/profiles'
 export const AGENTS_ROUTE = '/agents'
 export const STARMAP_ROUTE = '/starmap'
@@ -45,6 +48,7 @@ export type AppRouteId =
   | 'session-import'
   | 'agents'
   | 'artifacts'
+  | 'automations'
   | 'capabilities'
   | 'command-center'
   | 'cron'
@@ -71,6 +75,8 @@ export const APP_ROUTES = [
   { id: 'webhooks', path: WEBHOOKS_ROUTE, view: 'webhooks' },
   { id: 'artifacts', path: ARTIFACTS_ROUTE, view: 'artifacts' },
   { id: 'cron', path: CRON_ROUTE, view: 'cron' },
+  // Same page as /cron (the `cron` view is the Automations page).
+  { id: 'automations', path: AUTOMATIONS_ROUTE, view: 'cron' },
   { id: 'profiles', path: PROFILES_ROUTE, view: 'profiles' },
   { id: 'agents', path: AGENTS_ROUTE, view: 'agents' },
   { id: 'starmap', path: STARMAP_ROUTE, view: 'starmap' }
@@ -160,15 +166,15 @@ export interface ProfileGroupHeaderContribution {
 // Views that render as a full-screen modal card (OverlayView) over the shell.
 // While one is open the app's titlebar control clusters must hide so they don't
 // bleed over the overlay (they sit at a higher z-index than the overlay card).
+// Studio: `cron` and `webhooks` are the Automations page, rendered in the
+// workspace like Capabilities.
 export const OVERLAY_VIEWS: ReadonlySet<AppView> = new Set([
   'session-import',
   'agents',
   'command-center',
-  'cron',
   'profiles',
   'settings',
-  'starmap',
-  'webhooks'
+  'starmap'
 ])
 
 export function isOverlayView(view: AppView): boolean {

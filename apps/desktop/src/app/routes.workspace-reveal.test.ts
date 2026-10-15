@@ -18,7 +18,9 @@ import {
   $workspaceIsPage,
   appViewForPath,
   ARTIFACTS_ROUTE,
+  AUTOMATIONS_ROUTE,
   CAPABILITIES_ROUTE,
+  CRON_ROUTE,
   MESSAGING_ROUTE,
   navigateToWorkspacePage,
   NEW_CHAT_ROUTE,
@@ -27,7 +29,8 @@ import {
   routeSessionId,
   sessionRoute,
   SETTINGS_ROUTE,
-  syncWorkspaceRoute
+  syncWorkspaceRoute,
+  WEBHOOKS_ROUTE
 } from './routes'
 
 vi.mock('@/components/pane-shell/tree/store', async importOriginal => ({
@@ -87,7 +90,11 @@ describe('classification of targets carrying a query', () => {
   it.each([
     [`${CAPABILITIES_ROUTE}?tab=skills`, 'capabilities'],
     [`${CAPABILITIES_ROUTE}?tab=connectors&server=ctx7`, 'capabilities'],
-    [`${SETTINGS_ROUTE}?tab=keys`, 'settings']
+    [`${SETTINGS_ROUTE}?tab=keys`, 'settings'],
+    // The Automations page answers to its own path and both legacy ones.
+    [`${AUTOMATIONS_ROUTE}?tab=blueprints`, 'cron'],
+    [`${CRON_ROUTE}?tab=webhook`, 'cron'],
+    [WEBHOOKS_ROUTE, 'webhooks']
   ])('%s is not a session route', (to, view) => {
     expect(routeSessionId(to)).toBeNull()
     expect(appViewForPath(to)).toBe(view)
@@ -97,6 +104,13 @@ describe('classification of targets carrying a query', () => {
 describe('syncWorkspaceRoute', () => {
   it('publishes and fronts on a page route', () => {
     syncWorkspaceRoute(CAPABILITIES_ROUTE)
+
+    expect($workspaceIsPage.get()).toBe(true)
+    expect(fronted()).toBe(true)
+  })
+
+  it.each([AUTOMATIONS_ROUTE, CRON_ROUTE, WEBHOOKS_ROUTE])('fronts on the Automations page at %s', route => {
+    syncWorkspaceRoute(route)
 
     expect($workspaceIsPage.get()).toBe(true)
     expect(fronted()).toBe(true)

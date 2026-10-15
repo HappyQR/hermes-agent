@@ -5,20 +5,26 @@ import type * as React from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { PageLoader } from '@/components/page-loader'
+import { thisDeviceLabel } from '@/components/studio/pages/device'
+import { FormGroup, FormRow, FormSection } from '@/components/studio/pages/form'
+import { StudioMasterDetail } from '@/components/studio/pages/master-detail'
+import {
+  SheetBody,
+  SheetFooter,
+  SheetHeader,
+  STUDIO_SHEET_BODY,
+  STUDIO_SHEET_CONTENT
+} from '@/components/studio/pages/sheet'
+import { Callout } from '@/components/studio/pages/surfaces'
+import { IconTile } from '@/components/studio/pages/tile'
+import { ActionsMenu } from '@/components/ui/actions-menu'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Codicon } from '@/components/ui/codicon'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle
-} from '@/components/ui/dialog'
-import { Field, FieldHint } from '@/components/ui/field'
+import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
+import { SearchField } from '@/components/ui/search-field'
 import {
   Select,
   SelectContent,
@@ -45,7 +51,6 @@ import {
   updateCronJob
 } from '@/hermes'
 import { type Translations, useI18n } from '@/i18n'
-import { AlertTriangle } from '@/lib/icons'
 import { requestModelOptions } from '@/lib/model-options'
 import { asText } from '@/lib/text'
 import { $cronFocusJobId, $cronJobs, invalidateCronJobsRequests, setCronFocusJobId } from '@/store/cron'
@@ -53,24 +58,25 @@ import { $changeEventsAvailable, $cronChangeTick } from '@/store/live-sync'
 import { notify, notifyError } from '@/store/notifications'
 import { $profileScope, ALL_PROFILES } from '@/store/profile'
 
-import { useRefreshHotkey } from '../hooks/use-refresh-hotkey'
 import {
-  Panel,
-  PanelAction,
-  PanelAddButton,
-  PanelBlock,
-  PanelBody,
-  PanelDetail,
-  PanelEmpty,
-  PanelHeader,
-  PanelList,
-  PanelListRow,
-  type PanelMenuItem,
-  PanelMeta,
-  PanelPill,
-  type PanelPillTone,
-  PanelSectionLabel
-} from '../overlays/panel'
+  BlueprintCards,
+  CronFailureCallout,
+  CronJobDetailView,
+  CronJobItem,
+  type CronMenuItem,
+  cronRowSubtitle,
+  CronRunsList,
+  DeliveryMark,
+  DeliveryTargets,
+  renderCronMenu,
+  runRowModel
+} from '../automations/cron-ui'
+import { formatWhen, isoMs } from '../automations/format'
+import { $automationCreateRequest, takeAutomationCreateRequest } from '../automations/requests'
+import { cronExpr, cronScheduleText, openLatestCronRun, useScheduleCopy } from '../automations/schedule-copy'
+import { SchedulePicker } from '../automations/schedule-picker'
+import { useRefreshHotkey } from '../hooks/use-refresh-hotkey'
+import { PanelEmpty } from '../overlays/panel'
 import type { SetStatusbarItemGroup } from '../shell/statusbar-controls'
 
 import { BlueprintSlotControl, blueprintSlotHelp, cleanBlueprintFieldError, initialBlueprintValues } from './blueprints'
@@ -86,8 +92,8 @@ import {
   toggleCronDeliveryTarget,
   validateCronEditor
 } from './cron-job-model'
-import { jobState, jobTitle, nextRunOverdueMs, STATE_DOT, truncateText } from './job-state'
-import { openCronRun, reconcileCronRunVerdicts } from './open-cron-run'
+import { jobState, jobTitle, nextRunOverdueMs, truncateText } from './job-state'
+import { isResumableCronRun, openCronRun, reconcileCronRunVerdicts } from './open-cron-run'
 
 const DEFAULT_DELIVER = 'local'
 
@@ -108,26 +114,6 @@ function cronProfileForScope(scope: string): string {
 // The catalog is fetched for the same profile: plugin blueprints are per profile.
 function blueprintProfileForScope(scope: string): string {
   return scope === ALL_PROFILES ? 'default' : scope
-}
-
-const SCHEDULE_OPTIONS: ReadonlyArray<ScheduleOption> = [
-  { expr: '0 9 * * *', value: 'daily' },
-  { expr: '0 9 * * 1-5', value: 'weekdays' },
-  { expr: '0 9 * * 1', value: 'weekly' },
-  { expr: '0 9 1 * *', value: 'monthly' },
-  { expr: '0 * * * *', value: 'hourly' },
-  { expr: '*/15 * * * *', value: 'every-15-minutes' },
-  { value: 'custom' }
-]
-
-const STATE_TONE: Record<string, PanelPillTone> = {
-  enabled: 'good',
-  scheduled: 'good',
-  running: 'good',
-  paused: 'warn',
-  disabled: 'muted',
-  error: 'bad',
-  completed: 'muted'
 }
 
 const truncate = (value: string, max = 80): string => truncateText(value, max)
@@ -160,135 +146,6 @@ function jobProvider(job: CronJob): string {
   return asText(job.provider).trim()
 }
 
-function cronParts(expr: string): null | string[] {
-  const parts = expr.trim().replace(/\s+/g, ' ').split(' ')
-
-  return parts.length === 5 ? parts : null
-}
-
-function dayName(value: string, c: Translations['cron']): string {
-  return c.days[value] ?? c.dayFallback(value)
-}
-
-function formatCronTime(minute: string, hour: string): string {
-  const numericHour = Number(hour)
-  const numericMinute = Number(minute)
-
-  if (!Number.isInteger(numericHour) || !Number.isInteger(numericMinute)) {
-    return `${hour}:${minute}`
-  }
-
-  return new Date(2000, 0, 1, numericHour, numericMinute).toLocaleTimeString(undefined, {
-    hour: 'numeric',
-    minute: '2-digit'
-  })
-}
-
-function isIntegerToken(value: string): boolean {
-  return /^\d+$/.test(value)
-}
-
-function scheduleOptionForExpr(expr: string): ScheduleOption {
-  const normalized = expr.trim().replace(/\s+/g, ' ')
-  const exactMatch = SCHEDULE_OPTIONS.find(option => option.expr === normalized)
-
-  if (exactMatch) {
-    return exactMatch
-  }
-
-  const parts = cronParts(normalized)
-
-  if (!parts) {
-    return SCHEDULE_OPTIONS[SCHEDULE_OPTIONS.length - 1]
-  }
-
-  const [minute, hour, dayOfMonth, month, dayOfWeek] = parts
-
-  if (dayOfMonth === '*' && month === '*' && dayOfWeek === '*' && isIntegerToken(minute) && isIntegerToken(hour)) {
-    return SCHEDULE_OPTIONS.find(option => option.value === 'daily') ?? SCHEDULE_OPTIONS[0]
-  }
-
-  if (dayOfMonth === '*' && month === '*' && dayOfWeek === '1-5' && isIntegerToken(minute) && isIntegerToken(hour)) {
-    return SCHEDULE_OPTIONS.find(option => option.value === 'weekdays') ?? SCHEDULE_OPTIONS[0]
-  }
-
-  if (
-    dayOfMonth === '*' &&
-    month === '*' &&
-    isIntegerToken(dayOfWeek) &&
-    isIntegerToken(minute) &&
-    isIntegerToken(hour)
-  ) {
-    return SCHEDULE_OPTIONS.find(option => option.value === 'weekly') ?? SCHEDULE_OPTIONS[0]
-  }
-
-  if (
-    month === '*' &&
-    dayOfWeek === '*' &&
-    isIntegerToken(dayOfMonth) &&
-    isIntegerToken(minute) &&
-    isIntegerToken(hour)
-  ) {
-    return SCHEDULE_OPTIONS.find(option => option.value === 'monthly') ?? SCHEDULE_OPTIONS[0]
-  }
-
-  if (hour === '*' && dayOfMonth === '*' && month === '*' && dayOfWeek === '*' && isIntegerToken(minute)) {
-    return SCHEDULE_OPTIONS.find(option => option.value === 'hourly') ?? SCHEDULE_OPTIONS[0]
-  }
-
-  if (normalized === '*/15 * * * *') {
-    return SCHEDULE_OPTIONS.find(option => option.value === 'every-15-minutes') ?? SCHEDULE_OPTIONS[0]
-  }
-
-  return SCHEDULE_OPTIONS[SCHEDULE_OPTIONS.length - 1]
-}
-
-function scheduleSummary(option: ScheduleOption, expr: string, c: Translations['cron']): string {
-  const parts = cronParts(expr)
-
-  if (!parts) {
-    return c.scheduleHints[option.value] ?? ''
-  }
-
-  const [minute, hour, dayOfMonth, , dayOfWeek] = parts
-
-  if (option.value === 'daily') {
-    return c.everyDayAt(formatCronTime(minute, hour))
-  }
-
-  if (option.value === 'weekdays') {
-    return c.weekdaysAt(formatCronTime(minute, hour))
-  }
-
-  if (option.value === 'weekly') {
-    return c.everyDayOfWeekAt(dayName(dayOfWeek, c), formatCronTime(minute, hour))
-  }
-
-  if (option.value === 'monthly') {
-    return c.monthlyOnDayAt(dayOfMonth, formatCronTime(minute, hour))
-  }
-
-  if (option.value === 'hourly') {
-    return minute === '0' ? c.topOfHour : c.everyHourAt(minute.padStart(2, '0'))
-  }
-
-  return c.scheduleHints[option.value] ?? ''
-}
-
-function formatTime(iso?: null | string): string {
-  if (!iso) {
-    return '—'
-  }
-
-  const date = new Date(iso)
-
-  if (Number.isNaN(date.valueOf())) {
-    return iso
-  }
-
-  return date.toLocaleString()
-}
-
 function matchesQuery(job: CronJob, q: string): boolean {
   if (!q) {
     return true
@@ -302,16 +159,19 @@ function matchesQuery(job: CronJob, q: string): boolean {
 }
 
 interface CronViewProps extends React.ComponentProps<'section'> {
-  onClose: () => void
+  /** Legacy overlay close; the Automations page hosts the view in place. */
+  onClose?: () => void
   onOpenSession?: (sessionId: string, session?: SessionInfo) => void
+  /** Which Automations tab this instance paints: the jobs master/detail or the blueprint cards. */
+  section?: 'blueprints' | 'jobs'
   setStatusbarItemGroup?: SetStatusbarItemGroup
 }
 
-export function CronView({ onClose, onOpenSession, setStatusbarItemGroup: _setStatusbarItemGroup }: CronViewProps) {
+export function CronView({ onOpenSession, section = 'jobs', setStatusbarItemGroup: _setStatusbarItemGroup }: CronViewProps) {
   const { t } = useI18n()
   const c = t.cron
   // Source of truth is the shared atom (also fed by the controller poll), so the
-  // sidebar and this overlay never drift — a delete here clears the sidebar row
+  // sidebar and this page never drift — a delete here clears the sidebar row
   // immediately. `loading` only gates the first paint before the atom is filled.
   const jobs = useStore($cronJobs)
   const [loading, setLoading] = useState(jobs.length === 0)
@@ -362,8 +222,17 @@ export function CronView({ onClose, onOpenSession, setStatusbarItemGroup: _setSt
   const [editor, setEditor] = useState<EditorState>({ mode: 'closed' })
   const [pendingDelete, setPendingDelete] = useState<CronJob | null>(null)
 
+  // The page head's "New scheduled job…" (it may be picked before this tab mounted).
+  const createRequest = useStore($automationCreateRequest)
+
+  useEffect(() => {
+    if (createRequest === 'cron' && takeAutomationCreateRequest('cron')) {
+      setEditor({ mode: 'create' })
+    }
+  }, [createRequest])
+
   // Jobs live per-profile on disk and the list endpoint aggregates 'all' by
-  // default — scope the fetch to the sidebar's profile scope so this overlay
+  // default — scope the fetch to the sidebar's profile scope so this page
   // and the sidebar (which share the $cronJobs atom) agree on what's shown.
   const profileScope = useStore($profileScope)
   const profile = cronProfileForScope(profileScope)
@@ -387,7 +256,7 @@ export function CronView({ onClose, onOpenSession, setStatusbarItemGroup: _setSt
   useEffect(() => {
     void refresh()
     // Fence the previous profile's request before the next profile effect, and
-    // fence every pending completion when the overlay unmounts.
+    // fence every pending completion when the page unmounts.
 
     return () => invalidateCronJobsRequests()
   }, [refresh])
@@ -416,22 +285,15 @@ export function CronView({ onClose, onOpenSession, setStatusbarItemGroup: _setSt
     [jobs, query]
   )
 
-  // Blueprint recipes render in the same list rail, below the jobs — clicking
-  // one opens the create dialog pre-seeded to that recipe. Same query key as
-  // the dialog's "Start from" dropdown, so the catalog is fetched once.
+  // Blueprint recipes fill the Blueprints tab — "Use" opens the create sheet
+  // pre-seeded to that recipe. Same query key as the sheet, so the catalog is
+  // fetched once.
   const blueprintProfile = blueprintProfileForScope(profileScope)
 
   const blueprintsQuery = useQuery({
     queryKey: ['cron-blueprints', blueprintProfile],
     queryFn: async () => (await getAutomationBlueprints(blueprintProfile)).blueprints
   })
-
-  const visibleBlueprints = useMemo(() => {
-    const list = blueprintsQuery.data ?? []
-    const needle = query.trim().toLowerCase()
-
-    return needle ? list.filter(item => `${item.title} ${item.description}`.toLowerCase().includes(needle)) : list
-  }, [blueprintsQuery.data, query])
 
   // Detail always reflects a concrete job: the explicitly selected one, else the
   // first visible row, so the right pane is never empty while jobs exist.
@@ -454,8 +316,6 @@ export function CronView({ onClose, onOpenSession, setStatusbarItemGroup: _setSt
       document.querySelector(`[data-panel-row="${CSS.escape(target)}"]`)?.scrollIntoView({ block: 'nearest' })
     })
   }, [selectedJob])
-
-  const totalCount = jobs.length
 
   function beginJobBusy(jobId: string): symbol {
     const token = Symbol(jobId)
@@ -627,6 +487,7 @@ export function CronView({ onClose, onOpenSession, setStatusbarItemGroup: _setSt
       }
 
       notify({ kind: 'success', title: c.created, message: truncate(jobTitle(created), 60) })
+      setSelectedJobId(created.id)
     } else if (editor.mode === 'edit') {
       const scriptOnlyJob = jobIsScriptOnly(editor.job)
 
@@ -678,13 +539,50 @@ export function CronView({ onClose, onOpenSession, setStatusbarItemGroup: _setSt
     setEditor({ mode: 'closed' })
   }
 
-  return (
-    <Panel closeLabel={c.close} onClose={onClose}>
-      <PanelHeader subtitle={c.count(totalCount)} title={c.title} />
+  const actions: CronJobActions = {
+    onDelete: job => setPendingDelete(job),
+    onDuplicate: job => setEditor({ mode: 'create', seed: job }),
+    onEdit: job => setEditor({ mode: 'edit', job }),
+    onOpenLatestRun: onOpenSession ? job => openLatestRun(job.id, onOpenSession, t) : undefined
+  }
 
+  const dialogs = (
+    <>
+      <CronEditorDialog
+        blueprintProfile={blueprintProfile}
+        editor={editor}
+        onBlueprintCreate={handleBlueprintCreate}
+        onClose={() => setEditor({ mode: 'closed' })}
+        onSave={handleEditorSave}
+      />
+      <CronDeleteConfirm job={pendingDelete} onClose={() => setPendingDelete(null)} onConfirm={handleConfirmDelete} />
+    </>
+  )
+
+  if (section === 'blueprints') {
+    return (
+      <>
+        <p className="m-0 text-[0.84375rem] text-(--ui-text-tertiary)">{t.studio.pages.automations.blueprintsIntro}</p>
+        {blueprintsQuery.isPending ? (
+          <PageLoader label={c.blueprints.loading} />
+        ) : (
+          <BlueprintCards
+            blueprints={blueprintsQuery.data ?? []}
+            onUse={blueprintKey => setEditor({ blueprintKey, mode: 'create' })}
+          />
+        )}
+        {dialogs}
+      </>
+    )
+  }
+
+  const selectedKey = selectedJob ? `${profile}:${selectedJob.id}` : ''
+
+  return (
+    <>
       {loading && jobs.length === 0 ? (
         <PageLoader label={c.loading} />
-      ) : totalCount === 0 && visibleBlueprints.length === 0 ? (
+      ) : jobs.length === 0 ? (
         <PanelEmpty
           action={
             <Button onClick={() => setEditor({ mode: 'create' })} size="sm">
@@ -696,153 +594,190 @@ export function CronView({ onClose, onOpenSession, setStatusbarItemGroup: _setSt
           title={c.emptyTitleNew}
         />
       ) : (
-        <PanelBody>
-          <PanelList
-            onSearchChange={setQuery}
-            searchHints={jobs
-              .map(jobTitle)
-              .filter(Boolean)
-              .slice(0, 5)
-              .map(title => t.common.tryHint(title))}
-            searchLabel={c.search}
-            searchPlaceholder={c.search}
-            searchValue={query}
-          >
-            {visibleJobs.map(job => (
-              <CronJobListRow
-                active={selectedJob?.id === job.id}
-                job={job}
-                key={job.id}
-                menuItems={[
-                  { icon: 'edit', label: c.edit, onSelect: () => setEditor({ mode: 'edit', job }) },
-                  { icon: 'trash', label: t.common.delete, onSelect: () => setPendingDelete(job), tone: 'danger' }
-                ]}
-                menuLabel={c.manage}
-                onSelect={() => setSelectedJobId(job.id)}
+        <StudioMasterDetail
+          detail={
+            selectedJob ? (
+              <CronJobDetail
+                actions={actions}
+                busy={busyJobTokens.has(selectedJob.id) || triggeringJobKeys.has(selectedKey)}
+                c={c}
+                job={selectedJob}
+                onOpenSession={onOpenSession}
+                onPauseResume={() => void handlePauseResume(selectedJob)}
+                onPendingRunSettled={settlePendingTrigger}
+                onTrigger={() => void handleTrigger(selectedJob)}
+                pendingJobKey={selectedKey}
+                pendingRunAt={pendingTriggers.get(selectedKey)}
               />
-            ))}
-            {visibleJobs.length === 0 && (
-              <p className="px-2 py-4 text-center text-xs text-muted-foreground">
-                {query.trim() ? c.emptyTitleSearch : c.emptyTitleNew}
-              </p>
-            )}
-            <PanelAddButton label={c.newCron} onClick={() => setEditor({ mode: 'create' })} />
-            {visibleBlueprints.length > 0 && (
-              <>
-                <PanelSectionLabel className="mt-3 px-2">{c.blueprints.tab}</PanelSectionLabel>
-                {visibleBlueprints.map(item => (
-                  <PanelListRow
-                    active={false}
-                    icon="rocket"
-                    key={item.key}
-                    meta={item.plugin || undefined}
-                    onSelect={() => setEditor({ blueprintKey: item.key, mode: 'create' })}
-                    rowKey={`blueprint-${item.key}`}
-                    title={item.title}
-                  />
-                ))}
-              </>
-            )}
-          </PanelList>
-
-          {selectedJob ? (
-            <CronJobDetail
-              busy={busyJobTokens.has(selectedJob.id) || triggeringJobKeys.has(`${profile}:${selectedJob.id}`)}
-              c={c}
-              job={selectedJob}
-              onEdit={() => setEditor({ mode: 'edit', job: selectedJob })}
-              onOpenSession={onOpenSession}
-              onPauseResume={() => void handlePauseResume(selectedJob)}
-              onPendingRunSettled={settlePendingTrigger}
-              onTrigger={() => void handleTrigger(selectedJob)}
-              pendingJobKey={`${profile}:${selectedJob.id}`}
-              pendingRunAt={pendingTriggers.get(`${profile}:${selectedJob.id}`)}
+            ) : (
+              <PanelEmpty description={c.emptyDescSearch} icon="search" />
+            )
+          }
+          list={
+            <CronJobList
+              actions={actions}
+              jobs={visibleJobs}
+              onSelect={setSelectedJobId}
+              query={query}
+              selectedId={selectedJob?.id ?? null}
             />
-          ) : query.trim() ? (
-            // A search with no selected job: search-flavored copy is right.
-            <PanelEmpty description={c.emptyDescSearch} icon="search" />
-          ) : (
-            // No selection and no search — "Try a broader search query" here
-            // just confused people staring at an empty panel with zero jobs.
-            <PanelEmpty
-              action={
-                jobs.length === 0 ? (
-                  <Button onClick={() => setEditor({ mode: 'create' })} size="sm">
-                    {c.newCron}
-                  </Button>
-                ) : undefined
-              }
-              description={c.emptyDescNew}
-              icon="watch"
-              title={jobs.length === 0 ? c.emptyTitleNew : undefined}
+          }
+          listHeader={
+            <SearchField
+              aria-label={c.search}
+              containerClassName="w-full"
+              hints={jobs
+                .map(jobTitle)
+                .filter(Boolean)
+                .slice(0, 5)
+                .map(title => t.common.tryHint(title))}
+              onChange={setQuery}
+              placeholder={c.search}
+              value={query}
+              variant="filled"
             />
-          )}
-        </PanelBody>
+          }
+          listLabel={t.studio.pages.cron.listLabel}
+        />
       )}
-
-      <CronEditorDialog
-        blueprintProfile={blueprintProfile}
-        editor={editor}
-        onBlueprintCreate={handleBlueprintCreate}
-        onClose={() => setEditor({ mode: 'closed' })}
-        onSave={handleEditorSave}
-      />
-
-      <ConfirmDialog
-        busyLabel={c.deleting}
-        confirmLabel={t.common.delete}
-        description={
-          pendingDelete ? (
-            <>
-              {c.deleteDescPrefix}
-              <span className="font-medium text-foreground">{truncate(jobTitle(pendingDelete), 60)}</span>
-              {c.deleteDescSuffix}
-            </>
-          ) : null
-        }
-        destructive
-        onClose={() => setPendingDelete(null)}
-        onConfirm={handleConfirmDelete}
-        open={pendingDelete !== null}
-        title={c.deleteTitle}
-      />
-    </Panel>
+      {dialogs}
+    </>
   )
 }
 
-function CronJobListRow({
-  active,
-  job,
-  menuItems,
-  menuLabel,
-  onSelect
+interface CronJobActions {
+  onDelete: (job: CronJob) => void
+  onDuplicate: (job: CronJob) => void
+  onEdit: (job: CronJob) => void
+  onOpenLatestRun?: (job: CronJob) => void
+}
+
+function openLatestRun(jobId: string, open: (sessionId: string, session?: SessionInfo) => void, t: Translations) {
+  openLatestCronRun(jobId, open, () =>
+    notify({ kind: 'info', title: t.studio.pages.cron.openLatestRun, message: t.studio.pages.cron.noRunsToOpen })
+  ).catch(err => notifyError(err, t.cron.failedLoad))
+}
+
+function cronMenuItems(job: CronJob, actions: CronJobActions, t: Translations, includeEdit: boolean): CronMenuItem[] {
+  const s = t.studio.pages
+
+  return [
+    ...(includeEdit ? [{ icon: 'edit', key: 'edit', label: s.common.edit, onSelect: () => actions.onEdit(job) }] : []),
+    {
+      // A script-only job cannot be created from the desktop (no prompt to send).
+      disabled: jobIsScriptOnly(job),
+      icon: 'copy',
+      key: 'duplicate',
+      label: s.cron.duplicate,
+      onSelect: () => actions.onDuplicate(job)
+    },
+    {
+      disabled: !actions.onOpenLatestRun,
+      icon: 'comment-discussion',
+      key: 'latest-run',
+      label: s.cron.openLatestRun,
+      onSelect: () => actions.onOpenLatestRun?.(job)
+    },
+    {
+      danger: true,
+      icon: 'trash',
+      key: 'delete',
+      label: s.common.deleteEllipsis,
+      onSelect: () => actions.onDelete(job),
+      separatorBefore: true
+    }
+  ]
+}
+
+function CronJobList({
+  actions,
+  jobs,
+  onSelect,
+  query,
+  selectedId
 }: {
-  active: boolean
-  job: CronJob
-  menuItems?: PanelMenuItem[]
-  menuLabel?: string
-  onSelect: () => void
+  actions: CronJobActions
+  jobs: CronJob[]
+  onSelect: (id: string) => void
+  query: string
+  selectedId: null | string
 }) {
-  const state = jobState(job)
+  const { t } = useI18n()
+  const c = t.cron
+  const s = t.studio.pages.cron
+  const copy = useScheduleCopy()
+
+  if (jobs.length === 0) {
+    return (
+      <p className="px-2 py-4 text-center text-xs text-(--ui-text-tertiary)">
+        {query.trim() ? c.emptyTitleSearch : c.emptyTitleNew}
+      </p>
+    )
+  }
 
   return (
-    <PanelListRow
-      active={active}
-      dotClassName={STATE_DOT[state] ?? 'bg-muted-foreground'}
-      menuItems={menuItems}
-      menuLabel={menuLabel}
-      onSelect={onSelect}
-      rowKey={job.id}
-      title={jobTitle(job)}
+    <>
+      {jobs.map(job => {
+        const state = jobState(job)
+
+        return (
+          <CronJobItem
+            active={selectedId === job.id}
+            key={job.id}
+            menuItems={cronMenuItems(job, actions, t, true)}
+            menuLabel={t.studio.pages.common.moreActions}
+            onSelect={() => onSelect(job.id)}
+            rowKey={job.id}
+            state={state}
+            subtitle={cronRowSubtitle(job, {
+              inactiveLabel: INACTIVE_ROW_STATES.has(state) ? (c.states[state] ?? state) : null,
+              nextAt: s.nextAt,
+              overdue: nextRunOverdueMs(job) !== null,
+              overdueAt: s.overdueAt,
+              scheduleText: cronScheduleText(job, copy)
+            })}
+            title={jobTitle(job)}
+          />
+        )
+      })}
+    </>
+  )
+}
+
+// Rows of these states say so instead of a next run time.
+const INACTIVE_ROW_STATES = new Set(['completed', 'disabled', 'paused'])
+
+function CronDeleteConfirm({
+  job,
+  onClose,
+  onConfirm
+}: {
+  job: CronJob | null
+  onClose: () => void
+  onConfirm: () => Promise<void>
+}) {
+  const { t } = useI18n()
+  const s = t.studio.pages.cron
+
+  return (
+    <ConfirmDialog
+      busyLabel={t.cron.deleting}
+      confirmLabel={t.common.delete}
+      description={job ? s.deleteBody : null}
+      destructive
+      onClose={onClose}
+      onConfirm={onConfirm}
+      open={job !== null}
+      title={job ? s.deleteNamed(truncate(jobTitle(job), 60)) : t.cron.deleteTitle}
     />
   )
 }
 
 interface CronJobDetailProps {
+  actions: CronJobActions
   busy: boolean
   c: Translations['cron']
   job: CronJob
-  onEdit: () => void
   onOpenSession?: (sessionId: string, session?: SessionInfo) => void
   onPauseResume: () => void
   onPendingRunSettled: (key: string, requestedAt: number) => void
@@ -852,10 +787,10 @@ interface CronJobDetailProps {
 }
 
 function CronJobDetail({
+  actions,
   busy,
   c,
   job,
-  onEdit,
   onOpenSession,
   onPauseResume,
   onPendingRunSettled,
@@ -863,99 +798,95 @@ function CronJobDetail({
   pendingJobKey,
   pendingRunAt
 }: CronJobDetailProps) {
+  const { t } = useI18n()
+  const s = t.studio.pages
+  const copy = useScheduleCopy()
   const state = jobState(job)
   const isPaused = state === 'paused'
-  const deliver = jobDeliver(job)
-  const prompt = jobPrompt(job)
   const scriptOnly = jobIsScriptOnly(job)
-  const description = jobDescription(job)
   const modelOverride = jobModel(job)
+  const overdue = nextRunOverdueMs(job) !== null
+  const nextMs = isoMs(job.next_run_at)
+  const lastMs = isoMs(job.last_run_at)
+  const pending = pendingRunAt !== undefined
 
   return (
-    <PanelDetail>
-      <header className="space-y-3">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="flex min-w-0 flex-wrap items-center gap-2">
-            <h3 className="text-[0.95rem] font-semibold tracking-tight text-foreground">{jobTitle(job)}</h3>
-            {scriptOnly && <PanelPill tone="muted">{c.scriptBadge}</PanelPill>}
-            <PanelPill tone={STATE_TONE[state] ?? 'muted'}>{c.states[state] ?? state}</PanelPill>
-          </div>
-          <div className="flex shrink-0 items-center gap-0.5">
-            <PanelAction disabled={busy} icon={isPaused ? 'play' : 'debug-pause'} onClick={onPauseResume}>
-              {isPaused ? c.resumeTitle : c.pauseTitle}
-            </PanelAction>
-            <PanelAction
-              disabled={busy}
-              icon={pendingRunAt === undefined ? 'zap' : 'loading'}
-              onClick={onTrigger}
-              primary
-              spinning={pendingRunAt !== undefined}
-            >
-              {c.triggerNow}
-            </PanelAction>
-          </div>
-        </div>
-
-        <PanelMeta
-          rows={[
-            { label: c.frequencyLabel, value: jobScheduleDisplay(job) },
-            { label: c.last.replace(/:$/, ''), value: formatTime(job.last_run_at) },
-            {
-              label: (nextRunOverdueMs(job) === null ? c.next : c.overdueSince).replace(/:$/, ''),
-              value: formatTime(job.next_run_at)
-            },
-            { label: c.deliverLabel, value: c.deliveryLabels[deliver] ?? deliver },
-            ...(modelOverride ? [{ label: c.modelLabel, value: modelOverride }] : [])
-          ]}
+    <CronJobDetailView
+      actions={
+        <>
+          <Button aria-busy={pending || undefined} disabled={busy} onClick={onTrigger}>
+            <Codicon name={pending ? 'loading' : 'play'} size="0.8125rem" spinning={pending} />
+            {s.cron.triggerNow}
+          </Button>
+          <Button disabled={busy} onClick={onPauseResume} variant="secondary">
+            {isPaused ? c.resumeTitle : c.pauseTitle}
+          </Button>
+          <Button disabled={busy} onClick={() => actions.onEdit(job)} variant="secondary">
+            {s.common.edit}
+          </Button>
+          <ActionsMenu
+            ariaLabel={s.common.moreActions}
+            contentClassName="w-56"
+            items={renderCronMenu(cronMenuItems(job, actions, t, false))}
+          >
+            <Button aria-label={s.common.moreActions} size="icon-sm" variant="ghost">
+              <Codicon name="ellipsis" size="0.9375rem" />
+            </Button>
+          </ActionsMenu>
+        </>
+      }
+      description={jobDescription(job)}
+      failure={
+        job.last_error ? (
+          <CronFailureCallout
+            actions={
+              <>
+                <Button disabled={busy} onClick={() => actions.onEdit(job)} size="sm" variant="outline">
+                  {c.editJob}
+                </Button>
+                <Button disabled={busy} onClick={onTrigger} size="sm" variant="outline">
+                  {c.runAgain}
+                </Button>
+              </>
+            }
+            error={job.last_error}
+            summary={lastErrorSummary(job.last_error)}
+          />
+        ) : null
+      }
+      job={job}
+      kvRows={[
+        {
+          key: 'next',
+          label: overdue ? s.cron.kvOverdue : s.cron.kvNext,
+          value: nextMs !== null ? formatWhen(nextMs) : isPaused ? (c.states.paused ?? state) : '—'
+        },
+        { key: 'last', label: s.cron.kvLast, value: lastMs !== null ? formatWhen(lastMs) : '—' },
+        {
+          key: 'deliver',
+          label: s.cron.kvDeliver,
+          value: <DeliveryTargets targets={parseCronDeliveryTargets(jobDeliver(job))} />
+        },
+        ...(scriptOnly
+          ? []
+          : [{ key: 'model', label: s.cron.kvModel, value: modelOverride || s.cron.modelDefault }])
+      ]}
+      runs={
+        <CronJobRuns
+          c={c}
+          jobId={job.id}
+          onOpenSession={onOpenSession}
+          onPendingRunSettled={onPendingRunSettled}
+          pendingJobKey={pendingJobKey}
+          pendingRunAt={pendingRunAt}
         />
-
-        {job.last_error ? (
-          <div className="space-y-1.5 rounded bg-destructive/10 p-2 text-[0.7rem] text-destructive">
-            <div className="flex items-start gap-1.5">
-              <AlertTriangle className="mt-px size-3 shrink-0" />
-              <span className="min-w-0 break-words" title={job.last_error}>
-                {c.lastRunFailed} {lastErrorSummary(job.last_error)}
-              </span>
-            </div>
-            <div className="flex items-center gap-0.5 pl-4">
-              <PanelAction disabled={busy} icon="edit" onClick={onEdit}>
-                {c.editJob}
-              </PanelAction>
-              <PanelAction disabled={busy} icon="zap" onClick={onTrigger}>
-                {c.runAgain}
-              </PanelAction>
-            </div>
-          </div>
-        ) : null}
-      </header>
-
-      {description ? (
-        <section className="space-y-1.5">
-          <PanelSectionLabel>{scriptOnly && !prompt ? c.scriptLabel : c.promptLabel}</PanelSectionLabel>
-          <PanelBlock>{description}</PanelBlock>
-        </section>
-      ) : null}
-
-      <CronJobRuns
-        c={c}
-        jobId={job.id}
-        onOpenSession={onOpenSession}
-        onPendingRunSettled={onPendingRunSettled}
-        pendingJobKey={pendingJobKey}
-        pendingRunAt={pendingRunAt}
-      />
-    </PanelDetail>
+      }
+      scheduleExpr={cronExpr(job)}
+      scheduleText={cronScheduleText(job, copy)}
+      scriptOnly={scriptOnly}
+      state={state}
+    />
   )
-}
-
-function formatRunTime(seconds?: null | number): string {
-  if (!seconds) {
-    return '—'
-  }
-
-  const date = new Date(seconds * 1000)
-
-  return Number.isNaN(date.valueOf()) ? '—' : date.toLocaleString()
 }
 
 // Script-only (no_agent) jobs have no agent sessions; the runs endpoint
@@ -1082,80 +1013,38 @@ function CronJobRuns({
     return () => window.clearTimeout(timeoutId)
   }, [onPendingRunSettled, pendingJobKey, pendingRunAt])
 
+  // One click to the run's transcript; a run the scheduler never closed opens
+  // view-only (see `openCronRun`, #88443). Output-doc rows (script-only jobs)
+  // have no backing session, so they are not clickable.
+  const rows = (runs ?? []).map(run =>
+    isSyntheticCronOutputRun(run)
+      ? runRowModel(run, { live: false, outputOnly: true, viewOnly: false })
+      : runRowModel(run, {
+          live: run.ended_at == null && isResumableCronRun(run),
+          onOpen: onOpenSession ? () => openCronRun(run, onOpenSession) : undefined,
+          outputOnly: false,
+          viewOnly: !isResumableCronRun(run)
+        })
+  )
+
   return (
-    <div>
-      <PanelSectionLabel className="mb-1.5">
-        {c.runHistory}
-        {runs && runs.length + (pending ? 1 : 0) > 0 ? ` · ${runs.length + (pending ? 1 : 0)}` : ''}
-      </PanelSectionLabel>
-      {runs === null && !pending ? (
-        <div className="flex items-center gap-1.5 py-1 text-xs text-muted-foreground">
-          <Codicon name="loading" size="0.75rem" spinning />
-        </div>
-      ) : runs?.length === 0 && !pending ? (
-        <div className="py-1 text-xs text-muted-foreground">{c.noRuns}</div>
-      ) : (
-        <div className="flex flex-col gap-px">
-          {pending && (
-            // The queued row is transient feedback for a trigger the backend
-            // accepted but has not turned into a session yet; it sits above
-            // the authoritative rows and is replaced once one appears.
-            <div
-              aria-live="polite"
-              className="flex items-center justify-between gap-3 rounded-md px-2 py-1 text-xs text-muted-foreground"
-              data-slot="cron-run-pending"
-              role="status"
-            >
-              <span className="flex min-w-0 items-center gap-1.5">
-                <Codicon name="loading" size="0.75rem" spinning />
-                <span className="truncate">{c.queuedRun}</span>
-              </span>
-              <span className="shrink-0 text-[0.62rem] text-muted-foreground/55 tabular-nums">
-                {formatRunTime(pendingRunAt / 1000)}
-              </span>
-            </div>
-          )}
-          {(runs ?? []).map(run =>
-            isSyntheticCronOutputRun(run) ? (
-              // Output-doc rows have no backing session to open; show the
-              // recorded output preview without a chat-navigation affordance.
-              <div className="flex items-center justify-between gap-3 rounded-md px-2 py-1 text-xs" key={run.id}>
-                <span className="truncate text-foreground/85">
-                  {run.title?.trim() || run.preview?.trim() || run.id}
-                </span>
-                <span className="shrink-0 text-[0.62rem] text-muted-foreground/55 tabular-nums">
-                  {formatRunTime(run.last_active || run.started_at)}
-                </span>
-              </div>
-            ) : (
-              // One click to the run's transcript; a run the scheduler never
-              // closed opens view-only (see `openCronRun`, #88443).
-              <button
-                className="row-hover flex items-center justify-between gap-3 rounded-md px-2 py-1 text-left text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
-                key={run.id}
-                onClick={onOpenSession ? () => openCronRun(run, onOpenSession) : undefined}
-                type="button"
-              >
-                <span className="truncate text-foreground/85">
-                  {run.title?.trim() || run.preview?.trim() || run.id}
-                </span>
-                <span className="shrink-0 text-[0.62rem] text-muted-foreground/55 tabular-nums">
-                  {formatRunTime(run.last_active || run.started_at)}
-                </span>
-              </button>
-            )
-          )}
-        </div>
-      )}
-    </div>
+    <CronRunsList
+      count={(runs?.length ?? 0) + (pending ? 1 : 0)}
+      loading={runs === null && !pending}
+      pendingAt={pendingRunAt}
+      rows={rows}
+    />
   )
 }
 
-// Label a cron delivery target: 'local' → localized "This desktop", known
-// platforms → their delivery label, anything else → the backend name. Configured
-// platforms without a cron home channel get a "set a home channel first" hint.
-function deliverTargetLabel(target: CronDeliveryTarget, c: Translations['cron']): string {
-  const base = target.id === 'local' ? c.deliveryLabels.local : (c.deliveryLabels[target.id] ?? target.name)
+// Label a cron delivery target: 'local' → this device, known platforms → their
+// delivery label, anything else → the backend name. Configured platforms
+// without a cron home channel get a "set a home channel first" hint.
+function deliverTargetLabel(target: CronDeliveryTarget, t: Translations): string {
+  const c = t.cron
+
+  const base =
+    target.id === 'local' ? thisDeviceLabel(t) : (c.deliveryLabels[target.id] ?? target.name)
 
   return target.id !== 'local' && !target.home_target_set ? `${base} — ${c.deliverNeedsHomeChannel}` : base
 }
@@ -1164,6 +1053,7 @@ function deliverTargetLabel(target: CronDeliveryTarget, c: Translations['cron'])
 // blueprint form. The scheduler accepts comma-separated targets, so users can
 // keep results local while also sending them to connected platforms. Preserve
 // selected targets missing from discovery so editing never drops a saved route.
+// The group is named by the element `${id}-label` (the section heading).
 export function DeliverCheckboxes({
   c,
   id,
@@ -1177,6 +1067,7 @@ export function DeliverCheckboxes({
   targets: CronDeliveryTarget[]
   value: string
 }) {
+  const { t } = useI18n()
   const selected = parseCronDeliveryTargets(value)
   const knownIds = new Set(targets.map(target => target.id))
 
@@ -1188,28 +1079,82 @@ export function DeliverCheckboxes({
   ]
 
   return (
-    <div
-      aria-labelledby={`${id}-label`}
-      className="grid gap-2 rounded-md border border-input px-3 py-2.5"
-      id={id}
-      role="group"
-    >
+    <FormGroup aria-labelledby={`${id}-label`} id={id} role="group">
       {options.map((target, index) => {
         const checked = selected.includes(target.id)
         const checkboxId = `${id}-${index}`
 
         return (
-          <label className="flex items-center gap-2 text-sm" htmlFor={checkboxId} key={target.id}>
+          <label
+            className="flex min-h-[2.625rem] cursor-pointer items-center gap-3 px-3.5 py-2 text-[0.8125rem]"
+            data-slot="studio-form-row"
+            htmlFor={checkboxId}
+            key={target.id}
+          >
             <Checkbox
               checked={checked}
               id={checkboxId}
               onCheckedChange={next => onChange(toggleCronDeliveryTarget(value, target.id, next === true))}
             />
-            <span>{deliverTargetLabel(target, c)}</span>
+            <DeliveryMark target={target.id} />
+            <span className="min-w-0 flex-1">{deliverTargetLabel(target, t)}</span>
           </label>
         )
       })}
-    </div>
+    </FormGroup>
+  )
+}
+
+// The per-job model override as a provider/model select (configured providers
+// with available models only — the chat model picker's gate).
+function CronModelSelect({
+  c,
+  modelChoice,
+  modelProviders,
+  onChange
+}: {
+  c: Translations['cron']
+  modelChoice: string
+  modelProviders: { models?: string[]; name: string; slug: string }[]
+  onChange: (value: string) => void
+}) {
+  // A previously pinned model that has since left the catalog (provider
+  // removed / model retired) would render Radix's blank trigger. Keep the
+  // stored pin visible and re-selectable rather than silently dropping it.
+  const modelChoiceKnown =
+    modelChoice === MODEL_DEFAULT_VALUE ||
+    modelProviders.some(provider =>
+      (provider.models ?? []).some(model => cronModelChoiceValue(provider.slug, model) === modelChoice)
+    )
+
+  return (
+    <Select onValueChange={onChange} value={modelChoice}>
+      <SelectTrigger className="h-7 w-56 max-w-full rounded-[7px]" id="cron-model">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value={MODEL_DEFAULT_VALUE}>{c.modelDefault}</SelectItem>
+        {!modelChoiceKnown && (
+          <SelectItem className="font-mono" value={modelChoice}>
+            {parseCronModelChoiceValue(modelChoice)?.model ?? modelChoice}
+          </SelectItem>
+        )}
+        {modelProviders.map(provider => (
+          <SelectGroup key={provider.slug}>
+            <SelectLabel>{provider.name}</SelectLabel>
+            {(provider.models ?? []).map(model => {
+              const value = cronModelChoiceValue(provider.slug, model)
+
+              return (
+                <SelectItem className="font-mono" key={value} value={value}>
+                  {model}
+                </SelectItem>
+              )
+            })}
+          </SelectGroup>
+        ))}
+      </SelectContent>
+    </Select>
   )
 }
 
@@ -1228,15 +1173,19 @@ function CronEditorDialog({
 }) {
   const { t } = useI18n()
   const c = t.cron
+  const s = t.studio.pages.cron.sheet
   const open = editor.mode !== 'closed'
   const isEdit = editor.mode === 'edit'
   const initial = isEdit ? editor.job : null
+  // "Duplicate job" opens the create sheet seeded from an existing job.
+  const seed = editor.mode === 'create' ? (editor.seed ?? null) : null
   const scriptOnlyJob = initial ? jobIsScriptOnly(initial) : false
 
   const [name, setName] = useState('')
   const [prompt, setPrompt] = useState('')
   const [schedule, setSchedule] = useState('')
-  const [schedulePreset, setSchedulePreset] = useState('daily')
+  // Remounts the schedule picker so its draft re-seeds for each opened job.
+  const [pickerKey, setPickerKey] = useState(0)
   const [deliver, setDeliver] = useState(DEFAULT_DELIVER)
   // Per-job model override encoded as an opaque provider/model pair.
   // MODEL_DEFAULT_VALUE = follow the global default.
@@ -1244,15 +1193,15 @@ function CronEditorDialog({
   // Blueprint fills typed slots (time/enum/weekdays/text) instead of the raw
   // cron fields; the backend renders the prompt + schedule from them.
   const [slotValues, setSlotValues] = useState<Record<string, string>>({})
-  // Create mode can start from a ready-made blueprint instead of a blank cron.
-  // CUSTOM_TEMPLATE (default) = the manual editor; any other value is a
-  // blueprint key that swaps the form for that blueprint's typed slots.
+  // Create mode can start from a ready-made blueprint instead of a blank cron:
+  // CUSTOM_TEMPLATE = the manual editor; any other value is a blueprint key
+  // (set by a Blueprints card's "Use") that swaps the form for its typed slots.
   const [templateChoice, setTemplateChoice] = useState(CUSTOM_TEMPLATE)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<null | string>(null)
 
-  // The blueprint catalog powers the create dialog's "Start from" dropdown; it's
-  // meaningless when editing an existing job, so skip the fetch there.
+  // The blueprint catalog resolves a card's key; it's meaningless when editing
+  // an existing job, so skip the fetch there.
   const blueprintsQuery = useQuery({
     queryKey: ['cron-blueprints', blueprintProfile],
     queryFn: async () => (await getAutomationBlueprints(blueprintProfile)).blueprints,
@@ -1276,7 +1225,7 @@ function CronEditorDialog({
   })
 
   // Single source of truth for where a cron can deliver (local + configured
-  // gateways) — same endpoint the dashboard uses, so no dialog offers a platform
+  // gateways) — same endpoint the dashboard uses, so no sheet offers a platform
   // that isn't connected. Shared by the manual editor and the blueprint form.
   const deliveryTargets = useQuery({
     queryKey: ['cron-delivery-targets'],
@@ -1289,59 +1238,33 @@ function CronEditorDialog({
       return
     }
 
-    setName(initial ? jobName(initial) : '')
-    setPrompt(initial ? jobPrompt(initial) : '')
-    setSchedule(initial ? jobScheduleExpr(initial) : (SCHEDULE_OPTIONS[0].expr ?? ''))
-    setSchedulePreset(initial ? scheduleOptionForExpr(jobScheduleExpr(initial)).value : 'daily')
-    setDeliver(initial ? jobDeliver(initial) : DEFAULT_DELIVER)
+    const source = initial ?? seed
+
+    setName(initial ? jobName(initial) : seed ? t.studio.pages.cron.copyName(jobTitle(seed)) : '')
+    setPrompt(source ? jobPrompt(source) : '')
+    setSchedule(source ? jobScheduleExpr(source) : DEFAULT_SCHEDULE)
+    setPickerKey(key => key + 1)
+    setDeliver(source ? jobDeliver(source) : DEFAULT_DELIVER)
     setModelChoice(
-      initial && jobModel(initial) ? cronModelChoiceValue(jobProvider(initial), jobModel(initial)) : MODEL_DEFAULT_VALUE
+      source && jobModel(source) ? cronModelChoiceValue(jobProvider(source), jobModel(source)) : MODEL_DEFAULT_VALUE
     )
     setSlotValues({})
     setTemplateChoice(editor.mode === 'create' ? (editor.blueprintKey ?? CUSTOM_TEMPLATE) : CUSTOM_TEMPLATE)
     setError(null)
     setSaving(false)
-  }, [editor, initial, open])
+  }, [editor, initial, open, seed, t])
 
-  // Seed the typed slots with the blueprint's defaults whenever a blueprint is
-  // picked from "Start from" (and reset them when switching back to Custom).
+  // Seed the typed slots with the blueprint's defaults once it resolves.
   useEffect(() => {
     setSlotValues(blueprint ? initialBlueprintValues(blueprint) : {})
     setError(null)
   }, [blueprint])
-
-  const selectedScheduleOption =
-    SCHEDULE_OPTIONS.find(candidate => candidate.value === schedulePreset) ?? SCHEDULE_OPTIONS[0]
-
-  function handleSchedulePresetChange(nextPreset: string) {
-    setSchedulePreset(nextPreset)
-    setError(null)
-
-    const option = SCHEDULE_OPTIONS.find(candidate => candidate.value === nextPreset)
-
-    if (option?.expr) {
-      setSchedule(option.expr)
-    } else if (scheduleOptionForExpr(schedule).value !== 'custom') {
-      setSchedule('')
-    }
-  }
-
-  const scheduleHint = scheduleSummary(selectedScheduleOption, schedule, c)
 
   // Configured providers with at least one available model — mirrors the chat
   // model picker's gate so only actually-selectable models are offered.
   const modelProviders = (modelOptions.data?.providers ?? []).filter(
     provider => provider.authenticated !== false && (provider.models ?? []).length > 0
   )
-
-  // A previously pinned model that has since left the catalog (provider
-  // removed / model retired) would render Radix's blank trigger. Keep the
-  // stored pin visible and re-selectable rather than silently dropping it.
-  const modelChoiceKnown =
-    modelChoice === MODEL_DEFAULT_VALUE ||
-    modelProviders.some(provider =>
-      (provider.models ?? []).some(model => cronModelChoiceValue(provider.slug, model) === modelChoice)
-    )
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault()
@@ -1405,127 +1328,105 @@ function CronEditorDialog({
     }
   }
 
+  const title = isEdit ? s.editTitle : blueprint ? s.blueprintTitle(blueprint.title) : s.newTitle
+  const errorCallout = error ? <Callout tone="warn">{error}</Callout> : null
+
+  const footer = (submitLabel: string) => (
+    <SheetFooter>
+      <span className="flex-1" />
+      <Button disabled={saving} onClick={onClose} type="button" variant="secondary">
+        {t.common.cancel}
+      </Button>
+      <Button disabled={saving} type="submit">
+        {submitLabel}
+      </Button>
+    </SheetFooter>
+  )
+
   return (
     <Dialog onOpenChange={value => !value && !saving && onClose()} open={open}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle>{isEdit ? c.editTitle : c.createTitle}</DialogTitle>
-          <DialogDescription>{isEdit ? c.editDesc : c.createDesc}</DialogDescription>
-        </DialogHeader>
-
-        {!isEdit && blueprintList.length > 0 && (
-          <Field htmlFor="cron-template" label={c.blueprints.startFrom}>
-            <Select onValueChange={setTemplateChoice} value={templateChoice}>
-              <SelectTrigger className="h-9 rounded-md" id="cron-template">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={CUSTOM_TEMPLATE}>{c.blueprints.custom}</SelectItem>
-                {blueprintList.map(item => (
-                  <SelectItem key={item.key} value={item.key}>
-                    {item.title}
-                    {item.plugin && <span className="ml-1.5 text-muted-foreground">· {item.plugin}</span>}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {blueprint?.description && <FieldHint>{blueprint.description}</FieldHint>}
-          </Field>
-        )}
-
+      <DialogContent bodyClassName={STUDIO_SHEET_BODY} className={STUDIO_SHEET_CONTENT.md} showCloseButton={false}>
+        <SheetHeader
+          closable={!saving}
+          lead={<IconTile icon="watch" size={30} tone="orange" />}
+          title={title}
+        />
         {isBlueprint && blueprint ? (
-          <form className="grid gap-4" onSubmit={handleBlueprintSubmit}>
-            {blueprint.fields.map(field => {
-              const fieldId = `blueprint-${blueprint.key}-${field.name}`
-              const help = blueprintSlotHelp(field)
+          <form className="contents" onSubmit={handleBlueprintSubmit}>
+            <SheetBody>
+              {blueprint.description ? (
+                <p className="m-0 text-[0.78125rem] text-(--ui-text-tertiary)">{blueprint.description}</p>
+              ) : null}
+              <FormGroup>
+                {blueprint.fields.map(field => {
+                  const fieldId = `blueprint-${blueprint.key}-${field.name}`
+                  const onFieldChange = (next: string) => setSlotValues(prev => ({ ...prev, [field.name]: next }))
 
-              return (
-                <Field htmlFor={fieldId} key={field.name} label={field.label}>
-                  {field.name === 'deliver' ? (
-                    // Use the shared, backend-sourced delivery targets (same as the
-                    // manual editor) rather than the blueprint's static field.options,
-                    // so both dialogs offer exactly the connected platforms.
-                    <DeliverCheckboxes
-                      c={c}
-                      id={fieldId}
-                      onChange={next => setSlotValues(prev => ({ ...prev, [field.name]: next }))}
-                      targets={deliveryTargets.data ?? []}
-                      value={slotValues[field.name] ?? DEFAULT_DELIVER}
-                    />
+                  return field.name === 'deliver' ? (
+                    // The shared, backend-sourced delivery targets (same as the
+                    // manual editor) rather than the blueprint's static options.
+                    <FormRow key={field.name} stack title={<span id={`${fieldId}-label`}>{field.label}</span>}>
+                      <div className="w-full">
+                        <DeliverCheckboxes
+                          c={c}
+                          id={fieldId}
+                          onChange={onFieldChange}
+                          targets={deliveryTargets.data ?? []}
+                          value={slotValues[field.name] ?? DEFAULT_DELIVER}
+                        />
+                      </div>
+                    </FormRow>
                   ) : (
-                    <BlueprintSlotControl
-                      field={field}
-                      id={fieldId}
-                      onChange={next => setSlotValues(prev => ({ ...prev, [field.name]: next }))}
-                      value={slotValues[field.name] ?? ''}
-                    />
-                  )}
-                  {help && <FieldHint>{help}</FieldHint>}
-                </Field>
-              )
-            })}
-
-            {error && (
-              <div className="flex items-start gap-2 rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">
-                <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
-                <span>{error}</span>
-              </div>
-            )}
-
-            <DialogFooter>
-              <Button disabled={saving} onClick={onClose} type="button" variant="outline">
-                {t.common.cancel}
-              </Button>
-              <Button disabled={saving} type="submit">
-                {saving ? c.blueprints.scheduling : c.blueprints.scheduleIt}
-              </Button>
-            </DialogFooter>
+                    <FormRow description={blueprintSlotHelp(field)} htmlFor={fieldId} key={field.name} title={field.label}>
+                      <div className="w-52 max-w-full">
+                        <BlueprintSlotControl
+                          field={field}
+                          id={fieldId}
+                          onChange={onFieldChange}
+                          value={slotValues[field.name] ?? ''}
+                        />
+                      </div>
+                    </FormRow>
+                  )
+                })}
+              </FormGroup>
+              {errorCallout}
+            </SheetBody>
+            {footer(saving ? c.blueprints.scheduling : c.blueprints.scheduleIt)}
           </form>
         ) : (
-          <form className="grid gap-4" onSubmit={handleSubmit}>
-            {scriptOnlyJob && initial && (
-              <FieldHint>
-                {c.scriptOnlyEditHint} <span className="font-mono">{initial.id}</span>
-              </FieldHint>
-            )}
-
-            <Field htmlFor="cron-name" label={c.nameLabel} optional optionalLabel={c.optional}>
-              <Input
-                autoFocus
-                id="cron-name"
-                onChange={event => setName(event.target.value)}
-                placeholder={c.namePlaceholder}
-                value={name}
-              />
-            </Field>
-
-            <Field htmlFor="cron-prompt" label={c.promptLabel} optional={scriptOnlyJob} optionalLabel={c.optional}>
-              <Textarea
-                className="min-h-24 font-mono"
-                id="cron-prompt"
-                onChange={event => setPrompt(event.target.value)}
-                placeholder={c.promptPlaceholder}
-                value={prompt}
-              />
-            </Field>
-
-            <div className="grid items-start gap-4 sm:grid-cols-2">
-              <Field htmlFor="cron-frequency" label={c.frequencyLabel}>
-                <Select onValueChange={handleSchedulePresetChange} value={schedulePreset}>
-                  <SelectTrigger className="h-9 rounded-md" id="cron-frequency">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {SCHEDULE_OPTIONS.map(option => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {c.scheduleLabels[option.value]}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-
-              <Field htmlFor="cron-deliver" label={c.deliverLabel}>
+          <form className="contents" onSubmit={handleSubmit}>
+            <SheetBody>
+              <FormGroup>
+                <FormRow htmlFor="cron-name" title={s.name}>
+                  <Input
+                    autoFocus
+                    className="w-60 max-w-full"
+                    id="cron-name"
+                    onChange={event => setName(event.target.value)}
+                    placeholder={c.optional}
+                    value={name}
+                  />
+                </FormRow>
+                <FormRow htmlFor="cron-prompt" stack title={s.promptQuestion}>
+                  <Textarea
+                    className="min-h-20 w-full"
+                    id="cron-prompt"
+                    onChange={event => setPrompt(event.target.value)}
+                    placeholder={s.promptPlaceholder}
+                    value={prompt}
+                  />
+                </FormRow>
+              </FormGroup>
+              {scriptOnlyJob && initial ? (
+                <p className="mx-1 -mt-1 mb-0 text-xs text-(--ui-text-tertiary)">
+                  {c.scriptOnlyEditHint} <span className="font-mono">{initial.id}</span>
+                </p>
+              ) : null}
+              <FormSection title={s.when}>
+                <SchedulePicker id="cron-schedule" initialExpr={schedule} key={pickerKey} onChange={setSchedule} />
+              </FormSection>
+              <FormSection title={<span id="cron-deliver-label">{s.deliverTo}</span>}>
                 <DeliverCheckboxes
                   c={c}
                   id="cron-deliver"
@@ -1533,76 +1434,22 @@ function CronEditorDialog({
                   targets={deliveryTargets.data ?? []}
                   value={deliver}
                 />
-              </Field>
-            </div>
-
-            {!scriptOnlyJob && (
-              <Field htmlFor="cron-model" label={c.modelLabel} optional optionalLabel={c.optional}>
-                <Select onValueChange={setModelChoice} value={modelChoice}>
-                  <SelectTrigger className="h-9 rounded-md" id="cron-model">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={MODEL_DEFAULT_VALUE}>{c.modelDefault}</SelectItem>
-                    {!modelChoiceKnown && (
-                      <SelectItem className="font-mono" value={modelChoice}>
-                        {parseCronModelChoiceValue(modelChoice)?.model ?? modelChoice}
-                      </SelectItem>
-                    )}
-                    {modelProviders.map(provider => (
-                      <SelectGroup key={provider.slug}>
-                        <SelectLabel>{provider.name}</SelectLabel>
-                        {(provider.models ?? []).map(model => {
-                          const value = cronModelChoiceValue(provider.slug, model)
-
-                          return (
-                            <SelectItem className="font-mono" key={value} value={value}>
-                              {model}
-                            </SelectItem>
-                          )
-                        })}
-                      </SelectGroup>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-            )}
-
-            {schedulePreset === 'custom' ? (
-              <Field htmlFor="cron-schedule" label={c.customScheduleLabel}>
-                <Input
-                  className="font-mono"
-                  id="cron-schedule"
-                  onChange={event => setSchedule(event.target.value)}
-                  placeholder={c.customPlaceholder}
-                  value={schedule}
-                />
-                <FieldHint>{c.customHint}</FieldHint>
-              </Field>
-            ) : (
-              <div className="rounded-md bg-(--ui-bg-quinary) px-3 py-2">
-                <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-                  <span className="font-medium text-foreground">{scheduleHint}</span>
-                  <span className="font-mono text-muted-foreground">{schedule}</span>
-                </div>
-              </div>
-            )}
-
-            {error && (
-              <div className="flex items-start gap-2 rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">
-                <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
-                <span>{error}</span>
-              </div>
-            )}
-
-            <DialogFooter>
-              <Button disabled={saving} onClick={onClose} type="button" variant="outline">
-                {t.common.cancel}
-              </Button>
-              <Button disabled={saving} type="submit">
-                {saving ? t.common.saving : isEdit ? c.saveChanges : c.createAction}
-              </Button>
-            </DialogFooter>
+              </FormSection>
+              {!scriptOnlyJob && (
+                <FormGroup>
+                  <FormRow htmlFor="cron-model" title={s.model}>
+                    <CronModelSelect
+                      c={c}
+                      modelChoice={modelChoice}
+                      modelProviders={modelProviders}
+                      onChange={setModelChoice}
+                    />
+                  </FormRow>
+                </FormGroup>
+              )}
+              {errorCallout}
+            </SheetBody>
+            {footer(saving ? t.common.saving : isEdit ? s.save : s.create)}
           </form>
         )}
       </DialogContent>
@@ -1610,12 +1457,14 @@ function CronEditorDialog({
   )
 }
 
+const DEFAULT_SCHEDULE = '0 9 * * *'
+
 type EditorState =
   | { job: CronJob; mode: 'edit' }
   | { mode: 'closed' }
-  // `blueprintKey` pre-selects a blueprint in the create dialog's "Start from"
-  // dropdown (set when a recipe row in the list rail is clicked).
-  | { blueprintKey?: string; mode: 'create' }
+  // `blueprintKey` opens the create sheet on that blueprint (a Blueprints card's
+  // "Use"); `seed` pre-fills it from an existing job ("Duplicate job").
+  | { blueprintKey?: string; mode: 'create'; seed?: CronJob }
 
 interface EditorValues {
   deliver: string
@@ -1626,9 +1475,4 @@ interface EditorValues {
   /** Provider slug for the model override ('' = none). */
   provider: string
   schedule: string
-}
-
-interface ScheduleOption {
-  expr?: string
-  value: string
 }
