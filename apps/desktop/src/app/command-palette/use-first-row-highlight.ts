@@ -1,7 +1,8 @@
-import { type RefObject, useEffect } from 'react'
+import { useCallback } from 'react'
 
 /**
- * Keeps a row highlighted whenever the palette's rows change.
+ * Keeps a row highlighted whenever the palette's rows change. Returns the ref
+ * for the cmdk list element.
  *
  * cmdk 1.1 loses its highlight when a list swap unmounts the highlighted row:
  * every removed row schedules the same re-select callback, so only the LAST
@@ -12,32 +13,34 @@ import { type RefObject, useEffect } from 'react'
  * hands the highlight to the first row whenever rows are added or removed and
  * none is highlighted — after cmdk's own effects have run, so it only fills a
  * gap and never fights a highlight cmdk (or the pointer) chose.
+ *
+ * A callback ref, not an effect: the list mounts inside the dialog portal a
+ * commit after the frame, so an effect in the frame would find no element.
  */
-export function useFirstRowHighlight(listRef: RefObject<HTMLElement | null>, setValue: (value: string) => void) {
-  useEffect(() => {
-    const list = listRef.current
-
-    if (!list) {
-      return
-    }
-
-    const repair = () => {
-      if (list.querySelector('[cmdk-item][aria-selected="true"]')) {
+export function useFirstRowHighlight(setValue: (value: string) => void) {
+  return useCallback(
+    (list: HTMLElement | null) => {
+      if (!list) {
         return
       }
 
-      const value = list.querySelector('[cmdk-item]:not([aria-disabled="true"])')?.getAttribute('data-value')
+      const observer = new MutationObserver(() => {
+        if (list.querySelector('[cmdk-item][aria-selected="true"]')) {
+          return
+        }
 
-      if (value) {
-        setValue(value)
-        list.scrollTop = 0
-      }
-    }
+        const value = list.querySelector('[cmdk-item]:not([aria-disabled="true"])')?.getAttribute('data-value')
 
-    const observer = new MutationObserver(repair)
+        if (value) {
+          setValue(value)
+          list.scrollTop = 0
+        }
+      })
 
-    observer.observe(list, { childList: true, subtree: true })
+      observer.observe(list, { childList: true, subtree: true })
 
-    return () => observer.disconnect()
-  }, [listRef, setValue])
+      return () => observer.disconnect()
+    },
+    [setValue]
+  )
 }

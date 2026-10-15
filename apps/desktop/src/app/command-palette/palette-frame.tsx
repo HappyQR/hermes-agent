@@ -1,5 +1,5 @@
 import { Dialog as DialogPrimitive } from 'radix-ui'
-import { type KeyboardEvent, type ReactNode, type RefObject, useRef, useState } from 'react'
+import { type KeyboardEvent, type ReactNode, type RefObject, useState } from 'react'
 
 import { ScopeChips } from '@/app/overlays/studio/scope-chips'
 import { Command, CommandInput, CommandList } from '@/components/ui/command'
@@ -57,9 +57,7 @@ export function PaletteFrame({
   // cmdk's highlight, held here so a list swap can never leave it stranded
   // (see useFirstRowHighlight). The HighlightWatcher still reports it.
   const [highlight, setHighlight] = useState('')
-  const listRef = useRef<HTMLDivElement>(null)
-
-  useFirstRowHighlight(listRef, setHighlight)
+  const listRef = useFirstRowHighlight(setHighlight)
 
   return (
     <DialogPrimitive.Portal>
