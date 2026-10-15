@@ -1,8 +1,10 @@
 import './status-stack.css'
 
-import { type ReactNode, useState } from 'react'
+import { type ReactNode, useContext, useState } from 'react'
 
 import { DisclosureCaret } from '@/components/ui/disclosure-caret'
+
+import { StatusSectionPresentation } from './status-section-presentation'
 
 interface StatusSectionProps {
   /** Optional right-aligned actions (text links / micro buttons). Pass
@@ -35,6 +37,20 @@ export function StatusSection({
   preview
 }: StatusSectionProps) {
   const [collapsed, setCollapsed] = useState(defaultCollapsed)
+  const presentation = useContext(StatusSectionPresentation)
+
+  if (presentation.panel) {
+    return (
+      <StatusSectionPanel
+        accessory={accessory}
+        caption={presentation.caption}
+        indicator={collapsedIndicator}
+        label={presentation.title ?? label}
+      >
+        {children}
+      </StatusSectionPanel>
+    )
+  }
 
   return (
     <div data-slot="status-section">
@@ -53,6 +69,31 @@ export function StatusSection({
         {accessory && <div className="flex shrink-0 items-center gap-1">{accessory}</div>}
       </div>
       {(!collapsed || preview) && <div className="status-section-body">{collapsed ? preview : children}</div>}
+    </div>
+  )
+}
+
+interface StatusSectionPanelProps {
+  accessory?: ReactNode
+  caption?: ReactNode
+  children: ReactNode
+  indicator?: ReactNode
+  label: ReactNode
+}
+
+/** Panel presentation (the activity tray): a static title row — no caret, not
+ *  a toggle, since the chip that opened the panel is the disclosure — and the
+ *  body always shown. */
+function StatusSectionPanel({ accessory, caption, children, indicator, label }: StatusSectionPanelProps) {
+  return (
+    <div data-presentation="panel" data-slot="status-section">
+      <div className="status-section-header flex min-h-7 items-center gap-2 px-2 pb-1 pt-0.5">
+        <span className="min-w-0 truncate text-[0.78125rem] font-semibold text-(--ui-text-primary)">{label}</span>
+        {indicator && <span className="flex shrink-0 items-center">{indicator}</span>}
+        {caption && <span className="min-w-0 truncate text-xs text-(--ui-text-tertiary)">{caption}</span>}
+        {accessory && <div className="ml-auto flex shrink-0 items-center gap-1">{accessory}</div>}
+      </div>
+      <div className="status-section-body">{children}</div>
     </div>
   )
 }

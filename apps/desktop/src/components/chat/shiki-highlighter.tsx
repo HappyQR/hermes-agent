@@ -188,14 +188,19 @@ export const SyntaxHighlighter: FC<HermesSyntaxHighlighterProps> = ({
 
   return (
     <CodeCard data-streaming={defer ? 'true' : undefined}>
-      <CopyButton
-        appearance="inline"
-        className="absolute right-4 top-1.5 z-10 h-5 gap-0 rounded-md px-1 opacity-0 transition-opacity group-hover/code:opacity-100 focus-visible:opacity-100"
-        iconClassName="size-3"
-        label={t.assistant.tool.copyCode}
-        showLabel={false}
-        text={() => copyableCodeText(content)}
-      />
+      {/* Hermes Studio: a header row (prototype .cb-head) — the language and
+          an always-visible copy. */}
+      <div className="studio-code-head" data-slot="code-card-head">
+        <span className="studio-code-lang">{language}</span>
+        <CopyButton
+          appearance="inline"
+          className="studio-code-copy"
+          iconClassName="size-3"
+          label={t.assistant.tool.copyCode}
+          showLabel={false}
+          text={() => copyableCodeText(content)}
+        />
+      </div>
       <CodeCardBody className="[&_pre]:px-3 [&_pre]:py-2.5">
         <ExpandableBlock>
           <Pre className="aui-shiki m-0 overflow-hidden bg-transparent p-0">

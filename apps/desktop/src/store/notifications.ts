@@ -69,7 +69,8 @@ function defaultDuration(kind: NotificationKind) {
 // update available, sign-in prompts). Everything else — the bulk of routine
 // "saved"/"enabled"/"archived" confirmations across settings, MCP, cron,
 // profiles, messaging — is ambient feedback and defaults to a quiet
-// bottom-right toast instead. Callers can still force `placement: 'default'`
+// bottom-right toast instead. (Hermes Studio paints both in its one top-right
+// stack, as the prototype does.) Callers can still force `placement: 'default'`
 // for a specific case.
 function defaultPlacement(kind: NotificationKind, action?: NotificationAction): NotificationPlacement {
   if (kind === 'error' || kind === 'warning' || action) {

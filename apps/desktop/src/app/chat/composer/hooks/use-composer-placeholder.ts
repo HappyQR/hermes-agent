@@ -1,11 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 
 import { useI18n } from '@/i18n'
+import { useKeybindHint } from '@/lib/keybinds/use-keybind-hint'
 import { resetBrowseState } from '@/store/composer-input-history'
 
 import { pickPlaceholder } from '../composer-utils'
 
 interface UseComposerPlaceholderOptions {
+  /** A turn is running: the placeholder says how to queue for the next one. */
+  busy?: boolean
   disabled: boolean
   reconnecting: boolean
   sessionId: null | string | undefined
@@ -18,8 +21,14 @@ interface UseComposerPlaceholderOptions {
  * keeps its starter so the text doesn't flip mid-stream. While the transport is
  * down, it swaps to a reconnecting / starting message instead.
  */
-export function useComposerPlaceholder({ disabled, reconnecting, sessionId }: UseComposerPlaceholderOptions): string {
+export function useComposerPlaceholder({
+  busy = false,
+  disabled,
+  reconnecting,
+  sessionId
+}: UseComposerPlaceholderOptions): string {
   const { t } = useI18n()
+  const queueCombo = useKeybindHint('composer.queue')
   const newSessionPlaceholders = t.composer.newSessionPlaceholders
   const followUpPlaceholders = t.composer.followUpPlaceholders
 
@@ -53,9 +62,9 @@ export function useComposerPlaceholder({ disabled, reconnecting, sessionId }: Us
   // we're trying to restore. During reconnect, keep the textbox editable so a
   // flaky network doesn't block drafting; only submit/backend actions stay
   // disabled until the gateway is open again.
-  return disabled
-    ? reconnecting
-      ? t.composer.placeholderReconnecting
-      : t.composer.placeholderStarting
-    : restingPlaceholder
+  if (disabled) {
+    return reconnecting ? t.composer.placeholderReconnecting : t.composer.placeholderStarting
+  }
+
+  return busy && queueCombo ? t.studio.chat.composer.placeholderBusy(queueCombo) : restingPlaceholder
 }
