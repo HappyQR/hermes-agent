@@ -1,6 +1,7 @@
 import { useStore } from '@nanostores/react'
 import { useMemo } from 'react'
 
+import type { StudioIconName } from '@/components/ui/studio-icon'
 import type { Translations } from '@/i18n'
 import type { TodoItem } from '@/lib/todos'
 import { useSessionSlice, useStoreSelector } from '@/lib/use-session-slice'
@@ -19,8 +20,7 @@ import { useSessionValue } from '../status-stack/session-control-utils'
 import { CHIP_ORDER, chipForSection, type TrayChipId } from './chips'
 
 export interface TrayChip {
-  /** Glyph: a codicon name, or 'hand' for the approval glyph (Tabler). */
-  icon: string
+  icon: StudioIconName
   id: TrayChipId
   label: string
   /** A live chip trades its glyph for the running spinner. */
@@ -70,7 +70,7 @@ function todoChip(
     const done = todos.filter(item => item.todoStatus === 'completed').length
 
     return {
-      icon: 'checklist',
+      icon: 'todo',
       label: t.statusStack.todos(done, todos.length),
       live: todos.some(item => item.todoStatus === 'in_progress' && item.state === 'running'),
       progress: todos.length ? done / todos.length : 0
@@ -83,18 +83,22 @@ function todoChip(
 
   const done = retained.filter(todo => todo.status === 'completed').length
 
-  return { icon: 'checklist', label: t.statusStack.previousTodos(done, retained.length), tone: 'muted' }
+  return { icon: 'todo', label: t.statusStack.previousTodos(done, retained.length), tone: 'muted' }
 }
 
 /** Keeps the composer's own wording ("1 Queued", "1 Queued — paused"). */
 function queueChip(count: number, parked: boolean, t: Translations): ChipBody {
   return parked
-    ? { icon: 'debug-pause', label: t.composer.queuedPaused(count), tone: 'muted' }
-    : { icon: 'layers', label: t.composer.queued(count) }
+    ? { icon: 'pause', label: t.composer.queuedPaused(count), tone: 'muted' }
+    : { icon: 'tray', label: t.composer.queued(count) }
 }
 
 /** The control chip mirrors the goal / loop / heartbeat headers, one line. */
-function controlChip(entry: SessionControlEntry | undefined, items: readonly ComposerStatusItem[], t: Translations) {
+function controlChip(
+  entry: SessionControlEntry | undefined,
+  items: readonly ComposerStatusItem[],
+  t: Translations
+): ChipBody {
   const s = t.statusStack
   const ctrl = s.control
   const goal = entry?.snapshot?.goal
@@ -116,9 +120,10 @@ function controlChip(entry: SessionControlEntry | undefined, items: readonly Com
   }
 
   if (loop) {
-    const label = loop.status === 'paused' ? ctrl.loopPaused : loop.deferred_by_goal ? ctrl.loopDeferred : ctrl.loopActive
+    const label =
+      loop.status === 'paused' ? ctrl.loopPaused : loop.deferred_by_goal ? ctrl.loopDeferred : ctrl.loopActive
 
-    return { icon: 'sync', label, tone }
+    return { icon: 'loop', label, tone }
   }
 
   if (heartbeat) {
@@ -166,8 +171,7 @@ export function useTrayChips({ sectionKeys, sessionId, sessionKey, t }: TrayChip
   const byChip = sectionsByChip(sectionKeys)
   const chips: TrayChip[] = []
 
-  const add = (id: TrayChipId, chip: ChipBody) =>
-    chips.push({ ...chip, id, sectionKeys: byChip.get(id) ?? [] })
+  const add = (id: TrayChipId, chip: ChipBody) => chips.push({ ...chip, id, sectionKeys: byChip.get(id) ?? [] })
 
   if (approvals > 0) {
     add('approval', { icon: 'hand', label: copy.approval(approvals), tone: 'warn' })
@@ -191,7 +195,7 @@ export function useTrayChips({ sectionKeys, sessionId, sessionKey, t }: TrayChip
 
   // The section stays mounted between runs; the chip only shows live agents.
   if (byChip.has('subagent') && liveSubagents > 0) {
-    add('subagent', { icon: 'agent', label: t.statusStack.subagents(liveSubagents), live: true })
+    add('subagent', { icon: 'tree', label: t.statusStack.subagents(liveSubagents), live: true })
   }
 
   if (byChip.has('queue') && queueLength > 0) {
@@ -203,7 +207,7 @@ export function useTrayChips({ sectionKeys, sessionId, sessionKey, t }: TrayChip
 
   if (byChip.has('background')) {
     add('background', {
-      icon: 'server-process',
+      icon: 'terminal',
       label: t.statusStack.background(background.length),
       live: backgroundRunning,
       tone: background.some(item => item.state === 'failed') ? 'error' : undefined
@@ -216,7 +220,7 @@ export function useTrayChips({ sectionKeys, sessionId, sessionKey, t }: TrayChip
   }
 
   if (byChip.has('other')) {
-    add('other', { icon: 'ellipsis', label: copy.more })
+    add('other', { icon: 'more', label: copy.more })
   }
 
   return chips.sort((a, b) => CHIP_ORDER.indexOf(a.id) - CHIP_ORDER.indexOf(b.id))

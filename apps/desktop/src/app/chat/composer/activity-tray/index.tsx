@@ -2,7 +2,7 @@ import { type KeyboardEvent, type ReactNode, type Ref, useId, useRef, useState }
 
 import { findSessionApprovalStack, findSurfaceClarifyCard } from '@/app/chat/decision-anchor'
 import { Button } from '@/components/ui/button'
-import { Codicon } from '@/components/ui/codicon'
+import { StudioIcon } from '@/components/ui/studio-icon'
 import { Tip } from '@/components/ui/tooltip'
 import { useI18n } from '@/i18n'
 import { triggerHaptic } from '@/lib/haptics'
@@ -111,7 +111,7 @@ function TrayRow({ chips, collapsed, git, onActivate, onHide, onShow, openId, pa
       {collapsed ? (
         <>
           <span className="tray-spacer" />
-          <TrayChipButton icon="chevron-up" id="show" label={copy.show(total)} onClick={onShow} />
+          <TrayChipButton icon="chev-u" id="show" label={copy.show(total)} onClick={onShow} />
         </>
       ) : (
         <>
@@ -133,7 +133,7 @@ function TrayRow({ chips, collapsed, git, onActivate, onHide, onShow, openId, pa
           {git}
           <Tip label={copy.hide} side="top">
             <Button aria-label={copy.hide} className="tray-collapse" onClick={onHide} size="icon-xs" variant="ghost">
-              <Codicon name="chevron-down" size="0.75rem" />
+              <StudioIcon name="chev-d" size={12} />
             </Button>
           </Tip>
         </>

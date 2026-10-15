@@ -6,15 +6,7 @@
  */
 
 export type TrayChipId =
-  | 'approval'
-  | 'background'
-  | 'control'
-  | 'needs'
-  | 'other'
-  | 'preview'
-  | 'queue'
-  | 'subagent'
-  | 'todo'
+  'approval' | 'background' | 'control' | 'needs' | 'other' | 'preview' | 'queue' | 'subagent' | 'todo'
 
 /** Stack section key → the chip whose panel shows it. */
 export const SECTION_CHIP: Readonly<Record<string, TrayChipId>> = {

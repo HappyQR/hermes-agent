@@ -6,7 +6,7 @@ import {
   type StatusSectionPresentationValue
 } from '@/components/chat/status-section-presentation'
 import { Button } from '@/components/ui/button'
-import { Codicon } from '@/components/ui/codicon'
+import { StudioIcon } from '@/components/ui/studio-icon'
 import { useI18n } from '@/i18n'
 
 import type { StatusStackSection } from '../status-stack'
@@ -83,7 +83,7 @@ export function TrayPanel({ git, id, onClose, onEscape, openChip, queueParked, s
       role="region"
     >
       <Button aria-label={copy.close} className="tray-panel-close" onClick={onClose} size="icon-xs" variant="ghost">
-        <Codicon name="close" size="0.75rem" />
+        <StudioIcon name="x" size={11} />
       </Button>
       {openChip?.id === 'preview' && (
         <div className="tray-panel-head">

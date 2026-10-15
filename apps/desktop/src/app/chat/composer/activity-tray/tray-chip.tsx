@@ -1,21 +1,12 @@
 import type { ComponentProps, ReactNode, Ref } from 'react'
 
-import { Codicon } from '@/components/ui/codicon'
-import { HandStop } from '@/lib/icons'
+import { StudioIcon, type StudioIconName } from '@/components/ui/studio-icon'
 import { cn } from '@/lib/utils'
 
 /** The running ring (prototype `.ring-run`): an accent arc on a soft track —
- *  distinct from the context gauge's static pie. Static under reduced motion. */
+ *  distinct from the context gauge's static pie. */
 export function RingSpinner({ className }: { className?: string }) {
-  return <span aria-hidden className={cn('studio-ring-spinner', className)} />
-}
-
-export function TrayGlyph({ icon }: { icon: string }) {
-  return icon === 'hand' ? (
-    <HandStop aria-hidden className="tray-chip-icon size-[0.8125rem]" />
-  ) : (
-    <Codicon aria-hidden className="tray-chip-icon" name={icon} size="0.8125rem" />
-  )
+  return <span aria-hidden className={cn('studio-ring-run size-[0.6875rem]', className)} />
 }
 
 interface TrayChipButtonProps extends Omit<ComponentProps<'button'>, 'id' | 'onClick'> {
@@ -23,7 +14,7 @@ interface TrayChipButtonProps extends Omit<ComponentProps<'button'>, 'id' | 'onC
   /** Set for chips that open the panel; omitted for jump chips. */
   controls?: string
   expanded?: boolean
-  icon: string
+  icon: StudioIconName
   id: string
   label: string
   live?: boolean
@@ -62,7 +53,7 @@ export function TrayChipButton({
       type="button"
       {...rest}
     >
-      {live ? <RingSpinner /> : <TrayGlyph icon={icon} />}
+      {live ? <RingSpinner /> : <StudioIcon className="tray-chip-icon" name={icon} size={13} />}
       <span className="tray-chip-label">{label}</span>
       {children}
       {progress !== undefined && (

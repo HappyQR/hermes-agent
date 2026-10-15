@@ -4,26 +4,6 @@
 
 /* ── Shared ────────────────────────────────────────────────────────────── */
 
-/* The running ring (prototype .ring-run / .spin): an accent arc on a soft
-   track. Distinct from the context gauge's static pie by design. */
-.studio-ring-spinner {
-  display: inline-block;
-  box-sizing: border-box;
-  width: 0.6875rem;
-  height: 0.6875rem;
-  flex: none;
-  border-radius: 50%;
-  border: 1.6px solid var(--ui-accent-soft);
-  border-top-color: var(--dt-primary);
-  animation: studio-spin 0.9s linear infinite;
-}
-
-@keyframes studio-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 /* ── Activity tray (prototype .tray / .tray-chip / .tray-panel) ───────── */
 
 /* 5px insets: the tray shares the composer surface's edges, which sit inside
@@ -297,11 +277,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .studio-ring-spinner {
-    animation: none;
-    border-color: var(--dt-primary);
-  }
-
   .tray-chip,
   .tray-notice,
   .tray-panel {

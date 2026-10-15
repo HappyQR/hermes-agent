@@ -2,10 +2,10 @@ import type { ReactNode } from 'react'
 
 import { openPullRequest } from '@/app/chat/pr-tag'
 import { ActionsContextMenu, type MenuKit } from '@/components/ui/actions-menu'
-import { Codicon } from '@/components/ui/codicon'
 import { CopyButton } from '@/components/ui/copy-button'
 import { DiffCount } from '@/components/ui/diff-count'
 import { KbdCombo } from '@/components/ui/kbd'
+import { StudioIcon, type StudioIconName } from '@/components/ui/studio-icon'
 import { Tip } from '@/components/ui/tooltip'
 import { useI18n } from '@/i18n'
 import { displayPath } from '@/lib/display-path'
@@ -63,7 +63,7 @@ export function GitChip({ coding, controls, expanded, git, model, onToggle }: Gi
         <TrayChipButton
           controls={controls}
           expanded={expanded}
-          icon="git-branch"
+          icon="branch"
           id="git"
           label={git.pr ? `#${git.pr.number} ${model.branchLabel}` : model.branchLabel}
           onClick={onToggle}
@@ -86,10 +86,10 @@ interface GitPanelProps {
   onClose: () => void
 }
 
-function PanelRow({ children, icon, onSelect }: { children: ReactNode; icon: string; onSelect: () => void }) {
+function PanelRow({ children, icon, onSelect }: { children: ReactNode; icon: StudioIconName; onSelect: () => void }) {
   return (
     <button className="tray-panel-row" onClick={onSelect} type="button">
-      <Codicon aria-hidden className="tray-panel-row-icon" name={icon} size="0.875rem" />
+      <StudioIcon className="tray-panel-row-icon" name={icon} size={14} />
       {children}
     </button>
   )
@@ -121,7 +121,7 @@ export function GitPanel({ coding, git, model, onClose }: GitPanelProps) {
   return (
     <div data-slot="activity-tray-git">
       <div className="tray-panel-head">
-        <Codicon aria-hidden className="text-(--ui-green)" name="git-branch" size="0.875rem" />
+        <StudioIcon className="text-(--ui-text-tertiary)" name="branch" size={14} />
         <b className="min-w-0 truncate">{model.branchLabel}</b>
         {drift && <span className="tray-panel-caption tabular-nums">{drift}</span>}
       </div>
@@ -130,7 +130,7 @@ export function GitPanel({ coding, git, model, onClose }: GitPanelProps) {
         {reviewCombo && <KbdCombo combo={reviewCombo} size="sm" />}
       </PanelRow>
       {git.pr && (
-        <PanelRow icon="git-pull-request" onSelect={run(() => git.pr && openPullRequest(git.pr))}>
+        <PanelRow icon="pr" onSelect={run(() => git.pr && openPullRequest(git.pr))}>
           <span className="tray-panel-row-label">{copy.openPullRequest(git.pr.number)}</span>
         </PanelRow>
       )}
@@ -139,7 +139,7 @@ export function GitPanel({ coding, git, model, onClose }: GitPanelProps) {
           <div className="tray-panel-separator" role="separator" />
           {model.branchTargets.map(target => (
             <PanelRow
-              icon="git-branch-create"
+              icon="branch"
               key={target.base ?? '__head__'}
               onSelect={run(() => startBranchFrom(target.base, git.repoPath))}
             >
@@ -155,16 +155,16 @@ export function GitPanel({ coding, git, model, onClose }: GitPanelProps) {
             </PanelRow>
           )}
           {model.otherWorktrees.map(worktree => (
-            <PanelRow icon="list-tree" key={worktree.path} onSelect={run(() => coding.onOpenWorktree?.(worktree.path))}>
+            <PanelRow icon="tree" key={worktree.path} onSelect={run(() => coding.onOpenWorktree?.(worktree.path))}>
               <span className="tray-panel-row-label">{worktree.branch}</span>
               <span className="tray-panel-row-meta">{displayPath(worktree.path)}</span>
             </PanelRow>
           ))}
-          <PanelRow icon="add" onSelect={run(() => startBranchFrom(undefined, git.repoPath))}>
+          <PanelRow icon="plus" onSelect={run(() => startBranchFrom(undefined, git.repoPath))}>
             <span className="tray-panel-row-label">{t.sidebar.projects.startWork}</span>
           </PanelRow>
           {coding.onConvertBranch && (
-            <PanelRow icon="git-compare" onSelect={run(() => startBranchFrom(undefined, git.repoPath))}>
+            <PanelRow icon="branch" onSelect={run(() => startBranchFrom(undefined, git.repoPath))}>
               <span className="tray-panel-row-label">{t.sidebar.projects.convertBranch}</span>
             </PanelRow>
           )}
@@ -174,7 +174,7 @@ export function GitPanel({ coding, git, model, onClose }: GitPanelProps) {
         <>
           <div className="tray-panel-separator" role="separator" />
           <div className="tray-panel-row" data-static="">
-            <Codicon aria-hidden className="tray-panel-row-icon" name="folder" size="0.875rem" />
+            <StudioIcon className="tray-panel-row-icon" name="folder" size={14} />
             <span className="tray-panel-row-label font-mono text-xs" data-slot="coding-status-cwd">
               {displayPath(git.repoPath)}
             </span>
