@@ -319,5 +319,23 @@ export const zhHantStudioPages: StudioPagesTranslations = {
       settingsTip: '外掛設定',
       noMatch: query => `沒有與「${query}」相符的外掛。`
     }
+  },
+  messaging: {
+    title: '訊息平台',
+    subtitle: '在 Telegram、Discord、Slack 等平台上和同一個 Hermes 對話。',
+    searchPlatforms: '搜尋平台',
+    listLabel: '平台',
+    filterLabel: '顯示',
+    pairingRequest: ' 請求與 Hermes 配對',
+    quickSetupTitle: '掃碼快速設定',
+    quickSetupBody: '用手機 Telegram 掃碼，自動建立機器人並識別你的帳號。會取代目前的機器人。',
+    showQr: '顯示 QR 碼',
+    qrSheetTitle: '掃碼設定 Telegram',
+    homeChannel: '主頻道',
+    homeChannelHint: '排程工作和交接預設發到這裡。在對話中傳送 /sethome 可以變更。',
+    homeChannelNone: '未設定',
+    pairedUsersHint: '透過配對核准的使用者，撤銷立即生效。',
+    updateCredentials: '更新憑證',
+    saveHint: '儲存後立即套用到執行中的閘道'
   }
 }

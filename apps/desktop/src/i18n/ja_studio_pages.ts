@@ -331,5 +331,23 @@ export const jaStudioPages: StudioPagesTranslations = {
       settingsTip: 'プラグイン設定',
       noMatch: query => `「${query}」に一致するプラグインはありません。`
     }
+  },
+  messaging: {
+    title: 'メッセージング',
+    subtitle: 'Telegram、Discord、Slack などで同じ Hermes と話せます。',
+    searchPlatforms: 'プラットフォームを検索',
+    listLabel: 'プラットフォーム',
+    filterLabel: '表示',
+    pairingRequest: 'が Hermes とのペアリングを求めています',
+    quickSetupTitle: 'QR コードでかんたん設定',
+    quickSetupBody: 'スマートフォンの Telegram でスキャンすると、Hermes がボットを作成してあなたのアカウントを認識します。現在のボットは置き換えられます。',
+    showQr: 'QR コードを表示',
+    qrSheetTitle: 'QR コードで Telegram を設定',
+    homeChannel: 'ホームチャンネル',
+    homeChannelHint: '定期タスクと引き継ぎは既定でここに送られます。チャットで /sethome を送ると変更できます。',
+    homeChannelNone: '未設定',
+    pairedUsersHint: 'ペアリングで承認されたユーザーです。取り消しはすぐに反映されます。',
+    updateCredentials: '認証情報を更新',
+    saveHint: '保存すると実行中のゲートウェイにすぐ反映されます'
   }
 }

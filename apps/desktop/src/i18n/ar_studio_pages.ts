@@ -331,5 +331,23 @@ export const arStudioPages: StudioPagesTranslations = {
       settingsTip: 'إعدادات الإضافة',
       noMatch: query => `لا توجد إضافة تطابق «${query}».`
     }
+  },
+  messaging: {
+    title: 'المراسلة',
+    subtitle: 'تحدّث إلى Hermes نفسه على Telegram وDiscord وSlack وغيرها.',
+    searchPlatforms: 'ابحث في المنصات',
+    listLabel: 'المنصات',
+    filterLabel: 'عرض',
+    pairingRequest: ' يطلب الاقتران مع Hermes',
+    quickSetupTitle: 'إعداد سريع برمز QR',
+    quickSetupBody: 'امسح الرمز بتطبيق Telegram على هاتفك: ينشئ Hermes الروبوت ويتعرّف على حسابك. سيحل هذا محل الروبوت الحالي.',
+    showQr: 'عرض رمز QR',
+    qrSheetTitle: 'إعداد Telegram برمز QR',
+    homeChannel: 'القناة الرئيسية',
+    homeChannelHint: 'تُرسل المهام المجدولة وعمليات التسليم إلى هنا افتراضيًا. أرسل ‎/sethome في محادثة لتغييرها.',
+    homeChannelNone: 'غير معيّنة',
+    pairedUsersHint: 'تمت الموافقة عليهم عبر الاقتران. يسري الإلغاء فورًا.',
+    updateCredentials: 'تحديث بيانات الاعتماد',
+    saveHint: 'يُطبّق الحفظ على البوابة قيد التشغيل فورًا'
   }
 }

@@ -319,5 +319,23 @@ export const zhStudioPages: StudioPagesTranslations = {
       settingsTip: '插件设置',
       noMatch: query => `没有与“${query}”匹配的插件。`
     }
+  },
+  messaging: {
+    title: '消息平台',
+    subtitle: '在 Telegram、Discord、Slack 等平台上和同一个 Hermes 对话。',
+    searchPlatforms: '搜索平台',
+    listLabel: '平台',
+    filterLabel: '显示',
+    pairingRequest: ' 请求与 Hermes 配对',
+    quickSetupTitle: '扫码快速设置',
+    quickSetupBody: '用手机 Telegram 扫码，自动创建机器人并识别你的账号。会替换当前机器人。',
+    showQr: '显示二维码',
+    qrSheetTitle: '扫码设置 Telegram',
+    homeChannel: '主频道',
+    homeChannelHint: '定时任务和交接默认发到这里。在对话中发送 /sethome 可以更改。',
+    homeChannelNone: '未设置',
+    pairedUsersHint: '通过配对批准的用户，撤销立即生效。',
+    updateCredentials: '更新凭据',
+    saveHint: '保存后立即应用到运行中的网关'
   }
 }

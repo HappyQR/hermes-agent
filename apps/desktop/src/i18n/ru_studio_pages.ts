@@ -345,5 +345,23 @@ export const ruStudioPages: StudioPagesTranslations = {
       settingsTip: 'Настройки плагина',
       noMatch: query => `Нет плагинов, совпадающих с «${query}».`
     }
+  },
+  messaging: {
+    title: 'Мессенджеры',
+    subtitle: 'Общайтесь с тем же Hermes в Telegram, Discord, Slack и других.',
+    searchPlatforms: 'Поиск платформ',
+    listLabel: 'Платформы',
+    filterLabel: 'Показать',
+    pairingRequest: ' просит связаться с Hermes',
+    quickSetupTitle: 'Быстрая настройка по QR-коду',
+    quickSetupBody: 'Отсканируйте код в Telegram на телефоне: Hermes создаст бота и узнает ваш аккаунт. Текущий бот будет заменён.',
+    showQr: 'Показать QR-код',
+    qrSheetTitle: 'Настройка Telegram по QR-коду',
+    homeChannel: 'Основной канал',
+    homeChannelHint: 'Сюда по умолчанию приходят задания по расписанию и передачи. Чтобы изменить, отправьте /sethome в чате.',
+    homeChannelNone: 'Не задан',
+    pairedUsersHint: 'Одобрены через привязку. Отзыв действует сразу.',
+    updateCredentials: 'Обновить учётные данные',
+    saveHint: 'Сохранение сразу применится к работающему шлюзу'
   }
 }

@@ -334,5 +334,23 @@ export const enStudioPages: StudioPagesTranslations = {
       settingsTip: 'Plugin settings',
       noMatch: query => `No plugin matches “${query}”.`
     }
+  },
+  messaging: {
+    title: 'Messaging',
+    subtitle: 'Talk to the same Hermes on Telegram, Discord, Slack and more.',
+    searchPlatforms: 'Search platforms',
+    listLabel: 'Platforms',
+    filterLabel: 'Show',
+    pairingRequest: ' wants to pair with Hermes',
+    quickSetupTitle: 'Quick setup with a QR code',
+    quickSetupBody: 'Scan with Telegram on your phone: Hermes creates the bot and recognizes your account. This replaces the current bot.',
+    showQr: 'Create with QR',
+    qrSheetTitle: 'Set up Telegram with a QR code',
+    homeChannel: 'Home channel',
+    homeChannelHint: 'Scheduled jobs and handoffs go here by default. Send /sethome in a chat to change it.',
+    homeChannelNone: 'Not set',
+    pairedUsersHint: 'Approved through pairing. Revoking takes effect right away.',
+    updateCredentials: 'Update credentials',
+    saveHint: 'Saving applies to the running gateway.'
   }
 }

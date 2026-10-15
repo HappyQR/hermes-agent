@@ -7,6 +7,7 @@ export interface StudioPagesTranslations {
   inspector: StudioInspectorTranslations
   memory: StudioMemoryTranslations
   capabilities: StudioCapabilitiesTranslations
+  messaging: StudioMessagingTranslations
 }
 
 export interface StudioPagesCommonTranslations {
@@ -343,4 +344,26 @@ export interface StudioCapabilitiesTranslations {
     settingsTip: string
     noMatch: (query: string) => string
   }
+}
+
+export interface StudioMessagingTranslations {
+  title: string
+  subtitle: string
+  searchPlatforms: string
+  listLabel: string
+  filterLabel: string
+  /** Follows the requester's name on a pending pairing card (leading space where the language wants one). */
+  pairingRequest: string
+  quickSetupTitle: string
+  quickSetupBody: string
+  /** The quick-setup card's button; opens the QR sheet. */
+  showQr: string
+  qrSheetTitle: string
+  homeChannel: string
+  homeChannelHint: string
+  homeChannelNone: string
+  pairedUsersHint: string
+  updateCredentials: string
+  /** Under the save button when the change will apply without a restart. */
+  saveHint: string
 }
