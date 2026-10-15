@@ -365,3 +365,139 @@
     animation: none;
   }
 }
+
+/* ── 4. Primitive surfaces ─────────────────────────────────────────────────
+   styles.css repaints these slots with unlayered rules (96% fill, 12px blur,
+   a stroke border); equally specific rules here win by order. */
+
+[data-slot='dropdown-menu-content'],
+[data-slot='dropdown-menu-sub-content'],
+[data-slot='context-menu-content'],
+[data-slot='context-menu-sub-content'],
+[data-slot='select-content'],
+[data-slot='thread-timeline-popover'] {
+  border-color: transparent;
+  background: var(--ui-menu);
+  box-shadow: var(--elev-pop), var(--hairline-hi);
+  backdrop-filter: blur(36px) saturate(1.8);
+  -webkit-backdrop-filter: blur(36px) saturate(1.8);
+}
+
+/* macOS menu highlight: accent fill, white label, glyphs and hints. */
+:is(
+    [data-slot='dropdown-menu-item'],
+    [data-slot='dropdown-menu-checkbox-item'],
+    [data-slot='dropdown-menu-radio-item'],
+    [data-slot='dropdown-menu-sub-trigger'],
+    [data-slot='context-menu-item'],
+    [data-slot='context-menu-checkbox-item'],
+    [data-slot='context-menu-radio-item'],
+    [data-slot='context-menu-sub-trigger'],
+    [data-slot='select-item']
+  ):is(:focus, [data-highlighted]) {
+  background: var(--dt-primary);
+  color: var(--ui-on-accent);
+}
+
+:is(
+    [data-slot='dropdown-menu-item'],
+    [data-slot='dropdown-menu-checkbox-item'],
+    [data-slot='dropdown-menu-radio-item'],
+    [data-slot='dropdown-menu-sub-trigger'],
+    [data-slot='context-menu-item'],
+    [data-slot='context-menu-checkbox-item'],
+    [data-slot='context-menu-radio-item'],
+    [data-slot='context-menu-sub-trigger'],
+    [data-slot='select-item']
+  ):is(:focus, [data-highlighted])
+  :is(svg, .codicon, [data-slot='dropdown-menu-shortcut'], [data-slot='context-menu-shortcut'], kbd, span) {
+  color: inherit;
+}
+
+:is([data-slot='dropdown-menu-item'], [data-slot='context-menu-item'])[data-variant='destructive']:is(:focus, [data-highlighted]) {
+  background: var(--ui-dot-red, var(--dt-destructive));
+  color: #ffffff;
+}
+
+[data-slot='dropdown-menu-sub-trigger'][data-state='open']:not([data-highlighted]),
+[data-slot='context-menu-sub-trigger'][data-state='open']:not([data-highlighted]) {
+  background: var(--ui-selected);
+  color: inherit;
+}
+
+:is([data-slot='dropdown-menu-separator'], [data-slot='context-menu-separator']) {
+  height: 0.5px;
+  margin: 5px 8px;
+  background: var(--ui-line-2);
+}
+
+/* Sheets: the macOS sheet — frosted glass, 16px corners, dropping from under
+   the toolbar instead of floating mid-window. */
+[data-slot='dialog-content']:not([data-variant='media-lightbox']) {
+  border-color: transparent;
+  background: var(--ui-glass-strong);
+  box-shadow: var(--elev-pop), var(--hairline-hi);
+  backdrop-filter: blur(40px) saturate(1.8);
+  -webkit-backdrop-filter: blur(40px) saturate(1.8);
+}
+
+[data-slot='dialog-content'].top-1\/2:not([data-variant='media-lightbox']) {
+  top: 64px;
+  --tw-translate-y: 0;
+  border-radius: 16px;
+}
+
+/* macOS sheets dim the window behind them; they do not blur it. */
+:is([data-slot='dialog-overlay'], [data-slot='sheet-overlay']) {
+  background: var(--ui-scrim);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* Fields: no border — a 0.5px hairline ring and the macOS focus halo. */
+.desktop-input-chrome {
+  background: var(--ui-bg-editor);
+  border-color: transparent;
+  box-shadow:
+    0 0 0 0.5px var(--ui-line-2),
+    inset 0 1px 1px rgb(0 0 0 / 0.03);
+  transition: box-shadow 120ms ease-out;
+}
+
+.desktop-input-chrome:hover {
+  border-color: transparent;
+}
+
+.desktop-input-chrome:focus,
+.desktop-input-chrome:focus-within,
+.desktop-input-chrome[data-state='open'] {
+  border-color: transparent;
+  box-shadow:
+    0 0 0 0.5px color-mix(in srgb, var(--dt-primary) 60%, transparent),
+    0 0 0 3.5px color-mix(in srgb, var(--dt-primary) 28%, transparent);
+}
+
+.desktop-input-chrome[aria-invalid='true'] {
+  border-color: transparent;
+  box-shadow:
+    0 0 0 0.5px var(--ui-red),
+    0 0 0 3px color-mix(in srgb, var(--ui-red) 22%, transparent);
+}
+
+/* Tooltips: the macOS help tag — light glass, fg text, no arrow. The timing
+   contract (200ms delay, warm 300ms, 100ms exit) stays tooltip.tsx's. */
+.tooltip-bubble {
+  background: var(--ui-glass-strong);
+  color: var(--ui-text-primary);
+  font-size: 0.75rem;
+  font-weight: 400;
+  border-radius: 6px;
+  padding: 4px 8px;
+  box-shadow: var(--elev-float);
+  backdrop-filter: blur(20px) saturate(1.6);
+  -webkit-backdrop-filter: blur(20px) saturate(1.6);
+}
+
+.tooltip-bubble [data-slot='tooltip-arrow'] {
+  display: none;
+}

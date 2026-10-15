@@ -158,7 +158,7 @@ function CommandItem({ className, ...props }: React.ComponentProps<typeof Comman
         variant === 'menu'
           ? cn(
               menuItemClass,
-              'cursor-pointer data-[selected=true]:bg-(--ui-control-active-background) data-[selected=true]:text-foreground'
+              'cursor-pointer data-[selected=true]:bg-(--dt-primary) data-[selected=true]:text-(--ui-on-accent) data-[selected=true]:[&_*]:text-(--ui-on-accent)'
             )
           : 'relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground',
         'data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50',

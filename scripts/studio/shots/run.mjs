@@ -266,6 +266,25 @@ const SHOTS = {
     await page.keyboard.press('Escape')
     await sleep(400)
   },
+  async appearance(page) {
+    await page.keyboard.press('Meta+Comma')
+    await sleep(1200)
+    await page.getByText('外观', { exact: true }).first().click()
+    await sleep(900)
+    await shot(page, 'appearance')
+    await page.keyboard.press('Escape')
+    await sleep(500)
+  },
+  async dialog(page) {
+    const row = page.getByText('无障碍').first()
+    await row.click({ button: 'right' })
+    await sleep(500)
+    await page.getByText('重命名', { exact: false }).first().click()
+    await sleep(900)
+    await shot(page, 'dialog')
+    await page.keyboard.press('Escape')
+    await sleep(500)
+  },
   async settings(page) {
     await page.keyboard.press('Meta+Comma')
     await sleep(1200)

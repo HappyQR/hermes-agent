@@ -6,11 +6,12 @@ import { cn } from '@/lib/utils'
 
 const COMPACT_KEY = /^[\p{L}\p{N}⌘⌥⇧⌃↵⇥⌫↑↓←→@/?]$/u
 
+// Hermes Studio: the flat macOS key cap (.kbd.box) — fill, 0.5px ring, no lift.
 const kbdSurface = [
-  'border-[color-mix(in_srgb,var(--ui-stroke-secondary)_75%,transparent)]',
-  'bg-[color-mix(in_srgb,var(--ui-bg-elevated)_94%,var(--dt-foreground)_6%)]',
-  'text-[color-mix(in_srgb,var(--dt-foreground)_58%,transparent)]',
-  'shadow-[0_1px_0_0_color-mix(in_srgb,var(--ui-stroke-tertiary)_85%,transparent),0_1px_2px_0_color-mix(in_srgb,var(--dt-foreground)_7%,transparent)]'
+  'border-transparent',
+  'bg-(--ui-fill-2)',
+  'text-(--ui-text-secondary)',
+  'shadow-[inset_0_0_0_0.5px_var(--ui-line-2)]'
 ]
 
 const kbdVariants = cva(

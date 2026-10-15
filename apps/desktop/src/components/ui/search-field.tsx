@@ -25,6 +25,12 @@ interface SearchFieldProps {
   inputRef?: RefObject<HTMLInputElement | null>
   trailingAction?: ReactNode
   'aria-label'?: string
+  /**
+   * `bare` (default): borderless, recedes until used — inline toolbars.
+   * `filled`: the macOS search field (fill, 8px corners, focus halo) — sidebar,
+   * settings and inspector filters.
+   */
+  variant?: 'bare' | 'filled'
 }
 
 /**
@@ -45,7 +51,8 @@ export function SearchField({
   onKeyDown,
   inputRef,
   trailingAction,
-  'aria-label': ariaLabel
+  'aria-label': ariaLabel,
+  variant = 'bare'
 }: SearchFieldProps) {
   const { t } = useI18n()
   const clear = onClear ?? (() => onChange(''))
@@ -63,8 +70,11 @@ export function SearchField({
         // container's flex min-width and the field bulldozes its siblings
         // instead of shrinking to fit its context.
         'inline-flex min-w-0 max-w-full items-center gap-1.5 border-b border-transparent px-0.5 transition-[color,border-color,opacity]',
-        // Recede until the user reaches for it.
-        !value && 'opacity-30 focus-within:opacity-100',
+        variant === 'filled' &&
+          'h-7 rounded-[8px] border-b-0 bg-(--ui-fill-2) px-2 transition-[background-color,box-shadow] duration-[120ms] focus-within:bg-(--ui-bg-editor) focus-within:shadow-[0_0_0_0.5px_color-mix(in_srgb,var(--dt-primary)_60%,transparent),0_0_0_3px_color-mix(in_srgb,var(--dt-primary)_25%,transparent)]',
+        // Recede until the user reaches for it (bare only — a filled field is
+        // already quiet).
+        !value && variant === 'bare' && 'opacity-30 focus-within:opacity-100',
         containerClassName
       )}
     >
@@ -80,6 +90,7 @@ export function SearchField({
           // text (#119204). Long queries scroll inside the field.
           // text-xs matches the form controls (Input/Select via controlVariants).
           'h-7 min-w-0 max-w-full flex-1 bg-transparent text-xs text-foreground [field-sizing:content] placeholder:text-muted-foreground focus:outline-none',
+          variant === 'filled' && 'h-6 text-[0.8125rem] placeholder:text-(--ui-text-tertiary)',
           inputClassName
         )}
         onChange={event => onChange(event.target.value)}

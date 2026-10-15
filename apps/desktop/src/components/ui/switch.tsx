@@ -4,13 +4,15 @@ import * as React from 'react'
 
 import { cn } from '@/lib/utils'
 
+// Hermes Studio: the macOS switch — a fill track that turns accent when on and
+// a white knob that springs across (and stretches while pressed).
 const switchVariants = cva(
-  'peer inline-flex shrink-0 items-center rounded-full border border-[color-mix(in_srgb,var(--dt-foreground)_18%,transparent)] bg-[color-mix(in_srgb,var(--dt-background)_58%,var(--dt-input))] shadow-[inset_0_0_0_0.0625rem_color-mix(in_srgb,var(--dt-foreground)_8%,transparent)] transition-colors outline-none focus-visible:border-ring focus-visible:ring-[0.1875rem] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:border-transparent data-[state=checked]:bg-primary disabled:data-[state=checked]:bg-(--ui-text-tertiary)',
+  'group peer inline-flex shrink-0 items-center rounded-full border-0 bg-(--ui-fill) p-0.5 shadow-[inset_0_0_0_0.5px_var(--ui-line)] transition-colors duration-[220ms] ease-[cubic-bezier(0.32,0.72,0,1)] outline-none disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:shadow-none disabled:data-[state=checked]:bg-(--ui-text-tertiary)',
   {
     variants: {
       size: {
-        default: 'h-5 w-9',
-        xs: 'h-4 w-7'
+        default: 'h-[22px] w-[38px]',
+        xs: 'h-[18px] w-[30px]'
       }
     },
     defaultVariants: {
@@ -20,12 +22,13 @@ const switchVariants = cva(
 )
 
 const switchThumbVariants = cva(
-  'pointer-events-none block rounded-full bg-foreground shadow-[0_0.0625rem_0.1875rem_color-mix(in_srgb,var(--dt-background)_50%,transparent)] ring-0 transition-transform data-[state=unchecked]:translate-x-0 data-[state=checked]:bg-background',
+  'pointer-events-none block rounded-full bg-white shadow-[0_1px_3px_rgb(0_0_0/0.22),0_0_0_0.5px_rgb(0_0_0/0.06)] ring-0 transition-[transform,width] duration-[220ms] ease-[cubic-bezier(0.34,1.32,0.64,1)] data-[state=unchecked]:translate-x-0',
   {
     variants: {
       size: {
-        default: 'size-4 data-[state=checked]:translate-x-4',
-        xs: 'size-3 data-[state=checked]:translate-x-3.5'
+        default:
+          'h-[18px] w-[18px] group-active:w-[21px] data-[state=checked]:translate-x-4 group-active:data-[state=checked]:translate-x-[13px]',
+        xs: 'h-[14px] w-[14px] group-active:w-[17px] data-[state=checked]:translate-x-3 group-active:data-[state=checked]:translate-x-[9px]'
       }
     },
     defaultVariants: {

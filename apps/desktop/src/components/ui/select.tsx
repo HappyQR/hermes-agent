@@ -34,8 +34,20 @@ function SelectTrigger({
       {...props}
     >
       {children}
+      {/* The macOS popup button's stacked up/down chevrons. */}
       <SelectPrimitive.Icon asChild>
-        <Codicon className="opacity-60" name="chevron-down" size="1rem" />
+        <svg
+          aria-hidden
+          className="size-3 shrink-0 text-(--ui-text-tertiary)"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={1.6}
+          viewBox="0 0 12 12"
+        >
+          <path d="M3.5 4.75 6 2.25l2.5 2.5M3.5 7.25 6 9.75l2.5-2.5" />
+        </svg>
       </SelectPrimitive.Icon>
     </SelectPrimitive.Trigger>
   )
@@ -102,13 +114,14 @@ function SelectItem({ className, children, ...props }: React.ComponentProps<type
       className={cn(
         menuItemClass,
         menuItemFocusClass,
-        'w-full cursor-pointer pr-7 data-disabled:pointer-events-none data-disabled:cursor-default data-disabled:opacity-50',
+        'w-full cursor-pointer pr-2 pl-6 data-disabled:pointer-events-none data-disabled:cursor-default data-disabled:opacity-50',
         className
       )}
       data-slot="select-item"
       {...props}
     >
-      <span className="absolute right-2 flex size-3.5 items-center justify-center text-foreground">
+      {/* macOS menus mark the current choice on the left. */}
+      <span className="absolute left-1.5 flex size-3.5 items-center justify-center">
         <SelectPrimitive.ItemIndicator>
           <Codicon name="check" size="0.75rem" />
         </SelectPrimitive.ItemIndicator>
@@ -121,7 +134,7 @@ function SelectItem({ className, children, ...props }: React.ComponentProps<type
 function SelectSeparator({ className, ...props }: React.ComponentProps<typeof SelectPrimitive.Separator>) {
   return (
     <SelectPrimitive.Separator
-      className={cn('-mx-1 my-1 h-px bg-(--ui-stroke-tertiary)', className)}
+      className={cn('mx-2 my-[5px] h-[0.5px] bg-(--ui-line-2)', className)}
       data-slot="select-separator"
       {...props}
     />

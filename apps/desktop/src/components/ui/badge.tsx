@@ -4,26 +4,30 @@ import type * as React from 'react'
 
 import { cn } from '@/lib/utils'
 
-// Small status/metadata tag. App radius (not a full pill); tones map to the
-// shared accent/muted/destructive surfaces so badges read consistently.
+// Small status/metadata tag (the prototype's .tag): 6px corners, tones from the
+// shared accent/fill/system-colour tokens so badges read consistently.
 const badgeVariants = cva(
-  'inline-flex w-fit shrink-0 items-center gap-1 rounded-[3px] font-medium leading-none whitespace-nowrap [&_svg]:pointer-events-none',
+  'inline-flex w-fit shrink-0 items-center gap-1 rounded-[6px] font-medium leading-none whitespace-nowrap [&_svg]:pointer-events-none',
   {
     variants: {
       variant: {
-        default: 'bg-primary/10 text-primary',
-        muted: 'bg-muted text-muted-foreground',
-        success: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-300',
-        warn: 'bg-amber-500/10 text-amber-600 dark:text-amber-300',
-        destructive: 'bg-destructive/10 text-destructive',
-        outline: 'border border-(--ui-stroke-secondary) text-muted-foreground',
+        default: 'bg-(--ui-accent-soft) text-(--ui-accent-text)',
+        muted: 'bg-(--ui-fill-2) text-(--ui-text-secondary)',
+        success:
+          'bg-[color-mix(in_srgb,var(--ui-dot-green,var(--ui-green))_15%,transparent)] text-(--ui-green)',
+        warn: 'bg-[color-mix(in_srgb,var(--ui-dot-orange,var(--ui-orange))_15%,transparent)] text-(--ui-orange)',
+        destructive:
+          'bg-[color-mix(in_srgb,var(--ui-dot-red,var(--dt-destructive))_13%,transparent)] text-(--ui-red)',
+        outline: 'shadow-[inset_0_0_0_0.5px_var(--ui-line-2)] text-(--ui-text-secondary)',
         // Solid fill — icon-corner counts (titlebar unread, etc.).
         solid: 'bg-primary text-primary-foreground'
       },
       size: {
-        default: 'px-1.5 py-0.5 text-[0.65rem] [&_svg]:size-3',
-        xs: 'px-1 py-px text-[0.6rem] [&_svg]:size-2.5',
-        overlay: 'h-2 min-w-2 justify-center rounded-[2px] px-px text-[7px] font-semibold tabular-nums'
+        default: 'h-5 px-[7px] text-[0.71875rem] [&_svg]:size-3',
+        xs: 'h-4 rounded-[5px] px-1.5 text-[0.65rem] [&_svg]:size-2.5',
+        // The macOS count badge: a small accent pill over an icon corner.
+        overlay:
+          'h-[15px] min-w-[15px] justify-center rounded-full px-1 text-[0.625rem] font-bold tabular-nums shadow-[0_0_0_2px_var(--ui-bg-chrome)]'
       }
     },
     defaultVariants: { variant: 'default', size: 'default' }
