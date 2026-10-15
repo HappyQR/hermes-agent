@@ -29,9 +29,11 @@ describe('build stamp → update ownership', () => {
     ['darwin', 'store', 'microsoft-store', 'microsoft-store'],
     ['linux', 'bundled', 'external', 'external'],
     ['linux', 'light', 'external', 'external'],
-    ['win32', '', 'self', 'windows-handoff'],
-    ['darwin', '', 'self', 'posix-handoff'],
-    ['linux', '', 'self', 'posix-handoff']
+    // Hermes Studio: the default build is updated by scripts/studio/studio.sh,
+    // never by the in-app checkout handoff (which would install stock Hermes).
+    ['win32', '', 'external', 'external'],
+    ['darwin', '', 'external', 'external'],
+    ['linux', '', 'external', 'external']
   ] as const)('%s %s dispatches its declared owner without a Store flag', (platform, variant, declared, strategy) => {
     const stamp: ReturnType<typeof buildStampPayload> = buildStampPayload(
       provenance,

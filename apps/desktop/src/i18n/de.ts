@@ -12,12 +12,14 @@ import { deNotices } from './de_notices'
 import { deOnboarding } from './de_onboarding'
 import { deProjects } from './de_projects'
 import { deSharedMetrics } from './de_shared_metrics'
+import { deStudio } from './de_studio'
 import { deThemePicker } from './de_theme_picker'
 import { deUpdateChannel } from './de_update_channel'
 import { defineLocale, type TranslationOverrides } from './define-locale'
 import { introDe } from './intro-de'
 
 export const deOverrides = {
+  studio: deStudio,
   sharedMetrics: deSharedMetrics,
   firstRun: deFirstRun,
   intro: introDe,

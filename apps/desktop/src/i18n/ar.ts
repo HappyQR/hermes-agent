@@ -10,9 +10,11 @@ import { arConnectors } from './ar_connectors'
 import { arDiagnostics } from './ar_diagnostics'
 import { arFirstRun } from './ar_first_run'
 import { arSettings } from './ar_settings'
+import { arStudio } from './ar_studio'
 import { defineLocale, type TranslationOverrides } from './define-locale'
 
 export const arOverrides = {
+  studio: arStudio,
   connectors: {
     directory: {
       suggested: 'مقترحة',

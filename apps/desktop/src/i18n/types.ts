@@ -21,6 +21,7 @@ import type { NoticeTranslations } from './types_notices'
 import type { OnboardingTranslations } from './types_onboarding'
 import type { SidebarProjectsTranslations } from './types_projects'
 import type { SharedMetricsTranslations } from './types_shared_metrics'
+import type { StudioTranslations } from './types_studio'
 import type { ThemePickerCopy } from './types_theme_picker'
 import type { UninstallSectionTranslations } from './types_uninstall_section'
 import type { UpdateChannelCopy } from './types_update_channel'
@@ -78,6 +79,8 @@ interface ModeOptionCopy {
 }
 
 export interface Translations extends NoticeTranslations {
+  /** Hermes Studio redesign copy (fork-owned, see i18n/*_studio_*.ts). */
+  studio: StudioTranslations
   /** Shared-metrics consent: first-run dialog + Settings › Safety toggles. */
   sharedMetrics: SharedMetricsTranslations
   appTour: AppTourTranslations

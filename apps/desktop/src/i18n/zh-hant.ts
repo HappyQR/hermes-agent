@@ -12,8 +12,10 @@ import { zhHantConnectors } from './zh-hant_connectors'
 import { zhHantDiagnostics } from './zh-hant_diagnostics'
 import { zhHantFirstRun } from './zh-hant_first_run'
 import { zhHantSettings } from './zh-hant_settings'
+import { zhHantStudio } from './zh-hant_studio'
 
 export const zhHantOverrides = {
+  studio: zhHantStudio,
   connectors: {
     directory: {
       suggested: '推薦',

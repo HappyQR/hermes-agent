@@ -1,6 +1,6 @@
 import './styles.css'
 // Hermes Studio design layer — must load after styles.css (overrides its tokens).
-import './studio.css'
+import './studio/index.css'
 // Side-effect: reports in-flight turns to the main process for the quit guard.
 import './store/active-work'
 // Side-effect: mirrors the machine's AC/battery state for poll demotion.

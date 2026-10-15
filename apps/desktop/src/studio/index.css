@@ -1,0 +1,10 @@
+/* Hermes Studio design layer — loaded right after styles.css (see main.tsx).
+   foundation.css holds the tokens, palette, primitive surfaces and motion;
+   each redesign area owns one file so parallel work never collides. */
+@import './foundation.css';
+@import './shell.css';
+@import './sidebar.css';
+@import './chat.css';
+@import './pages.css';
+@import './settings.css';
+@import './overlays.css';

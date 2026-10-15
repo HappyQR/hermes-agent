@@ -1,7 +1,7 @@
 /* ──────────────────────────────────────────────────────────────────────────
    Hermes Studio — the macOS design layer.
 
-   Imported right after styles.css. Declarations here are unlayered, so they
+   Loaded right after styles.css (studio/index.css). Declarations here are unlayered, so they
    win over the `@layer base` tokens in styles.css without editing those rules
    (keeps upstream merges clean). Three parts:
      1. Foundation tokens (every theme): shape, motion, type, semantic aliases.

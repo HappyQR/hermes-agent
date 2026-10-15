@@ -7,6 +7,9 @@
 //   node scripts/studio/shots/run.mjs --only chat,new   capture a subset
 //   node scripts/studio/shots/run.mjs --dump            also write the DOM's labelled controls
 //
+// Parallel runs: --port <n> (mock model port, default 18642), --shots <file.mjs>
+// (extra shots: `export default { name: async (page, api) => {} }`, may repeat),
+// --installs-from <hermes-home> (reuse that home's prepared PM environment).
 // Options: --sandbox <dir> (default $TMPDIR/hermes-studio-shots), --out <dir>,
 // --scheme light|dark, --size 1440x900, --hermes <launcher> (backend command,
 // default this checkout's .hermes/bin/hermes from `source ./activate`), --hold <seconds>.
@@ -27,7 +30,6 @@ import { scenarios, seedProject, SEND_ORDER } from './scenarios.mjs'
 const HERE = path.dirname(fileURLToPath(import.meta.url))
 const REPO = path.resolve(HERE, '../../..')
 const DESKTOP = path.join(REPO, 'apps/desktop')
-const MOCK_PORT = 18642
 
 const args = process.argv.slice(2)
 const flag = name => args.includes(`--${name}`)
@@ -36,6 +38,7 @@ const opt = (name, fallback) => {
   return i >= 0 && args[i + 1] ? args[i + 1] : fallback
 }
 
+const MOCK_PORT = Number(opt('port', '18642'))
 const sandbox = path.resolve(opt('sandbox', path.join(os.tmpdir(), 'hermes-studio-shots')))
 const outDir = path.resolve(opt('out', path.join(sandbox, 'shots')))
 const scheme = opt('scheme', 'light')
@@ -76,10 +79,12 @@ function prepareSandbox(mockUrl) {
   // new HERMES_HOME takes minutes, and it does not depend on the seeded data.
   const installs = path.join(hermesHome, 'installs')
   const parked = path.join(path.dirname(sandbox), `.${path.basename(sandbox)}-installs`)
-  if (fs.existsSync(installs)) fs.renameSync(installs, parked)
+  const shared = opt('installs-from', '')
+  if (fs.existsSync(installs) && !fs.lstatSync(installs).isSymbolicLink()) fs.renameSync(installs, parked)
   fs.rmSync(sandbox, { recursive: true, force: true })
   fs.mkdirSync(hermesHome, { recursive: true })
-  if (fs.existsSync(parked)) fs.renameSync(parked, installs)
+  if (shared) fs.symlinkSync(path.resolve(shared, 'installs'), installs)
+  else if (fs.existsSync(parked)) fs.renameSync(parked, installs)
   fs.mkdirSync(userData, { recursive: true })
   seedProject(project)
   const config = [
@@ -359,11 +364,16 @@ async function main() {
     }
   }
 
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] !== '--shots' || !args[i + 1]) continue
+    const extra = await import(path.resolve(args[i + 1]))
+    Object.assign(SHOTS, extra.default ?? extra.shots ?? {})
+  }
   if (flag('dump')) await dumpControls(page, 'controls')
   const names = only.length ? only : Object.keys(SHOTS)
   for (const name of names) {
     try {
-      await SHOTS[name](page)
+      await SHOTS[name](page, { shot, sleep, openSession, newChat, send, composer })
     } catch (error) {
       console.log(`  ✗ ${name}: ${error.message.split('\n')[0]}`)
     }

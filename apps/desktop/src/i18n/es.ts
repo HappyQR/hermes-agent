@@ -13,11 +13,13 @@ import { esNotices } from './es_notices'
 import { esOnboarding } from './es_onboarding'
 import { esProjects } from './es_projects'
 import { esSharedMetrics } from './es_shared_metrics'
+import { esStudio } from './es_studio'
 import { esThemePicker } from './es_theme_picker'
 import { esUpdateChannel } from './es_update_channel'
 import { introEs } from './intro-es'
 
 export const esOverrides = {
+  studio: esStudio,
   sharedMetrics: esSharedMetrics,
   firstRun: esFirstRun,
   intro: introEs,

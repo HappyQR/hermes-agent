@@ -80,5 +80,6 @@ export const studioTheme: DesktopTheme = {
     userBubble: '#2c2c30',
     userBubbleBorder: '#2c2c30'
   },
-  typography: { fontSans: STUDIO_SANS, fontMono: STUDIO_MONO }
+  // fontUrl: undefined — the merge base is nous, whose Google Fonts sheet Studio must not load.
+  typography: { fontSans: STUDIO_SANS, fontMono: STUDIO_MONO, fontUrl: undefined }
 }

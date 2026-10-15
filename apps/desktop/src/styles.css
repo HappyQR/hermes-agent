@@ -175,21 +175,14 @@
   --shadow-sm:
     0 0 0 0.0625rem color-mix(in srgb, var(--dt-foreground) 6%, transparent),
     0 0.125rem 0.5rem color-mix(in srgb, #000 4%, transparent);
-  /* Hermes Studio: macOS popover shadow (0.5px hairline + soft drop). */
-  --shadow-md:
-    0 0 0 0.03125rem color-mix(in srgb, var(--dt-foreground) 12%, transparent),
-    0 1rem 2.5rem -0.625rem color-mix(in srgb, #000 24%, transparent),
-    0 0.25rem 0.75rem -0.25rem color-mix(in srgb, #000 12%, transparent);
+  /* Hermes Studio: per-mode elevation from studio.css (--elev-* switch with .dark). */
+  --shadow-md: var(--elev-pop), var(--hairline-hi);
   /* Soft floating shadow for borderless modals/overlays. Single top light
      source: every layer is centered (x=0) and cast downward, with negative
      spread that grows with the blur so each layer is pulled horizontally inward
      — the shadow pools below the panel instead of bleeding out every side.
      Layered (contact → ambient) for a smooth, natural falloff. */
-  /* Hermes Studio: macOS window/sheet shadow (pairs with --stroke-nous). */
-  --shadow-nous:
-    0 0.25rem 0.75rem -0.25rem color-mix(in srgb, #000 12%, transparent),
-    0 1rem 2.5rem -0.625rem color-mix(in srgb, #000 24%, transparent),
-    0 1.875rem 5rem -0.875rem color-mix(in srgb, #000 22%, transparent);
+  --shadow-nous: var(--elev-pop), var(--hairline-hi);
   /* Hairline border paired with --shadow-nous on borderless overlays.
      currentColor resolves per-element, so it adapts to text color/theme. */
   --stroke-nous: color-mix(in srgb, currentColor 3%, transparent);
