@@ -7,9 +7,11 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { registry } from '@/contrib/registry'
 import type { SessionInfo } from '@/hermes'
+import type * as StudioSidebarCopy from '@/i18n/en_studio_sidebar'
 import { createClientSessionState } from '@/lib/chat-runtime'
 import type * as ChatRuntime from '@/lib/chat-runtime'
 import { SESSION_ROW_AREAS, type SessionRowSlotProps } from '@/lib/session-row-slots'
+import type * as SessionSource from '@/lib/session-source'
 import type * as Time from '@/lib/time'
 import type * as ComposerStatusStore from '@/store/composer-status'
 import type * as SessionStore from '@/store/session'
@@ -22,9 +24,16 @@ import { SidebarSessionRow } from './session-row'
 
 afterEach(cleanup)
 
-vi.mock('@/i18n', () => ({
+vi.mock('@/i18n', async () => {
+  const { enStudioSidebar } = await vi.importActual<typeof StudioSidebarCopy>(
+    '@/i18n/en_studio_sidebar'
+  )
+
+  return {
   useI18n: () => ({
+    locale: 'en',
     t: {
+      studio: { sidebar: enStudioSidebar },
       sidebar: {
         messageCount: (count: number) => `${count} messages`,
         toolCallCount: (count: number) => `${count} tool calls`,
@@ -54,7 +63,8 @@ vi.mock('@/i18n', () => ({
       }
     }
   })
-}))
+  }
+})
 
 vi.mock('@/app/chat/profile-tag', () => ({ ProfileTag: () => null }))
 vi.mock('@/app/chat/session-drag', () => ({ startSessionDrag: vi.fn() }))
@@ -75,7 +85,8 @@ vi.mock('@/lib/chat-runtime', async importOriginal => {
   return { ...actual, sessionTitle: (s: SessionInfo) => sessionTitle(s) }
 })
 vi.mock('@/lib/haptics', () => ({ triggerHaptic: vi.fn() }))
-vi.mock('@/lib/session-source', () => ({
+vi.mock('@/lib/session-source', async importOriginal => ({
+  ...(await importOriginal<typeof SessionSource>()),
   handoffOriginSource: (state?: string, platform?: string) => (state && platform ? platform : null),
   sessionSourceLabel: (source: string) => source
 }))
@@ -180,26 +191,28 @@ const renderRow = (session: SessionInfo, extra?: { card?: boolean }) =>
 // The row no longer takes its running state as a prop, so this drives the real
 // store the way the app does. $workingSessionIds is the actual computed here
 // (the mock above only overrides its siblings), which is what makes this cover
-// the wiring rather than the predicate — the arc has gone missing before.
-describe('SidebarSessionRow running arc', () => {
+// the wiring rather than the predicate — the running mark has gone missing before.
+describe('SidebarSessionRow running ring', () => {
   afterEach(() => {
     clearAllSessionStates()
   })
 
-  const arc = (container: HTMLElement) => container.querySelector('.arc-row')
+  const ring = (container: HTMLElement) => container.querySelector('.studio-ring-run')
 
-  it('paints no arc for a settled session', () => {
+  it('paints no ring for a settled session, and no row arc at all', () => {
     const { container } = renderRow(makeSession({ title: 'Settled' }))
 
-    expect(arc(container)).toBeNull()
+    expect(ring(container)).toBeNull()
+    expect(container.querySelector('.arc-row')).toBeNull()
   })
 
-  it('paints the arc while the session is running', () => {
+  it('leads with the spinning ring while the session is running', () => {
     publishSessionState('rt1', { ...createClientSessionState('s1'), busy: true })
 
     const { container } = renderRow(makeSession({ title: 'Running' }))
 
-    expect(arc(container)).toBeTruthy()
+    expect(ring(container)).toBeTruthy()
+    expect(container.querySelector('[data-status-lead="working"]')?.getAttribute('aria-label')).toBe('Running')
   })
 })
 

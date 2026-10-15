@@ -12,10 +12,11 @@ import { sessionBucketLabel } from '@/lib/time'
 import { cn } from '@/lib/utils'
 import { sessionPinId } from '@/store/session'
 import { $sessionListDensity } from '@/store/session-list-density'
+import { $sidebarPreviewLine } from '@/store/sidebar-studio'
 
 import { SidebarDateDivider } from './chrome'
 import { SidebarSessionRow } from './session-row'
-import { SESSION_CARD_ROW_ESTIMATE_PX, sessionRowEstimate } from './session-row-details'
+import { SESSION_CARD_ROW_ESTIMATE_PX, SESSION_PREVIEW_LINE_PX, sessionRowEstimate } from './session-row-details'
 
 interface SessionRowCommonProps {
   branchStem?: string
@@ -132,6 +133,7 @@ export const VirtualSessionList: FC<VirtualSessionListProps> = ({
   const dividerLabels = t.sidebar.dateDivider
   const scrollerRef = useRef<HTMLDivElement | null>(null)
   const density = useStore($sessionListDensity)
+  const previewLine = useStore($sidebarPreviewLine)
   const scrollMargin = useScrollMargin(scrollerRef, scrollElement)
 
   const virtualizer = useVirtualizer({
@@ -143,7 +145,9 @@ export const VirtualSessionList: FC<VirtualSessionListProps> = ({
         return DIVIDER_ESTIMATE_PX
       }
 
-      return card ? SESSION_CARD_ROW_ESTIMATE_PX : sessionRowEstimate(density)
+      return card
+        ? SESSION_CARD_ROW_ESTIMATE_PX
+        : sessionRowEstimate(density) + (previewLine ? SESSION_PREVIEW_LINE_PX : 0)
     },
     getItemKey: index => {
       const row = listRows[index]
@@ -160,7 +164,7 @@ export const VirtualSessionList: FC<VirtualSessionListProps> = ({
   // Rows are measured after paint, so changing density OR toggling Inbox
   // cards must invalidate cached measurements from the previous mode before
   // off-screen rows re-enter (#88473).
-  useEffect(() => virtualizer.measure(), [card, density, virtualizer])
+  useEffect(() => virtualizer.measure(), [card, density, previewLine, virtualizer])
 
   const virtualItems = virtualizer.getVirtualItems()
   const totalSize = virtualizer.getTotalSize()
