@@ -4,11 +4,6 @@ import type { StudioSidebarTranslations } from './types_studio_sidebar'
 export const zhStudioSidebar: StudioSidebarTranslations = {
   search: '搜索',
   searchAria: '搜索会话、页面与命令',
-  palette: {
-    placeholder: '搜索全部会话…',
-    recent: '最近',
-    searching: '正在搜索…'
-  },
   nav: {
     label: '页面',
     automations: '自动化',

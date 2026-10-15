@@ -4,15 +4,19 @@ import { useKeybindHint } from '@/lib/keybinds/use-keybind-hint'
 import { recordAction } from '@/store/desktop-metrics'
 import { openSessionSearch } from '@/store/sidebar-studio'
 
+import { usePaletteSessionSource } from './palette-session-source'
+
 /**
  * The sidebar's search affordance (prototype `.sb-search`): not a field but a
- * door into ⌘K's Sessions scope, which runs the server's full-text search over
- * every session. ⇧⌘F opens the same scope.
+ * door into ⌘K's Sessions & Projects scope, where the sidebar answers with the
+ * server's full-text search over every session. ⇧⌘F opens the same scope.
  */
 export function SidebarSearchButton() {
   const { t } = useI18n()
   const copy = t.studio.sidebar
   const hint = useKeybindHint('nav.commandPalette')
+
+  usePaletteSessionSource()
 
   return (
     <button

@@ -4,11 +4,6 @@ import type { StudioSidebarTranslations } from './types_studio_sidebar'
 export const zhHantStudioSidebar: StudioSidebarTranslations = {
   search: '搜尋',
   searchAria: '搜尋工作階段、頁面與指令',
-  palette: {
-    placeholder: '搜尋所有工作階段…',
-    recent: '最近',
-    searching: '正在搜尋…'
-  },
   nav: {
     label: '頁面',
     automations: '自動化',

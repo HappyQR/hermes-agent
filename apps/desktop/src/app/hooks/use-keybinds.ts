@@ -98,6 +98,7 @@ import {
 } from '../chat/composer/focus'
 import { handleComposerFocusChord } from '../chat/composer/focus-chord'
 import { handleWindowPaste } from '../chat/composer/paste-to-focus'
+import { toggleKeybindsSheet } from '../keybinds-sheet/store'
 import { openSession } from '../open-session'
 import {
   $workspaceIsPage,
@@ -273,7 +274,7 @@ export function useKeybinds(deps: KeybindRuntimeDeps): void {
   }
 
   handlersRef.current = {
-    'keybinds.openPanel': () => navigate(`${SETTINGS_ROUTE}?tab=keybinds`),
+    'keybinds.openPanel': () => toggleKeybindsSheet(),
 
     'composer.focus': () => requestComposerFocus('active'),
     // Toggle the composer pill's live model dropdown (pane under the pointer,

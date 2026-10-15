@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 
 import { ErrorBoundary } from '@/components/error-boundary'
+import { I18nProvider } from '@/i18n'
 import { ThemeProvider } from '@/themes/context'
 
 import { QuickEntryApp } from './quick-entry-app'
@@ -14,6 +15,10 @@ import { QuickEntryApp } from './quick-entry-app'
  * The index.html boot script paints an OPAQUE themed background to avoid a flash
  * in normal windows; this window is a floating card on a transparent backdrop,
  * so force the host layers see-through (same trick as the pet overlay).
+ *
+ * The copy follows `display.language` like the main window: the provider reads
+ * it over the shell's API bridge (main routes it to the primary backend), and
+ * falls back to the OS language, then English, while that is unavailable.
  */
 export function mountQuickEntry(): void {
   const style = document.createElement('style')
@@ -29,9 +34,11 @@ export function mountQuickEntry(): void {
   createRoot(root).render(
     <StrictMode>
       <ErrorBoundary label="quick-entry">
-        <ThemeProvider>
-          <QuickEntryApp />
-        </ThemeProvider>
+        <I18nProvider>
+          <ThemeProvider>
+            <QuickEntryApp />
+          </ThemeProvider>
+        </I18nProvider>
       </ErrorBoundary>
     </StrictMode>
   )

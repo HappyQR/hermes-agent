@@ -1,18 +1,13 @@
 import type { ReactNode } from 'react'
 import { useEffect, useRef, useState } from 'react'
 
+import { BrandMark } from '@/components/brand-mark'
 import { ActionStatus } from '@/components/ui/action-status'
 import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle
-} from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useI18n } from '@/i18n'
 import { AlertTriangle } from '@/lib/icons'
+import { cn } from '@/lib/utils'
 
 interface ConfirmDialogProps {
   open: boolean
@@ -29,8 +24,8 @@ interface ConfirmDialogProps {
   destructive?: boolean
   /** Close as soon as onConfirm resolves — for optimistic actions that finish in the background. */
   dismissOnConfirm?: boolean
-  /** A third, non-destructive way out, shown between Cancel and Confirm (e.g.
-   *  "Remove from sidebar" beside "Delete worktree"). Closes on click. */
+  /** A third, non-destructive way out, shown full width above Cancel and
+   *  Confirm (e.g. "Remove from sidebar" beside "Delete worktree"). Closes on click. */
   secondaryAction?: ConfirmSecondaryAction
 }
 
@@ -130,6 +125,8 @@ export function ConfirmDialog({
   return (
     <Dialog onOpenChange={value => !value && !busy && onClose()} open={open}>
       <DialogContent
+        blurBackdrop={false}
+        bodyClassName="gap-2.5 px-5 pb-5 pt-6"
         className="max-w-md"
         onKeyDown={event => {
           // Enter/Space confirm regardless of which button holds focus
@@ -147,43 +144,55 @@ export function ConfirmDialog({
           event.preventDefault()
           confirmRef.current?.focus()
         }}
+        overlayClassName="bg-(--ui-scrim)"
+        showCloseButton={false}
       >
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
+        {/* The macOS alert sheet: brand mark, title and message centered. */}
+        <DialogHeader className="items-center gap-2.5 text-center sm:text-center">
+          <BrandMark className="size-12" />
+          <DialogTitle className="mt-1 text-[0.9375rem] font-[650]">{title}</DialogTitle>
           {/* pre-line: a backend-composed description keeps its paragraph
               breaks instead of collapsing into one run-on line (#112458). */}
-          {description ? <DialogDescription className="whitespace-pre-line">{description}</DialogDescription> : null}
+          {description ? (
+            <DialogDescription className="max-w-[40ch] text-[0.8125rem] leading-normal whitespace-pre-line">
+              {description}
+            </DialogDescription>
+          ) : null}
         </DialogHeader>
 
         {children}
         {error && (
-          <div className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+          <div className="flex items-start gap-2 rounded-[0.625rem] bg-destructive/10 px-3 py-2 text-xs text-destructive">
             <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
             <span>{error}</span>
           </div>
         )}
 
-        <DialogFooter>
-          <Button disabled={busy} onClick={onClose} type="button" variant="ghost">
+        {secondaryAction && (
+          <Button
+            className="mt-1 w-full"
+            disabled={busy}
+            onClick={() => {
+              secondaryAction.onClick()
+              onClose()
+            }}
+            type="button"
+            variant="ghost"
+          >
+            {secondaryAction.label}
+          </Button>
+        )}
+
+        <div className={cn('flex gap-2', secondaryAction ? 'mt-0' : 'mt-2')}>
+          <Button className="flex-1" disabled={busy} onClick={onClose} size="lg" type="button" variant="secondary">
             {resolvedCancelLabel}
           </Button>
-          {secondaryAction && (
-            <Button
-              disabled={busy}
-              onClick={() => {
-                secondaryAction.onClick()
-                onClose()
-              }}
-              type="button"
-              variant="secondary"
-            >
-              {secondaryAction.label}
-            </Button>
-          )}
           <Button
+            className="flex-1"
             disabled={busy}
             onClick={() => void run()}
             ref={confirmRef}
+            size="lg"
             variant={destructive ? 'destructive' : 'default'}
           >
             <ActionStatus
@@ -193,7 +202,7 @@ export function ConfirmDialog({
               state={status}
             />
           </Button>
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   )

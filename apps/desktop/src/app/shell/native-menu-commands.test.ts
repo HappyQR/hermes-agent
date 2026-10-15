@@ -31,6 +31,7 @@ function buildWithLiveAvailability() {
       session: { archived: false, busy: true, pinned: false, renameable: true },
       showAllProfiles: false,
       sidebarOpen: true,
+    split: false,
       statusbarVisible: true,
       tabBar: 'auto',
       themeMode: 'light'

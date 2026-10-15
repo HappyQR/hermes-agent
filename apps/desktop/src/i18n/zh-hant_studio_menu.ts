@@ -61,6 +61,8 @@ export const zhHantStudioMenu: StudioMenuTranslations = {
     terminal: '終端機',
     agents: '代理',
     layout: '版面配置',
+    singlePane: '單欄',
+    splitSideBySide: '左右分割畫面',
     swapSidebar: '交換側邊欄位置',
     editLayout: '編輯版面配置…',
     resetLayout: '重設版面配置',

@@ -12,6 +12,7 @@ import { BarChart3, CreditCard, ExternalLink, Package, Wrench } from '@/lib/icon
 import { cn } from '@/lib/utils'
 
 import { useRouteEnumParam } from '../../hooks/use-route-enum-param'
+import { FormSection } from '../../overlays/studio/form-group'
 import {
   ListRow,
   ListRowSkeleton,
@@ -20,6 +21,7 @@ import {
   SettingsContent,
   SettingsSection
 } from '../primitives'
+import { useSettingsWindow } from '../studio/window-context'
 
 import { RowValue } from './account-row-value'
 import { BillingApiProvider } from './api'
@@ -35,6 +37,7 @@ import type { BillingStateResponse } from './types'
 import {
   type BillingAccountRowView,
   type BillingNoticeView,
+  type BillingSummaryItemView,
   type BillingUsageRowView,
   deriveBillingView,
   useBillingState,
@@ -70,6 +73,23 @@ function SummaryCard({ label, value, tone }: { label: string; tone?: 'muted' | '
       </div>
     </div>
   )
+}
+
+/** Balance, plan and auto-reload at a glance; the Settings window titles it 概览 Overview (prototype). */
+function BillingSummary({ summary }: { summary: BillingSummaryItemView[] }) {
+  const { t } = useI18n()
+
+  const cards = (
+    <div className="@container mb-6" data-slot="billing-summary">
+      <div className="grid gap-3 @2xl:grid-cols-3">
+        {summary.map(item => (
+          <SummaryCard key={item.label} label={item.label} tone={item.tone} value={item.value} />
+        ))}
+      </div>
+    </div>
+  )
+
+  return useSettingsWindow() ? <FormSection title={t.settings.subpages.billingOverview}>{cards}</FormSection> : cards
 }
 
 function NoticeCard({ notice }: { notice: BillingNoticeView }) {
@@ -529,13 +549,7 @@ function BillingSettingsContent({
 
       {view.notice && <NoticeCard notice={view.notice} />}
 
-      <div className="@container mb-6">
-        <div className="grid gap-3 @2xl:grid-cols-3">
-          {view.summary.map(item => (
-            <SummaryCard key={item.label} label={item.label} tone={item.tone} value={item.value} />
-          ))}
-        </div>
-      </div>
+      <BillingSummary summary={view.summary} />
 
       {view.plan && (
         <SettingsSection icon={Package} title={b.sections.plan}>

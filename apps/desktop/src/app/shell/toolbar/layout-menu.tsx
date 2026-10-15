@@ -1,6 +1,5 @@
 import { useStore } from '@nanostores/react'
 
-import { requestCloseSessionTile } from '@/app/chat/session-tile'
 import { hudTargetSessionId } from '@/app/hud/handoff'
 import { toggleLayoutEditMode } from '@/components/pane-shell/edit-mode'
 import { isLayoutNode } from '@/components/pane-shell/tree/model'
@@ -30,11 +29,12 @@ import { triggerHaptic } from '@/lib/haptics'
 import { runBuiltinAction } from '@/lib/keybinds/plugin-actions'
 import { toggleHud } from '@/store/hud'
 import { $interfaceMode, shownInMode } from '@/store/interface-mode'
-import { $selectedStoredSessionId, $sessions } from '@/store/session'
-import { $sessionTiles, openSessionTile } from '@/store/session-states'
+import { $sessions } from '@/store/session'
+import { $sessionTiles } from '@/store/session-states'
 import { $statusbarVisible, toggleStatusbarVisible } from '@/store/statusbar-prefs'
 import { $tabStripDefault, setTabStripDefault, type TabStripDefault } from '@/store/tabstrip-prefs'
 
+import { closeSplitTiles, openSplit, splitCandidates } from './layout-actions'
 import { MenuHint } from './toolbar-kit'
 
 const SPLIT_CANDIDATES = 6
@@ -43,11 +43,10 @@ const ICON = 15
 /** "Split side by side ▸": recent chats that aren't already on screen. */
 function SplitSubmenu() {
   const { t } = useI18n()
-  const sessions = useStore($sessions)
-  const selected = useStore($selectedStoredSessionId)
-  const tiles = useStore($sessionTiles)
-  const open = new Set([selected, ...tiles.map(tile => tile.storedSessionId)])
-  const candidates = sessions.filter(session => !open.has(session.id)).slice(0, SPLIT_CANDIDATES)
+  // Re-read on open: the list is the sessions and tiles at that moment.
+  useStore($sessions)
+  useStore($sessionTiles)
+  const candidates = splitCandidates(SPLIT_CANDIDATES)
 
   return (
     <DropdownMenuSub>
@@ -60,7 +59,7 @@ function SplitSubmenu() {
           <DropdownMenuItem disabled>{t.studio.shell.toolbar.noOtherSessions}</DropdownMenuItem>
         ) : (
           candidates.map(session => (
-            <DropdownMenuItem key={session.id} onSelect={() => openSessionTile(session.id, 'right')}>
+            <DropdownMenuItem key={session.id} onSelect={() => openSplit(session.id)}>
               <span className="min-w-0 truncate">{sessionTitle(session)}</span>
             </DropdownMenuItem>
           ))
@@ -153,16 +152,9 @@ export function LayoutMenuItems() {
   const statusbarVisible = useStore($statusbarVisible)
   const advanced = shownInMode(useStore($interfaceMode))({ tier: 'advanced' })
 
-  const singlePane = () => {
-    // Quiet tiles close at once; a busy one asks first (the tab ✕'s guard).
-    for (const tile of tiles) {
-      requestCloseSessionTile(tile.storedSessionId)
-    }
-  }
-
   return (
     <>
-      <DropdownMenuCheckboxItem checked={tiles.length === 0} onSelect={singlePane}>
+      <DropdownMenuCheckboxItem checked={tiles.length === 0} onSelect={closeSplitTiles}>
         <StudioIcon name="window" size={ICON} />
         <span>{copy.singlePane}</span>
       </DropdownMenuCheckboxItem>

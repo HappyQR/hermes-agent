@@ -85,7 +85,7 @@ export function KeysSettings({ view }: KeysSettingsProps) {
     <SettingsContent>
       <SettingsProfileScope className="mb-5" />
       {entries.length > 0 ? (
-        <div className="grid gap-2">
+        <div className="grid gap-2" data-credential-list="">
           {entries.map(([key, info]) => {
             const label = credentialRowLabel(key, info)
 

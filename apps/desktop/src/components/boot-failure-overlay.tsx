@@ -14,6 +14,7 @@ import { reestablishCloudAgentSession } from '@/lib/cloud-agent-session'
 import { DESKTOP_DOCS_URL } from '@/lib/docs'
 import { openExternalLink } from '@/lib/external-link'
 import { ChevronLeft, ExternalLink, FileText, Loader2, LogIn, RefreshCw, SlidersHorizontal, Wrench } from '@/lib/icons'
+import { cn } from '@/lib/utils'
 import { $desktopBoot } from '@/store/boot'
 import { notify, notifyError } from '@/store/notifications'
 import { $desktopOnboarding } from '@/store/onboarding'
@@ -27,6 +28,7 @@ import {
   signInLabel,
   sshFailureMessage
 } from './boot-failure-reauth'
+import { BOOT_CARD_CLASS } from './studio-onboarding/boot-kit'
 
 // The recovery "Gateway settings" view embeds the real Settings → Gateway panel
 // (identical URL/auth/test/save controls — no parallel form to drift). Lazy so
@@ -475,7 +477,7 @@ export function BootFailureOverlay() {
   if (view === 'connect') {
     return (
       <BootFailureModal onDismiss={dismiss} title={copy.gatewaySettings}>
-        <div className="relative flex max-h-[86vh] w-full max-w-[46rem] flex-col overflow-hidden rounded-xl border border-(--stroke-nous) bg-(--ui-chat-bubble-background) shadow-nous">
+        <div className={cn('relative flex max-h-[86vh] w-full max-w-[46rem] flex-col overflow-hidden', BOOT_CARD_CLASS)}>
           <DialogCloseButton />
           {/* Subtle back affordance (projects/overlay idiom): muted → foreground
               on hover, no divider. */}
@@ -499,7 +501,7 @@ export function BootFailureOverlay() {
 
   return (
     <BootFailureModal onDismiss={dismiss}>
-      <div className="relative w-full max-w-[40rem] overflow-hidden rounded-xl border border-(--stroke-nous) bg-(--ui-chat-bubble-background) shadow-nous">
+      <div className={cn('relative w-full max-w-[40rem] overflow-hidden', BOOT_CARD_CLASS)}>
         <DialogCloseButton />
         <div className="flex items-start gap-3 px-5 py-4 pr-12">
           <ErrorIcon className="mt-0.5" size="1.25rem" />
@@ -516,7 +518,7 @@ export function BootFailureOverlay() {
         </div>
 
         <div className="grid gap-4 p-5 pt-0">
-          <div className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-xs text-destructive">
+          <div className="rounded-[10px] bg-[color-mix(in_srgb,var(--ui-red)_10%,transparent)] px-3.5 py-3 text-xs text-(--ui-red)">
             {failureCopy.headline}
             {failureCopy.rawDetail ? (
               <details className="mt-2 text-muted-foreground">

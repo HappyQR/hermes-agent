@@ -42,6 +42,7 @@ import type { WiringActions } from '../contrib/types'
 
 import { APPEARANCE_MODES, type MenuTabBarMode, TAB_BAR_MODES } from './native-menu-model'
 import { menuSessionTarget, type MenuSessionTarget, menuTabBarTarget } from './native-menu-state'
+import { closeSplitTiles, openSplit } from './toolbar/layout-actions'
 
 /** Where Help › Discord Community goes (the support link the app already uses). */
 export const COMMUNITY_DISCORD_URL = 'https://discord.gg/NousResearch'
@@ -195,6 +196,8 @@ export function createMenuCommandResolver(deps: MenuCommandDeps): MenuCommandRes
     'menu.session.delete': withSession(target => confirmDelete(target, deps.actions())),
     'menu.session.stop': withSession(target => haltSession(target, deps.actions())),
     'menu.session.compress': withSession(target => compressSession(target, deps.actions())),
+    'menu.layout.single': closeSplitTiles,
+    'menu.layout.split': () => openSplit(),
     'menu.interface.simple': () => setInterfaceMode('simple'),
     'menu.interface.advanced': () => setInterfaceMode('advanced'),
     'menu.help.tutorial': () => void runTutorial(deps).catch(() => undefined),

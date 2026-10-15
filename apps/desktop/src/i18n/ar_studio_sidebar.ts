@@ -4,11 +4,6 @@ import type { StudioSidebarTranslations } from './types_studio_sidebar'
 export const arStudioSidebar: StudioSidebarTranslations = {
   search: 'بحث',
   searchAria: 'البحث في الجلسات والصفحات والأوامر',
-  palette: {
-    placeholder: 'البحث في كل الجلسات…',
-    recent: 'الأحدث',
-    searching: 'جارٍ البحث…'
-  },
   nav: {
     label: 'الصفحات',
     automations: 'الأتمتة',

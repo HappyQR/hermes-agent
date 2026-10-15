@@ -4,12 +4,6 @@ export interface StudioSidebarTranslations {
   search: string
   /** The search button's accessible name (it opens ⌘K on the sessions scope). */
   searchAria: string
-  /** ⌘K "Sessions" scope (full-text search across every session). */
-  palette: {
-    placeholder: string
-    recent: string
-    searching: string
-  }
   nav: {
     /** Landmark name for the page rows. */
     label: string

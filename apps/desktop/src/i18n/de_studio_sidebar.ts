@@ -4,11 +4,6 @@ import type { StudioSidebarTranslations } from './types_studio_sidebar'
 export const deStudioSidebar: StudioSidebarTranslations = {
   search: 'Suchen',
   searchAria: 'Sessions, Seiten und Befehle durchsuchen',
-  palette: {
-    placeholder: 'Alle Sessions durchsuchen…',
-    recent: 'Zuletzt',
-    searching: 'Suche läuft…'
-  },
   nav: {
     label: 'Seiten',
     automations: 'Automationen',

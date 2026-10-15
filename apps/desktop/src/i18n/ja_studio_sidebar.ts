@@ -4,11 +4,6 @@ import type { StudioSidebarTranslations } from './types_studio_sidebar'
 export const jaStudioSidebar: StudioSidebarTranslations = {
   search: '検索',
   searchAria: 'セッション、ページ、コマンドを検索',
-  palette: {
-    placeholder: 'すべてのセッションを検索…',
-    recent: '最近',
-    searching: '検索中…'
-  },
   nav: {
     label: 'ページ',
     automations: 'オートメーション',

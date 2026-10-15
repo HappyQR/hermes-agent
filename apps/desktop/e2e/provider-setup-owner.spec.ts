@@ -258,8 +258,8 @@ async function selectGateway(page: Page, id: string, label: string, profile: str
 async function openProviderKeys(page: Page): Promise<void> {
   // Hermes Studio: settings open from ⌘, / the account menu, not a titlebar gear.
   await page.keyboard.press('ControlOrMeta+Comma')
-  await page.getByRole('button', { name: 'Providers', exact: true }).click()
-  await page.getByRole('button', { name: 'API keys', exact: true }).click()
+  // The Settings window: one Accounts & Providers page, API keys is its second section.
+  await page.getByRole('button', { name: 'Accounts & Providers', exact: true }).click()
   await expect(page.getByRole('button', { name: /^Local \/ custom endpoint/ })).toBeVisible()
 }
 

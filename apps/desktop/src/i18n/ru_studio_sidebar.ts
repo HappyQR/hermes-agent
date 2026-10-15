@@ -19,11 +19,6 @@ const plural = (count: number, one: string, few: string, many: string) => {
 export const ruStudioSidebar: StudioSidebarTranslations = {
   search: 'Поиск',
   searchAria: 'Поиск сеансов, страниц и команд',
-  palette: {
-    placeholder: 'Искать во всех сеансах…',
-    recent: 'Недавние',
-    searching: 'Поиск…'
-  },
   nav: {
     label: 'Страницы',
     automations: 'Автоматизация',

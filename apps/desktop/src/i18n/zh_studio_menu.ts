@@ -61,6 +61,8 @@ export const zhStudioMenu: StudioMenuTranslations = {
     terminal: '终端',
     agents: '代理',
     layout: '布局',
+    singlePane: '单栏',
+    splitSideBySide: '左右分屏',
     swapSidebar: '交换侧边栏位置',
     editLayout: '编辑布局…',
     resetLayout: '重置布局',

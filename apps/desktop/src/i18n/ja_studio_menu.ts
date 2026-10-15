@@ -61,6 +61,8 @@ export const jaStudioMenu: StudioMenuTranslations = {
     terminal: 'ターミナル',
     agents: 'エージェント',
     layout: 'レイアウト',
+    singlePane: 'シングルペイン',
+    splitSideBySide: '左右に分割',
     swapSidebar: 'サイドバーの位置を入れ替える',
     editLayout: 'レイアウトを編集…',
     resetLayout: 'レイアウトをリセット',

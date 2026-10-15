@@ -17,6 +17,7 @@ import { isMacPlatform } from '@/lib/platform'
 import { $interfaceMode } from '@/store/interface-mode'
 import { $bindings, $capture, bindingsFor } from '@/store/keybinds'
 import { $sidebarOpen } from '@/store/layout'
+import { $sessionTiles } from '@/store/session-states'
 import { $statusbarVisible } from '@/store/statusbar-prefs'
 import { useTheme } from '@/themes/context'
 
@@ -70,6 +71,7 @@ function useMenuInput(): MenuInput {
   const statusbarVisible = useStore($statusbarVisible)
   const interfaceMode = useStore($interfaceMode)
   const tabBar = useStore($menuTabBarMode)
+  const split = useStore($sessionTiles).length > 0
   const sessionKey = useStore($menuSessionKey)
   const busy = useStore($menuSessionBusy)
   const profilesKey = useStore($menuProfilesKey)
@@ -94,12 +96,14 @@ function useMenuInput(): MenuInput {
         session: menuSessionState(sessionKey, busy),
         showAllProfiles: profiles.showAll,
         sidebarOpen,
+        split,
         statusbarVisible,
         tabBar,
         themeMode
       }
     }
   }, [
+    split,
     bindings,
     busy,
     inspectorOpen,

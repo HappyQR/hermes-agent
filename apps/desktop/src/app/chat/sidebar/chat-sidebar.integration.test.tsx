@@ -159,6 +159,10 @@ describe('ChatSidebar navigation activity', () => {
       ['/messaging', 'messaging', 'Messaging'],
       ['/artifacts', 'artifacts', 'Artifacts'],
       ['/cron', 'cron', 'Automations'],
+      // /webhooks shows the same Automations view on its Webhook tab.
+      ['/webhooks', 'webhooks', 'Automations'],
+      // /memory and /starmap both give the starmap view.
+      ['/memory', 'starmap', 'Memory'],
       ['/starmap', 'starmap', 'Memory']
     ] as const) {
       cleanup()
