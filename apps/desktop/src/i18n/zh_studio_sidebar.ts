@@ -94,6 +94,8 @@ export const zhStudioSidebar: StudioSidebarTranslations = {
     export: '导出',
     exportJson: 'JSON…',
     exportMarkdown: 'Markdown…',
+    exportUser: '你',
+    exportAssistant: 'Hermes',
     exportFailed: '无法导出会话',
     newProject: '新建项目…',
     delete: '删除…'

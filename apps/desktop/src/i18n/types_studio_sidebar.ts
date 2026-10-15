@@ -96,6 +96,9 @@ export interface StudioSidebarTranslations {
     export: string
     exportJson: string
     exportMarkdown: string
+    /** The Markdown export's speaker headings. */
+    exportUser: string
+    exportAssistant: string
     exportFailed: string
     newProject: string
     delete: string

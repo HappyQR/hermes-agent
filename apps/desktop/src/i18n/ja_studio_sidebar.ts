@@ -94,6 +94,8 @@ export const jaStudioSidebar: StudioSidebarTranslations = {
     export: '書き出す',
     exportJson: 'JSON…',
     exportMarkdown: 'Markdown…',
+    exportUser: 'あなた',
+    exportAssistant: 'Hermes',
     exportFailed: 'セッションを書き出せませんでした',
     newProject: '新規プロジェクト…',
     delete: '削除…'

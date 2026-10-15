@@ -112,6 +112,14 @@ through `src/components/ui/menu.ts`, so a list reads the same wherever it
 opens. Typed fields with suggestions use `ComboboxInput`, never
 `<input list>` + `<datalist>` (Chromium paints that as its own OS popup).
 
+A menu row's trailing hint — a shortcut (`⌘,`) or the gesture that does the
+same thing from the row (`⇧-click`) — is `ActionItemSpec.hint`, or `MenuHint`
+for hand-built rows (`src/components/ui/actions-menu.tsx`). It renders
+`aria-hidden`, so the row's accessible name stays its label (tests and
+assistive tech match `/^archive$/`, not "Archive ⌥⇧-click"). Build the text
+from the live binding (`useKeybindHint`) or `formatModifierToken`, never a
+literal `⌘`.
+
 Drag affordances may use tokenized
 dashed targets and local blur. These are semantic surface classes, not licenses
 for call-site shadow or border inventions.

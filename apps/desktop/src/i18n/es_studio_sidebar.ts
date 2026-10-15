@@ -95,6 +95,8 @@ export const esStudioSidebar: StudioSidebarTranslations = {
     export: 'Exportar',
     exportJson: 'JSON…',
     exportMarkdown: 'Markdown…',
+    exportUser: 'Tú',
+    exportAssistant: 'Hermes',
     exportFailed: 'No se pudo exportar la sesión',
     newProject: 'Nuevo proyecto…',
     delete: 'Eliminar…'

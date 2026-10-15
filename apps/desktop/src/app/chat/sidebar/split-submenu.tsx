@@ -59,8 +59,9 @@ interface SplitSubmenuProps {
 }
 
 /**
- * "Open in split ▸": clicking the row splits right (the common case), and the
- * submenu picks any edge. Shared by session rows and page nav rows.
+ * "Open in split ▸": in a dismissable menu, clicking the row splits right (the
+ * common case); the submenu picks any edge. Shared by session rows, page nav
+ * rows and the top bar's new-session button.
  */
 export function SplitSubmenu({ close, disabled, kit, label, onSplit }: SplitSubmenuProps) {
   const { Item, Sub, SubContent, SubTrigger } = kit
@@ -75,10 +76,17 @@ export function SplitSubmenu({ close, disabled, kit, label, onSplit }: SplitSubm
     <Sub>
       <SubTrigger
         disabled={disabled}
-        onClick={() => {
-          split('right')
-          close?.()
-        }}
+        // A menu that can be dismissed takes the click as "split right"; one
+        // that can't (a context menu) lets the row open its submenu instead of
+        // splitting under a menu that stays up.
+        onClick={
+          close
+            ? () => {
+                split('right')
+                close()
+              }
+            : undefined
+        }
       >
         <StudioIcon name="split" size={15} />
         <span>{label}</span>

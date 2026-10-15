@@ -94,6 +94,8 @@ export const zhHantStudioSidebar: StudioSidebarTranslations = {
     export: '匯出',
     exportJson: 'JSON…',
     exportMarkdown: 'Markdown…',
+    exportUser: '你',
+    exportAssistant: 'Hermes',
     exportFailed: '無法匯出工作階段',
     newProject: '新增專案…',
     delete: '刪除…'

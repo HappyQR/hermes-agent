@@ -94,6 +94,8 @@ export const arStudioSidebar: StudioSidebarTranslations = {
     export: 'تصدير',
     exportJson: 'JSON…',
     exportMarkdown: 'Markdown…',
+    exportUser: 'أنت',
+    exportAssistant: 'Hermes',
     exportFailed: 'تعذّر تصدير الجلسة',
     newProject: 'مشروع جديد…',
     delete: 'حذف…'

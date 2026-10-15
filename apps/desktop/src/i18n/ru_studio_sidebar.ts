@@ -110,6 +110,8 @@ export const ruStudioSidebar: StudioSidebarTranslations = {
     export: 'Экспорт',
     exportJson: 'JSON…',
     exportMarkdown: 'Markdown…',
+    exportUser: 'Вы',
+    exportAssistant: 'Hermes',
     exportFailed: 'Не удалось экспортировать сеанс',
     newProject: 'Новый проект…',
     delete: 'Удалить…'

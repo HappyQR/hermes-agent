@@ -95,6 +95,8 @@ export const deStudioSidebar: StudioSidebarTranslations = {
     export: 'Exportieren',
     exportJson: 'JSON…',
     exportMarkdown: 'Markdown…',
+    exportUser: 'Du',
+    exportAssistant: 'Hermes',
     exportFailed: 'Session konnte nicht exportiert werden',
     newProject: 'Neues Projekt…',
     delete: 'Löschen…'
