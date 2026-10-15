@@ -80,11 +80,15 @@ export const deStudioOverlays: StudioOverlaysTranslations = {
     importShort: 'Importieren…'
   },
   import: {
-    subtitle: host => `Hol ein Gespräch aus Claude Code oder Codex in Hermes und mach dort weiter, wo du aufgehört hast. Gelesen von ${host}`,
+    subtitle: host =>
+      `Hol ein Gespräch aus Claude Code oder Codex in Hermes und mach dort weiter, wo du aufgehört hast. Gelesen von ${host}`,
     importInto: profile => `Importieren in: ${profile}`,
     sourceLabel: 'Quelle'
   },
   updates: {
-    currentVersion: (version, channel) => `Aktuell ${version} · ${channel}`
+    currentVersion: (version, channel) => `Aktuell ${version} · ${channel}`,
+    managedByPackageOwner: 'Updates werden vom Paketverantwortlichen außerhalb dieser App verwaltet.',
+    commitBuildNoUpdates:
+      'Dieser Build erhält keine Updates. Bitte den Entwickler, der ihn dir gegeben hat, um einen neuen Build.'
   }
 }

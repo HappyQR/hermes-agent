@@ -80,11 +80,15 @@ export const ruStudioOverlays: StudioOverlaysTranslations = {
     importShort: 'Импорт…'
   },
   import: {
-    subtitle: host => `Перенесите разговор из Claude Code или Codex в Hermes и продолжите с того же места. Источник: ${host}`,
+    subtitle: host =>
+      `Перенесите разговор из Claude Code или Codex в Hermes и продолжите с того же места. Источник: ${host}`,
     importInto: profile => `Импорт в: ${profile}`,
     sourceLabel: 'Источник'
   },
   updates: {
-    currentVersion: (version, channel) => `Текущая ${version} · ${channel}`
+    currentVersion: (version, channel) => `Текущая ${version} · ${channel}`,
+    managedByPackageOwner: 'Обновлениями управляет владелец пакета вне этого приложения.',
+    commitBuildNoUpdates:
+      'Эта сборка не получает обновлений. Попросите новую сборку у разработчика, который её вам дал.'
   }
 }

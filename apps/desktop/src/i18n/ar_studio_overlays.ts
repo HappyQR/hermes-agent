@@ -85,6 +85,8 @@ export const arStudioOverlays: StudioOverlaysTranslations = {
     sourceLabel: 'المصدر'
   },
   updates: {
-    currentVersion: (version, channel) => `الحالي ${version} · ${channel}`
+    currentVersion: (version, channel) => `الحالي ${version} · ${channel}`,
+    managedByPackageOwner: 'تتم إدارة التحديثات من قِبل مالك الحزمة خارج هذا التطبيق.',
+    commitBuildNoUpdates: 'لا يتلقى هذا الإصدار تحديثات. اطلب إصدارًا جديدًا من المطوّر الذي أعطاك إياه.'
   }
 }

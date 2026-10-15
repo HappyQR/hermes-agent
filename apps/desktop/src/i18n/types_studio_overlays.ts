@@ -86,5 +86,9 @@ export interface StudioOverlaysTranslations {
   }
   updates: {
     currentVersion: (version: string, channel: string) => string
+    /** The updater cannot run here: the package owner updates Hermes (main process reason 'bundled-not-appinstaller'). */
+    managedByPackageOwner: string
+    /** The updater cannot run here: a one-off commit build (reason 'commit-build'). */
+    commitBuildNoUpdates: string
   }
 }

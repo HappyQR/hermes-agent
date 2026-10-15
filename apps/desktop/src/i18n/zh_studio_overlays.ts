@@ -85,6 +85,8 @@ export const zhStudioOverlays: StudioOverlaysTranslations = {
     sourceLabel: '来源'
   },
   updates: {
-    currentVersion: (version, channel) => `当前 ${version} · ${channel}`
+    currentVersion: (version, channel) => `当前 ${version} · ${channel}`,
+    managedByPackageOwner: '更新由软件包维护方在应用外管理。',
+    commitBuildNoUpdates: '此构建不会获得更新。如需新版本，请联系提供该构建的开发者。'
   }
 }

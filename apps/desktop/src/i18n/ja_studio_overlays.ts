@@ -85,6 +85,8 @@ export const jaStudioOverlays: StudioOverlaysTranslations = {
     sourceLabel: 'ソース'
   },
   updates: {
-    currentVersion: (version, channel) => `現在 ${version} · ${channel}`
+    currentVersion: (version, channel) => `現在 ${version} · ${channel}`,
+    managedByPackageOwner: 'アップデートはこのアプリの外でパッケージ管理者が行います。',
+    commitBuildNoUpdates: 'このビルドはアップデートを受け取りません。新しいビルドは提供した開発者に依頼してください。'
   }
 }

@@ -80,11 +80,15 @@ export const frStudioOverlays: StudioOverlaysTranslations = {
     importShort: 'Importer…'
   },
   import: {
-    subtitle: host => `Importez une conversation Claude Code ou Codex dans Hermes et reprenez là où vous en étiez. Lecture depuis ${host}`,
+    subtitle: host =>
+      `Importez une conversation Claude Code ou Codex dans Hermes et reprenez là où vous en étiez. Lecture depuis ${host}`,
     importInto: profile => `Importer dans : ${profile}`,
     sourceLabel: 'Source'
   },
   updates: {
-    currentVersion: (version, channel) => `Actuelle ${version} · ${channel}`
+    currentVersion: (version, channel) => `Actuelle ${version} · ${channel}`,
+    managedByPackageOwner: 'Les mises à jour sont gérées par le responsable du paquet, en dehors de cette app.',
+    commitBuildNoUpdates:
+      'Ce build ne reçoit pas de mises à jour. Demandez-en un nouveau au développeur qui vous l’a fourni.'
   }
 }
