@@ -11,6 +11,7 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger
 } from '@/components/ui/dropdown-menu'
+import { type Translations, useI18n } from '@/i18n'
 import { triggerHaptic } from '@/lib/haptics'
 import type { SplitDir } from '@/store/session-states'
 
@@ -37,12 +38,14 @@ export const CONTEXT_SPLIT_KIT: SplitMenuKit = {
   SubTrigger: ContextMenuSubTrigger
 }
 
+type SplitMenuCopy = Translations['studio']['sidebar']['menu']
+
 // Ordered so the default (right) sits first, one hop away.
-const SPLIT_DIRS: { dir: SplitDir; icon: string; label: string }[] = [
-  { dir: 'right', icon: 'arrow-right', label: 'Right' },
-  { dir: 'bottom', icon: 'arrow-down', label: 'Down' },
-  { dir: 'left', icon: 'arrow-left', label: 'Left' },
-  { dir: 'top', icon: 'arrow-up', label: 'Up' }
+const SPLIT_DIRS: { dir: SplitDir; icon: string; label: (copy: SplitMenuCopy) => string }[] = [
+  { dir: 'right', icon: 'arrow-right', label: copy => copy.splitRight },
+  { dir: 'bottom', icon: 'arrow-down', label: copy => copy.splitDown },
+  { dir: 'left', icon: 'arrow-left', label: copy => copy.splitLeft },
+  { dir: 'top', icon: 'arrow-up', label: copy => copy.splitUp }
 ]
 
 interface SplitSubmenuProps {
@@ -61,6 +64,7 @@ interface SplitSubmenuProps {
  */
 export function SplitSubmenu({ close, disabled, kit, label, onSplit }: SplitSubmenuProps) {
   const { Item, Sub, SubContent, SubTrigger } = kit
+  const copy = useI18n().t.studio.sidebar.menu
 
   const split = (dir: SplitDir) => {
     triggerHaptic('selection')
@@ -83,7 +87,7 @@ export function SplitSubmenu({ close, disabled, kit, label, onSplit }: SplitSubm
         {SPLIT_DIRS.map(({ dir, icon, label: dirLabel }) => (
           <Item key={dir} onSelect={() => split(dir)}>
             <Codicon name={icon} size="0.875rem" />
-            <span>{dirLabel}</span>
+            <span>{dirLabel(copy)}</span>
           </Item>
         ))}
       </SubContent>
