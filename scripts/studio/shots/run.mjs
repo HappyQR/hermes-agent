@@ -8,7 +8,8 @@
 //   node scripts/studio/shots/run.mjs --dump            also write the DOM's labelled controls
 //
 // Parallel runs: --port <n> (mock model port, default 18642), --shots <file.mjs>
-// (extra shots: `export default { name: async (page, api) => {} }`, may repeat),
+// (extra shots: `export default { name: async (page, api) => {} }`, may repeat; `api.app`
+// is the Playwright ElectronApplication for main-process checks),
 // --installs-from <hermes-home> (reuse that home's prepared PM environment).
 // Options: --sandbox <dir> (default $TMPDIR/hermes-studio-shots), --out <dir>,
 // --scheme light|dark, --size 1440x900, --hermes <launcher> (backend command,
@@ -373,7 +374,7 @@ async function main() {
   const names = only.length ? only : Object.keys(SHOTS)
   for (const name of names) {
     try {
-      await SHOTS[name](page, { shot, sleep, openSession, newChat, send, composer })
+      await SHOTS[name](page, { app, outDir, shot, sleep, openSession, newChat, send, composer })
     } catch (error) {
       console.log(`  ✗ ${name}: ${error.message.split('\n')[0]}`)
     }
