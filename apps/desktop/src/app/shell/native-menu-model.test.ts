@@ -24,6 +24,7 @@ const BASE_STATE: MenuState = {
   session: null,
   showAllProfiles: false,
   sidebarOpen: true,
+  split: false,
   statusbarVisible: true,
   tabBar: 'auto',
   themeMode: 'system'

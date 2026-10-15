@@ -61,6 +61,8 @@ export const esStudioMenu: StudioMenuTranslations = {
     terminal: 'Terminal',
     agents: 'Agentes',
     layout: 'Diseño',
+    singlePane: 'Panel único',
+    splitSideBySide: 'Dividir lado a lado',
     swapSidebar: 'Intercambiar posición de la barra lateral',
     editLayout: 'Editar diseño…',
     resetLayout: 'Restablecer diseño',

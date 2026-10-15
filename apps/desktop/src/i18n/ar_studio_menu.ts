@@ -61,6 +61,8 @@ export const arStudioMenu: StudioMenuTranslations = {
     terminal: 'الطرفية',
     agents: 'الوكلاء',
     layout: 'التخطيط',
+    singlePane: 'لوحة واحدة',
+    splitSideBySide: 'تقسيم جنبًا إلى جنب',
     swapSidebar: 'تبديل موضع الشريط الجانبي',
     editLayout: 'تحرير التخطيط…',
     resetLayout: 'إعادة ضبط التخطيط',

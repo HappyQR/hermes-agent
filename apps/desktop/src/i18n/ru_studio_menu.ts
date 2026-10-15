@@ -61,6 +61,8 @@ export const ruStudioMenu: StudioMenuTranslations = {
     terminal: 'Терминал',
     agents: 'Агенты',
     layout: 'Макет',
+    singlePane: 'Одна панель',
+    splitSideBySide: 'Разделить рядом',
     swapSidebar: 'Поменять боковые панели местами',
     editLayout: 'Изменить макет…',
     resetLayout: 'Сбросить макет',

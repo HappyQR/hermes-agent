@@ -50,6 +50,8 @@ export interface MenuState {
   themeMode: ThemeMode
   /** The tab-bar mode of the zone Tab Bar acts on; null when no zone qualifies. */
   tabBar: MenuTabBarMode | null
+  /** A chat is open beside the main one (session tiles exist). */
+  split: boolean
   profiles: readonly MenuProfileEntry[]
   activeProfile: string
   showAllProfiles: boolean
@@ -253,6 +255,9 @@ function viewChrome(menu: MenuBuilder, { copy, state }: MenuModelInput): Entry[]
 
   return [
     submenu(view.layout, [
+      menu.command('menu.layout.single', view.singlePane, { checked: !state.split }),
+      menu.command('menu.layout.split', view.splitSideBySide, { checked: state.split }),
+      SEPARATOR,
       menu.command('view.flipPanes', view.swapSidebar),
       menu.command('layout.editMode', view.editLayout),
       menu.command('layout.reset', view.resetLayout)

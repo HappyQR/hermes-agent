@@ -61,6 +61,8 @@ export const frStudioMenu: StudioMenuTranslations = {
     terminal: 'Terminal',
     agents: 'Agents',
     layout: 'Disposition',
+    singlePane: 'Volet unique',
+    splitSideBySide: 'Partager côte à côte',
     swapSidebar: 'Inverser la position de la barre latérale',
     editLayout: 'Modifier la disposition…',
     resetLayout: 'Réinitialiser la disposition',

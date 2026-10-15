@@ -4895,6 +4895,8 @@
     "studio.menu.view.showSidebar",
     "studio.menu.view.showStatusBar",
     "studio.menu.view.simple",
+    "studio.menu.view.singlePane",
+    "studio.menu.view.splitSideBySide",
     "studio.menu.view.swapSidebar",
     "studio.menu.view.system",
     "studio.menu.view.tabBar",

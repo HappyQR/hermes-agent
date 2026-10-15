@@ -61,6 +61,8 @@ export const deStudioMenu: StudioMenuTranslations = {
     terminal: 'Terminal',
     agents: 'Agenten',
     layout: 'Layout',
+    singlePane: 'Einzelner Bereich',
+    splitSideBySide: 'Nebeneinander teilen',
     swapSidebar: 'Seitenleisten tauschen',
     editLayout: 'Layout bearbeiten …',
     resetLayout: 'Layout zurücksetzen',

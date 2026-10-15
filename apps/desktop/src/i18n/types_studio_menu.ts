@@ -64,6 +64,8 @@ export interface StudioMenuTranslations {
     terminal: string
     agents: string
     layout: string
+    singlePane: string
+    splitSideBySide: string
     swapSidebar: string
     editLayout: string
     resetLayout: string
