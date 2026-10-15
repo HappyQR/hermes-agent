@@ -98,6 +98,13 @@ export default {
     await sleep(1200)
     await shot(page, 'tabs')
   },
+  'layout-editor': async (page, { shot, sleep }) => {
+    await page.keyboard.press('Meta+Shift+Backslash')
+    await sleep(900)
+    await shot(page, 'layout-editor')
+    await page.keyboard.press('Meta+Shift+Backslash')
+    await sleep(500)
+  },
   'inspector-closed': async (page, { shot, sleep }) => {
     await page.keyboard.press('Meta+J')
     await sleep(700)
