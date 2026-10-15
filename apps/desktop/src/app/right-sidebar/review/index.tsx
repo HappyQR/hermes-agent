@@ -1,4 +1,5 @@
 import { useStore } from '@nanostores/react'
+import type { ReactNode } from 'react'
 
 import { FileDiffPanel } from '@/components/chat/diff-lines'
 import { DiffSkeleton, TreeSkeleton } from '@/components/chat/skeletons'
@@ -46,6 +47,36 @@ import { ReviewShipBar } from './ship-bar'
 // the rest of the app's icon-action rows.
 const ACTION_BTN = 'size-5'
 
+/** The header row (self-title, actions, close) and the scope row. Inside the
+ *  inspector the band names the pane and owns its close, so the actions move
+ *  into the scope row instead. */
+function ReviewChrome({ actions }: { actions: ReactNode }) {
+  const { t } = useI18n()
+  const c = t.statusStack.coding
+  const inInspector = useInInspector()
+
+  if (inInspector) {
+    return <ReviewScopeRow trailing={actions} />
+  }
+
+  return (
+    <>
+      <RightSidebarSectionHeader data-suppress-pane-reveal-side="">
+        <div className="flex min-w-0 flex-1">
+          {/* Pure self-naming label — redundant under a zone tab that already
+              says "review", so the zone header hides it (styles.css). */}
+          <SidebarPanelLabel data-pane-self-label="">{c.review}</SidebarPanelLabel>
+        </div>
+        {actions}
+        <Button aria-label={c.close} className={ACTION_BTN} onClick={closeReview} size="icon-xs" variant="ghost">
+          <Codicon name="close" size="0.8125rem" />
+        </Button>
+      </RightSidebarSectionHeader>
+      <ReviewScopeRow />
+    </>
+  )
+}
+
 export function ReviewPane() {
   const { t } = useI18n()
   const c = t.statusStack.coding
@@ -73,8 +104,6 @@ export function ReviewPane() {
   // instead of flashing a jarring loading state.
   const showTreeSkeleton = useDelayedTrue(loading && !hasFiles)
   const showDiffSkeleton = useDelayedTrue(diffLoading)
-
-  const inInspector = useInInspector()
 
   // The review actions: in the header row, or — inside the inspector, whose
   // band names the pane and owns its close — beside the scope switch.
@@ -141,21 +170,7 @@ export function ReviewPane() {
       )}
       data-slot="review-pane"
     >
-      {showChrome && !inInspector && (
-        <RightSidebarSectionHeader data-suppress-pane-reveal-side="">
-          <div className="flex min-w-0 flex-1">
-            {/* Pure self-naming label — redundant under a zone tab that already
-                says "review", so the zone header hides it (styles.css). */}
-            <SidebarPanelLabel data-pane-self-label="">{c.review}</SidebarPanelLabel>
-          </div>
-          {actions}
-          <Button aria-label={c.close} className={ACTION_BTN} onClick={closeReview} size="icon-xs" variant="ghost">
-            <Codicon name="close" size="0.8125rem" />
-          </Button>
-        </RightSidebarSectionHeader>
-      )}
-
-      {showChrome && <ReviewScopeRow trailing={inInspector ? actions : undefined} />}
+      {showChrome && <ReviewChrome actions={actions} />}
 
       {showChrome ? (
         hasFiles ? (
