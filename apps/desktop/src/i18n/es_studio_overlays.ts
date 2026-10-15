@@ -64,7 +64,9 @@ export const esStudioOverlays: StudioOverlaysTranslations = {
     off: 'Desactivado',
     layoutEditMode: 'Alternar modo de edición del diseño',
     reloadPlugins: 'Recargar plugins de escritorio',
-    resetLayout: 'Restablecer el diseño'
+    resetLayout: 'Restablecer el diseño',
+    toggleLogs: 'Mostrar u ocultar registros',
+    toggleYolo: 'Alternar modo YOLO (sin aprobaciones)'
   },
   profiles: {
     subtitle: 'Cada perfil tiene su propio modelo, habilidades, memoria y personalidad (SOUL.md).',

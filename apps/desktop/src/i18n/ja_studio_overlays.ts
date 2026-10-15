@@ -64,7 +64,9 @@ export const jaStudioOverlays: StudioOverlaysTranslations = {
     off: 'オフ',
     layoutEditMode: 'レイアウト編集モードを切り替え',
     reloadPlugins: 'デスクトッププラグインを再読み込み',
-    resetLayout: 'レイアウトをリセット'
+    resetLayout: 'レイアウトをリセット',
+    toggleLogs: 'ログの表示を切り替え',
+    toggleYolo: 'YOLO モードを切り替え（承認をスキップ）'
   },
   profiles: {
     subtitle: 'プロファイルごとにモデル、スキル、メモリ、ペルソナ（SOUL.md）が独立しています。',

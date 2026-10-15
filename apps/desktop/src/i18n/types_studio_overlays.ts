@@ -65,6 +65,8 @@ export interface StudioOverlaysTranslations {
     layoutEditMode: string
     reloadPlugins: string
     resetLayout: string
+    toggleLogs: string
+    toggleYolo: string
   }
   profiles: {
     subtitle: string

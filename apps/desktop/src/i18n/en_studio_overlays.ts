@@ -64,7 +64,9 @@ export const enStudioOverlays: StudioOverlaysTranslations = {
     off: 'Off',
     layoutEditMode: 'Toggle layout edit mode',
     reloadPlugins: 'Reload desktop plugins',
-    resetLayout: 'Reset layout'
+    resetLayout: 'Reset layout',
+    toggleLogs: 'Toggle logs',
+    toggleYolo: 'Toggle YOLO mode (skip approvals)'
   },
   profiles: {
     subtitle: 'Each profile has its own model, skills, memory and persona (SOUL.md).',

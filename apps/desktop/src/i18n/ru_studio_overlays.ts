@@ -64,7 +64,9 @@ export const ruStudioOverlays: StudioOverlaysTranslations = {
     off: 'Выкл.',
     layoutEditMode: 'Переключить режим правки раскладки',
     reloadPlugins: 'Перезагрузить плагины рабочего стола',
-    resetLayout: 'Сбросить раскладку'
+    resetLayout: 'Сбросить раскладку',
+    toggleLogs: 'Показать или скрыть журналы',
+    toggleYolo: 'Переключить режим YOLO (без подтверждений)'
   },
   profiles: {
     subtitle: 'У каждого профиля своя модель, навыки, память и личность (SOUL.md).',

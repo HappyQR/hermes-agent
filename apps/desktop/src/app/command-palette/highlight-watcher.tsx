@@ -1,10 +1,11 @@
 /**
  * Reports the cmdk highlight to the palette.
  *
- * cmdk calls the root `onValueChange` only in controlled mode (when the
- * `value` prop is set). This palette is uncontrolled, so that prop never
- * fires. This watcher subscribes to the cmdk store with `useCommandState`,
- * which works in both modes, and reports each highlight change.
+ * cmdk calls the root `onValueChange` only for highlights it makes itself
+ * (arrows, hover, a new search); a highlight the palette sets through the
+ * `value` prop (useFirstRowHighlight) never passes through it. This watcher
+ * subscribes to the cmdk store with `useCommandState`, which sees both, and
+ * reports each highlight change.
  */
 
 import { useCommandState } from 'cmdk'

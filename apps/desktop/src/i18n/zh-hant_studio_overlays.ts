@@ -64,7 +64,9 @@ export const zhHantStudioOverlays: StudioOverlaysTranslations = {
     off: '關',
     layoutEditMode: '切換版面編輯模式',
     reloadPlugins: '重新載入桌面外掛程式',
-    resetLayout: '重設版面'
+    resetLayout: '重設版面',
+    toggleLogs: '切換日誌',
+    toggleYolo: '切換 YOLO 模式（略過審核）'
   },
   profiles: {
     subtitle: '每個設定檔都有獨立的模型、技能、記憶與人格（SOUL.md）。',

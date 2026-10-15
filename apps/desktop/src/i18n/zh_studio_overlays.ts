@@ -64,7 +64,9 @@ export const zhStudioOverlays: StudioOverlaysTranslations = {
     off: '关',
     layoutEditMode: '切换布局编辑模式',
     reloadPlugins: '重新加载桌面插件',
-    resetLayout: '重置布局'
+    resetLayout: '重置布局',
+    toggleLogs: '切换日志',
+    toggleYolo: '切换 YOLO 模式（跳过审批）'
   },
   profiles: {
     subtitle: '每个配置档案有独立的模型、技能、记忆与人格（SOUL.md）。',

@@ -64,7 +64,9 @@ export const arStudioOverlays: StudioOverlaysTranslations = {
     off: 'إيقاف',
     layoutEditMode: 'تبديل وضع تحرير التخطيط',
     reloadPlugins: 'إعادة تحميل إضافات سطح المكتب',
-    resetLayout: 'إعادة تعيين التخطيط'
+    resetLayout: 'إعادة تعيين التخطيط',
+    toggleLogs: 'تبديل السجلات',
+    toggleYolo: 'تبديل وضع YOLO (تخطي الموافقات)'
   },
   profiles: {
     subtitle: 'لكل ملف تعريف نموذجه ومهاراته وذاكرته وشخصيته (SOUL.md) الخاصة.',
