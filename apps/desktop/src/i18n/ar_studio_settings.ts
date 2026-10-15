@@ -1,4 +1,5 @@
 // Hermes Studio copy (settings) — fork-owned so upstream locale merges stay clean.
+// Generated from one table (all 9 locales together); edit the table, not one file.
 import type { StudioSettingsTranslations } from './types_studio_settings'
 
 export const arStudioSettings: StudioSettingsTranslations = {
@@ -89,6 +90,168 @@ export const arStudioSettings: StudioSettingsTranslations = {
     onlyThisDevice: 'هذا الجهاز فقط',
     appliesToProfile: profile => `تنطبق على «${profile}»`,
     appliesTo: 'تنطبق على',
-    scopeMenuTitle: 'تنطبق هذه الإعدادات على'
+    scopeMenuTitle: 'تنطبق هذه الإعدادات على',
+    searchResults: 'نتائج البحث',
+    pageMenu: 'صفحة الإعدادات'
+  },
+  sections: {
+    general: {
+      language: 'اللغة وبدء التشغيل',
+      tips: 'التلميحات والدروس',
+      system: 'النافذة والنظام'
+    },
+    appearance: {
+      look: 'المظهر',
+      theme: 'السمات',
+      themeNote: 'تُحفظ السمات لكل ملف تعريف. ويمكنك أيضًا تثبيت سمة مباشرةً من متجر VS Code.',
+      window: 'النافذة',
+      typography: 'الخطوط والتحجيم',
+      pet: 'الحيوان الأليف'
+    },
+    chat: {
+      replies: 'الردود',
+      messages: 'الرسائل',
+      media: 'المحتوى المضمّن والمرفقات'
+    },
+    notifications: {
+      alerts: 'تنبيهات سطح المكتب',
+      sounds: 'الصوت واللمس'
+    },
+    keyboard: {
+      shortcuts: 'الاختصارات',
+      shortcutsNote: 'انقر على مجموعة مفاتيح لتغييرها. يظهر التعارض في الصف نفسه.',
+      quickAsk: 'السؤال السريع',
+      hud: 'HUD والتقاط النافذة'
+    },
+    models: {
+      main: 'النموذج الرئيسي',
+      fallbacks: 'النماذج الاحتياطية',
+      fallbacksNote: 'تُجرَّب بالترتيب عندما يكون النموذج الرئيسي غير متاح أو ينفد رصيده.',
+      auxiliary: 'النماذج المساعدة',
+      auxiliaryDisclosure: 'المهام في الخلفية (الرؤية، الضغط، توليد العناوين…)',
+      moa: 'مزيج الوكلاء',
+      moaDisclosure: 'تجيب عدة نماذج معًا ثم يجمع نموذج تجميع إجاباتها (‎/moa)'
+    },
+    providers: {
+      accounts: 'الحسابات',
+      apiKeys: 'مفاتيح API',
+      endpoints: 'نقاط النهاية المخصصة',
+      local: 'النماذج المحلية'
+    },
+    memory: {
+      memory: 'الذاكرة طويلة المدى',
+      context: 'السياق والضغط',
+      contextDisclosure: 'تفاصيل الضغط',
+      maintenance: 'الصيانة'
+    },
+    voice: {
+      conversation: 'المحادثة الصوتية',
+      stt: 'تحويل الكلام إلى نص',
+      tts: 'القراءة بصوت عالٍ',
+      wake: 'كلمة التنبيه'
+    },
+    workspace: {
+      projects: 'المشاريع',
+      execution: 'التنفيذ',
+      checkpoints: 'نقاط الحفظ',
+      checkpointsNote: 'تُحفظ تلقائيًا قبل كل تعديل على الملفات، فيمكنك «استعادة نقطة الحفظ» من الرسالة.'
+    },
+    safety: {
+      approvals: 'الموافقة على الأوامر',
+      privacy: 'الخصوصية',
+      browser: 'المتصفح والشبكة'
+    },
+    passwords: {
+      credentials: 'بيانات الاعتماد المحفوظة',
+      credentialsNote: 'يستخدمها Hermes عند تسجيل الدخول أو ملء النماذج نيابةً عنك.',
+      managers: 'مديرو كلمات المرور'
+    },
+    tools: {
+      toolKeys: 'مفاتيح خدمات الأدوات',
+      serverEnv: 'متغيرات بيئة الخادم',
+      toolsets: 'مجموعات الأدوات'
+    },
+    gateways: {
+      connection: 'تتصل هذه النافذة بـ',
+      saved: 'الاتصالات المحفوظة',
+      remoteUpdates: 'التحديثات عن بُعد'
+    },
+    sessions: {
+      retention: 'الأرشفة والاحتفاظ',
+      archived: 'الجلسات المؤرشفة'
+    },
+    plugins: {
+      pages: 'إعدادات الإضافات',
+      manage: 'التثبيت والتفعيل'
+    },
+    advanced: {
+      agent: 'الوكيل',
+      terminal: 'الواجهة الخلفية للطرفية',
+      subagents: 'الوكلاء الفرعيون',
+      output: 'حدود المخرجات',
+      updates: 'التحديثات داخل التطبيق'
+    },
+    about: {
+      updates: 'التحديثات',
+      config: 'الإعدادات',
+      diagnostics: 'التشخيص',
+      uninstall: 'إلغاء التثبيت'
+    }
+  },
+  rows: {
+    modeLight: 'فاتح',
+    modeDark: 'داكن',
+    modeAuto: 'تلقائي',
+    modeGroup: 'وضع الألوان',
+    accentTitle: 'لون التمييز',
+    accentDesc: 'لون الأزرار والعناصر المحددة والروابط',
+    accentNous: 'أزرق',
+    accentHermes: 'أزرق Hermes',
+    accentViolet: 'بنفسجي',
+    accentPink: 'وردي',
+    accentRed: 'أحمر',
+    accentOrange: 'برتقالي',
+    accentGreen: 'أخضر',
+    accentMono: 'جرافيت',
+    thinkingTitle: 'التفكير',
+    thinkingDesc: 'كيف يظهر استدلال النموذج في الردود',
+    thinkingShow: 'إظهار',
+    thinkingCollapse: 'مطوي',
+    thinkingHide: 'مخفي',
+    timestampsTitle: 'إظهار الطوابع الزمنية',
+    hapticsTitle: 'الاستجابة اللمسية',
+    hapticsDesc: 'إشارات لمسية عند السحب وعند انتهاء العمل. يؤدي إيقافها أيضًا إلى كتم صوت الإكمال.',
+    wakeTitle: 'تفعيل كلمة التنبيه',
+    wakeDesc: 'يستمع في الخلفية ويبدأ محادثة صوتية عند سماع العبارة',
+    wakePhrase: 'عبارة التنبيه',
+    memoryOpenTitle: 'العرض والتعديل',
+    memoryOpenDesc: 'تصفّح الرسم البياني والقائمة في صفحة الذاكرة',
+    memoryOpenAction: 'فتح الذاكرة',
+    resetMemoryTitle: 'إعادة تعيين الذاكرة',
+    resetMemoryDesc: 'يمسح MEMORY.md. لا يمكن التراجع عن ذلك.',
+    resetProfileTitle: 'إعادة تعيين ملف المستخدم',
+    resetProfileDesc: 'يمسح USER.md.',
+    resetAction: 'إعادة تعيين…',
+    maintenanceActiveOnly: profile => `تُطبَّق إعادة التعيين على ملف التعريف الذي تستخدمه هذه النافذة («${profile}»).`,
+    toolsetsTitle: 'تشغيل مجموعات الأدوات أو إيقافها',
+    toolsetsDesc: page => `تُدار من «${page} › الأدوات».`,
+    openAction: 'فتح',
+    pluginsManageDesc: 'التثبيت والتحديث والتفعيل وإلغاء التثبيت',
+    pluginsManageAction: 'فتح الإضافات',
+    exportDesc: 'يحفظ الملف hermes-config.json، دون المفاتيح.',
+    exportAction: 'تصدير…',
+    importAction: 'استيراد…',
+    resetConfigDesc: 'يؤثر في ملف التعريف الحالي فقط، وتبقى إعدادات المظهر على هذا الجهاز كما هي.',
+    resetConfigAction: 'استعادة…',
+    diagnosticsTitle: 'إرسال بيانات التشخيص',
+    diagnosticsDesc: 'يرفع سجلات منقّحة للدعم. تؤكد قبل الإرسال، وتنتهي صلاحية الرابط.',
+    diagnosticsAction: 'إرسال…',
+    logsTitle: 'مجلد السجلات',
+    logsActionMac: 'إظهار في Finder',
+    logsActionOther: 'فتح المجلد',
+    localModelsDesc: 'نزّل نماذج مفتوحة وشغّلها على هذا الكمبيوتر.',
+    localModelsAction: 'إدارة النماذج المحلية…',
+    sendTestAction: 'إرسال',
+    resetShortcutsAction: 'استعادة كل الإعدادات الافتراضية'
   }
 }

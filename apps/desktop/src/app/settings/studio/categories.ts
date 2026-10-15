@@ -1,26 +1,5 @@
 import type { TileTone } from '@/app/overlays/studio/icon-tile'
-import type { IconComponent } from '@/lib/icons'
-import {
-  ArchiveBox,
-  BellIcon,
-  BrainIcon,
-  Bubbles,
-  Card,
-  Chip,
-  Contrast,
-  Folder,
-  Gear,
-  Hand,
-  InfoCircle,
-  Key,
-  KeyboardIcon,
-  LockIcon,
-  Puzzle,
-  Server,
-  Sliders,
-  Wave,
-  WrenchIcon
-} from '@/lib/icons-studio-overlays'
+import type { StudioIconName } from '@/components/ui/studio-icon'
 
 /**
  * The Settings window's 19 categories (macOS System Settings layout), in
@@ -56,7 +35,8 @@ export type SettingsPageId =
 export type SettingsPageScope = 'device' | 'none' | 'profile'
 
 export interface SettingsPageSpec {
-  icon: IconComponent
+  /** Prototype glyph (components/ui/studio-icon) drawn on the tile. */
+  glyph: StudioIconName
   id: SettingsPageId
   scope: SettingsPageScope
   tone: TileTone
@@ -74,25 +54,25 @@ export const SETTINGS_PAGE_IDS: readonly SettingsPageId[] = SETTINGS_PAGE_GROUPS
 export const DEFAULT_SETTINGS_PAGE: SettingsPageId = 'general'
 
 export const SETTINGS_PAGES: Record<SettingsPageId, SettingsPageSpec> = {
-  general: { icon: Gear, id: 'general', scope: 'device', tone: 'gray' },
-  appearance: { icon: Contrast, id: 'appearance', scope: 'device', tone: 'black' },
-  chat: { icon: Bubbles, id: 'chat', scope: 'profile', tone: 'teal' },
-  notifications: { icon: BellIcon, id: 'notifications', scope: 'device', tone: 'red' },
-  keyboard: { icon: KeyboardIcon, id: 'keyboard', scope: 'device', tone: 'gray' },
-  models: { icon: Chip, id: 'models', scope: 'profile', tone: 'purple' },
-  providers: { icon: Key, id: 'providers', scope: 'profile', tone: 'orange' },
-  memory: { icon: BrainIcon, id: 'memory', scope: 'profile', tone: 'pink' },
-  voice: { icon: Wave, id: 'voice', scope: 'profile', tone: 'indigo' },
-  workspace: { icon: Folder, id: 'workspace', scope: 'profile', tone: 'blue' },
-  safety: { icon: Hand, id: 'safety', scope: 'profile', tone: 'blue' },
-  passwords: { icon: LockIcon, id: 'passwords', scope: 'profile', tone: 'gray' },
-  tools: { icon: WrenchIcon, id: 'tools', scope: 'profile', tone: 'green' },
-  gateways: { icon: Server, id: 'gateways', scope: 'none', tone: 'teal' },
-  sessions: { icon: ArchiveBox, id: 'sessions', scope: 'profile', tone: 'brown' },
-  plugins: { icon: Puzzle, id: 'plugins', scope: 'profile', tone: 'green' },
-  billing: { icon: Card, id: 'billing', scope: 'none', tone: 'green' },
-  advanced: { icon: Sliders, id: 'advanced', scope: 'profile', tone: 'graphite' },
-  about: { icon: InfoCircle, id: 'about', scope: 'none', tone: 'gray' }
+  general: { glyph: 'gear', id: 'general', scope: 'device', tone: 'gray' },
+  appearance: { glyph: 'contrast', id: 'appearance', scope: 'device', tone: 'black' },
+  chat: { glyph: 'bubbles', id: 'chat', scope: 'profile', tone: 'teal' },
+  notifications: { glyph: 'bell', id: 'notifications', scope: 'device', tone: 'red' },
+  keyboard: { glyph: 'keyboard', id: 'keyboard', scope: 'device', tone: 'gray' },
+  models: { glyph: 'cpu', id: 'models', scope: 'profile', tone: 'purple' },
+  providers: { glyph: 'key', id: 'providers', scope: 'profile', tone: 'orange' },
+  memory: { glyph: 'brain', id: 'memory', scope: 'profile', tone: 'pink' },
+  voice: { glyph: 'wave', id: 'voice', scope: 'profile', tone: 'indigo' },
+  workspace: { glyph: 'folder', id: 'workspace', scope: 'profile', tone: 'blue' },
+  safety: { glyph: 'hand', id: 'safety', scope: 'profile', tone: 'blue' },
+  passwords: { glyph: 'lock', id: 'passwords', scope: 'profile', tone: 'gray' },
+  tools: { glyph: 'wrench', id: 'tools', scope: 'profile', tone: 'green' },
+  gateways: { glyph: 'server', id: 'gateways', scope: 'none', tone: 'teal' },
+  sessions: { glyph: 'archive', id: 'sessions', scope: 'profile', tone: 'brown' },
+  plugins: { glyph: 'puzzle', id: 'plugins', scope: 'profile', tone: 'green' },
+  billing: { glyph: 'card', id: 'billing', scope: 'none', tone: 'green' },
+  advanced: { glyph: 'sliders', id: 'advanced', scope: 'profile', tone: 'graphite' },
+  about: { glyph: 'info', id: 'about', scope: 'none', tone: 'gray' }
 }
 
 export function isSettingsPageId(value: null | string | undefined): value is SettingsPageId {

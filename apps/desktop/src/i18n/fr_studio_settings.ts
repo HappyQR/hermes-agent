@@ -1,4 +1,5 @@
 // Hermes Studio copy (settings) — fork-owned so upstream locale merges stay clean.
+// Generated from one table (all 9 locales together); edit the table, not one file.
 import type { StudioSettingsTranslations } from './types_studio_settings'
 
 export const frStudioSettings: StudioSettingsTranslations = {
@@ -89,6 +90,168 @@ export const frStudioSettings: StudioSettingsTranslations = {
     onlyThisDevice: 'Cet appareil uniquement',
     appliesToProfile: profile => `S’applique à « ${profile} »`,
     appliesTo: 'S’applique à',
-    scopeMenuTitle: 'Ces réglages s’appliquent à'
+    scopeMenuTitle: 'Ces réglages s’appliquent à',
+    searchResults: 'Résultats de recherche',
+    pageMenu: 'Page de réglages'
+  },
+  sections: {
+    general: {
+      language: 'Langue et démarrage',
+      tips: 'Astuces et tutoriels',
+      system: 'Fenêtre et système'
+    },
+    appearance: {
+      look: 'Apparence',
+      theme: 'Thèmes',
+      themeNote: 'Les thèmes sont enregistrés par profil. Vous pouvez aussi en installer un depuis le VS Code Marketplace.',
+      window: 'Fenêtre',
+      typography: 'Polices et échelle',
+      pet: 'Animal'
+    },
+    chat: {
+      replies: 'Réponses',
+      messages: 'Messages',
+      media: 'Intégrations et pièces jointes'
+    },
+    notifications: {
+      alerts: 'Alertes du bureau',
+      sounds: 'Son et retour haptique'
+    },
+    keyboard: {
+      shortcuts: 'Raccourcis',
+      shortcutsNote: 'Cliquez sur une combinaison pour la modifier. Les conflits sont signalés dans la ligne.',
+      quickAsk: 'Question rapide',
+      hud: 'HUD et capture de fenêtre'
+    },
+    models: {
+      main: 'Modèle principal',
+      fallbacks: 'Modèles de secours',
+      fallbacksNote: 'Essayés dans l’ordre si le modèle principal est indisponible ou sans crédit.',
+      auxiliary: 'Modèles auxiliaires',
+      auxiliaryDisclosure: 'Tâches de fond (vision, compression, titres…)',
+      moa: 'Mélange d’agents',
+      moaDisclosure: 'Plusieurs modèles répondent ensemble, puis un agrégateur combine leurs réponses (/moa)'
+    },
+    providers: {
+      accounts: 'Comptes',
+      apiKeys: 'Clés API',
+      endpoints: 'Points de terminaison personnalisés',
+      local: 'Modèles locaux'
+    },
+    memory: {
+      memory: 'Mémoire à long terme',
+      context: 'Contexte et compression',
+      contextDisclosure: 'Détails de la compression',
+      maintenance: 'Maintenance'
+    },
+    voice: {
+      conversation: 'Conversation vocale',
+      stt: 'Dictée',
+      tts: 'Lecture à voix haute',
+      wake: 'Mot d’activation'
+    },
+    workspace: {
+      projects: 'Projets',
+      execution: 'Exécution',
+      checkpoints: 'Points de contrôle',
+      checkpointsNote: 'Enregistrés automatiquement avant chaque modification de fichier ; restaurez-les depuis un message.'
+    },
+    safety: {
+      approvals: 'Approbation des commandes',
+      privacy: 'Confidentialité',
+      browser: 'Navigateur et réseau'
+    },
+    passwords: {
+      credentials: 'Identifiants enregistrés',
+      credentialsNote: 'Utilisés quand Hermes se connecte ou remplit des formulaires pour vous.',
+      managers: 'Gestionnaires de mots de passe'
+    },
+    tools: {
+      toolKeys: 'Clés des services d’outils',
+      serverEnv: 'Variables d’environnement du serveur',
+      toolsets: 'Ensembles d’outils'
+    },
+    gateways: {
+      connection: 'Cette fenêtre se connecte à',
+      saved: 'Connexions enregistrées',
+      remoteUpdates: 'Mises à jour à distance'
+    },
+    sessions: {
+      retention: 'Archivage et conservation',
+      archived: 'Sessions archivées'
+    },
+    plugins: {
+      pages: 'Réglages des plugins',
+      manage: 'Installation et activation'
+    },
+    advanced: {
+      agent: 'Agent',
+      terminal: 'Backend du terminal',
+      subagents: 'Sous-agents',
+      output: 'Limites de sortie',
+      updates: 'Mises à jour intégrées'
+    },
+    about: {
+      updates: 'Mises à jour',
+      config: 'Configuration',
+      diagnostics: 'Diagnostics',
+      uninstall: 'Désinstallation'
+    }
+  },
+  rows: {
+    modeLight: 'Clair',
+    modeDark: 'Sombre',
+    modeAuto: 'Auto',
+    modeGroup: 'Mode de couleur',
+    accentTitle: 'Couleur d’accentuation',
+    accentDesc: 'La couleur des boutons, des sélections et des liens',
+    accentNous: 'Bleu',
+    accentHermes: 'Bleu Hermes',
+    accentViolet: 'Violet',
+    accentPink: 'Rose',
+    accentRed: 'Rouge',
+    accentOrange: 'Orange',
+    accentGreen: 'Vert',
+    accentMono: 'Graphite',
+    thinkingTitle: 'Réflexion',
+    thinkingDesc: 'Comment le raisonnement du modèle apparaît dans les réponses',
+    thinkingShow: 'Afficher',
+    thinkingCollapse: 'Replié',
+    thinkingHide: 'Masqué',
+    timestampsTitle: 'Afficher l’heure',
+    hapticsTitle: 'Retour haptique',
+    hapticsDesc: 'Retours haptiques lors des glisser-déposer et à la fin d’un travail. Les désactiver coupe aussi le son de fin.',
+    wakeTitle: 'Écouter le mot d’activation',
+    wakeDesc: 'Écoute en arrière-plan et lance une conversation vocale quand il entend la phrase',
+    wakePhrase: 'Phrase d’activation',
+    memoryOpenTitle: 'Afficher et modifier',
+    memoryOpenDesc: 'Parcourez le graphe et la liste sur la page Mémoire.',
+    memoryOpenAction: 'Ouvrir la mémoire',
+    resetMemoryTitle: 'Réinitialiser la mémoire',
+    resetMemoryDesc: 'Vide MEMORY.md. Action irréversible.',
+    resetProfileTitle: 'Réinitialiser le profil utilisateur',
+    resetProfileDesc: 'Vide USER.md.',
+    resetAction: 'Réinitialiser…',
+    maintenanceActiveOnly: profile => `Les réinitialisations s’appliquent au profil utilisé par cette fenêtre (« ${profile} »).`,
+    toolsetsTitle: 'Activer ou désactiver des ensembles d’outils',
+    toolsetsDesc: page => `Gérés dans « ${page} › Outils ».`,
+    openAction: 'Ouvrir',
+    pluginsManageDesc: 'Installer, mettre à jour, activer et désinstaller',
+    pluginsManageAction: 'Ouvrir les plugins',
+    exportDesc: 'Enregistre hermes-config.json. Les clés ne sont pas incluses.',
+    exportAction: 'Exporter…',
+    importAction: 'Importer…',
+    resetConfigDesc: 'N’affecte que le profil actuel. Les réglages d’apparence de cet appareil ne changent pas.',
+    resetConfigAction: 'Réinitialiser…',
+    diagnosticsTitle: 'Envoyer les diagnostics',
+    diagnosticsDesc: 'Envoie des journaux anonymisés au support. Vous confirmez avant l’envoi et le lien expire.',
+    diagnosticsAction: 'Envoyer…',
+    logsTitle: 'Dossier des journaux',
+    logsActionMac: 'Afficher dans le Finder',
+    logsActionOther: 'Ouvrir le dossier',
+    localModelsDesc: 'Téléchargez des modèles ouverts et exécutez-les sur cet ordinateur.',
+    localModelsAction: 'Gérer les modèles locaux…',
+    sendTestAction: 'Envoyer',
+    resetShortcutsAction: 'Tout rétablir par défaut'
   }
 }

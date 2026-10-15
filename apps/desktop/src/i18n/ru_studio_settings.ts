@@ -1,4 +1,5 @@
 // Hermes Studio copy (settings) — fork-owned so upstream locale merges stay clean.
+// Generated from one table (all 9 locales together); edit the table, not one file.
 import type { StudioSettingsTranslations } from './types_studio_settings'
 
 export const ruStudioSettings: StudioSettingsTranslations = {
@@ -89,6 +90,168 @@ export const ruStudioSettings: StudioSettingsTranslations = {
     onlyThisDevice: 'Только это устройство',
     appliesToProfile: profile => `Применяется к «${profile}»`,
     appliesTo: 'Применяется к',
-    scopeMenuTitle: 'Эти настройки применяются к'
+    scopeMenuTitle: 'Эти настройки применяются к',
+    searchResults: 'Результаты поиска',
+    pageMenu: 'Раздел настроек'
+  },
+  sections: {
+    general: {
+      language: 'Язык и запуск',
+      tips: 'Подсказки и обучение',
+      system: 'Окно и система'
+    },
+    appearance: {
+      look: 'Оформление',
+      theme: 'Темы',
+      themeNote: 'Темы сохраняются для каждого профиля. Можно установить тему прямо из VS Code Marketplace.',
+      window: 'Окно',
+      typography: 'Шрифты и масштаб',
+      pet: 'Питомец'
+    },
+    chat: {
+      replies: 'Ответы',
+      messages: 'Сообщения',
+      media: 'Встраивания и вложения'
+    },
+    notifications: {
+      alerts: 'Уведомления на рабочем столе',
+      sounds: 'Звук и тактильный отклик'
+    },
+    keyboard: {
+      shortcuts: 'Сочетания клавиш',
+      shortcutsNote: 'Нажмите на сочетание, чтобы изменить его. Конфликты отмечаются в строке.',
+      quickAsk: 'Быстрый вопрос',
+      hud: 'HUD и захват окна'
+    },
+    models: {
+      main: 'Основная модель',
+      fallbacks: 'Резервные модели',
+      fallbacksNote: 'Используются по порядку, если основная модель недоступна или закончился лимит.',
+      auxiliary: 'Вспомогательные модели',
+      auxiliaryDisclosure: 'Фоновые задачи (зрение, сжатие, заголовки…)',
+      moa: 'Смесь агентов',
+      moaDisclosure: 'Несколько моделей отвечают вместе, затем агрегатор объединяет ответы (/moa)'
+    },
+    providers: {
+      accounts: 'Аккаунты',
+      apiKeys: 'Ключи API',
+      endpoints: 'Собственные эндпоинты',
+      local: 'Локальные модели'
+    },
+    memory: {
+      memory: 'Долговременная память',
+      context: 'Контекст и сжатие',
+      contextDisclosure: 'Параметры сжатия',
+      maintenance: 'Обслуживание'
+    },
+    voice: {
+      conversation: 'Голосовой разговор',
+      stt: 'Распознавание речи',
+      tts: 'Чтение вслух',
+      wake: 'Слово активации'
+    },
+    workspace: {
+      projects: 'Проекты',
+      execution: 'Выполнение',
+      checkpoints: 'Контрольные точки',
+      checkpointsNote: 'Сохраняются автоматически перед каждым изменением файлов — их можно восстановить из сообщения.'
+    },
+    safety: {
+      approvals: 'Подтверждение команд',
+      privacy: 'Конфиденциальность',
+      browser: 'Браузер и сеть'
+    },
+    passwords: {
+      credentials: 'Сохранённые данные для входа',
+      credentialsNote: 'Используются, когда Hermes входит на сайты или заполняет формы за вас.',
+      managers: 'Менеджеры паролей'
+    },
+    tools: {
+      toolKeys: 'Ключи сервисов инструментов',
+      serverEnv: 'Переменные окружения сервера',
+      toolsets: 'Наборы инструментов'
+    },
+    gateways: {
+      connection: 'Это окно подключается к',
+      saved: 'Сохранённые подключения',
+      remoteUpdates: 'Удалённые обновления'
+    },
+    sessions: {
+      retention: 'Архивирование и хранение',
+      archived: 'Архивные сеансы'
+    },
+    plugins: {
+      pages: 'Настройки плагинов',
+      manage: 'Установка и включение'
+    },
+    advanced: {
+      agent: 'Агент',
+      terminal: 'Бэкенд терминала',
+      subagents: 'Субагенты',
+      output: 'Лимиты вывода',
+      updates: 'Обновления в приложении'
+    },
+    about: {
+      updates: 'Обновления',
+      config: 'Конфигурация',
+      diagnostics: 'Диагностика',
+      uninstall: 'Удаление'
+    }
+  },
+  rows: {
+    modeLight: 'Светлое',
+    modeDark: 'Тёмное',
+    modeAuto: 'Авто',
+    modeGroup: 'Цветовой режим',
+    accentTitle: 'Акцентный цвет',
+    accentDesc: 'Цвет кнопок, выделения и ссылок',
+    accentNous: 'Синий',
+    accentHermes: 'Синий Hermes',
+    accentViolet: 'Фиолетовый',
+    accentPink: 'Розовый',
+    accentRed: 'Красный',
+    accentOrange: 'Оранжевый',
+    accentGreen: 'Зелёный',
+    accentMono: 'Графит',
+    thinkingTitle: 'Рассуждения',
+    thinkingDesc: 'Как рассуждения модели показываются в ответах',
+    thinkingShow: 'Показывать',
+    thinkingCollapse: 'Свёрнуто',
+    thinkingHide: 'Скрыто',
+    timestampsTitle: 'Показывать время',
+    hapticsTitle: 'Тактильный отклик',
+    hapticsDesc: 'Тактильные сигналы при перетаскивании и по завершении работы. Если выключить, звук завершения тоже отключится.',
+    wakeTitle: 'Слушать слово активации',
+    wakeDesc: 'Слушает в фоне и начинает голосовой разговор, услышав фразу',
+    wakePhrase: 'Фраза активации',
+    memoryOpenTitle: 'Просмотр и правка',
+    memoryOpenDesc: 'Граф и список — на странице «Память»',
+    memoryOpenAction: 'Открыть память',
+    resetMemoryTitle: 'Сбросить память',
+    resetMemoryDesc: 'Очищает MEMORY.md. Отменить нельзя.',
+    resetProfileTitle: 'Сбросить профиль пользователя',
+    resetProfileDesc: 'Очищает USER.md.',
+    resetAction: 'Сбросить…',
+    maintenanceActiveOnly: profile => `Сброс применяется к профилю этого окна («${profile}»).`,
+    toolsetsTitle: 'Включение и выключение наборов',
+    toolsetsDesc: page => `Управление — в разделе «${page} › Инструменты».`,
+    openAction: 'Открыть',
+    pluginsManageDesc: 'Установка, обновление, включение и удаление',
+    pluginsManageAction: 'Открыть плагины',
+    exportDesc: 'Сохраняет hermes-config.json. Ключи не включаются.',
+    exportAction: 'Экспорт…',
+    importAction: 'Импорт…',
+    resetConfigDesc: 'Затрагивает только текущий профиль. Настройки оформления этого устройства не меняются.',
+    resetConfigAction: 'Сбросить…',
+    diagnosticsTitle: 'Отправить диагностику',
+    diagnosticsDesc: 'Загружает обезличенные журналы для поддержки. Перед отправкой нужно подтверждение, ссылка истекает.',
+    diagnosticsAction: 'Отправить…',
+    logsTitle: 'Папка журналов',
+    logsActionMac: 'Показать в Finder',
+    logsActionOther: 'Открыть папку',
+    localModelsDesc: 'Скачивайте открытые модели и запускайте их на этом компьютере.',
+    localModelsAction: 'Управлять локальными моделями…',
+    sendTestAction: 'Отправить',
+    resetShortcutsAction: 'Сбросить всё по умолчанию'
   }
 }

@@ -1,4 +1,5 @@
 // Hermes Studio copy (settings) — fork-owned so upstream locale merges stay clean.
+// Generated from one table (all 9 locales together); edit the table, not one file.
 import type { StudioSettingsTranslations } from './types_studio_settings'
 
 export const zhHantStudioSettings: StudioSettingsTranslations = {
@@ -89,6 +90,168 @@ export const zhHantStudioSettings: StudioSettingsTranslations = {
     onlyThisDevice: '僅限這部裝置',
     appliesToProfile: profile => `套用於「${profile}」`,
     appliesTo: '套用於',
-    scopeMenuTitle: '這些設定套用於'
+    scopeMenuTitle: '這些設定套用於',
+    searchResults: '搜尋結果',
+    pageMenu: '設定頁面'
+  },
+  sections: {
+    general: {
+      language: '語言與啟動',
+      tips: '提示與教學',
+      system: '視窗與系統'
+    },
+    appearance: {
+      look: '外觀',
+      theme: '主題',
+      themeNote: '主題依設定檔儲存。也可以直接從 VS Code 主題市集安裝。',
+      window: '視窗',
+      typography: '字體與縮放',
+      pet: '寵物'
+    },
+    chat: {
+      replies: '回覆',
+      messages: '訊息',
+      media: '內嵌媒體與附件'
+    },
+    notifications: {
+      alerts: '桌面提醒',
+      sounds: '聲音與觸感'
+    },
+    keyboard: {
+      shortcuts: '快捷鍵',
+      shortcutsNote: '點按按鍵組合即可重新設定。衝突會在該列中提示。',
+      quickAsk: '快速提問',
+      hud: 'HUD 與擷取視窗'
+    },
+    models: {
+      main: '主要模型',
+      fallbacks: '備用模型',
+      fallbacksNote: '主要模型無法使用或超出額度時，依序嘗試。',
+      auxiliary: '輔助模型',
+      auxiliaryDisclosure: '背景任務（視覺、壓縮、標題產生…）',
+      moa: '混合代理',
+      moaDisclosure: '多個模型一起回答，再由彙整模型總結（/moa）'
+    },
+    providers: {
+      accounts: '帳號',
+      apiKeys: 'API 金鑰',
+      endpoints: '自訂端點',
+      local: '本地模型'
+    },
+    memory: {
+      memory: '長期記憶',
+      context: '上下文與壓縮',
+      contextDisclosure: '壓縮細節',
+      maintenance: '維護'
+    },
+    voice: {
+      conversation: '語音對話',
+      stt: '語音轉文字',
+      tts: '朗讀',
+      wake: '喚醒詞'
+    },
+    workspace: {
+      projects: '專案',
+      execution: '執行',
+      checkpoints: '檢查點',
+      checkpointsNote: '每次修改檔案前自動保存，可以在訊息上「還原檢查點」。'
+    },
+    safety: {
+      approvals: '指令審核',
+      privacy: '隱私',
+      browser: '瀏覽器與網路'
+    },
+    passwords: {
+      credentials: '已儲存的憑證',
+      credentialsNote: 'Hermes 代你登入或填寫表單時使用。',
+      managers: '密碼管理工具'
+    },
+    tools: {
+      toolKeys: '工具服務金鑰',
+      serverEnv: '伺服器環境變數',
+      toolsets: '工具集'
+    },
+    gateways: {
+      connection: '這個視窗連線到',
+      saved: '已儲存的連線',
+      remoteUpdates: '遠端更新'
+    },
+    sessions: {
+      retention: '封存與保留',
+      archived: '已封存的工作階段'
+    },
+    plugins: {
+      pages: '外掛程式設定',
+      manage: '安裝與啟用'
+    },
+    advanced: {
+      agent: '代理',
+      terminal: '終端機後端',
+      subagents: '子代理',
+      output: '輸出上限',
+      updates: '應用程式內更新'
+    },
+    about: {
+      updates: '更新',
+      config: '設定檔',
+      diagnostics: '診斷',
+      uninstall: '解除安裝'
+    }
+  },
+  rows: {
+    modeLight: '淺色',
+    modeDark: '深色',
+    modeAuto: '自動',
+    modeGroup: '顏色模式',
+    accentTitle: '強調色',
+    accentDesc: '按鈕、選取項目和連結的顏色',
+    accentNous: '藍色',
+    accentHermes: 'Hermes 藍',
+    accentViolet: '紫色',
+    accentPink: '粉紅色',
+    accentRed: '紅色',
+    accentOrange: '橙色',
+    accentGreen: '綠色',
+    accentMono: '石墨色',
+    thinkingTitle: '思考過程',
+    thinkingDesc: '模型的推理在回覆中如何顯示',
+    thinkingShow: '顯示',
+    thinkingCollapse: '摺疊',
+    thinkingHide: '隱藏',
+    timestampsTitle: '顯示時間戳記',
+    hapticsTitle: '觸覺回饋',
+    hapticsDesc: '拖放與完成時的觸覺回饋。關閉後完成提示音也會靜音。',
+    wakeTitle: '啟用喚醒詞',
+    wakeDesc: '在背景持續聆聽，聽到喚醒詞後開始語音對話',
+    wakePhrase: '喚醒詞',
+    memoryOpenTitle: '檢視與編輯',
+    memoryOpenDesc: '在「記憶」頁面瀏覽圖譜和列表',
+    memoryOpenAction: '開啟記憶',
+    resetMemoryTitle: '重設記憶',
+    resetMemoryDesc: '清空 MEMORY.md，無法復原',
+    resetProfileTitle: '重設使用者畫像',
+    resetProfileDesc: '清空 USER.md',
+    resetAction: '重設…',
+    maintenanceActiveOnly: profile => `重設只作用於這個視窗正在使用的設定檔（「${profile}」）。`,
+    toolsetsTitle: '啟用或關閉工具集',
+    toolsetsDesc: page => `在「${page} › 工具」中管理`,
+    openAction: '開啟',
+    pluginsManageDesc: '安裝、更新、啟用與解除安裝',
+    pluginsManageAction: '開啟外掛程式',
+    exportDesc: '儲存為 hermes-config.json，不含金鑰',
+    exportAction: '匯出…',
+    importAction: '匯入…',
+    resetConfigDesc: '只影響目前的設定檔，本機外觀設定不變',
+    resetConfigAction: '恢復…',
+    diagnosticsTitle: '傳送診斷資訊',
+    diagnosticsDesc: '上傳去識別化的記錄檔以協助排查問題。傳送前會先確認，連結會自動過期',
+    diagnosticsAction: '傳送…',
+    logsTitle: '記錄檔資料夾',
+    logsActionMac: '在 Finder 中顯示',
+    logsActionOther: '開啟資料夾',
+    localModelsDesc: '下載開源模型並在本機執行',
+    localModelsAction: '管理本地模型…',
+    sendTestAction: '傳送',
+    resetShortcutsAction: '全部恢復預設'
   }
 }
