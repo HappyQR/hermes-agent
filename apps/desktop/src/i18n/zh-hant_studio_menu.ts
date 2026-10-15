@@ -24,7 +24,7 @@ export const zhHantStudioMenu: StudioMenuTranslations = {
     newSession: '新增工作階段',
     newTab: '新增分頁',
     newWindow: '新增視窗',
-    openFolder: '將檔案夾打開為專案…',
+    openFolder: '將資料夾開啟為專案…',
     newProject: '新增專案…',
     newWorktree: '新增工作樹…',
     importSession: '從 Claude Code 或 Codex 匯入工作階段…',
@@ -32,7 +32,7 @@ export const zhHantStudioMenu: StudioMenuTranslations = {
     exportProfile: '匯出設定檔…',
     importProfile: '匯入設定檔…',
     closeTab: '關閉分頁',
-    reopenTab: '重新打開關閉的分頁'
+    reopenTab: '重新開啟關閉的分頁'
   },
   edit: {
     undo: '還原',

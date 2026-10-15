@@ -24,7 +24,7 @@ export const jaStudioMenu: StudioMenuTranslations = {
     newSession: '新規セッション',
     newTab: '新規タブ',
     newWindow: '新規ウインドウ',
-    openFolder: 'フォルダをプロジェクトとして開く…',
+    openFolder: 'フォルダーをプロジェクトとして開く…',
     newProject: '新規プロジェクト…',
     newWorktree: '新規ワークツリー…',
     importSession: 'Claude Code または Codex からセッションを読み込む…',
