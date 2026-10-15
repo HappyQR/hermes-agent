@@ -27,6 +27,9 @@ export interface StripPane {
 }
 
 export interface StripZone {
+  /** Studio: a pane in the zone owns the titlebar band (the toolbar), which
+   *  carries the lone pane's handles — its title menu — so no strip is forced. */
+  band?: boolean
   /** The ACTIVE pane declines to be tabbed (a full-page view). */
   headerVeto?: boolean
   /** The zone's standing choice; undefined = auto. */
@@ -80,7 +83,7 @@ export function resolveTabStripVisible(zone: StripZone): boolean {
     return false
   }
 
-  if (stranded(zone.shown)) {
+  if (!zone.band && stranded(zone.shown)) {
     return true
   }
 
@@ -111,6 +114,7 @@ export function tabStripVisibleForZone(zone: {
   shown: readonly string[]
 }): boolean {
   return resolveTabStripVisible({
+    band: zone.shown.some(id => Boolean(paneChrome(zone.paneFor(id)).band)),
     headerVeto: paneChrome(zone.paneFor(zone.active)).headerVeto,
     mode: effectiveTabStripMode(zone.mode),
     shown: zone.shown.map(id => {

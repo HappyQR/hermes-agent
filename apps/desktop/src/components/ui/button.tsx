@@ -62,7 +62,11 @@ const buttonVariants = cva(
         'icon-lg': 'size-10 rounded-[9px]',
         grip: 'h-4 w-12 rounded-full p-0',
         'icon-titlebar':
-          'titlebar-icon-button h-(--titlebar-control-height) w-(--titlebar-control-size) rounded-[7px] [&_svg:not([class*="size-"])]:size-(--titlebar-icon-size)'
+          'titlebar-icon-button h-(--titlebar-control-height) w-(--titlebar-control-size) rounded-[7px] [&_svg:not([class*="size-"])]:size-(--titlebar-icon-size)',
+        // Studio toolbar / sidebar top bar glyph button (prototype .ibtn, 28px).
+        'icon-toolbar': "size-7 rounded-[7px] [&_svg:not([class*='size-'])]:size-4",
+        // A pill segment inside a <Capsule> (prototype .capsule .ibtn, 30×28).
+        'icon-capsule': "h-7 w-[1.875rem] rounded-full [&_svg:not([class*='size-'])]:size-4"
       }
     },
     compoundVariants: [

@@ -501,3 +501,28 @@
 .tooltip-bubble [data-slot='tooltip-arrow'] {
   display: none;
 }
+
+/* Running indicator (prototype .ring-run): an accent arc spinning on a soft
+   track. Size it with Tailwind (`size-3`, `size-3.5`). Shared by the toolbar's
+   live pill, session rows and the inspector's agents list. */
+.studio-ring-run {
+  display: inline-block;
+  box-sizing: border-box;
+  flex: none;
+  border: 1.8px solid var(--ui-accent-soft);
+  border-top-color: var(--ui-accent);
+  border-radius: 50%;
+  animation: studio-rot 0.9s linear infinite;
+}
+
+@keyframes studio-rot {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .studio-ring-run {
+    animation-duration: 2.4s;
+  }
+}

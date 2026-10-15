@@ -25,6 +25,10 @@ export const WiredPane = memo(function WiredPane({ part }: { part: keyof WiringA
       return <StatusbarControls items={[]} leftItems={[]} />
     }
 
+    if (part === 'toolbar') {
+      return null
+    }
+
     return (
       <div className="grid h-full place-items-center">
         <DecodeText className="text-(--ui-text-quaternary)" cursor prefix={1} text="HERMES" />

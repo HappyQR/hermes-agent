@@ -118,6 +118,7 @@ import { terminalPaletteToggle } from '../right-sidebar/terminal/reveal-focus'
 import { $workspaceIsPage, WORKSPACE_PAGE_HEADER_AREA } from '../routes'
 import { Butterbar } from '../shell/butterbar'
 import { TermsButterbar } from '../shell/terms-butterbar'
+import { WorkspaceToolbarBand } from '../shell/toolbar/workspace-toolbar'
 
 import { BASIC_TREE, DEFAULT_TREE, registerLayoutPresets } from './layout-presets'
 import { bindLayoutSides } from './layout-sides'
@@ -160,6 +161,9 @@ const idle = (node: ReactElement) => <IdleMount>{node}</IdleMount>
 // The main tab carries the same session context menu as tile tabs (targets
 // the loaded primary session; no menu on a fresh draft).
 const wrapWorkspaceTab = (tab: ReactElement) => <WorkspaceTabMenu>{tab}</WorkspaceTabMenu>
+
+// Studio: the workspace zone's titlebar band is the 52px toolbar, on the chat surface.
+const WORKSPACE_BAND = { band: WorkspaceToolbarBand, bandSurface: 'var(--ui-chat-surface-background)' }
 
 /** The `@session` payload for the workspace tab — the loaded primary session,
  *  or null on a fresh draft / full-page view (nothing to link). */
@@ -224,6 +228,7 @@ registry.registerMany([
     // Live-retitled to the loaded session by syncWorkspaceTitle below.
     title: NEW_SESSION_TITLE,
     data: {
+      ...WORKSPACE_BAND,
       placement: 'main',
       minWidth: '22vw',
       tabDrag: workspaceTabDrag,
@@ -525,6 +530,7 @@ const syncWorkspaceTitle = () => {
         $workspaceIsPage.get() && registry.getArea(WORKSPACE_PAGE_HEADER_AREA).length
           ? () => <Slot area={WORKSPACE_PAGE_HEADER_AREA} />
           : undefined,
+      ...WORKSPACE_BAND,
       placement: 'main',
       minWidth: '22vw',
       tabDrag: workspaceTabDrag,
