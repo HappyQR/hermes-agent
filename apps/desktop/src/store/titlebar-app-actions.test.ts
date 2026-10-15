@@ -15,10 +15,12 @@ describe('titlebarAppActionsClusterCounts', () => {
     }
   })
 
-  it('releases the space of every tool Simple mode hides, on both sides', () => {
-    // Sidebar toggle + what Simple keeps of the app actions; nothing fixed on the right.
-    expect(titlebarAppActionsClusterCounts('right', 0, 0, 'simple')).toEqual({ left: 1, right: 2 })
-    expect(titlebarAppActionsClusterCounts('left', 0, 0, 'simple')).toEqual({ left: 3, right: 0 })
+  it('reserves only the Studio pair beside the traffic lights, in every mode and on either side', () => {
+    // [show sidebar][new chat]; app actions live in the toolbar capsule and menus.
+    for (const mode of ['simple', 'advanced'] as const) {
+      expect(titlebarAppActionsClusterCounts('right', 0, 0, mode)).toEqual({ left: 2, right: 0 })
+      expect(titlebarAppActionsClusterCounts('left', 0, 0, mode)).toEqual({ left: 2, right: 0 })
+    }
   })
 })
 

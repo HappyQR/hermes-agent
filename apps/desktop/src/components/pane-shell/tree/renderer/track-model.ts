@@ -97,6 +97,10 @@ interface PaneChrome extends PaneSizing {
   headerVeto?: boolean
   /** Page-owned controls in the panel's normal tab-header space. */
   headerContent?: () => React.ReactNode
+  /** Studio: content for the zone's top-edge titlebar band (see zone-band.tsx). */
+  band?: () => React.ReactNode
+  /** Studio: the band's surface color. */
+  bandSurface?: string
   /** A lead NODE for this pane's TAB, rendered before the label. A session
    *  pane (main workspace + tiles) passes its live `SessionStatusDot` here so
    *  the tab and the sidebar row render status/color from the ONE primitive
