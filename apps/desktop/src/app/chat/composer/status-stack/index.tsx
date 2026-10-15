@@ -54,7 +54,7 @@ const BACKGROUND_POLL_MS = 5_000
 // A localhost/loopback preview is only meaningful while its dev server is up, so
 // we tie it to a live background process rather than persisting dismissals or
 // letting dead URLs pile up. File previews (a real on-disk artifact) stand alone.
-const isLocalhostPreview = (target: string): boolean => /\b(?:localhost|127\.0\.0\.1|0\.0\.0\.0)\b/i.test(target)
+export const isLocalhostPreview = (target: string): boolean => /\b(?:localhost|127\.0\.0\.1|0\.0\.0\.0)\b/i.test(target)
 
 // Real codicons per group (no sparkles): a checklist for todos, the agent glyph
 // for subagents, a background process glyph for background tasks.
@@ -97,7 +97,16 @@ const groupLabel = (group: StatusGroup, s: Translations['statusStack']) => {
 const hasRunningTodo = (group: StatusGroup) =>
   group.type === 'todo' && group.items.some(item => item.todoStatus === 'in_progress' && item.state === 'running')
 
+/** One computed status group, in stack order. */
+export interface StatusStackSection {
+  key: string
+  node: ReactNode
+}
+
 interface ComposerStatusStackProps {
+  /** Render the computed sections in another layout (Hermes Studio's activity
+   *  tray). Called even with no sections; the default card renders otherwise. */
+  layout?: (sections: readonly StatusStackSection[]) => ReactNode
   onSubmit?: (value: string, options?: SubmitTextOptions) => Promise<boolean> | boolean
   /** The queue, built by the composer (it owns the queue's callbacks). */
   queue: ReactNode
@@ -109,7 +118,7 @@ interface ComposerStatusStackProps {
  * every session-scoped status — subagents, background tasks, queue — grouped by
  * type and separated by light dividers. Collapses to nothing when empty.
  */
-export function ComposerStatusStack({ onSubmit, queue, sessionId }: ComposerStatusStackProps) {
+export function ComposerStatusStack({ layout, onSubmit, queue, sessionId }: ComposerStatusStackProps) {
   const { t } = useI18n()
   const navigate = useNavigate()
   const storedSessionId = useStore(useSessionView().$storedId)
@@ -130,12 +139,6 @@ export function ComposerStatusStack({ onSubmit, queue, sessionId }: ComposerStat
   const previews = useSessionSlice($previewStatusBySession, sessionId)
   const controlEntry = useSessionValue($sessionControlBySession, sessionId)
 
-  const surfaceId = useComposerSurfaceId()
-  const scrollSessionId = sessionId ?? surfaceId
-
-  const scrolledUp = useStoreSelector($threadScrolledUpBySession, map =>
-    Boolean(scrollSessionId && map[scrollSessionId])
-  )
 
   const billing = useStore($billingBlock)
   const freeTierStatus = useStore($freeTierStatus)
@@ -220,7 +223,7 @@ export function ComposerStatusStack({ onSubmit, queue, sessionId }: ComposerStat
         ))
       : []
 
-  const sections: { key: string; node: ReactNode }[] = []
+  const sections: StatusStackSection[] = []
 
   // Billing wall sits at the very top of the stack — it's the most important
   // thing above the composer when the account is out of credits. Rendered here
@@ -353,15 +356,23 @@ export function ComposerStatusStack({ onSubmit, queue, sessionId }: ComposerStat
   // status card, above the billing wall, above everything. They're the only
   // rows up here you press instead of read, so nothing may ever stack on top
   // of them. Rendered outside the card (below) so the pills float.
-  const visible = sections.length > 0
+  if (layout) {
+    return layout(sections)
+  }
 
   // No height to publish: the stack is an in-flow child of the composer dock,
   // so the dock's own measurement (--composer-measured-height) already covers
   // it and the thread clears both with one number.
+  return sections.length > 0 ? <StatusStackCard sections={sections} sessionId={sessionId} /> : null
+}
 
-  if (!visible) {
-    return null
-  }
+function StatusStackCard({ sections, sessionId }: { sections: readonly StatusStackSection[]; sessionId: null | string }) {
+  const surfaceId = useComposerSurfaceId()
+  const scrollSessionId = sessionId ?? surfaceId
+
+  const scrolledUp = useStoreSelector($threadScrolledUpBySession, map =>
+    Boolean(scrollSessionId && map[scrollSessionId])
+  )
 
   return (
     <div
@@ -378,34 +389,32 @@ export function ComposerStatusStack({ onSubmit, queue, sessionId }: ComposerStat
           Rounded top, square bottom; the bottom border is TRANSPARENT — the
           composer surface's visible top border (which sits at a higher z) is the
           single shared seam, so the two read as one fused capsule. */}
-      {sections.length > 0 && (
-        <div
-          className={cn(
-            composerDockCard('top'),
-            // Inset (mx-2) so the stack reads slightly narrower than the composer
-            // surface below it — the original look.
-            'mx-2 flex min-h-0 max-h-[inherit] shrink flex-col overflow-hidden rounded-b-none border-b border-b-transparent'
-          )}
-        >
-          <div className="min-h-0 overflow-y-auto overscroll-y-contain" data-slot="status-stack-scroll">
-            <div
-              className={cn(
-                'transition-opacity duration-200 ease-out',
-                scrolledUp
-                  ? 'opacity-30 group-hover/composer-dock:opacity-100 group-focus-within/composer-dock:opacity-100'
-                  : 'opacity-100'
-              )}
-              data-slot="status-stack-content"
-            >
-              {sections.map(section => (
-                <div data-slot="status-stack-section" key={section.key}>
-                  {section.node}
-                </div>
-              ))}
-            </div>
+      <div
+        className={cn(
+          composerDockCard('top'),
+          // Inset (mx-2) so the stack reads slightly narrower than the composer
+          // surface below it — the original look.
+          'mx-2 flex min-h-0 max-h-[inherit] shrink flex-col overflow-hidden rounded-b-none border-b border-b-transparent'
+        )}
+      >
+        <div className="min-h-0 overflow-y-auto overscroll-y-contain" data-slot="status-stack-scroll">
+          <div
+            className={cn(
+              'transition-opacity duration-200 ease-out',
+              scrolledUp
+                ? 'opacity-30 group-hover/composer-dock:opacity-100 group-focus-within/composer-dock:opacity-100'
+                : 'opacity-100'
+            )}
+            data-slot="status-stack-content"
+          >
+            {sections.map(section => (
+              <div data-slot="status-stack-section" key={section.key}>
+                {section.node}
+              </div>
+            ))}
           </div>
         </div>
-      )}
+      </div>
     </div>
   )
 }
