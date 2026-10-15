@@ -1,6 +1,10 @@
-import { useEffect, useReducer, useRef } from 'react'
+import { useEffect, useReducer, useRef, useState } from 'react'
 
+import { BrandMark } from '@/components/brand-mark'
+import { translateNow, useI18n } from '@/i18n'
+import { UpDownChevrons } from '@/lib/icons-studio-overlays'
 import { isSubmitEnter } from '@/lib/ime'
+import { formatCombo } from '@/lib/keybinds/combo'
 import {
   initialQuickComposerState,
   QUICK_TARGET_CURRENT,
@@ -11,12 +15,45 @@ import {
   quickEntryResultEvent
 } from '@/store/quick-entry'
 
+import { formatAccelerator } from './accelerator'
+
 // Native select popups do not reliably inherit the closed control's colors.
 // Paint both sides of the contrast pair on every option so Chromium cannot
 // combine a dark-theme foreground with an OS-provided light popup surface.
 const QUICK_TARGET_OPTION_STYLE = {
   backgroundColor: 'var(--ui-bg-elevated, var(--background))',
   color: 'var(--ui-text-primary, var(--foreground))'
+}
+
+/** The live global chord (main owns it), re-read every time the window is summoned. */
+function useSummonShortcut(): null | string {
+  const [shortcut, setShortcut] = useState<null | string>(null)
+
+  useEffect(() => {
+    const api = window.hermesDesktop?.quickEntry
+    let alive = true
+
+    const read = () => {
+      void api
+        ?.getSettings?.()
+        .then(status => {
+          if (alive) {
+            setShortcut(status?.enabled && status.registered ? formatAccelerator(status.shortcut) : null)
+          }
+        })
+        .catch(() => undefined)
+    }
+
+    read()
+    const offShown = api?.onShown?.(read)
+
+    return () => {
+      alive = false
+      offShown?.()
+    }
+  }, [])
+
+  return shortcut
 }
 
 /**
@@ -36,6 +73,9 @@ const QUICK_TARGET_OPTION_STYLE = {
  * the primary renderer's normal prompt-submit path.
  */
 export function QuickEntryApp() {
+  const { t } = useI18n()
+  const copy = t.studio.overlays.aux.quickEntry
+  const summon = useSummonShortcut()
   const inputRef = useRef<HTMLInputElement>(null)
   const submitIdRef = useRef(0)
 
@@ -83,7 +123,7 @@ export function QuickEntryApp() {
 
     const offLateResult = api?.onLateResult(payload => {
       dispatch({
-        message: payload?.result?.message ?? 'Hermes could not deliver the prompt.',
+        message: payload?.result?.message ?? translateNow('studio.overlays.aux.quickEntry.deliveryFailed'),
         ok: payload?.result?.ok === true,
         type: 'late-result'
       })
@@ -98,53 +138,28 @@ export function QuickEntryApp() {
     }
   }, [])
 
+  const hint = [`${formatCombo('enter')} ${copy.send}`, `${formatCombo('escape')} ${copy.dismiss}`]
+
+  if (summon) {
+    hint.push(copy.summon(summon))
+  }
+
   return (
-    <div
-      style={{
-        alignItems: 'center',
-        background: 'transparent',
-        display: 'flex',
-        height: '100vh',
-        justifyContent: 'center',
-        padding: 12,
-        width: '100vw'
-      }}
-    >
+    // The 12px transparent margin is the shadow's whole budget: anything that
+    // reaches past it is clipped by the fixed 640×168 window into a hard edge.
+    <div className="flex h-screen w-screen items-center justify-center bg-transparent p-3">
       <div
-        style={{
-          background: 'var(--ui-bg-elevated, var(--background))',
-          border: '1px solid var(--ui-stroke-secondary, rgba(127,127,127,0.35))',
-          borderRadius: 12,
-          // Shadow budget is capped by the 12px transparent padding around the
-          // card: extent (offset + blur) beyond 12px gets clipped by the fixed
-          // 640x168 window bounds, slicing the gradient into a hard edge.
-          // 2 + 8 = 10px stays inside the padding and fades out cleanly.
-          boxShadow: '0 2px 8px rgba(0,0,0,0.22)',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 8,
-          padding: '10px 14px',
-          width: '100%'
-        }}
+        className="flex w-full flex-col gap-2.5 rounded-[18px] bg-(--ui-bg-elevated) p-3.5 text-(--ui-text-primary) shadow-[0_0_0_0.5px_var(--ui-line-2),0_4px_10px_-2px_rgb(0_0_0/0.24)]"
+        data-slot="quick-entry"
       >
-        <div style={{ alignItems: 'center', display: 'flex', gap: 10 }}>
-          <span
-            aria-hidden
-            style={{
-              color: 'var(--muted-foreground, #8a8a8a)',
-              flexShrink: 0,
-              fontSize: 15,
-              lineHeight: 1,
-              userSelect: 'none'
-            }}
-          >
-            ›
-          </span>
+        <div className="flex items-center gap-3">
+          <BrandMark className="size-7" />
           <input
-            aria-label="Quick Entry"
+            aria-label={t.settings.quickEntry.enabledTitle}
             autoCapitalize="off"
             autoComplete="off"
             autoCorrect="off"
+            className="h-8 min-w-0 flex-1 border-0 bg-transparent text-xl text-(--ui-text-primary) outline-none placeholder:text-(--ui-text-quaternary) disabled:opacity-55"
             disabled={!state.connected}
             onBlur={event => {
               // Moving focus to the target picker is not leaving the window.
@@ -162,72 +177,55 @@ export function QuickEntryApp() {
                 dispatch({ type: 'dismiss' })
               }
             }}
-            placeholder={state.connected ? 'Ask Hermes…' : 'Not connected — open Hermes to reconnect'}
+            placeholder={state.connected ? copy.placeholder : copy.disconnected}
             ref={inputRef}
             spellCheck={false}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: 'var(--foreground, #eee)',
-              flex: 1,
-              fontFamily: 'inherit',
-              fontSize: 15,
-              minWidth: 0,
-              opacity: state.connected ? 1 : 0.55,
-              outline: 'none'
-            }}
             value={state.draft}
           />
         </div>
-        <div style={{ alignItems: 'center', display: 'flex', gap: 8 }}>
-          <label
-            htmlFor="quick-entry-target"
-            style={{
-              color: 'var(--muted-foreground, #8a8a8a)',
-              flexShrink: 0,
-              fontSize: 11,
-              userSelect: 'none'
-            }}
-          >
-            Send to
+        <div className="flex min-w-0 items-center gap-2 text-xs text-(--ui-text-tertiary)">
+          <label className="shrink-0 select-none" htmlFor="quick-entry-target">
+            {copy.sendTo}
           </label>
-          <select
-            aria-label="Target session"
-            disabled={!state.connected}
-            id="quick-entry-target"
-            onChange={event => dispatch({ target: event.target.value, type: 'target' })}
-            onKeyDown={event => {
-              if (event.key === 'Escape') {
-                event.preventDefault()
-                dispatch({ type: 'dismiss' })
-              }
-            }}
-            style={{
-              background: 'transparent',
-              border: '1px solid var(--ui-stroke-secondary, rgba(127,127,127,0.35))',
-              borderRadius: 6,
-              color: 'var(--foreground, #eee)',
-              fontSize: 11,
-              maxWidth: 320,
-              padding: '2px 6px'
-            }}
-            value={state.target}
-          >
-            <option style={QUICK_TARGET_OPTION_STYLE} value={QUICK_TARGET_CURRENT}>
-              Current chat
-            </option>
-            <option style={QUICK_TARGET_OPTION_STYLE} value={QUICK_TARGET_NEW}>
-              New session
-            </option>
-            {state.sessions.map(session => (
-              <option key={session.id} style={QUICK_TARGET_OPTION_STYLE} value={session.id}>
-                {session.title}
+          {/* A native <select>: a Radix popup would be clipped by the 168px
+              window, while the OS list can spill past it. Styled as the macOS
+              pop-up button; the options keep explicit colours (#77429). */}
+          <span className="relative inline-flex min-w-0 max-w-[16rem] items-center">
+            <select
+              aria-label={copy.targetLabel}
+              className="h-[1.625rem] min-w-0 max-w-full cursor-default appearance-none truncate rounded-[7px] border-0 bg-(--ui-bg-editor) pl-2.5 pr-6 text-xs text-(--ui-text-primary) shadow-[0_0_0_0.5px_var(--ui-line-2),0_1px_1.5px_rgb(0_0_0/0.06)] outline-none focus-visible:shadow-[0_0_0_0.5px_color-mix(in_srgb,var(--dt-primary)_60%,transparent),0_0_0_3px_color-mix(in_srgb,var(--dt-primary)_25%,transparent)] disabled:opacity-55"
+              disabled={!state.connected}
+              id="quick-entry-target"
+              onChange={event => dispatch({ target: event.target.value, type: 'target' })}
+              onKeyDown={event => {
+                if (event.key === 'Escape') {
+                  event.preventDefault()
+                  dispatch({ type: 'dismiss' })
+                }
+              }}
+              value={state.target}
+            >
+              <option style={QUICK_TARGET_OPTION_STYLE} value={QUICK_TARGET_CURRENT}>
+                {copy.targetCurrent}
               </option>
-            ))}
-          </select>
+              <option style={QUICK_TARGET_OPTION_STYLE} value={QUICK_TARGET_NEW}>
+                {copy.targetNew}
+              </option>
+              {state.sessions.map(session => (
+                <option key={session.id} style={QUICK_TARGET_OPTION_STYLE} value={session.id}>
+                  {session.title}
+                </option>
+              ))}
+            </select>
+            <UpDownChevrons
+              aria-hidden
+              className="pointer-events-none absolute right-1.5 size-3 text-(--ui-text-tertiary)"
+            />
+          </span>
+          <span className="min-w-0 flex-1 truncate text-right">{hint.join(' · ')}</span>
         </div>
         {state.error ? (
-          <div role="alert" style={{ color: 'var(--destructive, #ef4444)', fontSize: 11 }}>
+          <div className="text-xs text-(--ui-red)" role="alert">
             {state.error}
           </div>
         ) : null}
