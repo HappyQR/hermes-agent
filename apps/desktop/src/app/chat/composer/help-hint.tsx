@@ -2,10 +2,15 @@ import type { ReactNode } from 'react'
 
 import { KbdCombo } from '@/components/ui/kbd'
 import { useI18n } from '@/i18n'
+import { isDesktopSlashSuggestion } from '@/lib/desktop-slash-commands'
 
 import { COMPLETION_DRAWER_CLASS } from './completion-drawer'
 
-const COMMON_COMMAND_KEYS = ['/help', '/clear', '/resume', '/details', '/copy', '/quit']
+// Commands that run in this app — `/details`, `/copy` and `/quit` are terminal-only
+// here, so the hint never advertises them; the gate filters any that become so.
+const COMMON_COMMAND_KEYS = ['/new', '/resume', '/compress', '/branch', '/btw', '/help'].filter(
+  isDesktopSlashSuggestion
+)
 
 /** Stable ids → i18n `hotkeyDescs` keys. Combos resolve mod labels per OS. */
 const COMPOSER_HOTKEY_ROWS = [

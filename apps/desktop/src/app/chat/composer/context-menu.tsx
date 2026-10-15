@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { type ReactNode, useRef, useState } from 'react'
 
 import { composerPanelCard } from '@/components/chat/composer-dock'
 import { Button } from '@/components/ui/button'
@@ -13,9 +13,9 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { Kbd } from '@/components/ui/kbd'
+import { StudioIcon, type StudioIconName } from '@/components/ui/studio-icon'
 import { Tip } from '@/components/ui/tooltip'
 import { useI18n } from '@/i18n'
-import { Clipboard, FileText, FolderOpen, type IconComponent, ImageIcon, Link, MessageSquareText } from '@/lib/icons'
 import { cn } from '@/lib/utils'
 
 import { useComposerAttachmentProviders } from './contrib'
@@ -25,6 +25,7 @@ import type { ChatBarState } from './types'
 const SNIPPET_KEYS = ['codeReview', 'implementationPlan', 'explainThis']
 
 export function ContextMenu({
+  extraItems,
   state,
   onInsertText,
   onOpenUrlDialog,
@@ -43,14 +44,17 @@ export function ContextMenu({
   // `composer.attachments` contributions — plugin/core-registered rows that
   // extend this menu through the same registry as every other surface.
   const attachmentProviders = useComposerAttachmentProviders()
+  // An action that moves focus (into the editor) runs once the menu has
+  // closed — otherwise Radix hands focus back to this trigger right after.
+  const afterClose = useRef<(() => void) | null>(null)
 
   return (
     <>
       <DropdownMenu>
-        <Tip label={state.tools.label} placement="control">
+        <Tip label={t.studio.chat.composer.addContextHint} placement="control">
           <DropdownMenuTrigger asChild>
             <Button
-              aria-label={state.tools.label}
+              aria-label={state.tools.enabled ? t.studio.chat.composer.addContext : state.tools.label}
               className={cn(
                 GHOST_ICON_BTN,
                 'data-[state=open]:bg-(--chrome-action-hover) data-[state=open]:text-foreground'
@@ -60,39 +64,59 @@ export function ContextMenu({
               type="button"
               variant="ghost"
             >
-              <Codicon name="add" size="0.875rem" />
+              {/* The prototype's plus glyph; `codicon-add` stays the e2e hook. */}
+              <StudioIcon className="codicon-add" name="plus" size={18} />
             </Button>
           </DropdownMenuTrigger>
         </Tip>
-        <DropdownMenuContent align="start" className={cn('w-60', composerPanelCard)} side="top" sideOffset={6}>
+        <DropdownMenuContent
+          align="start"
+          className={cn('w-60', composerPanelCard)}
+          onCloseAutoFocus={event => {
+            const action = afterClose.current
+
+            if (action) {
+              afterClose.current = null
+              event.preventDefault()
+              action()
+            }
+          }}
+          side="top"
+          sideOffset={6}
+        >
           <DropdownMenuLabel className="px-2 pb-0.5 pt-0.5 text-[0.625rem] font-semibold uppercase tracking-wider text-(--ui-text-tertiary)">
             {c.attachLabel}
           </DropdownMenuLabel>
-          <ContextMenuItem disabled={!onPickFiles} icon={FileText} onSelect={onPickFiles}>
+          <ContextMenuItem disabled={!onPickFiles} icon="clip" onSelect={onPickFiles}>
             {c.files}
           </ContextMenuItem>
-          <ContextMenuItem disabled={!onPickFolders} icon={FolderOpen} onSelect={onPickFolders}>
+          <ContextMenuItem disabled={!onPickFolders} icon="folder" onSelect={onPickFolders}>
             {c.folder}
           </ContextMenuItem>
-          <ContextMenuItem disabled={!onPickImages} icon={ImageIcon} onSelect={onPickImages}>
+          <ContextMenuItem disabled={!onPickImages} icon="photo" onSelect={onPickImages}>
             {c.images}
           </ContextMenuItem>
           <ContextMenuItem
             disabled={!onPasteClipboardImage}
-            icon={Clipboard}
+            icon="image"
             onSelect={onPasteClipboardImage ? () => void onPasteClipboardImage() : undefined}
           >
             {c.pasteImage}
           </ContextMenuItem>
-          <ContextMenuItem icon={Link} onSelect={onOpenUrlDialog}>
+          <ContextMenuItem icon="link" onSelect={onOpenUrlDialog}>
             {c.url}
           </ContextMenuItem>
 
           <DropdownMenuSeparator />
 
-          <ContextMenuItem icon={MessageSquareText} onSelect={() => setSnippetsOpen(true)}>
+          <ContextMenuItem icon="doc" onSelect={() => setSnippetsOpen(true)}>
             {c.promptSnippets}
           </ContextMenuItem>
+          {extraItems?.({
+            runAfterClose: action => {
+              afterClose.current = action
+            }
+          })}
 
           {attachmentProviders.length > 0 && <DropdownMenuSeparator />}
           {attachmentProviders.map(provider => (
@@ -146,7 +170,11 @@ function PromptSnippetsDialog({ onInsertText, onOpenChange, open }: PromptSnippe
                   }}
                   type="button"
                 >
-                  <MessageSquareText className="mt-0.5 size-3.5 shrink-0 text-(--ui-text-tertiary) group-hover/snippet:text-foreground" />
+                  <StudioIcon
+                    className="mt-0.5 text-(--ui-text-tertiary) group-hover/snippet:text-foreground"
+                    name="doc"
+                    size={14}
+                  />
                   <span className="grid min-w-0 gap-0.5">
                     <span className="text-sm font-medium text-foreground">{snippet.label}</span>
                     <span className="text-[length:var(--conversation-caption-font-size)] text-(--ui-text-tertiary)">
@@ -163,7 +191,7 @@ function PromptSnippetsDialog({ onInsertText, onOpenChange, open }: PromptSnippe
   )
 }
 
-export function ContextMenuItem({ children, disabled, icon: Icon, onSelect }: ContextMenuItemProps) {
+export function ContextMenuItem({ children, disabled, icon, onSelect }: ContextMenuItemProps) {
   return (
     // Override font size + highlight to match the / · @ completion rows exactly.
     <DropdownMenuItem
@@ -171,7 +199,7 @@ export function ContextMenuItem({ children, disabled, icon: Icon, onSelect }: Co
       disabled={disabled}
       onSelect={onSelect}
     >
-      <Icon />
+      <StudioIcon name={icon} size={15} />
       <span>{children}</span>
     </DropdownMenuItem>
   )
@@ -180,11 +208,13 @@ export function ContextMenuItem({ children, disabled, icon: Icon, onSelect }: Co
 interface ContextMenuItemProps {
   children: string
   disabled?: boolean
-  icon: IconComponent
+  icon: StudioIconName
   onSelect?: () => void
 }
 
 interface ContextMenuProps {
+  /** Hermes Studio rows after the prompt snippets (skills, approval mode, pop-out). */
+  extraItems?: (helpers: { runAfterClose: (action: () => void) => void }) => ReactNode
   onInsertText: (text: string) => void
   onOpenUrlDialog: () => void
   onPasteClipboardImage?: (opts?: { silent?: boolean }) => Promise<boolean> | void

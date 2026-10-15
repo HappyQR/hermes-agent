@@ -3,6 +3,37 @@ import type { StudioChatTranslations } from './types_studio_chat'
 
 export const zhHantStudioChat: StudioChatTranslations = {
   contextUsage: '上下文用量',
+  composer: {
+    addContext: '加入上下文',
+    addContextHint: '加入檔案、圖片、網址或片段',
+    popOut: '浮動輸入框',
+    dock: '停靠輸入框',
+    skills: '技能…',
+    autoApprove: '自動核准',
+    autoApproveHint: '核准已關閉：指令會直接執行',
+    yoloHint: '此對話已開啟 YOLO：指令會直接執行',
+    turnOffYolo: '關閉此對話的 YOLO',
+    contextUsagePercent: percent => `上下文用量 ${percent}%`,
+    cacheHit: value => `快取命中 ${value}`,
+    stats: {
+      cacheHit: '快取命中',
+      throughput: '生成速率',
+      throughputValue: value => `${value} 詞元/秒`,
+      turnTime: '本輪用時',
+      sessionCost: '本對話費用'
+    },
+    compress: '壓縮上下文',
+    compressIdleOnly: 'Hermes 閒置時可用',
+    usageDetails: '用量詳情',
+    effortOff: '關閉',
+    moreSendOptions: '更多傳送方式',
+    steerHint: '下一次工具呼叫後',
+    redirectHint: '停止並傳送',
+    voiceOptionsHint: '按右鍵查看語音選項',
+    voiceEngineHint: '按右鍵選擇引擎',
+    placeholderBusy: combo => `補充上下文，或按 ${combo} 排入下一回合`,
+    placeholderHero: '交給 Hermes 一個任務，/ 使用指令，@ 引用檔案'
+  },
   tray: {
     label: '活動',
     hide: '收起活動匣',

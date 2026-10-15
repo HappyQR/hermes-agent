@@ -47,6 +47,7 @@ import { ActivityTray } from './activity-tray'
 import { AttachmentList } from './attachments'
 import { deriveBusySubmitState } from './busy-submit-state'
 import { ComposerDockGlow, QueuedEditBanner } from './chat-bar-parts'
+import { ComposerLeading, StudioComposerControls } from './composer-row'
 import {
   acceptsTriggerCompletion,
   COMPOSER_FADE_BACKGROUND,
@@ -57,9 +58,7 @@ import {
   shouldDisableComposerInput,
   slashArgStage
 } from './composer-utils'
-import { ContextMenu } from './context-menu'
 import { COMPOSER_AREAS } from './contrib'
-import { ComposerControls } from './controls'
 import { ComposerDirectiveActions } from './directive-actions'
 import { COMPOSER_DROP_ACTIVE_CLASS, COMPOSER_DROP_FADE_CLASS } from './drop-affordance'
 import { markActiveComposer, onComposerAttachImagesRequest } from './focus'
@@ -115,7 +114,6 @@ import {
   resolveExactLinkPaste,
   selectionLinkLabel
 } from './url-refs'
-import { VoiceActivity, VoicePlaybackActivity } from './voice-activity'
 
 export function ChatBar({
   busy,
@@ -443,7 +441,7 @@ export function ChatBar({
 
   // Resting / reconnecting / starting placeholder text, re-rolled only on a real
   // conversation change.
-  const placeholder = useComposerPlaceholder({ disabled, reconnecting, sessionId })
+  const placeholder = useComposerPlaceholder({ busy, disabled, reconnecting, sessionId })
 
   // Trigger / completion engine: @// detection, the adapter-driven item list,
   // popover selection, and chip insertion. The keydown nav block below consumes
@@ -1103,19 +1101,21 @@ export function ChatBar({
   voiceStopRef.current = { active: voiceConversationActive, end: endConversation }
 
   const contextMenu = (
-    <ContextMenu
+    <ComposerLeading
       onInsertText={insertText}
       onOpenUrlDialog={openUrlDialog}
       onPasteClipboardImage={onPasteClipboardImage}
       onPickFiles={onPickFiles}
       onPickFolders={onPickFolders}
       onPickImages={onPickImages}
+      popout={popoutAllowed ? { onToggle: handleComposerToggle, poppedOut } : undefined}
       state={state}
+      voiceActivityState={voiceActivityState}
     />
   )
 
   const controls = (
-    <ComposerControls
+    <StudioComposerControls
       autoSpeak={autoSpeak}
       busy={busy}
       busyAction={busyAction}
@@ -1137,10 +1137,13 @@ export function ChatBar({
       hasComposerPayload={hasComposerPayload}
       hideModelPill={guidedChat}
       minimal={minimal || chatOnboardingSolo}
+      onCompress={() => void Promise.resolve(onSubmit('/compress'))}
       onDictate={dictate}
       onQueue={queueDraft}
+      onRedirect={canSteer ? () => steerDraft('interrupt') : undefined}
       onSteer={canSteer ? () => steerDraft('steer') : undefined}
       onToggleAutoSpeak={handleToggleAutoSpeak}
+      requestGateway={requestBusyConfig}
       state={state}
       voiceStatus={voiceStatus}
     />
@@ -1479,8 +1482,6 @@ export function ChatBar({
                     onUndone={clearDraft}
                     readLiveText={syncDraftFromEditor}
                   />
-                  <VoiceActivity state={voiceActivityState} />
-                  <VoicePlaybackActivity />
                   {queueEdit && editingQueuedPrompt && <QueuedEditBanner onExit={exitQueuedEdit} />}
                   {attachments.length > 0 && <AttachmentList attachments={attachments} onRemove={onRemoveAttachment} />}
                   <div

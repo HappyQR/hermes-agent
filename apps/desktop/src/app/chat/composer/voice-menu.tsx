@@ -47,25 +47,14 @@ export interface VoiceMenuProps {
  * A collapsed menu that looked idle while the mic was hot would be a worse
  * trade than the space it saves.
  */
-export function VoiceMenu({
-  autoSpeak,
-  disabled,
-  state,
-  voiceStatus,
-  onDictate,
-  onStartConversation,
-  onToggleAutoSpeak
-}: VoiceMenuProps) {
+/** The live voice state both the trigger and the rows read. */
+function useVoiceState(state: ChatBarState, voiceStatus: VoiceStatus) {
   const { t } = useI18n()
   const c = t.composer
   const wake = useStore($wakeWord)
-
   const phrase = wake.phrase || 'hey hermes'
   const dictating = state.voice.active || voiceStatus !== 'idle'
   const wakeListening = wake.listening
-  // Anything live keeps the trigger lit, so a folded menu can never look idle
-  // while the mic is open.
-  const active = dictating || wakeListening || autoSpeak
 
   const dictationLabel =
     voiceStatus === 'recording'
@@ -75,6 +64,23 @@ export function VoiceMenu({
         : c.voiceDictation
 
   const wakeLabel = wakeListening ? c.wakeWordListening(phrase) : c.wakeWordOff(phrase)
+
+  return { c, dictating, dictationLabel, wake, wakeLabel, wakeListening }
+}
+
+export function VoiceMenu({
+  autoSpeak,
+  disabled,
+  state,
+  voiceStatus,
+  onDictate,
+  onStartConversation,
+  onToggleAutoSpeak
+}: VoiceMenuProps) {
+  const { c, dictating, dictationLabel, wake, wakeLabel, wakeListening } = useVoiceState(state, voiceStatus)
+  // Anything live keeps the trigger lit, so a folded menu can never look idle
+  // while the mic is open.
+  const active = dictating || wakeListening || autoSpeak
   const triggerLabel = dictating ? dictationLabel : wakeListening ? wakeLabel : c.voiceControls
 
   return (
@@ -102,64 +108,92 @@ export function VoiceMenu({
         </DropdownMenuTrigger>
       </Tip>
       <DropdownMenuContent align="end" className="min-w-52">
-        <DropdownMenuItem
-          className={dropdownMenuRow}
+        <VoiceMenuItems
+          autoSpeak={autoSpeak}
           disabled={disabled}
-          onSelect={() => {
-            triggerHaptic('open')
-            onStartConversation()
-          }}
-        >
-          <AudioLines className={iconSize.sm} />
-          {c.startVoice}
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <VoiceEngineRows disabled={disabled} />
-        <DropdownMenuSeparator />
-        {/* Checkbox items, because all three are toggles the user is reading
-            the CURRENT state of — the reason they were pressed-state buttons
-            before. A plain row would fold that state away with the menu. */}
-        <DropdownMenuCheckboxItem
-          checked={dictating}
-          className={dropdownMenuRow}
-          disabled={disabled || !state.voice.enabled || voiceStatus === 'transcribing'}
-          onSelect={event => {
-            // Keep the menu open: dictation is a mode you watch, and closing
-            // on select hides the recording state the trigger just entered.
-            event.preventDefault()
-            triggerHaptic(dictating ? 'close' : 'open')
-            onDictate()
-          }}
-        >
-          {dictationLabel}
-        </DropdownMenuCheckboxItem>
-        <DropdownMenuCheckboxItem
-          checked={autoSpeak}
-          className={dropdownMenuRow}
-          disabled={disabled}
-          onSelect={event => {
-            event.preventDefault()
-            triggerHaptic(autoSpeak ? 'close' : 'open')
-            onToggleAutoSpeak()
-          }}
-        >
-          {autoSpeak ? <Volume2 className={iconSize.sm} /> : <VolumeX className={iconSize.sm} />}
-          {autoSpeak ? c.stopSpeakingReplies : c.speakReplies}
-        </DropdownMenuCheckboxItem>
-        <DropdownMenuCheckboxItem
-          checked={wakeListening}
-          className={dropdownMenuRow}
-          disabled={disabled || wake.pending}
-          onSelect={event => {
-            event.preventDefault()
-            triggerHaptic(wakeListening ? 'close' : 'open')
-            void toggleWakeWord()
-          }}
-        >
-          {wakeListening ? <Ear className={iconSize.sm} /> : <EarOff className={iconSize.sm} />}
-          {wakeLabel}
-        </DropdownMenuCheckboxItem>
+          onDictate={onDictate}
+          onStartConversation={onStartConversation}
+          onToggleAutoSpeak={onToggleAutoSpeak}
+          state={state}
+          voiceStatus={voiceStatus}
+        />
       </DropdownMenuContent>
     </DropdownMenu>
+  )
+}
+
+/** The voice rows — start a conversation, the engine, and the three toggles —
+ *  shared by the folded voice menu and the mic's right-click menu. */
+export function VoiceMenuItems({
+  autoSpeak,
+  disabled,
+  state,
+  voiceStatus,
+  onDictate,
+  onStartConversation,
+  onToggleAutoSpeak
+}: VoiceMenuProps) {
+  const { c, dictating, dictationLabel, wake, wakeLabel, wakeListening } = useVoiceState(state, voiceStatus)
+
+  return (
+    <>
+      <DropdownMenuItem
+        className={dropdownMenuRow}
+        disabled={disabled}
+        onSelect={() => {
+          triggerHaptic('open')
+          onStartConversation()
+        }}
+      >
+        <AudioLines className={iconSize.sm} />
+        {c.startVoice}
+      </DropdownMenuItem>
+      <DropdownMenuSeparator />
+      <VoiceEngineRows disabled={disabled} />
+      <DropdownMenuSeparator />
+      {/* Checkbox items, because all three are toggles the user is reading
+          the CURRENT state of — the reason they were pressed-state buttons
+          before. A plain row would fold that state away with the menu. */}
+      <DropdownMenuCheckboxItem
+        checked={dictating}
+        className={dropdownMenuRow}
+        disabled={disabled || !state.voice.enabled || voiceStatus === 'transcribing'}
+        onSelect={event => {
+          // Keep the menu open: dictation is a mode you watch, and closing
+          // on select hides the recording state the trigger just entered.
+          event.preventDefault()
+          triggerHaptic(dictating ? 'close' : 'open')
+          onDictate()
+        }}
+      >
+        {dictationLabel}
+      </DropdownMenuCheckboxItem>
+      <DropdownMenuCheckboxItem
+        checked={autoSpeak}
+        className={dropdownMenuRow}
+        disabled={disabled}
+        onSelect={event => {
+          event.preventDefault()
+          triggerHaptic(autoSpeak ? 'close' : 'open')
+          onToggleAutoSpeak()
+        }}
+      >
+        {autoSpeak ? <Volume2 className={iconSize.sm} /> : <VolumeX className={iconSize.sm} />}
+        {autoSpeak ? c.stopSpeakingReplies : c.speakReplies}
+      </DropdownMenuCheckboxItem>
+      <DropdownMenuCheckboxItem
+        checked={wakeListening}
+        className={dropdownMenuRow}
+        disabled={disabled || wake.pending}
+        onSelect={event => {
+          event.preventDefault()
+          triggerHaptic(wakeListening ? 'close' : 'open')
+          void toggleWakeWord()
+        }}
+      >
+        {wakeListening ? <Ear className={iconSize.sm} /> : <EarOff className={iconSize.sm} />}
+        {wakeLabel}
+      </DropdownMenuCheckboxItem>
+    </>
   )
 }

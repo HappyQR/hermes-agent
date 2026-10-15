@@ -3,6 +3,37 @@ import type { StudioChatTranslations } from './types_studio_chat'
 
 export const enStudioChat: StudioChatTranslations = {
   contextUsage: 'Context usage',
+  composer: {
+    addContext: 'Add context',
+    addContextHint: 'Add files, images, links or snippets',
+    popOut: 'Pop out composer',
+    dock: 'Dock composer',
+    skills: 'Skills…',
+    autoApprove: 'Auto-approve',
+    autoApproveHint: 'Approvals are off — commands run without asking',
+    yoloHint: 'YOLO is on for this chat — commands run without asking',
+    turnOffYolo: 'Turn off YOLO for this chat',
+    contextUsagePercent: percent => `Context usage ${percent}%`,
+    cacheHit: value => `cache hit ${value}`,
+    stats: {
+      cacheHit: 'Cache hit',
+      throughput: 'Throughput',
+      throughputValue: value => `${value} tok/s`,
+      turnTime: 'This turn',
+      sessionCost: 'Session cost'
+    },
+    compress: 'Compress context',
+    compressIdleOnly: 'Available while Hermes is idle',
+    usageDetails: 'Usage details',
+    effortOff: 'Off',
+    moreSendOptions: 'More send options',
+    steerHint: 'after the next tool call',
+    redirectHint: 'stops, then sends',
+    voiceOptionsHint: 'Right-click for voice options',
+    voiceEngineHint: 'Right-click to choose the engine',
+    placeholderBusy: combo => `Add context, or ${combo} to queue for the next turn`,
+    placeholderHero: 'Give Hermes a task — / for commands, @ to reference files'
+  },
   tray: {
     label: 'Activity',
     hide: 'Hide activity',

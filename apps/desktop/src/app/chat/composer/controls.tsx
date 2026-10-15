@@ -203,7 +203,7 @@ function queueButtonVisible(
   return busy && busyAction !== 'stop' && busyAction !== 'queue' && hasPayload && !cardWaiting
 }
 
-function composerSendLabel(
+export function composerSendLabel(
   busy: boolean,
   busyAction: 'interrupt' | 'steer' | 'queue' | 'stop',
   c: { redirect: string; queueMessage: string; send: string; steer: string; stop: string }

@@ -3,6 +3,37 @@ import type { StudioChatTranslations } from './types_studio_chat'
 
 export const arStudioChat: StudioChatTranslations = {
   contextUsage: 'استخدام السياق',
+  composer: {
+    addContext: 'إضافة سياق',
+    addContextHint: 'إضافة ملفات أو صور أو روابط أو مقتطفات',
+    popOut: 'فصل مربع الكتابة',
+    dock: 'إرجاع مربع الكتابة',
+    skills: 'المهارات…',
+    autoApprove: 'موافقة تلقائية',
+    autoApproveHint: 'الموافقات متوقفة — تُنفَّذ الأوامر دون سؤال',
+    yoloHint: 'وضع YOLO مفعّل لهذه المحادثة — تُنفَّذ الأوامر دون سؤال',
+    turnOffYolo: 'إيقاف YOLO لهذه المحادثة',
+    contextUsagePercent: percent => `استخدام السياق ${percent}%`,
+    cacheHit: value => `إصابات الذاكرة المؤقتة ${value}`,
+    stats: {
+      cacheHit: 'إصابات الذاكرة المؤقتة',
+      throughput: 'معدل التوليد',
+      throughputValue: value => `${value} رمز/ث`,
+      turnTime: 'هذه الجولة',
+      sessionCost: 'تكلفة الجلسة'
+    },
+    compress: 'ضغط السياق',
+    compressIdleOnly: 'متاح عندما يكون Hermes غير مشغول',
+    usageDetails: 'تفاصيل الاستخدام',
+    effortOff: 'متوقف',
+    moreSendOptions: 'خيارات إرسال أخرى',
+    steerHint: 'بعد استدعاء الأداة التالي',
+    redirectHint: 'يتوقف ثم يرسل',
+    voiceOptionsHint: 'انقر بزر الفأرة الأيمن لخيارات الصوت',
+    voiceEngineHint: 'انقر بزر الفأرة الأيمن لاختيار المحرك',
+    placeholderBusy: combo => `أضف سياقًا، أو اضغط ${combo} لإرساله في الجولة التالية`,
+    placeholderHero: 'امنح Hermes مهمة — / للأوامر، @ للإشارة إلى الملفات'
+  },
   tray: {
     label: 'النشاط',
     hide: 'إخفاء النشاط',

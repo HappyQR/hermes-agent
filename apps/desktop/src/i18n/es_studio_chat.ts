@@ -3,6 +3,37 @@ import type { StudioChatTranslations } from './types_studio_chat'
 
 export const esStudioChat: StudioChatTranslations = {
   contextUsage: 'Uso del contexto',
+  composer: {
+    addContext: 'Añadir contexto',
+    addContextHint: 'Añadir archivos, imágenes, enlaces o fragmentos',
+    popOut: 'Desacoplar el editor',
+    dock: 'Acoplar el editor',
+    skills: 'Habilidades…',
+    autoApprove: 'Aprobación automática',
+    autoApproveHint: 'Aprobaciones desactivadas: los comandos se ejecutan sin preguntar',
+    yoloHint: 'YOLO está activado en este chat: los comandos se ejecutan sin preguntar',
+    turnOffYolo: 'Desactivar YOLO en este chat',
+    contextUsagePercent: percent => `Uso del contexto ${percent} %`,
+    cacheHit: value => `aciertos de caché ${value}`,
+    stats: {
+      cacheHit: 'Aciertos de caché',
+      throughput: 'Velocidad',
+      throughputValue: value => `${value} tok/s`,
+      turnTime: 'Este turno',
+      sessionCost: 'Coste de la sesión'
+    },
+    compress: 'Comprimir contexto',
+    compressIdleOnly: 'Disponible cuando Hermes está inactivo',
+    usageDetails: 'Detalles de uso',
+    effortOff: 'Desactivado',
+    moreSendOptions: 'Más opciones de envío',
+    steerHint: 'tras la próxima llamada a herramienta',
+    redirectHint: 'detiene y envía',
+    voiceOptionsHint: 'Clic derecho para opciones de voz',
+    voiceEngineHint: 'Clic derecho para elegir el motor',
+    placeholderBusy: combo => `Añade contexto o pulsa ${combo} para enviarlo en el próximo turno`,
+    placeholderHero: 'Dale una tarea a Hermes: / para comandos, @ para citar archivos'
+  },
   tray: {
     label: 'Actividad',
     hide: 'Ocultar actividad',

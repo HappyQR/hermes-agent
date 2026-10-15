@@ -3,6 +3,37 @@ import type { StudioChatTranslations } from './types_studio_chat'
 
 export const jaStudioChat: StudioChatTranslations = {
   contextUsage: 'コンテキスト使用量',
+  composer: {
+    addContext: 'コンテキストを追加',
+    addContextHint: 'ファイル、画像、リンク、スニペットを追加',
+    popOut: '入力欄を切り離す',
+    dock: '入力欄を元に戻す',
+    skills: 'スキル…',
+    autoApprove: '自動承認',
+    autoApproveHint: '承認はオフです。コマンドは確認なしで実行されます',
+    yoloHint: 'このチャットは YOLO がオンです。コマンドは確認なしで実行されます',
+    turnOffYolo: 'このチャットの YOLO をオフにする',
+    contextUsagePercent: percent => `コンテキスト使用量 ${percent}%`,
+    cacheHit: value => `キャッシュヒット ${value}`,
+    stats: {
+      cacheHit: 'キャッシュヒット',
+      throughput: '生成速度',
+      throughputValue: value => `${value} トークン/秒`,
+      turnTime: 'このターン',
+      sessionCost: 'セッションの費用'
+    },
+    compress: 'コンテキストを圧縮',
+    compressIdleOnly: 'Hermes が待機中のときに使えます',
+    usageDetails: '使用量の詳細',
+    effortOff: 'オフ',
+    moreSendOptions: 'その他の送信方法',
+    steerHint: '次のツール呼び出しの後',
+    redirectHint: '停止してから送信',
+    voiceOptionsHint: '右クリックで音声オプション',
+    voiceEngineHint: '右クリックでエンジンを選択',
+    placeholderBusy: combo => `コンテキストを追加するか、${combo} で次のターンに予約`,
+    placeholderHero: 'Hermes にタスクを — / でコマンド、@ でファイルを参照'
+  },
   tray: {
     label: 'アクティビティ',
     hide: 'アクティビティを隠す',

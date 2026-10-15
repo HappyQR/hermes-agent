@@ -4,6 +4,288 @@
 
 /* ── Shared ────────────────────────────────────────────────────────────── */
 
+/* ── Pane ──────────────────────────────────────────────────────────────── */
+
+/* The reading column (prototype .tx-col, 760px): one token drives the thread
+   column, the composer dock and the intro alike. The first-run demo's narrower
+   column and the HUD keep their own. */
+:root:not([data-onboarding-demo]) [data-chat-surface]:not([data-hud-shell] *) {
+  --composer-width: 47.5rem;
+}
+
+/* ── Composer (prototype .composer / .cmp-*) ───────────────────────────
+   Scoped to the docked / floating composer; the HUD's Spotlight bar keeps its
+   own geometry (its rules live under [data-hud-shell] in styles.css). */
+
+:where([data-slot='composer-root']:not([data-hud-shell] *)) {
+  --composer-control-size: 1.75rem;
+  --composer-control-primary-size: 2rem;
+  --composer-control-gap: 0.25rem;
+  --composer-row-gap: 0.5rem;
+  --composer-surface-pad-x: 0.5rem;
+  --composer-surface-pad-y: 0.5rem;
+  --composer-input-min-height: 1.5rem;
+}
+
+/* The floating glass card: 22px corners, a hairline ring and the soft drop. */
+[data-slot='composer-root']:not([data-hud-shell] *) {
+  border-radius: 22px;
+}
+
+[data-slot='composer-root']:not([data-hud-shell] *) [data-slot='composer-surface'] {
+  border-color: transparent !important;
+  box-shadow:
+    0 0 0 0.5px var(--ui-line-2),
+    0 10px 32px -14px rgb(0 0 0 / 0.25),
+    0 2px 6px -3px rgb(0 0 0 / 0.08);
+  transition: box-shadow var(--studio-t2) var(--studio-ease);
+}
+
+/* Focus: an accent ring and halo while you type. */
+[data-slot='composer-root']:not([data-hud-shell] *)
+  [data-slot='composer-surface']:has([data-slot='composer-rich-input']:focus) {
+  box-shadow:
+    0 0 0 0.5px color-mix(in srgb, var(--dt-primary) 45%, var(--ui-line-2)),
+    0 0 0 4px color-mix(in srgb, var(--dt-primary) 12%, transparent),
+    0 12px 36px -14px rgb(0 0 0 / 0.28);
+}
+
+/* No painted backdrop inside the grab margin: the dock fade below covers it. */
+[data-slot='composer-root']:not([data-hud-shell] *) > .pointer-events-none {
+  background: none !important;
+}
+
+/* Bottom fade under the whole dock (tray + composer), so scrolled text never
+   meets the chips (prototype .dock::before). Paint only; it takes no input. */
+[data-slot='composer-dock']:not([data-popped-out]):not([data-hud-shell] *)::before {
+  content: '';
+  position: absolute;
+  inset: -1.375rem -0.875rem 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--ui-chat-surface-background) 0%, transparent),
+    var(--ui-chat-surface-background) 2.125rem
+  );
+}
+
+/* The input: 15px text, 16px from the card's edge, quieter hint. */
+[data-slot='composer-root']:not([data-hud-shell] *) [data-slot='composer-rich-input'] {
+  padding: 0.3125rem 0.5rem 0.125rem;
+  line-height: 1.55;
+}
+
+[data-slot='composer-root']:not([data-hud-shell] *) [data-slot='composer-rich-input']:is(:empty, [data-empty])::before {
+  color: var(--ui-text-quaternary) !important;
+}
+
+/* The row's left cluster sits on the controls' centre line. */
+[data-slot='composer-fade'] div:has(> [data-slot='composer-leading']) {
+  translate: none;
+  align-self: center;
+  align-items: center;
+}
+
+.composer-leading {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.composer-leading button:has(.codicon-add),
+[data-slot='composer-mic'] {
+  color: var(--ui-text-secondary);
+}
+
+/* Pills in the row (prototype .cmp-pill): context gauge, auto-approve,
+   dictation / read-aloud, and the model · effort pill. */
+.composer-pill,
+[data-slot='composer-root']:not([data-hud-shell] *) [data-slot='composer-model-pill'] {
+  display: inline-flex;
+  height: 1.75rem;
+  flex: none;
+  align-items: center;
+  gap: 0.3125rem;
+  border-radius: 999px;
+  padding: 0 0.5rem 0 0.5625rem;
+  color: var(--ui-text-secondary);
+  font-size: 0.78125rem;
+  font-weight: 500;
+  white-space: nowrap;
+  transition:
+    background-color var(--studio-t1),
+    color var(--studio-t1);
+}
+
+[data-slot='composer-root']:not([data-hud-shell] *) [data-slot='composer-model-pill'] {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+button.composer-pill:hover,
+button.composer-pill[data-state='open'],
+[data-slot='composer-root']:not([data-hud-shell] *) [data-slot='composer-model-pill']:is(:hover, [data-state='open']) {
+  background: var(--ui-hover);
+  color: var(--ui-text-primary);
+}
+
+.composer-pill[data-tone='warn'],
+button.composer-pill[data-tone='warn']:hover {
+  color: var(--ui-orange);
+  background: color-mix(in srgb, var(--ui-dot-orange) 12%, transparent);
+}
+
+.composer-pill[data-tone='accent'] {
+  color: var(--ui-accent-text);
+}
+
+.composer-pill-action {
+  display: inline-flex;
+  margin-inline-end: -0.25rem;
+  border-radius: 999px;
+  padding: 0.1875rem;
+  color: inherit;
+}
+
+.composer-pill-action:hover {
+  background: var(--ui-hover);
+}
+
+.composer-model-effort {
+  color: var(--ui-text-tertiary);
+  font-weight: 400;
+}
+
+[data-slot='composer-context-ring'] {
+  gap: 0.3125rem;
+  padding: 0 0.4375rem;
+  font-size: 0.71875rem;
+}
+
+.composer-context-ring {
+  width: 1.125rem;
+  height: 1.125rem;
+  flex: none;
+  color: var(--ui-text-tertiary);
+}
+
+.composer-context-ring path {
+  fill: var(--dt-primary);
+}
+
+.composer-context-ring path[data-high] {
+  fill: var(--ui-orange);
+}
+
+/* The context panel: the statusbar's breakdown, wider, plus the stat tiles. */
+.composer-context-panel [data-slot='context-usage-panel'] {
+  width: auto;
+  padding: 0.875rem 0.875rem 0.75rem;
+}
+
+.composer-context-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  border-radius: 0.5625rem;
+  padding: 0.5rem 0.625rem;
+  background: var(--ui-fill-2);
+}
+
+.composer-context-stat span {
+  color: var(--ui-text-tertiary);
+  font-size: 0.6875rem;
+}
+
+.composer-context-stat b {
+  color: var(--ui-text-primary);
+  font-size: 0.875rem;
+  font-weight: 650;
+}
+
+/* Something is listening (read-aloud or the wake word) — a dot on the mic. */
+.composer-mic-dot {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  width: 0.3125rem;
+  height: 0.3125rem;
+  border-radius: 50%;
+  background: var(--dt-primary);
+}
+
+/* The primary (prototype .send): a 32px circle that springs on press. */
+.composer-send-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+:is([data-slot='composer-send'], [data-slot='composer-talk']):not(:disabled) {
+  transition:
+    transform var(--studio-t2) var(--studio-spring),
+    background-color var(--studio-t2);
+}
+
+:is([data-slot='composer-send'], [data-slot='composer-talk']):not(:disabled):hover {
+  transform: scale(1.06);
+}
+
+:is([data-slot='composer-send'], [data-slot='composer-talk']):not(:disabled):active {
+  transform: scale(0.92);
+}
+
+.composer-send-more {
+  width: 1.25rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  color: var(--ui-text-tertiary);
+}
+
+/* The / @ : popover spans the composer (prototype .cmp-pop): the menu
+   surface, mono commands with their descriptions beside them. */
+[data-slot='composer-root']:not([data-hud-shell] *) [data-slot='composer-completion-drawer'] {
+  left: 5px;
+  right: 5px;
+  width: auto;
+  max-width: none;
+  margin-bottom: 0.5rem;
+  border-color: transparent;
+  border-radius: 0.875rem;
+  padding: 0.375rem;
+  background: var(--ui-menu);
+  box-shadow: var(--elev-pop), var(--hairline-hi);
+  backdrop-filter: blur(36px) saturate(1.8);
+  -webkit-backdrop-filter: blur(36px) saturate(1.8);
+  font-size: 0.8125rem;
+}
+
+[data-slot='composer-completion-drawer'] button > span:nth-child(2):not(:last-child) {
+  min-width: 6.25rem;
+  font-family: var(--dt-font-mono);
+  font-size: 0.78125rem;
+  font-weight: 600;
+}
+
+[data-slot='composer-root']:not([data-hud-shell] *) [data-slot='composer-completion-drawer'] button[data-highlighted] {
+  background: var(--dt-primary);
+}
+
+[data-slot='composer-root']:not([data-hud-shell] *)
+  [data-slot='composer-completion-drawer']
+  button[data-highlighted]
+  * {
+  color: var(--ui-on-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :is([data-slot='composer-send'], [data-slot='composer-talk']):not(:disabled):is(:hover, :active) {
+    transform: none;
+  }
+}
+
 /* ── Activity tray (prototype .tray / .tray-chip / .tray-panel) ───────── */
 
 /* 5px insets: the tray shares the composer surface's edges, which sit inside

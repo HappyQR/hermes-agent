@@ -1,4 +1,5 @@
 import { useAuiState } from '@assistant-ui/react'
+import { useStore } from '@nanostores/react'
 import { type RefObject, useCallback, useEffect, useRef, useState } from 'react'
 
 import {
@@ -9,13 +10,15 @@ import {
   setSurfaceVar
 } from '@/app/chat/surface-vars'
 import { useResizeObserver } from '@/hooks/use-resize-observer'
+import { $hudMode } from '@/store/hud'
 
 import {
   COMPOSER_COMPACT_PILL_PX,
   COMPOSER_FOLD_VOICE_PX,
   COMPOSER_MINIMAL_PX,
   COMPOSER_SINGLE_LINE_MAX_PX,
-  COMPOSER_STACK_BREAKPOINT_PX
+  COMPOSER_STACK_BREAKPOINT_PX,
+  COMPOSER_STACKED_COMPACT_PILL_PX
 } from '../composer-utils'
 
 interface UseComposerMetricsArgs {
@@ -29,22 +32,29 @@ interface UseComposerMetricsArgs {
 /** Every width-driven collapse stage, resolved from the composer's own width. */
 export interface ComposerFit {
   compactPill: boolean
+  /** The stacked row's own (lower) compact-pill rung. */
+  compactStacked: boolean
   foldVoice: boolean
   minimal: boolean
   tight: boolean
 }
 
-const ROOMY: ComposerFit = { compactPill: false, foldVoice: false, minimal: false, tight: false }
+const ROOMY: ComposerFit = { compactPill: false, compactStacked: false, foldVoice: false, minimal: false, tight: false }
 
 const fitForWidth = (width: number): ComposerFit => ({
   compactPill: width < COMPOSER_COMPACT_PILL_PX,
+  compactStacked: width < COMPOSER_STACKED_COMPACT_PILL_PX,
   foldVoice: width < COMPOSER_FOLD_VOICE_PX,
   minimal: width < COMPOSER_MINIMAL_PX,
   tight: width < COMPOSER_STACK_BREAKPOINT_PX
 })
 
 const sameFit = (a: ComposerFit, b: ComposerFit) =>
-  a.compactPill === b.compactPill && a.foldVoice === b.foldVoice && a.minimal === b.minimal && a.tight === b.tight
+  a.compactPill === b.compactPill &&
+  a.compactStacked === b.compactStacked &&
+  a.foldVoice === b.foldVoice &&
+  a.minimal === b.minimal &&
+  a.tight === b.tight
 
 interface UseComposerMetricsResult extends ComposerFit {
   stacked: boolean
@@ -66,6 +76,7 @@ export function useComposerMetrics({
 }: UseComposerMetricsArgs): UseComposerMetricsResult {
   const [expanded, setExpanded] = useState(false)
   const [fit, setFit] = useState<ComposerFit>(ROOMY)
+  const hudMode = useStore($hudMode)
 
   // Edge signals, not the live text: these only re-render when emptiness / the
   // presence of a non-trailing newline actually flips, so typing within a line
@@ -226,11 +237,16 @@ export function useComposerMetrics({
   // The ladder is monotonic: each stage implies the ones above it, so the pill
   // is always compact by the time the row stacks, and the voice controls are
   // always folded before minimal drops them.
+  //
+  // Hermes Studio: the input owns the first row and the controls the second
+  // (prototype .cmp-input / .cmp-row) at every width; only the HUD's
+  // Spotlight bar keeps the one-line layout and its own pill rung.
   return {
-    compactPill: fit.compactPill || fit.tight,
+    compactPill: hudMode ? fit.compactPill || fit.tight : fit.compactStacked,
+    compactStacked: fit.compactStacked,
     foldVoice: fit.foldVoice || fit.minimal,
     minimal: fit.minimal,
-    stacked: expanded || fit.tight,
+    stacked: !hudMode || expanded || fit.tight,
     tight: fit.tight
   }
 }

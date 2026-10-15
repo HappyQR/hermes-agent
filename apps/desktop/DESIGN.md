@@ -265,7 +265,8 @@ blurred backdrop.
   fans sibling toggles out on hover: `direction` `vertical` | `horizontal`
   (split around the hub) | `arc`. Discs are `Button` `floating` off /
   `default` on; tips face outside the fan according to its geometry. Use it where a row of rarely
-  touched toggles is costing input width (the composer's voice controls).
+  touched toggles is costing input width. (Hermes Studio's composer instead keeps one mic — click
+  dictates — and puts the other voice toggles in its right-click menu, `ContextDropdown`.)
 
 ## Layout
 
