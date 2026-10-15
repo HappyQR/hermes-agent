@@ -9,7 +9,9 @@
 'use strict'
 
 const variants = {
-  '': { display: 'Hermes', kebab: 'hermes', pascal: 'Hermes' },
+  // Hermes Studio fork: the default build is the redesigned app, installed
+  // beside the official Hermes.app with its own appId and userData.
+  '': { display: 'Hermes Studio', kebab: 'hermes-studio', pascal: 'HermesStudio' },
   light: {
     display: 'Hermes Light',
     kebab: 'hermes-light',

@@ -118,7 +118,8 @@ test('nonstable runtime pins userData before the app name can change', async ():
 })
 
 test.each([
-  [undefined, 'Hermes', 'hermes', 'latest', 'canary'],
+  // Hermes Studio fork: the default variant is the redesigned app.
+  [undefined, 'Hermes Studio', 'hermes', 'latest', 'canary'],
   ['bundled', 'Hermes Agent', 'hermes', 'latest', 'canary'],
   ['light', 'Hermes Light', 'hermes-light', 'light', 'light-canary']
 ] as const)(

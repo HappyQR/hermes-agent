@@ -249,7 +249,8 @@ export function buildStampPayload(stamp, env = process.env, platform = process.p
   if (variant === 'bundled') base.receiverProtocol = 1
 
   const updateMechanism = {
-    '': 'self',
+    // Hermes Studio: updated by scripts/studio/studio.sh, not the in-app handoff.
+    '': 'external',
     bootstrap: 'self',
     store: 'microsoft-store',
     bundled: { win32: 'app-installer', darwin: 'electron-updater' }[platform] || 'external',
