@@ -6,12 +6,21 @@
 const settled = page =>
   page.waitForSelector('[data-slot="connecting-overlay"]', { state: 'detached', timeout: 45_000 }).catch(() => undefined)
 
+// Pages that load from the backend draw skeleton rows first; give them up to 8s to fill.
+const loaded = page =>
+  page
+    .waitForFunction(() => !document.querySelector('[data-slot="settings-window"] [data-slot="skeleton"]'), null, {
+      timeout: 8_000
+    })
+    .catch(() => undefined)
+
 const go = async (page, hash, sleep, wait = 1100) => {
   await settled(page)
   await page.evaluate(target => {
     window.location.hash = target
   }, hash)
   await sleep(wait)
+  await loaded(page)
 }
 
 const closeSettings = async (page, sleep) => {
@@ -48,7 +57,8 @@ export default {
   },
   'settings-general': settingsPage('general'),
   'settings-appearance': settingsPage('appearance'),
-  'settings-appearance-2': settingsPage('appearance', { scroll: 560, name: 'settings-appearance-2' }),
+  'settings-appearance-2': settingsPage('appearance', { scroll: 330, name: 'settings-appearance-2' }),
+  'settings-appearance-3': settingsPage('appearance', { scroll: 900, name: 'settings-appearance-3' }),
   'settings-chat': settingsPage('chat'),
   'settings-notifications': settingsPage('notifications'),
   'settings-keyboard': settingsPage('keyboard'),

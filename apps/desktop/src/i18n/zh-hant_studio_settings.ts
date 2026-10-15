@@ -232,7 +232,6 @@ export const zhHantStudioSettings: StudioSettingsTranslations = {
     resetProfileTitle: '重設使用者畫像',
     resetProfileDesc: '清空 USER.md',
     resetAction: '重設…',
-    maintenanceActiveOnly: profile => `重設只作用於這個視窗正在使用的設定檔（「${profile}」）。`,
     toolsetsTitle: '啟用或關閉工具集',
     toolsetsDesc: page => `在「${page} › 工具」中管理`,
     openAction: '開啟',
@@ -252,6 +251,17 @@ export const zhHantStudioSettings: StudioSettingsTranslations = {
     localModelsDesc: '下載開源模型並在本機執行',
     localModelsAction: '管理本地模型…',
     sendTestAction: '傳送',
+    themeMarketplaceTitle: '從 VS Code 主題市集安裝',
+    noThemesMatch: query => `沒有符合「${query}」的已安裝主題。`,
+    activateKey: '啟用',
+    activatingKey: '正在啟用…',
+    apiKeyFallback: 'API 金鑰',
+    pasteKeyPlaceholder: name => `貼上 ${name}`,
+    providerNeedsKey: provider => `${provider} 需要 API 金鑰——設定好後即可選擇模型。`,
+    providerBrowserSignIn: provider => `${provider} 透過瀏覽器登入——Hermes 會帶你完成整個流程。`,
+    addCredentialTitle: '新增憑證',
+    addCredentialDesc: '登入、付款卡或地址',
+    addCredentialAction: '新增…',
     resetShortcutsAction: '全部恢復預設'
   }
 }

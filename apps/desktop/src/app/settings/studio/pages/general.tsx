@@ -13,7 +13,12 @@ export function GeneralPage() {
 
   return (
     <>
-      <SettingsWindowSection aside={<SettingsScopeBadge page="general" />} id="language" page="general" title={s.language}>
+      <SettingsWindowSection
+        aside={<SettingsScopeBadge page="general" />}
+        id="language"
+        page="general"
+        title={s.language}
+      >
         <AppearanceSettings rows={['language']} />
         <AppearanceSettings rows={['resumeLastSession']} />
         <AppearanceSettings rows={['introSplash', 'modelPricing']} />

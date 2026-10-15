@@ -28,7 +28,7 @@ export function PasswordsPage() {
       >
         <VaultSettings key={key} subpage="credentials" />
       </SettingsWindowSection>
-      <SettingsWindowSection id="managers" page="passwords" title={s.managers}>
+      <SettingsWindowSection id="managers" note={t.settings.vault.sources.blurb} page="passwords" title={s.managers}>
         <VaultSettings key={key} subpage="sources" />
       </SettingsWindowSection>
     </>

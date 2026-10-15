@@ -279,8 +279,18 @@ function KeybindRow({ action }: { action: KeybindActionMeta }) {
   const windowed = useSettingsWindow()
 
   return (
-    <div className={cn('group flex items-center gap-2.5 transition-colors', windowed ? WINDOW_ROW : 'rounded-lg px-2.5 py-1 hover:bg-(--chrome-action-hover)')}>
-      <span className={cn('min-w-0 flex-1 truncate', windowed ? 'text-[0.8125rem] text-(--ui-text-primary)' : 'text-[0.82rem] text-foreground/90')}>
+    <div
+      className={cn(
+        'group flex items-center gap-2.5 transition-colors',
+        windowed ? WINDOW_ROW : 'rounded-lg px-2.5 py-1 hover:bg-(--chrome-action-hover)'
+      )}
+    >
+      <span
+        className={cn(
+          'min-w-0 flex-1 truncate',
+          windowed ? 'text-[0.8125rem] text-(--ui-text-primary)' : 'text-[0.82rem] text-foreground/90'
+        )}
+      >
         {label}
       </span>
 
@@ -353,7 +363,12 @@ function ReadonlyRow({ shortcut }: { shortcut: KeybindReadonly }) {
 
   return (
     <div className={cn('flex items-center gap-2.5', windowed ? WINDOW_ROW : 'rounded-lg px-2.5 py-1')}>
-      <span className={cn('min-w-0 flex-1 truncate', windowed ? 'text-[0.8125rem] text-(--ui-text-secondary)' : 'text-[0.82rem] text-foreground/75')}>
+      <span
+        className={cn(
+          'min-w-0 flex-1 truncate',
+          windowed ? 'text-[0.8125rem] text-(--ui-text-secondary)' : 'text-[0.82rem] text-foreground/75'
+        )}
+      >
         {label}
       </span>
       <div className="flex shrink-0 items-center gap-1">

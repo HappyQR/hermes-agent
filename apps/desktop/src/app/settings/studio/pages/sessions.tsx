@@ -11,7 +11,12 @@ export function SessionsPage() {
 
   return (
     <>
-      <SettingsWindowSection aside={<SettingsScopeBadge page="sessions" />} id="retention" page="sessions" title={s.retention}>
+      <SettingsWindowSection
+        aside={<SettingsScopeBadge page="sessions" />}
+        id="retention"
+        page="sessions"
+        title={s.retention}
+      >
         <AutoArchiveSetting />
       </SettingsWindowSection>
       <SettingsWindowSection id="archived" note={t.settings.sessions.archivedIntro} page="sessions" title={s.archived}>

@@ -31,7 +31,6 @@ import type {
 import { useI18n } from '@/i18n'
 import { isCodeSkewRestartRequired } from '@/lib/code-skew-error'
 import { AlertTriangle, Cpu, Loader2 } from '@/lib/icons'
-import { isSubmitEnter } from '@/lib/ime'
 import { catalogProviderMatches, findCatalogProvider } from '@/lib/model-options'
 import { composerServiceTier } from '@/lib/model-status-label'
 import { cn } from '@/lib/utils'
@@ -53,9 +52,11 @@ import {
 } from './aux-task-rows'
 import { CONTROL_TEXT } from './constants'
 import { getNested, setNested } from './helpers'
+import { ModelMainSection, type SpeedTier } from './model-main-section'
 import { ModelSelect, withActive } from './model-select'
 import { ListRow, ListRowSkeleton, Pill, SectionHeading, SectionHeadingSkeleton } from './primitives'
 import { dismissStaleAux, readStaleAuxDismissal, staleAuxFingerprint } from './stale-aux-dismissal'
+import { useSettingsWindow } from './studio/window-context'
 
 // Skeleton mirror of the Model settings DOM so the page keeps its shape while
 // the provider/model catalog loads, instead of collapsing to a centered
@@ -92,8 +93,6 @@ export function ModelSettingsSkeleton({ subpage }: Pick<ModelSettingsProps, 'sub
     </div>
   )
 }
-
-type SpeedTier = 'fast' | 'normal' | 'ultrafast'
 
 // A provider row is "ready" to pick a model from when it reports models. The
 // backend now surfaces the full `hermes model` universe (every canonical
@@ -302,6 +301,7 @@ export function ModelSettings({ onMainModelChanged, scopeProfile, subpage }: Mod
   const showMain = subpage === undefined || subpage === 'main'
   const showAuxiliary = subpage === undefined || subpage === 'auxiliary'
   const showMoa = subpage === undefined || subpage === 'moa'
+  const windowed = useSettingsWindow()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [skewRestart, setSkewRestart] = useState(false)
@@ -992,150 +992,48 @@ export function ModelSettings({ onMainModelChanged, scopeProfile, subpage }: Mod
   )
 
   return (
-    <div className="grid gap-6">
+    // The Settings window lays the sections out itself (its rows join the page's card).
+    <div className={windowed ? 'contents' : 'grid gap-6'}>
       {!showMain && errorNotice}
       {showMain && (
-        <section>
-          <p className="mb-3 text-xs text-muted-foreground">{m.appliesDesc}</p>
-          <div className="flex flex-wrap items-center gap-2">
-            <Select onValueChange={switchProvider} value={selectedProviderRow?.slug ?? selectedProvider}>
-              <SelectTrigger className={cn('min-w-40', CONTROL_TEXT)}>
-                <SelectValue placeholder={m.provider} />
-              </SelectTrigger>
-              <SelectContent>
-                {mainProviderOptions.map(provider => (
-                  <SelectItem key={provider.slug || 'none'} value={provider.slug || 'none'}>
-                    {provider.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {needsSetup ? (
-              setupIsApiKey ? (
-                <>
-                  <Input
-                    autoComplete="off"
-                    className={cn('min-w-60 flex-1', CONTROL_TEXT)}
-                    onChange={event => setApiKeyDraft(event.target.value)}
-                    onKeyDown={event => {
-                      if (isSubmitEnter(event)) {
-                        void activateApiKeyProvider()
-                      }
-                    }}
-                    placeholder={`Paste ${selectedProviderRow?.key_env ?? 'API key'}`}
-                    type="password"
-                    value={apiKeyDraft}
-                  />
-                  <Button
-                    disabled={!apiKeyDraft.trim() || activating}
-                    onClick={() => void activateApiKeyProvider()}
-                    size="sm"
-                  >
-                    {activating && <Loader2 className="size-3.5 animate-spin" />}
-                    {activating ? 'Activating...' : 'Activate'}
-                  </Button>
-                </>
-              ) : (
-                <Button onClick={startProviderSetup} size="sm" variant="textStrong">
-                  {m.setUpProvider(selectedProviderRow?.name ?? m.setupProviderFallback)}
-                </Button>
-              )
-            ) : (
-              <>
-                <ModelSelect
-                  className="min-w-60"
-                  models={selectedProviderModels}
-                  onValueChange={setSelectedModel}
-                  provider={selectedProviderRow}
-                  providerSlug={selectedProvider}
-                  value={selectedModel}
-                />
-                <Button
-                  disabled={!selectedProvider || !selectedModel || applying}
-                  onClick={() => void applyMainModel()}
-                  size="sm"
-                >
-                  {applying && <Loader2 className="size-3.5 animate-spin" />}
-                  {applying ? m.applying : t.common.apply}
-                </Button>
-              </>
-            )}
-          </div>
-          {needsSetup && !setupIsApiKey && selectedProviderRow && (
-            <p className="mt-2 text-xs text-muted-foreground">
-              {selectedProviderRow?.auth_type === 'api_key'
-                ? `${selectedProviderRow?.name} needs an API key — set it up to choose a model.`
-                : `${selectedProviderRow?.name} signs in through your browser — Hermes runs the flow for you.`}
-            </p>
-          )}
-          {config && mainModel && (reasoningSupported || fastSupported || ultrafastSupported) && (
-            <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-3">
-              <span className="text-xs text-muted-foreground">{m.defaultsLabel}</span>
-              {reasoningSupported && (
-                <div className="flex items-center gap-2 text-xs">
-                  <span className="shrink-0 whitespace-nowrap">{m.reasoning}</span>
-                  <Select
-                    onValueChange={value => void writeAgentDefault('agent.reasoning_effort', value)}
-                    value={effortValue}
-                  >
-                    <SelectTrigger className={cn('min-w-28', CONTROL_TEXT)}>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {REASONING_EFFORT_VALUES.map(value => (
-                        <SelectItem key={value} value={value}>
-                          {value === 'none' ? m.reasoningOff : t.shell.modelOptions[value]}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-              {ultrafastSupported ? (
-                <div className="flex items-center gap-2 text-xs">
-                  <span className="shrink-0 whitespace-nowrap">{m.speed}</span>
-                  <Select
-                    onValueChange={value => void writeAgentDefault('agent.service_tier', value)}
-                    value={speedValue}
-                  >
-                    <SelectTrigger aria-label={m.speed} className={cn('min-w-28', CONTROL_TEXT)}>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="normal">{m.speedStandard}</SelectItem>
-                      {fastSupported && <SelectItem value="fast">{t.shell.modelOptions.fast}</SelectItem>}
-                      <SelectItem value="ultrafast">{t.shell.modelOptions.ultrafast}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              ) : (
-                fastSupported && (
-                  <label className="flex items-center gap-2 text-xs">
-                    {t.shell.modelOptions.fast}
-                    <Switch
-                      checked={fastOn}
-                      onCheckedChange={checked =>
-                        void writeAgentDefault('agent.service_tier', checked ? 'fast' : 'normal')
-                      }
-                      size="xs"
-                    />
-                  </label>
-                )
-              )}
-            </div>
-          )}
-          {errorNotice}
-          {switchStaleAux.length > 0 && (
-            <div className="mt-2">
+        <ModelMainSection
+          activating={activating}
+          apiKeyDraft={apiKeyDraft}
+          applying={applying}
+          currentModel={mainModel}
+          effortValue={effortValue}
+          errorNotice={errorNotice}
+          fastOn={fastOn}
+          fastSupported={fastSupported}
+          mainProviderOptions={mainProviderOptions}
+          needsSetup={needsSetup}
+          onActivateApiKey={() => void activateApiKeyProvider()}
+          onApiKeyDraftChange={setApiKeyDraft}
+          onApply={() => void applyMainModel()}
+          onModelChange={setSelectedModel}
+          onProviderChange={switchProvider}
+          onStartSetup={startProviderSetup}
+          onWriteDefault={(key, value) => void writeAgentDefault(key, value)}
+          reasoningSupported={reasoningSupported}
+          selectedModel={selectedModel}
+          selectedProvider={selectedProvider}
+          selectedProviderModels={selectedProviderModels}
+          selectedProviderRow={selectedProviderRow}
+          setupIsApiKey={setupIsApiKey}
+          showDefaults={Boolean(config && mainModel)}
+          speedValue={speedValue}
+          staleAuxWarning={
+            switchStaleAux.length > 0 && (
               <StaleAuxWarning
                 applying={applying}
                 onReset={() => void resetAuxiliaryModels()}
                 slots={switchStaleAux}
                 taskLabel={auxiliaryTaskLabel}
               />
-            </div>
-          )}
-        </section>
+            )
+          }
+          ultrafastSupported={ultrafastSupported}
+        />
       )}
 
       {showAuxiliary && (

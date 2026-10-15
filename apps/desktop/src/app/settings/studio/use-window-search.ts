@@ -92,7 +92,13 @@ export function useWindowSearch(query: string): WindowSearchHit[] {
 
         if (title && title !== pageTitle(page)) {
           push(
-            { context: pageTitle(page), id: `section:${page}:${section}`, label: title, page, search: sectionSearch({ page, section }) },
+            {
+              context: pageTitle(page),
+              id: `section:${page}:${section}`,
+              label: title,
+              page,
+              search: sectionSearch({ page, section })
+            },
             [page, section]
           )
         }

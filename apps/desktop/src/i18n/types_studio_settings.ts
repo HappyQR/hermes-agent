@@ -185,7 +185,6 @@ export interface StudioSettingsTranslations {
     resetProfileTitle: string
     resetProfileDesc: string
     resetAction: string
-    maintenanceActiveOnly: (profile: string) => string
     toolsetsTitle: string
     toolsetsDesc: (page: string) => string
     openAction: string
@@ -205,6 +204,17 @@ export interface StudioSettingsTranslations {
     localModelsDesc: string
     localModelsAction: string
     sendTestAction: string
+    themeMarketplaceTitle: string
+    noThemesMatch: (query: string) => string
+    activateKey: string
+    activatingKey: string
+    apiKeyFallback: string
+    pasteKeyPlaceholder: (name: string) => string
+    providerNeedsKey: (provider: string) => string
+    providerBrowserSignIn: (provider: string) => string
+    addCredentialTitle: string
+    addCredentialDesc: string
+    addCredentialAction: string
     resetShortcutsAction: string
   }
 }

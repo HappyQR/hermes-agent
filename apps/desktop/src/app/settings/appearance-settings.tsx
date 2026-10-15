@@ -7,6 +7,7 @@ import { LanguageSwitcher } from '@/components/language-switcher'
 import { SearchField } from '@/components/ui/search-field'
 import { SegmentedControl } from '@/components/ui/segmented-control'
 import { Slider } from '@/components/ui/slider'
+import { Tip } from '@/components/ui/tooltip'
 import type { DesktopMarketplaceSearchItem } from '@/global'
 import { saveHermesConfig } from '@/hermes'
 import { useI18n } from '@/i18n'
@@ -85,6 +86,7 @@ import { MinimizeToTraySetting } from './minimize-to-tray-setting'
 import { PetSettings } from './pet-settings'
 import { ListRow, RowFootnoteAction, SectionHeading, SettingsContent, ToggleRow } from './primitives'
 import { SETTING_IDS, settingElementId } from './settings-manifest'
+import { useSettingsWindow } from './studio/window-context'
 import { TerminalFontSetting } from './terminal-font-setting'
 import { useSettingDeepLink } from './use-setting-deep-link'
 
@@ -406,25 +408,38 @@ function GlassRow({ children, label }: GlassRowProps) {
   )
 }
 
-/**
- * Theme gallery row: color mode (classic page), one search box that filters
- * installed themes and live-searches the VS Code Marketplace, and the cards.
- * `fullPage` clips the gallery inside the classic all-in-one page; the Studio
- * window draws the color mode as its own cards (`showModes={false}`).
- */
-function ThemeSettingRow({ fullPage, showModes }: { fullPage: boolean; showModes: boolean }) {
-  const { t } = useI18n()
-  const { themeName, mode, resolvedMode, availableThemes, setTheme, setMode } = useTheme()
-  const installs = useStore($marketplaceInstalls)
-  const profiles = useStore($profiles)
-  const activeProfileKey = normalizeProfileKey(useStore($activeGatewayProfile))
-  const [query, setQuery] = useState('')
-  const a = t.settings.appearance
+/** The compact theme card of the Settings window (prototype .theme-card): a 16:10 preview and the name. */
+function ThemeSwatch({ mode, name }: { mode: 'dark' | 'light'; name: string }) {
+  const c = getBaseColors(name, mode)
 
-  // One box does double duty: filter installed themes live (below), and run a
-  // name search against the VS Code Marketplace (the Cmd-K "Install theme…"
-  // backend) for anything not already installed.
-  const needle = normalize(query)
+  return (
+    <span className="flex aspect-[16/10] w-full overflow-hidden rounded-[9px]" data-slot="theme-swatch">
+      <span className="w-[32%]" style={{ backgroundColor: c.sidebarBackground ?? c.muted }} />
+      <span className="relative flex-1" style={{ backgroundColor: c.background }}>
+        <span
+          className="absolute left-[12%] top-[22%] h-[9%] w-1/2 rounded-[3px]"
+          style={{ backgroundColor: c.primary }}
+        />
+        <span
+          className="absolute left-[12%] top-[40%] h-[7%] w-[64%] rounded-[3px] opacity-25"
+          style={{ backgroundColor: c.mutedForeground }}
+        />
+      </span>
+    </span>
+  )
+}
+
+interface ThemeGalleryProps {
+  compact: boolean
+  needle: string
+  query: string
+}
+
+/** Installed themes (active first), filtered by the shared search box. */
+function ThemeGallery({ compact, needle, query }: ThemeGalleryProps) {
+  const { t } = useI18n()
+  const { themeName, resolvedMode, availableThemes, setTheme } = useTheme()
+  const a = t.settings.appearance
 
   const filteredThemes = availableThemes
     .filter(
@@ -437,6 +452,133 @@ function ThemeSettingRow({ fullPage, showModes }: { fullPage: boolean; showModes
     // Active theme first; stable sort keeps the rest in their original order.
     .sort((a, b) => Number(b.name === themeName) - Number(a.name === themeName))
 
+  if (filteredThemes.length === 0) {
+    return needle ? (
+      <p className="text-[length:var(--conversation-caption-font-size)] text-(--ui-text-tertiary)">
+        {t.studio.settings.rows.noThemesMatch(query.trim())}
+      </p>
+    ) : null
+  }
+
+  return (
+    <div className={compact ? 'grid grid-cols-3 gap-3' : 'grid gap-3 sm:grid-cols-2 xl:grid-cols-3'}>
+      {filteredThemes.map(theme => {
+        const active = themeName === theme.name
+
+        const pick = () => {
+          triggerHaptic('crisp')
+          setTheme(theme.name)
+        }
+
+        return (
+          <div className="group relative" key={theme.name}>
+            {compact ? (
+              <Tip label={theme.description}>
+                <button
+                  aria-pressed={active}
+                  className="flex w-full flex-col items-center gap-1.5 text-xs text-(--ui-text-primary) outline-none"
+                  onClick={pick}
+                  type="button"
+                >
+                  <span
+                    className={cn(
+                      'w-full rounded-[9px] transition-shadow duration-100',
+                      active ? 'shadow-[0_0_0_2.5px_var(--dt-primary)]' : 'shadow-[0_0_0_0.5px_var(--ui-line-2)]'
+                    )}
+                  >
+                    <ThemeSwatch mode={resolvedMode} name={theme.name} />
+                  </span>
+                  <span className="max-w-full truncate">{theme.label}</span>
+                </button>
+              </Tip>
+            ) : (
+              <button
+                className={cn('w-full p-2 text-left', selectableCardClass({ active, prominent: true }))}
+                onClick={pick}
+                type="button"
+              >
+                <ThemePreview mode={resolvedMode} name={theme.name} />
+                <div className="mt-3 px-1">
+                  <div className="truncate text-[length:var(--conversation-text-font-size)] font-medium">
+                    {theme.label}
+                  </div>
+                  <div className="mt-0.5 line-clamp-2 text-[length:var(--conversation-caption-font-size)] leading-(--conversation-caption-line-height) text-(--ui-text-tertiary)">
+                    {theme.description}
+                  </div>
+                </div>
+              </button>
+            )}
+            {isUserTheme(theme.name) && (
+              <button
+                aria-label={a.removeTheme}
+                className="absolute right-1.5 top-1.5 grid size-6 place-items-center rounded-md bg-(--ui-bg-elevated)/80 text-(--ui-text-tertiary) opacity-0 backdrop-blur-sm transition hover:text-(--ui-red) focus-visible:opacity-100 group-hover:opacity-100"
+                onClick={() => {
+                  triggerHaptic('crisp')
+                  removeUserTheme(theme.name)
+
+                  // Re-normalize off the now-missing skin → default.
+                  if (active) {
+                    setTheme(theme.name)
+                  }
+                }}
+                type="button"
+              >
+                <Trash2 className="size-3.5" />
+              </button>
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+/**
+ * Theme gallery row: color mode (classic page), one search box that filters
+ * installed themes and live-searches the VS Code Marketplace, and the cards.
+ * `fullPage` clips the gallery inside the classic all-in-one page; the Studio
+ * window draws compact cards with the Marketplace search as its own row
+ * (color mode lives in its own cards there, `showModes={false}`).
+ */
+function ThemeSettingRow({ fullPage, showModes }: { fullPage: boolean; showModes: boolean }) {
+  const { t } = useI18n()
+  const { mode, setTheme, setMode } = useTheme()
+  const windowed = useSettingsWindow()
+  const installs = useStore($marketplaceInstalls)
+  const profiles = useStore($profiles)
+  const activeProfileKey = normalizeProfileKey(useStore($activeGatewayProfile))
+  const [query, setQuery] = useState('')
+  const a = t.settings.appearance
+  // One box does double duty: filter installed themes live (below), and run a
+  // name search against the VS Code Marketplace (the Cmd-K "Install theme…"
+  // backend) for anything not already installed.
+  const needle = normalize(query)
+
+  const search = (
+    <SearchField
+      containerClassName={windowed ? 'w-[12.5rem]' : 'mt-3 w-full'}
+      inputClassName="flex-1"
+      onChange={setQuery}
+      placeholder={a.themeSearchPlaceholder}
+      value={query}
+      variant={windowed ? 'filled' : undefined}
+    />
+  )
+
+  const marketplace = <MarketplaceThemeResults installs={installs} onInstalled={name => setTheme(name)} query={query} />
+
+  if (windowed) {
+    return (
+      <div className="scroll-mt-4" id={settingElementId(ids.theme)}>
+        <div className="px-3.5 py-3">
+          <ThemeGallery compact needle={needle} query={query} />
+          {marketplace}
+        </div>
+        <ListRow action={search} title={t.studio.settings.rows.themeMarketplaceTitle} />
+      </div>
+    )
+  }
+
   // Themes save per profile. Surface that only when the user actually has more
   // than one profile (single-profile installs never see the distinction).
   const showProfileNote = profiles.length > 1
@@ -444,103 +586,43 @@ function ThemeSettingRow({ fullPage, showModes }: { fullPage: boolean; showModes
   const modeOptions = MODE_OPTIONS.map(({ id, icon }) => ({ icon, id, label: t.settings.modeOptions[id].label }))
 
   return (
-        <ListRow
-          action={
-            showModes ? (
-              <SegmentedControl
-                onChange={id => {
-                  triggerHaptic('crisp')
-                  setMode(id)
-                }}
-                options={modeOptions}
-                value={mode}
-              />
-            ) : undefined
-          }
-          below={
-            <>
-              {/* One search box: filters your installed themes (the grid)
-                  and live-searches the VS Code Marketplace below. */}
-              <SearchField
-                containerClassName="mt-3 w-full"
-                inputClassName="flex-1"
-                onChange={setQuery}
-                placeholder={a.themeSearchPlaceholder}
-                value={query}
-              />
+    <ListRow
+      action={
+        showModes ? (
+          <SegmentedControl
+            onChange={id => {
+              triggerHaptic('crisp')
+              setMode(id)
+            }}
+            options={modeOptions}
+            value={mode}
+          />
+        ) : undefined
+      }
+      below={
+        <>
+          {/* One search box: filters your installed themes (the grid)
+              and live-searches the VS Code Marketplace below. */}
+          {search}
 
-              {/* The dedicated theme page uses the page scroller rather
-                  than clipping its gallery inside another scroll area. */}
-              <div className={cn('mt-3', fullPage && 'max-h-96 overflow-y-auto pr-1')}>
-                {filteredThemes.length === 0 ? (
-                  needle ? (
-                    <p className="text-[length:var(--conversation-caption-font-size)] text-(--ui-text-tertiary)">
-                      No installed themes match "{query.trim()}".
-                    </p>
-                  ) : null
-                ) : (
-                  <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                    {filteredThemes.map(theme => {
-                      const active = themeName === theme.name
-                      const removable = isUserTheme(theme.name)
-
-                      return (
-                        <div className="group relative" key={theme.name}>
-                          <button
-                            className={cn('w-full p-2 text-left', selectableCardClass({ active, prominent: true }))}
-                            onClick={() => {
-                              triggerHaptic('crisp')
-                              setTheme(theme.name)
-                            }}
-                            type="button"
-                          >
-                            <ThemePreview mode={resolvedMode} name={theme.name} />
-                            <div className="mt-3 px-1">
-                              <div className="truncate text-[length:var(--conversation-text-font-size)] font-medium">
-                                {theme.label}
-                              </div>
-                              <div className="mt-0.5 line-clamp-2 text-[length:var(--conversation-caption-font-size)] leading-(--conversation-caption-line-height) text-(--ui-text-tertiary)">
-                                {theme.description}
-                              </div>
-                            </div>
-                          </button>
-                          {removable && (
-                            <button
-                              aria-label={a.removeTheme}
-                              className="absolute right-1.5 top-1.5 grid size-6 place-items-center rounded-md bg-(--ui-bg-elevated)/80 text-(--ui-text-tertiary) opacity-0 backdrop-blur-sm transition hover:text-(--ui-red) focus-visible:opacity-100 group-hover:opacity-100"
-                              onClick={() => {
-                                triggerHaptic('crisp')
-                                removeUserTheme(theme.name)
-
-                                // Re-normalize off the now-missing skin → default.
-                                if (active) {
-                                  setTheme(theme.name)
-                                }
-                              }}
-                              type="button"
-                            >
-                              <Trash2 className="size-3.5" />
-                            </button>
-                          )}
-                        </div>
-                      )
-                    })}
-                  </div>
-                )}
-                <MarketplaceThemeResults installs={installs} onInstalled={name => setTheme(name)} query={query} />
-              </div>
-              {showProfileNote && (
-                <p className="mt-3 text-[length:var(--conversation-caption-font-size)] leading-(--conversation-caption-line-height) text-(--ui-text-tertiary)">
-                  {a.themeProfileNote(activeProfileName)}
-                </p>
-              )}
-            </>
-          }
-          description={a.themeDesc}
-          id={settingElementId(ids.theme)}
-          title={a.themeTitle}
-          wide
-        />
+          {/* The dedicated theme page uses the page scroller rather
+              than clipping its gallery inside another scroll area. */}
+          <div className={cn('mt-3', fullPage && 'max-h-96 overflow-y-auto pr-1')}>
+            <ThemeGallery compact={false} needle={needle} query={query} />
+            {marketplace}
+          </div>
+          {showProfileNote && (
+            <p className="mt-3 text-[length:var(--conversation-caption-font-size)] leading-(--conversation-caption-line-height) text-(--ui-text-tertiary)">
+              {a.themeProfileNote(activeProfileName)}
+            </p>
+          )}
+        </>
+      }
+      description={a.themeDesc}
+      id={settingElementId(ids.theme)}
+      title={a.themeTitle}
+      wide
+    />
   )
 }
 
@@ -566,85 +648,81 @@ function TranslucencySettingRow() {
     }
 
   return (
-        <ListRow
-          action={
-            <div
-              className="flex items-center gap-3"
-              // Arms the peek for the overlay this row lives in — the
-              // ghosting rules in styles.css scope to it, so no other
-              // overlay pays for an opacity transition it never uses.
-              data-translucency-peek-scope=""
-            >
-              {GLASS_SUPPORTED && (
-                <SegmentedControl
-                  onChange={pickTranslucency(setTranslucencyMode)}
-                  options={[
-                    { id: 'clear' as const, label: a.translucencyModeClear },
-                    { id: 'glass' as const, label: a.translucencyModeGlass }
-                  ]}
-                  value={translucency.mode}
-                />
-              )}
-              {/* Clear has one lever and it belongs beside the mode. Glass
+    <ListRow
+      action={
+        <div
+          className="flex items-center gap-3"
+          // Arms the peek for the overlay this row lives in — the
+          // ghosting rules in styles.css scope to it, so no other
+          // overlay pays for an opacity transition it never uses.
+          data-translucency-peek-scope=""
+        >
+          {GLASS_SUPPORTED && (
+            <SegmentedControl
+              onChange={pickTranslucency(setTranslucencyMode)}
+              options={[
+                { id: 'clear' as const, label: a.translucencyModeClear },
+                { id: 'glass' as const, label: a.translucencyModeGlass }
+              ]}
+              value={translucency.mode}
+            />
+          )}
+          {/* Clear has one lever and it belongs beside the mode. Glass
                   has four controls, so they move into the labelled panel
                   below rather than crowding this line with an unlabelled
                   slider that means something different. */}
-              {!glassMode && (
-                <TranslucencySlider
-                  label={a.translucencyTitle}
-                  onChange={setTranslucency}
-                  value={translucency.intensity}
-                />
-              )}
-            </div>
-          }
-          below={
-            glassMode ? (
-              <div className="mt-3 flex flex-col gap-2.5" data-translucency-peek-scope="">
-                <GlassRow label={a.translucencyTintTitle}>
-                  <TranslucencySlider
-                    label={a.translucencyTintTitle}
-                    onChange={setTranslucency}
-                    value={translucency.intensity}
-                  />
-                </GlassRow>
-                <GlassRow label={a.translucencyFadeTitle}>
-                  <TranslucencySlider
-                    label={a.translucencyFadeTitle}
-                    onChange={setTranslucencyFade}
-                    value={translucency.fade}
-                  />
-                </GlassRow>
-                <GlassRow label={a.translucencyFrostTitle}>
-                  <SegmentedControl
-                    onChange={pickTranslucency(setTranslucencyMaterial)}
-                    // Windows renders four rungs as three backdrops, so it
-                    // is offered three; a frost saved on a Mac highlights
-                    // the rung that renders the same backdrop here.
-                    options={glassMaterialsFor(GLASS_IS_WINDOWS).map(material => ({
-                      id: material,
-                      label: a.translucencyFrost[material]
-                    }))}
-                    value={glassMaterialForPicker(translucency.material, GLASS_IS_WINDOWS)}
-                  />
-                </GlassRow>
-                <GlassRow label={a.translucencyScopeTitle}>
-                  <SegmentedControl
-                    onChange={pickTranslucency(setTranslucencyScope)}
-                    options={GLASS_SCOPES.map(scope => ({
-                      id: scope,
-                      label: a.translucencyScope[scope]
-                    }))}
-                    value={translucency.scope}
-                  />
-                </GlassRow>
-              </div>
-            ) : undefined
-          }
-          description={glassMode ? a.translucencyGlassDesc : a.translucencyDesc}
-          id={settingElementId(ids.translucency)}
-          title={a.translucencyTitle}
-        />
+          {!glassMode && (
+            <TranslucencySlider label={a.translucencyTitle} onChange={setTranslucency} value={translucency.intensity} />
+          )}
+        </div>
+      }
+      below={
+        glassMode ? (
+          <div className="mt-3 flex flex-col gap-2.5" data-translucency-peek-scope="">
+            <GlassRow label={a.translucencyTintTitle}>
+              <TranslucencySlider
+                label={a.translucencyTintTitle}
+                onChange={setTranslucency}
+                value={translucency.intensity}
+              />
+            </GlassRow>
+            <GlassRow label={a.translucencyFadeTitle}>
+              <TranslucencySlider
+                label={a.translucencyFadeTitle}
+                onChange={setTranslucencyFade}
+                value={translucency.fade}
+              />
+            </GlassRow>
+            <GlassRow label={a.translucencyFrostTitle}>
+              <SegmentedControl
+                onChange={pickTranslucency(setTranslucencyMaterial)}
+                // Windows renders four rungs as three backdrops, so it
+                // is offered three; a frost saved on a Mac highlights
+                // the rung that renders the same backdrop here.
+                options={glassMaterialsFor(GLASS_IS_WINDOWS).map(material => ({
+                  id: material,
+                  label: a.translucencyFrost[material]
+                }))}
+                value={glassMaterialForPicker(translucency.material, GLASS_IS_WINDOWS)}
+              />
+            </GlassRow>
+            <GlassRow label={a.translucencyScopeTitle}>
+              <SegmentedControl
+                onChange={pickTranslucency(setTranslucencyScope)}
+                options={GLASS_SCOPES.map(scope => ({
+                  id: scope,
+                  label: a.translucencyScope[scope]
+                }))}
+                value={translucency.scope}
+              />
+            </GlassRow>
+          </div>
+        ) : undefined
+      }
+      description={glassMode ? a.translucencyGlassDesc : a.translucencyDesc}
+      id={settingElementId(ids.translucency)}
+      title={a.translucencyTitle}
+    />
   )
 }
 

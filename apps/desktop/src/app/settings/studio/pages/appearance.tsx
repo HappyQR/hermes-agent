@@ -25,7 +25,12 @@ export function AppearancePage() {
 
   return (
     <>
-      <SettingsWindowSection aside={<SettingsScopeBadge page="appearance" />} id="look" page="appearance" title={s.look}>
+      <SettingsWindowSection
+        aside={<SettingsScopeBadge page="appearance" />}
+        id="look"
+        page="appearance"
+        title={s.look}
+      >
         <ColorModeCards />
         <AccentColorRow />
       </SettingsWindowSection>

@@ -157,7 +157,12 @@ function SearchResults({
                   text={hit.label}
                 />
               </span>
-              <span className={cn('truncate text-[0.6875rem]', isHot ? 'text-current opacity-80' : 'text-(--ui-text-tertiary)')}>
+              <span
+                className={cn(
+                  'truncate text-[0.6875rem]',
+                  isHot ? 'text-current opacity-80' : 'text-(--ui-text-tertiary)'
+                )}
+              >
                 {hit.context}
               </span>
             </span>
@@ -226,7 +231,10 @@ export function SettingsSidebar({
       data-tour="overlay-nav"
     >
       <div
-        className={cn('flex h-[3.25rem] shrink-0 cursor-grab items-center active:cursor-grabbing', rail ? 'justify-center' : 'px-[1.125rem]')}
+        className={cn(
+          'flex h-[3.25rem] shrink-0 cursor-grab items-center active:cursor-grabbing',
+          rail ? 'justify-center' : 'px-[1.125rem]'
+        )}
         onPointerDown={onDragStart}
       >
         <WindowControls onClose={onClose} />

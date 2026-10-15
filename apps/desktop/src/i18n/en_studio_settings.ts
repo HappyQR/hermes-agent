@@ -232,7 +232,6 @@ export const enStudioSettings: StudioSettingsTranslations = {
     resetProfileTitle: 'Reset user profile',
     resetProfileDesc: 'Clears USER.md.',
     resetAction: 'Reset…',
-    maintenanceActiveOnly: profile => `Resets apply to the profile this window uses (“${profile}”).`,
     toolsetsTitle: 'Turn toolsets on or off',
     toolsetsDesc: page => `Managed in ${page} › Tools.`,
     openAction: 'Open',
@@ -252,6 +251,17 @@ export const enStudioSettings: StudioSettingsTranslations = {
     localModelsDesc: 'Download open models and run them on this computer.',
     localModelsAction: 'Manage local models…',
     sendTestAction: 'Send',
+    themeMarketplaceTitle: 'Install from the VS Code Marketplace',
+    noThemesMatch: query => `No installed themes match "${query}".`,
+    activateKey: 'Activate',
+    activatingKey: 'Activating…',
+    apiKeyFallback: 'API key',
+    pasteKeyPlaceholder: name => `Paste ${name}`,
+    providerNeedsKey: provider => `${provider} needs an API key — set it up to choose a model.`,
+    providerBrowserSignIn: provider => `${provider} signs in through your browser — Hermes runs the flow for you.`,
+    addCredentialTitle: 'Add credential',
+    addCredentialDesc: 'A login, payment card or address',
+    addCredentialAction: 'Add…',
     resetShortcutsAction: 'Restore all defaults'
   }
 }

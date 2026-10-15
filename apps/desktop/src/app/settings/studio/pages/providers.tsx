@@ -55,7 +55,12 @@ export function ProvidersPage({
 
   return (
     <>
-      <SettingsWindowSection aside={<SettingsScopeBadge page="providers" />} id="accounts" page="providers" title={s.accounts}>
+      <SettingsWindowSection
+        aside={<SettingsScopeBadge page="providers" />}
+        id="accounts"
+        page="providers"
+        title={s.accounts}
+      >
         <FormCell>
           <ProvidersSettings view="accounts" {...providerProps} />
         </FormCell>

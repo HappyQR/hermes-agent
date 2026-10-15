@@ -23,7 +23,10 @@ import { SettingsWindowSection } from '../section'
  * the Settings window edits. Import keeps the classic path — the hidden file
  * input of a ConfigSettings draft, with its toolsets-wipe confirm and autosave.
  */
-function ConfigFileRows({ onConfigSaved, onMainModelChanged }: Pick<SettingsPageProps, 'onConfigSaved' | 'onMainModelChanged'>) {
+function ConfigFileRows({
+  onConfigSaved,
+  onMainModelChanged
+}: Pick<SettingsPageProps, 'onConfigSaved' | 'onMainModelChanged'>) {
   const { t } = useI18n()
   const r = t.studio.settings.rows
   const scopeProfile = useStore($settingsRequestProfile)
@@ -48,7 +51,11 @@ function ConfigFileRows({ onConfigSaved, onMainModelChanged }: Pick<SettingsPage
   const resetConfig = async () => {
     triggerHaptic('warning')
 
-    const ok = await confirm({ confirmLabel: t.settings.resetToDefaults, destructive: true, title: t.settings.resetConfirm })
+    const ok = await confirm({
+      confirmLabel: t.settings.resetToDefaults,
+      destructive: true,
+      title: t.settings.resetConfirm
+    })
 
     if (!ok) {
       return
@@ -162,7 +169,9 @@ export function AboutPage(props: Pick<SettingsPageProps, 'onConfigSaved' | 'onMa
     <>
       <AboutSettings subpage="updates" />
       <SettingsWindowSection
-        aside={profiles.length > 1 && scopeProfile ? t.studio.settings.window.appliesToProfile(scopeProfile) : undefined}
+        aside={
+          profiles.length > 1 && scopeProfile ? t.studio.settings.window.appliesToProfile(scopeProfile) : undefined
+        }
         id="config"
         page="about"
         title={s.config}

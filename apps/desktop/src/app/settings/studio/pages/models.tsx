@@ -39,10 +39,14 @@ function ModelsSections({
 
   return (
     <>
-      <SettingsWindowSection aside={<SettingsScopeBadge page="models" />} id="main" page="models" title={s.main}>
-        <FormCell>
-          <ModelSettings onMainModelChanged={onMainModelChanged} scopeProfile={api.scopeProfile} subpage="main" />
-        </FormCell>
+      <SettingsWindowSection
+        aside={<SettingsScopeBadge page="models" />}
+        id="main"
+        note={t.settings.model.appliesDesc}
+        page="models"
+        title={s.main}
+      >
+        <ModelSettings onMainModelChanged={onMainModelChanged} scopeProfile={api.scopeProfile} subpage="main" />
         <ConfigRows api={api} keys={placedFields(api, 'models', 'main')} skeleton={1} />
       </SettingsWindowSection>
       <SettingsWindowSection id="fallbacks" note={s.fallbacksNote} page="models" title={s.fallbacks}>
@@ -51,7 +55,11 @@ function ModelsSections({
       <SettingsWindowSection id="auxiliary" page="models" title={s.auxiliary}>
         <FormDisclosure onOpenChange={setAuxOpen} open={auxOpen} title={s.auxiliaryDisclosure}>
           <FormCell>
-            <ModelSettings onMainModelChanged={onMainModelChanged} scopeProfile={api.scopeProfile} subpage="auxiliary" />
+            <ModelSettings
+              onMainModelChanged={onMainModelChanged}
+              scopeProfile={api.scopeProfile}
+              subpage="auxiliary"
+            />
           </FormCell>
           <ConfigRows api={api} keys={placedFields(api, 'models', 'auxiliary')} skeleton={0} />
         </FormDisclosure>

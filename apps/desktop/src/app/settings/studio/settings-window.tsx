@@ -50,7 +50,12 @@ function SettingsHero({ page }: { page: SettingsPageId }) {
 }
 
 /** Scroll `?section=` into view once it renders, then drop the param (so a repeat jump works). */
-function useSectionScroll(page: SettingsPageId, section: string | undefined, params: URLSearchParams, drop: () => void) {
+function useSectionScroll(
+  page: SettingsPageId,
+  section: string | undefined,
+  params: URLSearchParams,
+  drop: () => void
+) {
   const hasTarget = TARGET_PARAMS.some(key => params.get(key))
 
   useEffect(() => {
@@ -83,7 +88,10 @@ function useSectionScroll(page: SettingsPageId, section: string | undefined, par
 }
 
 /** Type anywhere on the window (outside a field) to search: focuses the sidebar search and seeds it. */
-function useTypeToSearch(searchRef: React.RefObject<HTMLInputElement | null>, setQuery: (fn: (q: string) => string) => void) {
+function useTypeToSearch(
+  searchRef: React.RefObject<HTMLInputElement | null>,
+  setQuery: (fn: (q: string) => string) => void
+) {
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if ($commandPaletteOpen.get() || isEditableTarget(event.target) || !searchRef.current) {
@@ -111,18 +119,20 @@ function PageMenu({ onSelect, page }: { onSelect: (page: SettingsPageId) => void
   const { t } = useI18n()
 
   return (
-    <TabDropdown
-      align="start"
-      items={SETTINGS_PAGE_GROUPS.flatMap((group, groupIndex) =>
-        group.map((id, index) => ({
-          active: id === page,
-          id,
-          label: t.studio.settings.pages[id].title,
-          onSelect: () => onSelect(id),
-          separatorBefore: groupIndex > 0 && index === 0
-        }))
-      )}
-    />
+    <nav aria-label={t.studio.settings.window.pageMenu}>
+      <TabDropdown
+        align="start"
+        items={SETTINGS_PAGE_GROUPS.flatMap((group, groupIndex) =>
+          group.map((id, index) => ({
+            active: id === page,
+            id,
+            label: t.studio.settings.pages[id].title,
+            onSelect: () => onSelect(id),
+            separatorBefore: groupIndex > 0 && index === 0
+          }))
+        )}
+      />
+    </nav>
   )
 }
 
@@ -289,4 +299,3 @@ export function SettingsWindow({ onClose, onConfigSaved, onMainModelChanged }: S
     </SettingsWindowContext.Provider>
   )
 }
-

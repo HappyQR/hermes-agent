@@ -12,7 +12,12 @@ function SafetySections({ api }: { api: ConfigSettingsLayoutApi }) {
 
   return (
     <>
-      <SettingsWindowSection aside={<SettingsScopeBadge page="safety" />} id="approvals" page="safety" title={s.approvals}>
+      <SettingsWindowSection
+        aside={<SettingsScopeBadge page="safety" />}
+        id="approvals"
+        page="safety"
+        title={s.approvals}
+      >
         <ConfigRows api={api} keys={placedFields(api, 'safety', 'approvals')} skeleton={4} />
       </SettingsWindowSection>
       <SettingsWindowSection id="privacy" page="safety" title={s.privacy}>

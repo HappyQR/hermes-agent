@@ -220,7 +220,8 @@ export const ruStudioSettings: StudioSettingsTranslations = {
     thinkingHide: 'Скрыто',
     timestampsTitle: 'Показывать время',
     hapticsTitle: 'Тактильный отклик',
-    hapticsDesc: 'Тактильные сигналы при перетаскивании и по завершении работы. Если выключить, звук завершения тоже отключится.',
+    hapticsDesc:
+      'Тактильные сигналы при перетаскивании и по завершении работы. Если выключить, звук завершения тоже отключится.',
     wakeTitle: 'Слушать слово активации',
     wakeDesc: 'Слушает в фоне и начинает голосовой разговор, услышав фразу',
     wakePhrase: 'Фраза активации',
@@ -232,7 +233,6 @@ export const ruStudioSettings: StudioSettingsTranslations = {
     resetProfileTitle: 'Сбросить профиль пользователя',
     resetProfileDesc: 'Очищает USER.md.',
     resetAction: 'Сбросить…',
-    maintenanceActiveOnly: profile => `Сброс применяется к профилю этого окна («${profile}»).`,
     toolsetsTitle: 'Включение и выключение наборов',
     toolsetsDesc: page => `Управление — в разделе «${page} › Инструменты».`,
     openAction: 'Открыть',
@@ -244,7 +244,8 @@ export const ruStudioSettings: StudioSettingsTranslations = {
     resetConfigDesc: 'Затрагивает только текущий профиль. Настройки оформления этого устройства не меняются.',
     resetConfigAction: 'Сбросить…',
     diagnosticsTitle: 'Отправить диагностику',
-    diagnosticsDesc: 'Загружает обезличенные журналы для поддержки. Перед отправкой нужно подтверждение, ссылка истекает.',
+    diagnosticsDesc:
+      'Загружает обезличенные журналы для поддержки. Перед отправкой нужно подтверждение, ссылка истекает.',
     diagnosticsAction: 'Отправить…',
     logsTitle: 'Папка журналов',
     logsActionMac: 'Показать в Finder',
@@ -252,6 +253,17 @@ export const ruStudioSettings: StudioSettingsTranslations = {
     localModelsDesc: 'Скачивайте открытые модели и запускайте их на этом компьютере.',
     localModelsAction: 'Управлять локальными моделями…',
     sendTestAction: 'Отправить',
+    themeMarketplaceTitle: 'Установить из VS Code Marketplace',
+    noThemesMatch: query => `Нет установленных тем по запросу «${query}».`,
+    activateKey: 'Активировать',
+    activatingKey: 'Активация…',
+    apiKeyFallback: 'API-ключ',
+    pasteKeyPlaceholder: name => `Вставьте ${name}`,
+    providerNeedsKey: provider => `Для ${provider} нужен API-ключ — настройте его, чтобы выбрать модель.`,
+    providerBrowserSignIn: provider => `${provider} входит через браузер — Hermes проведёт вас по всем шагам.`,
+    addCredentialTitle: 'Добавить учётные данные',
+    addCredentialDesc: 'Логин, платёжная карта или адрес',
+    addCredentialAction: 'Добавить…',
     resetShortcutsAction: 'Сбросить всё по умолчанию'
   }
 }

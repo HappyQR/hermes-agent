@@ -103,7 +103,8 @@ export const deStudioSettings: StudioSettingsTranslations = {
     appearance: {
       look: 'Erscheinungsbild',
       theme: 'Themes',
-      themeNote: 'Themes werden pro Profil gespeichert. Du kannst auch direkt aus dem VS Code Marketplace installieren.',
+      themeNote:
+        'Themes werden pro Profil gespeichert. Du kannst auch direkt aus dem VS Code Marketplace installieren.',
       window: 'Fenster',
       typography: 'Schriften & Skalierung',
       pet: 'Haustier'
@@ -126,7 +127,8 @@ export const deStudioSettings: StudioSettingsTranslations = {
     models: {
       main: 'Hauptmodell',
       fallbacks: 'Ersatzmodelle',
-      fallbacksNote: 'Werden der Reihe nach versucht, wenn das Hauptmodell nicht verfügbar ist oder kein Guthaben mehr hat.',
+      fallbacksNote:
+        'Werden der Reihe nach versucht, wenn das Hauptmodell nicht verfügbar ist oder kein Guthaben mehr hat.',
       auxiliary: 'Hilfsmodelle',
       auxiliaryDisclosure: 'Hintergrundaufgaben (Bilderkennung, Komprimierung, Titel…)',
       moa: 'Agentenmix',
@@ -154,7 +156,8 @@ export const deStudioSettings: StudioSettingsTranslations = {
       projects: 'Projekte',
       execution: 'Ausführung',
       checkpoints: 'Checkpoints',
-      checkpointsNote: 'Wird vor jeder Dateiänderung automatisch gespeichert, damit du an einer Nachricht den Checkpoint wiederherstellen kannst.'
+      checkpointsNote:
+        'Wird vor jeder Dateiänderung automatisch gespeichert, damit du an einer Nachricht den Checkpoint wiederherstellen kannst.'
     },
     safety: {
       approvals: 'Befehlsfreigabe',
@@ -232,7 +235,6 @@ export const deStudioSettings: StudioSettingsTranslations = {
     resetProfileTitle: 'Nutzerprofil zurücksetzen',
     resetProfileDesc: 'Leert USER.md.',
     resetAction: 'Zurücksetzen…',
-    maintenanceActiveOnly: profile => `Zurücksetzen betrifft das Profil dieses Fensters („${profile}“).`,
     toolsetsTitle: 'Toolsets ein- oder ausschalten',
     toolsetsDesc: page => `Verwaltet unter „${page} › Tools“.`,
     openAction: 'Öffnen',
@@ -252,6 +254,17 @@ export const deStudioSettings: StudioSettingsTranslations = {
     localModelsDesc: 'Offene Modelle herunterladen und auf diesem Computer ausführen.',
     localModelsAction: 'Lokale Modelle verwalten…',
     sendTestAction: 'Senden',
+    themeMarketplaceTitle: 'Aus dem VS Code Marketplace installieren',
+    noThemesMatch: query => `Keine installierten Themes passen zu „${query}“.`,
+    activateKey: 'Aktivieren',
+    activatingKey: 'Wird aktiviert…',
+    apiKeyFallback: 'API-Schlüssel',
+    pasteKeyPlaceholder: name => `${name} einfügen`,
+    providerNeedsKey: provider => `${provider} benötigt einen API-Schlüssel – richte ihn ein, um ein Modell zu wählen.`,
+    providerBrowserSignIn: provider => `${provider} meldet sich über deinen Browser an – Hermes übernimmt den Ablauf.`,
+    addCredentialTitle: 'Zugangsdaten hinzufügen',
+    addCredentialDesc: 'Login, Zahlungskarte oder Adresse',
+    addCredentialAction: 'Hinzufügen…',
     resetShortcutsAction: 'Alles zurücksetzen'
   }
 }

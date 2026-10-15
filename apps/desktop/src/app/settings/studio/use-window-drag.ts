@@ -1,6 +1,7 @@
 import { type PointerEvent, type RefObject, useCallback } from 'react'
 
-const INTERACTIVE = 'button, a, input, textarea, select, label, [role="button"], [role="combobox"], [contenteditable="true"]'
+const INTERACTIVE =
+  'button, a, input, textarea, select, label, [role="button"], [role="combobox"], [contenteditable="true"]'
 
 // Keep at least this much of the window on screen while dragging.
 const MARGIN = 96

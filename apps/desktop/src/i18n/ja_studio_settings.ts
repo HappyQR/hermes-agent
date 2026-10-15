@@ -232,7 +232,6 @@ export const jaStudioSettings: StudioSettingsTranslations = {
     resetProfileTitle: 'ユーザープロファイルをリセット',
     resetProfileDesc: 'USER.md を空にします',
     resetAction: 'リセット…',
-    maintenanceActiveOnly: profile => `リセットはこのウインドウが使用中のプロファイル（「${profile}」）に適用されます。`,
     toolsetsTitle: 'ツールセットのオン・オフ',
     toolsetsDesc: page => `「${page} › ツール」で管理します`,
     openAction: '開く',
@@ -252,6 +251,17 @@ export const jaStudioSettings: StudioSettingsTranslations = {
     localModelsDesc: 'オープンモデルをダウンロードしてこのコンピュータで実行します',
     localModelsAction: 'ローカルモデルを管理…',
     sendTestAction: '送信',
+    themeMarketplaceTitle: 'VS Code Marketplace からインストール',
+    noThemesMatch: query => `「${query}」に一致するインストール済みテーマはありません。`,
+    activateKey: '有効にする',
+    activatingKey: '有効にしています…',
+    apiKeyFallback: 'API キー',
+    pasteKeyPlaceholder: name => `${name} を貼り付け`,
+    providerNeedsKey: provider => `${provider} には API キーが必要です。設定するとモデルを選べます。`,
+    providerBrowserSignIn: provider => `${provider} はブラウザでサインインします。手順は Hermes が案内します。`,
+    addCredentialTitle: '認証情報を追加',
+    addCredentialDesc: 'ログイン、支払いカード、住所',
+    addCredentialAction: '追加…',
     resetShortcutsAction: 'すべてデフォルトに戻す'
   }
 }

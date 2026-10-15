@@ -59,7 +59,12 @@ function VoiceSections({ api }: { api: ConfigSettingsLayoutApi }) {
 
   return (
     <>
-      <SettingsWindowSection aside={<SettingsScopeBadge page="voice" />} id="conversation" page="voice" title={s.conversation}>
+      <SettingsWindowSection
+        aside={<SettingsScopeBadge page="voice" />}
+        id="conversation"
+        page="voice"
+        title={s.conversation}
+      >
         <ConfigRows api={api} keys={placedFields(api, 'voice', 'conversation')} skeleton={3} />
         <VoiceShortcutHintRow />
       </SettingsWindowSection>

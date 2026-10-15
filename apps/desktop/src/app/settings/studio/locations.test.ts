@@ -54,7 +54,10 @@ describe('settings window locations', () => {
       page: 'general',
       section: 'system'
     })
-    expect(resolve(`?tab=keybinds&setting=${SETTING_IDS.keybinds.hudModifier}`)).toEqual({ page: 'keyboard', section: 'hud' })
+    expect(resolve(`?tab=keybinds&setting=${SETTING_IDS.keybinds.hudModifier}`)).toEqual({
+      page: 'keyboard',
+      section: 'hud'
+    })
     // Config fields, item params and credentials.
     expect(resolve('?tab=config:advanced&field=checkpoints.max_snapshots')).toEqual({
       page: 'workspace',
@@ -62,9 +65,15 @@ describe('settings window locations', () => {
     })
     expect(resolve('?tab=config:model&aux=vision')).toEqual({ page: 'models', section: 'auxiliary' })
     expect(resolve('?tab=sessions&session=abc')).toEqual({ page: 'sessions', section: 'archived' })
-    expect(resolve('?tab=vault&kind=login&origin=https%3A%2F%2Fx.test')).toEqual({ page: 'passwords', section: 'credentials' })
+    expect(resolve('?tab=vault&kind=login&origin=https%3A%2F%2Fx.test')).toEqual({
+      page: 'passwords',
+      section: 'credentials'
+    })
     expect(resolve('?tab=keys&key=FIRECRAWL_API_KEY')).toEqual({ page: 'tools', section: 'tool-keys' })
-    expect(resolve('?tab=providers&pview=keys&key=OPENROUTER_API_KEY')).toEqual({ page: 'providers', section: 'api-keys' })
+    expect(resolve('?tab=providers&pview=keys&key=OPENROUTER_API_KEY')).toEqual({
+      page: 'providers',
+      section: 'api-keys'
+    })
     expect(resolve('?tab=plugins&plugin=kanban')).toEqual({ page: 'plugins' })
   })
 

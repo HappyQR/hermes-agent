@@ -37,12 +37,7 @@ export function ColorModeCards() {
   const labels: Record<(typeof MODES)[number], string> = { dark: r.modeDark, light: r.modeLight, system: r.modeAuto }
 
   return (
-    <div
-      aria-label={r.modeGroup}
-      className="flex flex-wrap gap-4 px-3.5 py-3"
-      data-slot="mode-cards"
-      role="group"
-    >
+    <div aria-label={r.modeGroup} className="flex flex-wrap gap-4 px-3.5 py-3" data-slot="mode-cards" role="group">
       {MODES.map(id => {
         const active = mode === id
 

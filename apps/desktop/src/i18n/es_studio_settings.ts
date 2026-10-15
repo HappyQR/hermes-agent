@@ -154,7 +154,8 @@ export const esStudioSettings: StudioSettingsTranslations = {
       projects: 'Proyectos',
       execution: 'Ejecución',
       checkpoints: 'Puntos de control',
-      checkpointsNote: 'Se guardan automáticamente antes de cada cambio en archivos; puedes restaurarlos desde un mensaje.'
+      checkpointsNote:
+        'Se guardan automáticamente antes de cada cambio en archivos; puedes restaurarlos desde un mensaje.'
     },
     safety: {
       approvals: 'Aprobación de comandos',
@@ -220,7 +221,8 @@ export const esStudioSettings: StudioSettingsTranslations = {
     thinkingHide: 'Oculto',
     timestampsTitle: 'Mostrar marcas de tiempo',
     hapticsTitle: 'Respuesta háptica',
-    hapticsDesc: 'Señales hápticas al arrastrar y al terminar un trabajo. Al desactivarlas también se silencia el sonido de finalización.',
+    hapticsDesc:
+      'Señales hápticas al arrastrar y al terminar un trabajo. Al desactivarlas también se silencia el sonido de finalización.',
     wakeTitle: 'Escuchar la palabra de activación',
     wakeDesc: 'Escucha en segundo plano e inicia una conversación por voz al oír la frase',
     wakePhrase: 'Frase de activación',
@@ -232,7 +234,6 @@ export const esStudioSettings: StudioSettingsTranslations = {
     resetProfileTitle: 'Restablecer perfil de usuario',
     resetProfileDesc: 'Vacía USER.md.',
     resetAction: 'Restablecer…',
-    maintenanceActiveOnly: profile => `Los restablecimientos se aplican al perfil que usa esta ventana («${profile}»).`,
     toolsetsTitle: 'Activar o desactivar conjuntos de herramientas',
     toolsetsDesc: page => `Se gestionan en «${page} › Herramientas».`,
     openAction: 'Abrir',
@@ -252,6 +253,17 @@ export const esStudioSettings: StudioSettingsTranslations = {
     localModelsDesc: 'Descarga modelos abiertos y ejecútalos en este equipo.',
     localModelsAction: 'Gestionar modelos locales…',
     sendTestAction: 'Enviar',
+    themeMarketplaceTitle: 'Instalar desde el VS Code Marketplace',
+    noThemesMatch: query => `Ningún tema instalado coincide con «${query}».`,
+    activateKey: 'Activar',
+    activatingKey: 'Activando…',
+    apiKeyFallback: 'clave de API',
+    pasteKeyPlaceholder: name => `Pega ${name}`,
+    providerNeedsKey: provider => `${provider} necesita una clave de API: configúrala para elegir un modelo.`,
+    providerBrowserSignIn: provider => `${provider} inicia sesión en tu navegador: Hermes se encarga del proceso.`,
+    addCredentialTitle: 'Añadir credencial',
+    addCredentialDesc: 'Inicio de sesión, tarjeta de pago o dirección',
+    addCredentialAction: 'Añadir…',
     resetShortcutsAction: 'Restaurar todo'
   }
 }

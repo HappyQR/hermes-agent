@@ -232,7 +232,6 @@ export const arStudioSettings: StudioSettingsTranslations = {
     resetProfileTitle: 'إعادة تعيين ملف المستخدم',
     resetProfileDesc: 'يمسح USER.md.',
     resetAction: 'إعادة تعيين…',
-    maintenanceActiveOnly: profile => `تُطبَّق إعادة التعيين على ملف التعريف الذي تستخدمه هذه النافذة («${profile}»).`,
     toolsetsTitle: 'تشغيل مجموعات الأدوات أو إيقافها',
     toolsetsDesc: page => `تُدار من «${page} › الأدوات».`,
     openAction: 'فتح',
@@ -252,6 +251,17 @@ export const arStudioSettings: StudioSettingsTranslations = {
     localModelsDesc: 'نزّل نماذج مفتوحة وشغّلها على هذا الكمبيوتر.',
     localModelsAction: 'إدارة النماذج المحلية…',
     sendTestAction: 'إرسال',
+    themeMarketplaceTitle: 'التثبيت من متجر VS Code',
+    noThemesMatch: query => `لا توجد سمات مثبّتة تطابق «${query}».`,
+    activateKey: 'تفعيل',
+    activatingKey: 'جارٍ التفعيل…',
+    apiKeyFallback: 'مفتاح API',
+    pasteKeyPlaceholder: name => `الصق ${name}`,
+    providerNeedsKey: provider => `يحتاج ${provider} إلى مفتاح API — اضبطه لتتمكن من اختيار نموذج.`,
+    providerBrowserSignIn: provider => `يسجّل ${provider} الدخول عبر متصفحك — ويتولى Hermes الخطوات نيابةً عنك.`,
+    addCredentialTitle: 'إضافة بيانات اعتماد',
+    addCredentialDesc: 'تسجيل دخول أو بطاقة دفع أو عنوان',
+    addCredentialAction: 'إضافة…',
     resetShortcutsAction: 'استعادة كل الإعدادات الافتراضية'
   }
 }

@@ -114,7 +114,11 @@ const LEGACY: Record<string, Record<string, SettingsLocation>> = {
   },
   keys: { '': at('tools'), tools: at('tools', 'tool-keys'), settings: at('tools', 'server-env') },
   vault: { '': at('passwords'), credentials: at('passwords', 'credentials'), sources: at('passwords', 'managers') },
-  notifications: { '': at('notifications'), alerts: at('notifications', 'alerts'), sounds: at('notifications', 'sounds') },
+  notifications: {
+    '': at('notifications'),
+    alerts: at('notifications', 'alerts'),
+    sounds: at('notifications', 'sounds')
+  },
   billing: { '': at('billing') },
   sessions: {
     '': at('sessions'),
@@ -153,7 +157,8 @@ const FIELD_RULES: readonly [test: (key: string) => boolean, location: SettingsL
   [key => key.startsWith('auxiliary.'), at('models', 'auxiliary')],
   [key => key.startsWith('moa.'), at('models', 'moa')],
   [
-    key => key === 'model' || key.startsWith('model.') || key === 'model_context_length' || key === 'agent.reasoning_effort',
+    key =>
+      key === 'model' || key.startsWith('model.') || key === 'model_context_length' || key === 'agent.reasoning_effort',
     at('models', 'main')
   ],
   [key => ['display.personality', 'timezone', 'display.show_reasoning'].includes(key), at('chat', 'replies')],
@@ -161,7 +166,10 @@ const FIELD_RULES: readonly [test: (key: string) => boolean, location: SettingsL
   [key => key === 'agent.image_input_mode', at('chat', 'media')],
   [key => key === 'terminal.cwd' || key.startsWith('desktop.repo_scan_'), at('workspace', 'projects')],
   [
-    key => ['code_execution.mode', 'file_read_max_chars', 'terminal.env_passthrough', 'terminal.persistent_shell'].includes(key),
+    key =>
+      ['code_execution.mode', 'file_read_max_chars', 'terminal.env_passthrough', 'terminal.persistent_shell'].includes(
+        key
+      ),
     at('workspace', 'execution')
   ],
   [key => key.startsWith('checkpoints.'), at('workspace', 'checkpoints')],

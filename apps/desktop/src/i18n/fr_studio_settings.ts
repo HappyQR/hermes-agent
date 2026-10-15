@@ -103,7 +103,8 @@ export const frStudioSettings: StudioSettingsTranslations = {
     appearance: {
       look: 'Apparence',
       theme: 'Thèmes',
-      themeNote: 'Les thèmes sont enregistrés par profil. Vous pouvez aussi en installer un depuis le VS Code Marketplace.',
+      themeNote:
+        'Les thèmes sont enregistrés par profil. Vous pouvez aussi en installer un depuis le VS Code Marketplace.',
       window: 'Fenêtre',
       typography: 'Polices et échelle',
       pet: 'Animal'
@@ -154,7 +155,8 @@ export const frStudioSettings: StudioSettingsTranslations = {
       projects: 'Projets',
       execution: 'Exécution',
       checkpoints: 'Points de contrôle',
-      checkpointsNote: 'Enregistrés automatiquement avant chaque modification de fichier ; restaurez-les depuis un message.'
+      checkpointsNote:
+        'Enregistrés automatiquement avant chaque modification de fichier ; restaurez-les depuis un message.'
     },
     safety: {
       approvals: 'Approbation des commandes',
@@ -220,7 +222,8 @@ export const frStudioSettings: StudioSettingsTranslations = {
     thinkingHide: 'Masqué',
     timestampsTitle: 'Afficher l’heure',
     hapticsTitle: 'Retour haptique',
-    hapticsDesc: 'Retours haptiques lors des glisser-déposer et à la fin d’un travail. Les désactiver coupe aussi le son de fin.',
+    hapticsDesc:
+      'Retours haptiques lors des glisser-déposer et à la fin d’un travail. Les désactiver coupe aussi le son de fin.',
     wakeTitle: 'Écouter le mot d’activation',
     wakeDesc: 'Écoute en arrière-plan et lance une conversation vocale quand il entend la phrase',
     wakePhrase: 'Phrase d’activation',
@@ -232,7 +235,6 @@ export const frStudioSettings: StudioSettingsTranslations = {
     resetProfileTitle: 'Réinitialiser le profil utilisateur',
     resetProfileDesc: 'Vide USER.md.',
     resetAction: 'Réinitialiser…',
-    maintenanceActiveOnly: profile => `Les réinitialisations s’appliquent au profil utilisé par cette fenêtre (« ${profile} »).`,
     toolsetsTitle: 'Activer ou désactiver des ensembles d’outils',
     toolsetsDesc: page => `Gérés dans « ${page} › Outils ».`,
     openAction: 'Ouvrir',
@@ -252,6 +254,17 @@ export const frStudioSettings: StudioSettingsTranslations = {
     localModelsDesc: 'Téléchargez des modèles ouverts et exécutez-les sur cet ordinateur.',
     localModelsAction: 'Gérer les modèles locaux…',
     sendTestAction: 'Envoyer',
+    themeMarketplaceTitle: 'Installer depuis le VS Code Marketplace',
+    noThemesMatch: query => `Aucun thème installé ne correspond à « ${query} ».`,
+    activateKey: 'Activer',
+    activatingKey: 'Activation…',
+    apiKeyFallback: 'clé API',
+    pasteKeyPlaceholder: name => `Collez ${name}`,
+    providerNeedsKey: provider => `${provider} nécessite une clé API — configurez-la pour choisir un modèle.`,
+    providerBrowserSignIn: provider => `${provider} se connecte via votre navigateur — Hermes s’occupe de tout.`,
+    addCredentialTitle: 'Ajouter un identifiant',
+    addCredentialDesc: 'Identifiant, carte de paiement ou adresse',
+    addCredentialAction: 'Ajouter…',
     resetShortcutsAction: 'Tout rétablir par défaut'
   }
 }

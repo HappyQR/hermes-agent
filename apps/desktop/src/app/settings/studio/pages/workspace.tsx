@@ -12,7 +12,12 @@ function WorkspaceSections({ api }: { api: ConfigSettingsLayoutApi }) {
 
   return (
     <>
-      <SettingsWindowSection aside={<SettingsScopeBadge page="workspace" />} id="projects" page="workspace" title={s.projects}>
+      <SettingsWindowSection
+        aside={<SettingsScopeBadge page="workspace" />}
+        id="projects"
+        page="workspace"
+        title={s.projects}
+      >
         {/* This computer's default folder for new chats, then the profile's terminal cwd and repo discovery. */}
         <SessionsSettings subpage="default-directory" />
         <ConfigRows api={api} keys={placedFields(api, 'workspace', 'projects')} skeleton={3} />

@@ -62,3 +62,41 @@
 [data-slot='settings-window'] [data-slot='form-section']:not(:has(> :not(h4, p))) {
   display: none;
 }
+
+/* Bare captions a classic page puts between its rows read as a row of the card. */
+[data-slot='settings-window'] [data-slot='form-group'] > div > p {
+  margin: 0;
+  padding: 0.5rem 0.875rem;
+  font-size: 0.71875rem;
+  line-height: 1.45;
+  color: var(--ui-text-tertiary);
+  box-shadow: inset 0 0.5px 0 var(--ui-line);
+}
+
+/* Credential cards: label and key field side by side, details below at full width. */
+[data-slot='settings-window'] [data-slot='credential-card'] > div {
+  grid-template-columns: minmax(0, 1fr) minmax(11rem, 16rem);
+  align-items: center;
+  row-gap: 0.375rem;
+}
+
+[data-slot='settings-window'] [data-slot='credential-card'] > div > :nth-child(n + 3) {
+  grid-column: 1 / -1;
+}
+
+/* Billing overview: the three summary figures as stat cards in a row (prototype .card). */
+[data-slot='settings-window'] [data-slot='billing-summary'] {
+  margin-bottom: 0;
+}
+
+[data-slot='settings-window'] [data-slot='billing-summary'] > div {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.625rem;
+}
+
+[data-slot='settings-window'] [data-slot='billing-summary'] > div > div {
+  padding: 0.75rem 0.875rem;
+  border-radius: 0.6875rem;
+  background: var(--ui-bg-editor);
+  box-shadow: 0 0 0 0.5px var(--ui-line-2);
+}

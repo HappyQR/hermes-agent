@@ -421,13 +421,23 @@ function ConfigSettingsInner({
         value={getNested(draft, key)}
       />
       {key === 'memory.provider' && isExternalMemoryProvider(getNested(draft, key)) ? (
-        <ProviderConfigPanel key={String(getNested(draft, key))} profile={scopeProfile} provider={String(getNested(draft, key))} />
+        <ProviderConfigPanel
+          key={String(getNested(draft, key))}
+          profile={scopeProfile}
+          provider={String(getNested(draft, key))}
+        />
       ) : null}
     </div>
   )
 
   const importInput = (
-    <input accept=".json,application/json" className="hidden" onChange={handleImport} ref={importInputRef} type="file" />
+    <input
+      accept=".json,application/json"
+      className="hidden"
+      onChange={handleImport}
+      ref={importInputRef}
+      type="file"
+    />
   )
 
   if (layout) {
