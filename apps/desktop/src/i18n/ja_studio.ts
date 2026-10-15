@@ -1,4 +1,5 @@
 import { jaStudioChat } from './ja_studio_chat'
+import { jaStudioMenu } from './ja_studio_menu'
 import { jaStudioOverlays } from './ja_studio_overlays'
 import { jaStudioPages } from './ja_studio_pages'
 import { jaStudioSettings } from './ja_studio_settings'
@@ -13,5 +14,6 @@ export const jaStudio: StudioTranslations = {
   chat: jaStudioChat,
   pages: jaStudioPages,
   settings: jaStudioSettings,
-  overlays: jaStudioOverlays
+  overlays: jaStudioOverlays,
+  menu: jaStudioMenu
 }

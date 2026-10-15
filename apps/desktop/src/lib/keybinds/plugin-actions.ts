@@ -64,10 +64,12 @@ export function registerBuiltinActionRunner(next: BuiltinActionRunner): () => vo
   }
 }
 
-/** Studio: runs a built-in action for a user-initiated control (toolbar, menu
- *  bar) through the shortcut's own handler; false while the shell is not mounted. */
+/** Run a built-in action through the installed handler table — for
+ *  user-initiated callers outside the keyboard (the native menu); not gated
+ *  by the plugin allow-list. False when the shell isn't mounted or the id has
+ *  no handler. */
 export function runBuiltinAction(id: string): boolean {
-  return runner?.(id) ?? false
+  return runner ? runner(id) : false
 }
 
 export function listPluginAppActions(): PluginAppActionInfo[] {

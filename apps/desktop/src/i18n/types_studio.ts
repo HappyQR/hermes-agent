@@ -1,4 +1,5 @@
 import type { StudioChatTranslations } from './types_studio_chat'
+import type { StudioMenuTranslations } from './types_studio_menu'
 import type { StudioOverlaysTranslations } from './types_studio_overlays'
 import type { StudioPagesTranslations } from './types_studio_pages'
 import type { StudioSettingsTranslations } from './types_studio_settings'
@@ -13,4 +14,5 @@ export interface StudioTranslations {
   pages: StudioPagesTranslations
   settings: StudioSettingsTranslations
   overlays: StudioOverlaysTranslations
+  menu: StudioMenuTranslations
 }
