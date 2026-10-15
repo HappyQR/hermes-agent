@@ -7,6 +7,8 @@ export interface SegmentedControlOption<T extends string> {
   id: T
   label: string
   icon?: IconComponent
+  /** Tour handle for this option's button (`data-tour`). */
+  dataTour?: string
 }
 
 interface SegmentedControlProps<T extends string> {
@@ -110,7 +112,7 @@ export function SegmentedControl<T extends string>({
           style={{ left: thumb.left, width: thumb.width }}
         />
       )}
-      {options.map(({ id, label, icon: Icon }) => {
+      {options.map(({ dataTour, id, label, icon: Icon }) => {
         const active = value === id
 
         return (
@@ -124,6 +126,7 @@ export function SegmentedControl<T extends string>({
               // option itself so the choice is never invisible.
               active && !thumb && 'bg-(--ui-bg-editor) shadow-[0_1px_3px_rgb(0_0_0/0.12)]'
             )}
+            data-tour={dataTour}
             disabled={disabled}
             key={id}
             onClick={() => onChange(id)}

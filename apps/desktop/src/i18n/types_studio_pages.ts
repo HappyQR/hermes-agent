@@ -6,6 +6,7 @@ export interface StudioPagesTranslations {
   webhooks: StudioWebhooksTranslations
   inspector: StudioInspectorTranslations
   memory: StudioMemoryTranslations
+  capabilities: StudioCapabilitiesTranslations
 }
 
 export interface StudioPagesCommonTranslations {
@@ -183,4 +184,128 @@ export interface StudioMemoryTranslations {
   archiveBody: string
   /** Hover-card badges drawn on the map. */
   badges: { learned: string; memory: string; pinned: string; profileMemory: string; unknown: string }
+}
+
+export type StudioConnectorStateWord =
+  | 'accessExpired'
+  | 'available'
+  | 'connected'
+  | 'connecting'
+  | 'connectionUnknown'
+  | 'couldNotConnect'
+  | 'offByYourOrganisation'
+  | 'offForYou'
+  | 'serverConnecting'
+  | 'serverError'
+  | 'serverNeedsAuth'
+  | 'serverOff'
+  | 'serverOn'
+  | 'serverOnUnused'
+
+export type StudioConnectorVerb =
+  'authenticate' | 'connect' | 'install' | 'openLogs' | 'reconnect' | 'stopWaiting' | 'tryAgain' | 'turnBackOn'
+
+export interface StudioCapabilitiesTranslations {
+  title: string
+  subtitle: string
+  tabsLabel: string
+  tabs: { connectors: string; plugins: string; skills: string; toolsets: string }
+  searchLabel: string
+  searchSkills: (count: number) => string
+  searchTools: string
+  searchPlugins: string
+  sortLabel: string
+  sort: { least: string; most: string; name: string }
+  viewInMemory: string
+  /** The ⋯ menu with tab-wide switches. */
+  bulkMenu: string
+  bulkAllSkills: string
+  bulkAllTools: string
+  disableUnused: string
+  /** Aria name of the profile scope pop-up. */
+  scopeAria: string
+  scopeDefault: string
+  scopeCurrent: (label: string) => string
+  usedTimes: (count: number) => string
+  emptyTitle: string
+  emptyNoMatch: (query: string) => string
+  skills: {
+    source: { agent: string; bundled: string; external: string; hub: string; local: string }
+    /** After "Learned" on a card: Hermes wrote the skill itself. */
+    learnedNote: string
+    details: string
+    detailsAria: (name: string) => string
+    officialTitle: string
+    officialSource: (category: string) => string
+    browseHub: string
+    hubTitle: string
+    hubHint: string
+    archiveEllipsis: string
+    editSkillMd: string
+    done: string
+    useInChat: string
+    editing: (name: string) => string
+    emptyNone: string
+  }
+  tools: {
+    toolCount: (count: number) => string
+    footnote: string
+    includedTools: string
+    includedToolsNote: (count: number) => string
+    callCount: (count: number) => string
+    providers: string
+    setup: string
+    emptyNone: string
+  }
+  connectors: {
+    addCustom: string
+    searchApps: (count: number) => string
+    filtersLabel: string
+    filters: { all: string; available: string; connected: string; local: string; off: string }
+    groups: { available: string; connected: string; local: string; off: string }
+    connectedNote: string
+    offNote: string
+    kindManaged: string
+    kindCatalog: string
+    kindCustom: string
+    kindPlugin: (plugin: string) => string
+    inCatalog: string
+    hostedTwin: string
+    alsoLocal: string
+    open: (name: string) => string
+    turnServerOn: (name: string) => string
+    turnServerOff: (name: string) => string
+    tools: (count: number) => string
+    toolsOff: (count: number) => string
+    toolsOn: (count: number) => string
+    toolsSomeOn: (total: number, on: number) => string
+    accounts: (count: number) => string
+    state: Record<StudioConnectorStateWord, string>
+    verb: Record<StudioConnectorVerb, string>
+    manage: string
+    reason: { finishSignIn: string; reconnect: string; serverError: string; serverNeedsAuth: string }
+    segmentNoMatch: (segment: string) => string
+    matchesElsewhere: (count: number) => string
+    showAllMatches: string
+    loading: string
+    emptyTitle: string
+    noMatchTitle: string
+    noMatchBody: string
+    clearSearch: string
+    hostedFailedTitle: string
+    hostedFailedBody: string
+    retry: string
+  }
+  plugins: {
+    columnPlugin: string
+    columnDesktop: string
+    columnAgent: string
+    checkUpdates: string
+    uninstallEllipsis: string
+    browseCatalog: string
+    catalogTitle: string
+    catalogHint: string
+    settingsTip: string
+    noMatch: (query: string) => string
+  }
 }

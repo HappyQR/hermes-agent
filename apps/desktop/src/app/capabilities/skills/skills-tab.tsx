@@ -1,23 +1,14 @@
-import { compactNumber } from '@hermes/shared'
 import { useStore } from '@nanostores/react'
 import { useQuery } from '@tanstack/react-query'
-import { type ReactNode, useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router'
 
 import { ArchiveSkillConfirmDialog } from '@/app/learning/archive-skill-confirm-dialog'
-import { CodeEditor } from '@/components/chat/code-editor'
-import { Badge } from '@/components/ui/badge'
+import { PopupSelect } from '@/components/studio/pages/controls'
 import { Button } from '@/components/ui/button'
-import {
-  editLearningNode,
-  getLearningNode,
-  getOfficialSkills,
-  type ProfileScope,
-  profileScopeKey,
-  setSkillEnabled
-} from '@/hermes'
+import { StudioIcon } from '@/components/ui/studio-icon'
+import { getOfficialSkills, type ProfileScope, profileScopeKey, setSkillEnabled } from '@/hermes'
 import { useI18n } from '@/i18n'
-import { Loader2 } from '@/lib/icons'
-import { Codecs, persistentAtom } from '@/lib/persisted'
 import { queryClient } from '@/lib/query-client'
 import { invalidateSlashCompletions } from '@/lib/slash-completion-cache'
 import { useStoreSelector } from '@/lib/use-session-slice'
@@ -25,50 +16,20 @@ import { $hubActions, installHubSkill, notifyHubActionFailed, OFFICIAL_SKILLS_KE
 import { notify, notifyError } from '@/store/notifications'
 import type { OfficialSkillInfo, SkillInfo } from '@/types/hermes'
 
-import {
-  CapRow,
-  DetailColumn,
-  DetailPane,
-  ListColumn,
-  ListStrip,
-  ListStripMenu,
-  type ListStripMenuToggle,
-  MasterDetail
-} from '../../master-detail'
-import { prettyName } from '../../settings/helpers'
-import { CapabilityEmpty, SortButton } from '../primitives'
+import { MEMORY_ROUTE, navigateToWorkspacePage } from '../../routes'
+import { CapBulkMenu, type CapBulkToggle } from '../studio/bulk-menu'
+import { CapabilityPageEmpty } from '../studio/empty'
+import { HubSheet } from '../studio/hub-sheet'
+import { OfficialSkillSheet, SkillSheet } from '../studio/skill-sheets'
+import { SkillsGrid } from '../studio/skills-grid'
+import { $skillsSort, applySkillSort, SKILL_SORTS, type SkillSort } from '../studio/sort'
+import { CapToolbarSlot } from '../studio/toolbar-slots'
 
-import { OfficialSkillDetail } from './official-skill-detail'
-import { SkillDetail } from './skill-detail'
-import { categoryFor, filteredOfficial, filteredSkills, skillsQueryKey, usageOf } from './skills-data'
-
-// Sort direction for the Skills list — persisted so the tab remembers
-// most/least-used across navigations and restarts.
-const $skillsSortDesc = persistentAtom('hermes.desktop.capabilities.skillsSortDesc', true, Codecs.bool)
-
-// Row subtitle: category, with non-default origins badged.
-function skillSubtitle(skill: SkillInfo): ReactNode {
-  const category = prettyName(categoryFor(skill))
-  const provenance = skill.provenance
-
-  return (
-    <>
-      <span className="truncate">{category}</span>
-      {provenance === 'agent' && (
-        <Badge className="shrink-0 normal-case" variant="default">
-          learned
-        </Badge>
-      )}
-      {provenance === 'hub' && (
-        <Badge className="shrink-0 normal-case" variant="muted">
-          hub
-        </Badge>
-      )}
-    </>
-  )
-}
+import { filteredOfficial, filteredSkills, skillsQueryKey, usageOf } from './skills-data'
 
 interface SkillsTabProps {
+  /** Bot Mode's embedded surface: no chat or memory map to send the user to. */
+  embedded?: boolean
   /** The scope's skill list, straight from the shell's query. */
   skills: SkillInfo[]
   /** The (connection, profile) scope every read and write routes to. */
@@ -80,9 +41,11 @@ interface SkillsTabProps {
 }
 
 /** The Skills tab: installed skills, official optional skills, and learned-skill editing. */
-export function SkillsTab({ onRefresh, profile, query, skills }: SkillsTabProps) {
+export function SkillsTab({ embedded = false, onRefresh, profile, query, skills }: SkillsTabProps) {
   const { t } = useI18n()
-  const skillsSortDesc = useStore($skillsSortDesc)
+  const c = t.studio.pages.capabilities
+  const navigate = useNavigate()
+  const sort = useStore($skillsSort)
   const [bulkBusy, setBulkBusy] = useState(false)
   const [selectedSkill, setSelectedSkill] = useState<string | null>(null)
   const [selectedOfficial, setSelectedOfficial] = useState<string | null>(null)
@@ -94,13 +57,11 @@ export function SkillsTab({ onRefresh, profile, query, skills }: SkillsTabProps)
     retry: false
   })
 
-  // Learned/local skills are editable + archivable, mirroring the memory
-  // graph (same /api/learning/node endpoints — delete archives, restorable
-  // via `hermes curator restore`).
-  const [skillEditor, setSkillEditor] = useState<null | { content: string; name: string }>(null)
-  const [skillDraft, setSkillDraft] = useState('')
-  const [skillSaving, setSkillSaving] = useState(false)
+  // Learned/local skills are editable + archivable from their sheet, mirroring
+  // the memory graph (same /api/learning/node endpoints — delete archives,
+  // restorable via `hermes curator restore`).
   const [archiveTarget, setArchiveTarget] = useState<null | string>(null)
+  const [hubOpen, setHubOpen] = useState(false)
 
   // Optimistic write-through against the scoped Skills key: toggles/bulk/
   // archive repaint instantly; the next background refetch reconciles.
@@ -110,7 +71,10 @@ export function SkillsTab({ onRefresh, profile, query, skills }: SkillsTabProps)
     [profile]
   )
 
-  const visibleSkills = useMemo(() => filteredSkills(skills, query, skillsSortDesc), [query, skills, skillsSortDesc])
+  const visibleSkills = useMemo(
+    () => applySkillSort(filteredSkills(skills, query, sort !== 'least'), sort),
+    [query, skills, sort]
+  )
 
   // Installed-name set stays unfiltered so search cannot make a skill look absent.
   const installedSkillNames = useMemo(() => new Set(skills.map(s => s.name)), [skills])
@@ -132,12 +96,9 @@ export function SkillsTab({ onRefresh, profile, query, skills }: SkillsTabProps)
 
   const runningInstalls = useMemo(() => new Set(runningInstallKey.split('|').filter(Boolean)), [runningInstallKey])
 
-  // Keep a valid selection: fall back to the first visible row when the
-  // current selection is filtered out (or nothing is selected yet).
-  const activeSkill = useMemo(
-    () => visibleSkills.find(s => s.name === selectedSkill) ?? visibleSkills[0] ?? null,
-    [selectedSkill, visibleSkills]
-  )
+  // The open sheet follows the live lists: an archived or freshly installed
+  // skill closes its sheet.
+  const activeSkill = useMemo(() => skills.find(s => s.name === selectedSkill) ?? null, [selectedSkill, skills])
 
   const activeOfficial = useMemo(
     () => visibleOfficial.find(skill => skill.identifier === selectedOfficial) ?? null,
@@ -200,7 +161,7 @@ export function SkillsTab({ onRefresh, profile, query, skills }: SkillsTabProps)
   const allEnabled = skills.length > 0 && skills.every(s => s.enabled)
 
   // One switch line covering enable-all/disable-all.
-  const bulkSwitch: ListStripMenuToggle = {
+  const bulkSwitch: CapBulkToggle = {
     checked: allEnabled,
     disabled: bulkBusy,
     label: t.skills.all,
@@ -219,152 +180,71 @@ export function SkillsTab({ onRefresh, profile, query, skills }: SkillsTabProps)
       false
     )
 
-  const openSkillEditor = async (name: string) => {
-    try {
-      const node = await getLearningNode(name, profile)
-
-      setSkillEditor({ content: node.content, name })
-      setSkillDraft(node.content)
-    } catch (err) {
-      notifyError(err, name)
-    }
-  }
-
-  const saveSkillEdit = async () => {
-    if (!skillEditor) {
-      return
-    }
-
-    setSkillSaving(true)
-
-    try {
-      await editLearningNode(skillEditor.name, skillDraft, profile)
-      notify({
-        kind: 'success',
-        title: t.skills.skillUpdated,
-        message: t.skills.appliesToNewSessions(skillEditor.name)
-      })
-      setSkillEditor(null)
-      onRefresh()
-    } catch (err) {
-      notifyError(err, skillEditor.name)
-    } finally {
-      setSkillSaving(false)
-    }
-  }
-
-  const skillEditorPane = skillEditor && (
-    <DetailPane
-      actions={
-        <Button disabled={skillSaving} onClick={() => void saveSkillEdit()} size="xs">
-          {skillSaving ? t.common.saving : t.common.save}
-        </Button>
-      }
-      id="skill-editor"
-      onClose={() => setSkillEditor(null)}
-      title={<span className="text-[0.68rem] font-normal text-muted-foreground/60">{skillEditor.name}/SKILL.md</span>}
-    >
-      <CodeEditor
-        filePath="SKILL.md"
-        initialValue={skillEditor.content}
-        key={skillEditor.name}
-        onCancel={() => setSkillEditor(null)}
-        onChange={setSkillDraft}
-        onSave={() => void saveSkillEdit()}
-      />
-    </DetailPane>
-  )
-
   return (
     <>
+      <CapToolbarSlot name="start">
+        <PopupSelect<SkillSort>
+          aria-label={c.sortLabel}
+          onChange={next => $skillsSort.set(next)}
+          options={SKILL_SORTS.map(id => ({ id, label: c.sort[id] }))}
+          value={sort}
+        />
+        {embedded ? null : (
+          <Button onClick={() => navigateToWorkspacePage(navigate, MEMORY_ROUTE)} size="sm" variant="ghost">
+            <StudioIcon name="graph" size={14} />
+            {c.viewInMemory}
+          </Button>
+        )}
+        <CapBulkMenu
+          items={[{ disabled: bulkBusy, label: c.disableUnused, onSelect: () => void disableUnused() }]}
+          label={c.bulkMenu}
+          toggle={{ ...bulkSwitch, label: c.bulkAllSkills }}
+        />
+      </CapToolbarSlot>
+      <CapToolbarSlot name="end">
+        <Button onClick={() => setHubOpen(true)} variant="outline">
+          <StudioIcon name="globe" size={14} />
+          {c.skills.browseHub}
+        </Button>
+      </CapToolbarSlot>
       {visibleSkills.length === 0 && visibleOfficial.length === 0 ? (
-        <CapabilityEmpty noun="skills" query={query} />
+        <CapabilityPageEmpty none={c.skills.emptyNone} query={query} />
       ) : (
-        <MasterDetail pane={skillEditorPane} resizeId="capabilities-split" split="wide">
-          <ListColumn
-            header={
-              <ListStrip
-                left={<SortButton desc={skillsSortDesc} onFlip={() => $skillsSortDesc.set(!$skillsSortDesc.get())} />}
-                right={
-                  <ListStripMenu
-                    items={[
-                      {
-                        disabled: bulkBusy,
-                        label: t.skills.disableUnused,
-                        onSelect: () => void disableUnused()
-                      }
-                    ]}
-                    label={t.skills.tabSkills}
-                    toggle={bulkSwitch}
-                  />
-                }
-              />
-            }
-          >
-            {visibleSkills.map(skill => (
-              <CapRow
-                active={activeOfficial === null && activeSkill?.name === skill.name}
-                busy={bulkBusy}
-                enabled={skill.enabled}
-                key={skill.name}
-                meta={usageOf(skill) > 0 ? `×${compactNumber(usageOf(skill))}` : undefined}
-                onSelect={() => {
-                  setSelectedSkill(skill.name)
-                  setSelectedOfficial(null)
-                }}
-                onToggle={enabled => void handleToggleSkill(skill, enabled)}
-                subtitle={skillSubtitle(skill)}
-                title={skill.name}
-                toggleLabel={skill.name}
-              />
-            ))}
-            {visibleOfficial.length > 0 && (
-              <div className="flex h-7 shrink-0 items-end px-2 pb-1 text-[0.62rem] font-medium uppercase tracking-wide text-(--ui-text-quaternary)">
-                {t.skills.officialCatalog}
-              </div>
-            )}
-            {visibleOfficial.map(skill => {
-              const installing = runningInstalls.has(skill.identifier)
-
-              return (
-                <CapRow
-                  action={
-                    <Button disabled={installing} onClick={() => handleInstallOfficial(skill)} size="xs" variant="text">
-                      {installing && <Loader2 className="size-3 animate-spin" />}
-                      {installing ? t.skills.hub.installing : t.skills.hub.install}
-                    </Button>
-                  }
-                  active={activeOfficial?.identifier === skill.identifier}
-                  enabled={false}
-                  key={skill.identifier}
-                  onSelect={() => setSelectedOfficial(skill.identifier)}
-                  subtitle={prettyName(skill.category)}
-                  title={skill.name}
-                />
-              )
-            })}
-          </ListColumn>
-          <DetailColumn footer={t.skills.changesApplyNewSessions}>
-            {activeOfficial ? (
-              <OfficialSkillDetail
-                installing={runningInstalls.has(activeOfficial.identifier)}
-                onInstall={() => handleInstallOfficial(activeOfficial)}
-                profile={profile}
-                skill={activeOfficial}
-              />
-            ) : (
-              activeSkill && (
-                <SkillDetail
-                  onArchive={() => setArchiveTarget(activeSkill.name)}
-                  onEdit={() => void openSkillEditor(activeSkill.name)}
-                  profile={profile}
-                  skill={activeSkill}
-                />
-              )
-            )}
-          </DetailColumn>
-        </MasterDetail>
+        <SkillsGrid
+          busy={bulkBusy}
+          installing={runningInstalls}
+          official={visibleOfficial}
+          onInstallOfficial={handleInstallOfficial}
+          onOpenOfficial={skill => setSelectedOfficial(skill.identifier)}
+          onOpenSkill={skill => setSelectedSkill(skill.name)}
+          onToggleSkill={(skill, enabled) => void handleToggleSkill(skill, enabled)}
+          skills={visibleSkills}
+        />
       )}
+      <SkillSheet
+        embedded={embedded}
+        onArchive={setArchiveTarget}
+        onOpenChange={open => {
+          if (!open) {
+            setSelectedSkill(null)
+          }
+        }}
+        onSaved={onRefresh}
+        profile={profile}
+        skill={activeSkill}
+      />
+      <OfficialSkillSheet
+        installing={activeOfficial ? runningInstalls.has(activeOfficial.identifier) : false}
+        onInstall={handleInstallOfficial}
+        onOpenChange={open => {
+          if (!open) {
+            setSelectedOfficial(null)
+          }
+        }}
+        profile={profile}
+        skill={activeOfficial}
+      />
+      <HubSheet installedNames={installedSkillNames} onOpenChange={setHubOpen} open={hubOpen} profile={profile} />
       {archiveTarget && (
         <ArchiveSkillConfirmDialog
           onApply={() => {
@@ -374,8 +254,8 @@ export function SkillsTab({ onRefresh, profile, query, skills }: SkillsTabProps)
             setSkills(current => current?.filter(skill => skill.name !== name) ?? current)
             invalidateSlashCompletions()
 
-            if (skillEditor?.name === name) {
-              setSkillEditor(null)
+            if (selectedSkill === name) {
+              setSelectedSkill(null)
             }
 
             return () => setSkills(() => snapshot)

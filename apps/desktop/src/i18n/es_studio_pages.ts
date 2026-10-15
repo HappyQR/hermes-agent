@@ -114,7 +114,8 @@ export const esStudioPages: StudioPagesTranslations = {
   },
   memory: {
     title: 'Memoria',
-    subtitle: 'Lo que Hermes recuerda, lo que sabe de ti y las habilidades que aprendió por sí mismo. Puedes cambiar o borrar cualquier cosa.',
+    subtitle:
+      'Lo que Hermes recuerda, lo que sabe de ti y las habilidades que aprendió por sí mismo. Puedes cambiar o borrar cualquier cosa.',
     viewLabel: 'Vista',
     viewList: 'Lista',
     share: 'Compartir',
@@ -128,7 +129,8 @@ export const esStudioPages: StudioPagesTranslations = {
     filterLabel: 'Filtro',
     counts: (skills, memories, categories) =>
       `${skills} ${skills === 1 ? 'habilidad' : 'habilidades'} · ${memories} ${memories === 1 ? 'recuerdo' : 'recuerdos'} · ${categories} ${categories === 1 ? 'categoría' : 'categorías'}`,
-    graphHint: 'Pasa el cursor para ver detalles; clic derecho en un nodo para editarlo o archivarlo. La vista Lista facilita buscar y ordenar.',
+    graphHint:
+      'Pasa el cursor para ver detalles; clic derecho en un nodo para editarlo o archivarlo. La vista Lista facilita buscar y ordenar.',
     canvasLabel: 'Mapa de memoria: habilidades y recuerdos a lo largo del tiempo',
     play: 'Reproducir cómo creció',
     pause: 'Pausar la reproducción',
@@ -161,6 +163,159 @@ export const esStudioPages: StudioPagesTranslations = {
     archiveConfirm: 'Archivar',
     archiveTitle: name => `¿Archivar ${name}?`,
     archiveBody: 'La habilidad se archiva y puede restaurarse con `hermes curator restore`.',
-    badges: { learned: 'aprendida', memory: 'recuerdo', pinned: 'fijada', profileMemory: 'perfil', unknown: 'desconocida' }
+    badges: {
+      learned: 'aprendida',
+      memory: 'recuerdo',
+      pinned: 'fijada',
+      profileMemory: 'perfil',
+      unknown: 'desconocida'
+    }
+  },
+  capabilities: {
+    title: 'Habilidades y herramientas',
+    subtitle:
+      'Las habilidades que usa Hermes, las herramientas que puede llamar y las apps que conecta. Los cambios se aplican a las sesiones nuevas.',
+    tabsLabel: 'Categoría',
+    tabs: { skills: 'Habilidades', toolsets: 'Herramientas', connectors: 'Conectores', plugins: 'Plugins' },
+    searchLabel: 'Buscar',
+    searchSkills: count => `Buscar en ${count} ${count === 1 ? 'habilidad' : 'habilidades'}`,
+    searchTools: 'Buscar herramientas',
+    searchPlugins: 'Buscar plugins',
+    sortLabel: 'Ordenar',
+    sort: { most: 'Más usadas', least: 'Menos usadas', name: 'Nombre' },
+    viewInMemory: 'Ver en el mapa de memoria',
+    bulkMenu: 'Más acciones',
+    bulkAllSkills: 'Todas las habilidades',
+    bulkAllTools: 'Todas las herramientas',
+    disableUnused: 'Desactivar las habilidades nunca usadas',
+    scopeAria: 'A qué perfil se aplican estos ajustes',
+    scopeDefault: 'Hermes (predeterminado)',
+    scopeCurrent: label => `${label} (actual)`,
+    usedTimes: count =>
+      count === 0 ? 'Aún sin usar' : `Usada ${count.toLocaleString()} ${count === 1 ? 'vez' : 'veces'}`,
+    emptyTitle: 'No se encontró nada',
+    emptyNoMatch: query => `Nada coincide con «${query}».`,
+    skills: {
+      source: {
+        agent: 'Aprendida',
+        bundled: 'Integrada',
+        external: 'Carpeta externa',
+        hub: 'Hub de habilidades',
+        local: 'Local'
+      },
+      learnedNote: 'escrita por Hermes',
+      details: 'Detalles',
+      detailsAria: name => `Detalles de ${name}`,
+      officialTitle: 'Habilidades oficiales para instalar',
+      officialSource: category => `Oficial · ${category}`,
+      browseHub: 'Explorar el hub de habilidades',
+      hubTitle: 'Hub de habilidades',
+      hubHint: 'Elige «+ Add to this Agent» en cualquier habilidad para instalarla en el perfil seleccionado.',
+      archiveEllipsis: 'Archivar…',
+      editSkillMd: 'Editar SKILL.md',
+      done: 'Listo',
+      useInChat: 'Usar en el chat',
+      editing: name => `${name}/SKILL.md`,
+      emptyNone: 'Este perfil aún no tiene habilidades instaladas.'
+    },
+    tools: {
+      toolCount: count => `${count} ${count === 1 ? 'herramienta' : 'herramientas'}`,
+      footnote:
+        'Los cambios en los conjuntos de herramientas se aplican desde la próxima sesión nueva; la sesión actual conserva su caché de prompt.',
+      includedTools: 'Herramientas incluidas',
+      includedToolsNote: count =>
+        `${count} ${count === 1 ? 'herramienta' : 'herramientas'} · se aplica a sesiones nuevas`,
+      callCount: count => `${count.toLocaleString()} ${count === 1 ? 'llamada' : 'llamadas'}`,
+      providers: 'Proveedor',
+      setup: 'Configuración',
+      emptyNone: 'No hay herramientas disponibles para este perfil.'
+    },
+    connectors: {
+      addCustom: 'Añadir conector personalizado',
+      searchApps: count => `Buscar en ${count} ${count === 1 ? 'app' : 'apps'}`,
+      filtersLabel: 'Mostrar',
+      filters: {
+        all: 'Todos',
+        connected: 'Conectados',
+        available: 'Disponibles',
+        off: 'Desactivados',
+        local: 'Locales'
+      },
+      groups: { connected: 'Conectados', local: 'En local', available: 'Disponibles', off: 'Desactivados' },
+      connectedNote: 'Primero las conexiones con problemas.',
+      offNote: 'Los inicios de sesión se conservan.',
+      kindManaged: 'Gestionado',
+      kindCatalog: 'MCP · Catálogo',
+      kindCustom: 'MCP · Personalizado',
+      kindPlugin: plugin => `MCP · Plugin ${plugin}`,
+      inCatalog: 'En el catálogo de Hermes',
+      hostedTwin: 'Hay una versión gestionada',
+      alsoLocal: 'También funciona en local',
+      open: name => `Abrir ${name}`,
+      turnServerOn: name => `Activar ${name}`,
+      turnServerOff: name => `Desactivar ${name}`,
+      tools: count => `${count} ${count === 1 ? 'herramienta' : 'herramientas'}`,
+      toolsOff: count => `${count} ${count === 1 ? 'herramienta desactivada' : 'herramientas desactivadas'}`,
+      toolsOn: count => `${count} ${count === 1 ? 'herramienta activada' : 'herramientas activadas'}`,
+      toolsSomeOn: (total, on) => `${total} herramientas, ${on} activadas`,
+      accounts: count => `${count} cuentas`,
+      state: {
+        accessExpired: 'Sesión caducada',
+        available: 'Disponible',
+        connected: 'Conectado',
+        connecting: 'Conectando',
+        connectionUnknown: 'Estado desconocido',
+        couldNotConnect: 'No se pudo conectar',
+        offByYourOrganisation: 'Desactivado por tu organización',
+        offForYou: 'Desactivado',
+        serverConnecting: 'Conectando…',
+        serverError: 'Error',
+        serverNeedsAuth: 'Requiere iniciar sesión',
+        serverOff: 'Apagado',
+        serverOn: 'En marcha',
+        serverOnUnused: 'En marcha, sin usar'
+      },
+      verb: {
+        authenticate: 'Iniciar sesión',
+        connect: 'Conectar',
+        install: 'Instalar',
+        openLogs: 'Abrir registros',
+        reconnect: 'Volver a iniciar sesión',
+        stopWaiting: 'Dejar de esperar',
+        tryAgain: 'Reintentar',
+        turnBackOn: 'Volver a activar'
+      },
+      manage: 'Gestionar',
+      reason: {
+        finishSignIn: 'Termina de iniciar sesión en el navegador.',
+        reconnect: 'Vuelve a iniciar sesión para que esta app siga funcionando.',
+        serverError: 'El servidor rechazó la conexión.',
+        serverNeedsAuth: 'Inicia sesión para que este servidor pueda responder.'
+      },
+      segmentNoMatch: segment => `No hay coincidencias en «${segment}», así que se muestran todas.`,
+      matchesElsewhere: count => `${count} ${count === 1 ? 'coincidencia más' : 'coincidencias más'} en otros grupos.`,
+      showAllMatches: 'Mostrar todas las coincidencias',
+      loading: 'Leyendo el catálogo y los servidores locales',
+      emptyTitle: 'Aún no hay apps. Añade un servidor local para empezar.',
+      noMatchTitle: 'No hay apps que coincidan',
+      noMatchBody: 'Nada coincide. Apunta Hermes a tu propio servidor MCP para añadirlo.',
+      clearSearch: 'Borrar la búsqueda',
+      hostedFailedTitle: 'No se pudo acceder a las apps gestionadas.',
+      hostedFailedBody: 'Los servidores locales no se ven afectados y siguen funcionando. No se desactivó nada.',
+      retry: 'Reintentar'
+    },
+    plugins: {
+      columnPlugin: 'Plugin',
+      columnDesktop: 'Escritorio',
+      columnAgent: 'Agente',
+      checkUpdates: 'Buscar actualizaciones',
+      uninstallEllipsis: 'Desinstalar…',
+      browseCatalog: 'Explorar el catálogo de plugins',
+      catalogTitle: 'Catálogo de plugins',
+      catalogHint:
+        'Elige «+ Add to this Agent» en cualquier plugin. Las entradas revisadas se instalan en su commit fijado en el perfil seleccionado.',
+      settingsTip: 'Ajustes del plugin',
+      noMatch: query => `Ningún plugin coincide con «${query}».`
+    }
   }
 }

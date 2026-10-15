@@ -230,7 +230,7 @@ describe('CapabilitiesView toolset management', { timeout: 60_000 }, () => {
     await waitFor(() => expect(setSkillEnabled).toHaveBeenCalledWith('web-research', false, 'researcher'))
   })
 
-  it('shows the FULL skill in the detail pane — frontmatter metadata + body', async () => {
+  it('shows the FULL skill in its sheet — frontmatter metadata + body', async () => {
     getSkills.mockResolvedValue([
       {
         name: 'web-research',
@@ -252,8 +252,12 @@ describe('CapabilitiesView toolset management', { timeout: 60_000 }, () => {
       )
     })
 
-    // Frontmatter renders as metadata rows, the body as full text — not just
-    // the one-line description.
+    // The card opens the skill sheet; frontmatter renders as metadata rows,
+    // the body as full text — not just the one-line description.
+    expect(getSkillContent).not.toHaveBeenCalled()
+    await act(async () => {
+      fireEvent.click(await screen.findByRole('button', { name: 'Details for web-research' }))
+    })
     await waitFor(() => expect(getSkillContent).toHaveBeenCalled())
     expect(getSkillContent.mock.calls[0][0]).toBe('web-research')
     expect(await screen.findByText('version')).toBeTruthy()
@@ -287,7 +291,7 @@ describe('CapabilitiesView toolset management', { timeout: 60_000 }, () => {
     )
   })
 
-  it('mounts the hub iframe lazily and keeps it (hidden) across tab switches', async () => {
+  it('mounts the Skills Hub iframe only while its sheet is open', async () => {
     // On a non-Skills tab the docs-site iframe must not exist at all — an
     // eagerly mounted hub is exactly the Capabilities lag bug.
     await renderSkills() // ?tab=toolsets
@@ -295,8 +299,8 @@ describe('CapabilitiesView toolset management', { timeout: 60_000 }, () => {
     expect(document.querySelector('iframe')).toBeNull()
     cleanup()
 
-    // Embedded mode drives tabs through local state (the route hooks are
-    // mocked here), starting on Skills: the picker mounts with the tab.
+    // Embedded mode drives tabs through local state, starting on Skills: the
+    // hub stays out of the DOM until the user asks for it.
     await act(async () => {
       render(
         <QueryClientProvider client={queryClient}>
@@ -307,24 +311,31 @@ describe('CapabilitiesView toolset management', { timeout: 60_000 }, () => {
       )
     })
 
-    const iframe = document.querySelector('iframe')
-    expect(iframe).toBeTruthy()
-    expect(iframe!.closest('section')!.classList.contains('hidden')).toBe(false)
+    expect(document.querySelector('iframe')).toBeNull()
 
-    // Switch to Tools → the iframe STAYS mounted (no docs-site reload on the
-    // next visit) but its section is fully hidden, so nothing from the hub
-    // can paint over the toolsets UI.
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: /Tools/ }))
+      fireEvent.click(await screen.findByRole('button', { name: 'Browse Skills Hub' }))
     })
-    const kept = document.querySelector('iframe')
-    expect(kept).toBeTruthy()
-    expect(kept!.closest('section')!.classList.contains('hidden')).toBe(true)
+
+    const iframe = document.querySelector('iframe')
+    expect(iframe?.getAttribute('src')).toContain('embed=picker')
+
+    // Done closes the sheet and drops the frame (and its message listener).
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Done' }))
+    })
+    await waitFor(() => expect(document.querySelector('iframe')).toBeNull())
+
+    // The tab switch is the page's segmented control.
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Tools' }))
+    })
+    expect(await screen.findByRole('switch', { name: 'Turn Web Search toolset off' })).toBeTruthy()
   })
 
   it('shows a vision explainer that deep-links to Settings → Models', async () => {
     // Vision has no TOOL_CATEGORIES provider matrix — its model lives in the
-    // auxiliary model config, so the detail pane must point there instead of
+    // auxiliary model config, so the tool sheet must point there instead of
     // rendering an empty panel.
     getToolsets.mockResolvedValue([
       toolset({
@@ -337,6 +348,11 @@ describe('CapabilitiesView toolset management', { timeout: 60_000 }, () => {
     getToolsetConfig.mockResolvedValue({ has_category: false, active_provider: null, providers: [] })
 
     await renderSkills()
+
+    // The row's chevron opens the tool sheet, which carries the explainer.
+    await act(async () => {
+      fireEvent.click(await screen.findByRole('button', { name: 'Configure Vision / Image Analysis' }))
+    })
 
     const link = await screen.findByRole('button', { name: /Choose vision model in Settings/ })
 

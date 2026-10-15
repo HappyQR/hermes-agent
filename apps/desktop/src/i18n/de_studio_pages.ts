@@ -115,7 +115,8 @@ export const deStudioPages: StudioPagesTranslations = {
   },
   memory: {
     title: 'Gedächtnis',
-    subtitle: 'Was Hermes sich merkt, was es über dich weiß und welche Skills es sich selbst beigebracht hat. Alles lässt sich ändern oder löschen.',
+    subtitle:
+      'Was Hermes sich merkt, was es über dich weiß und welche Skills es sich selbst beigebracht hat. Alles lässt sich ändern oder löschen.',
     viewLabel: 'Ansicht',
     viewList: 'Liste',
     share: 'Teilen',
@@ -129,7 +130,8 @@ export const deStudioPages: StudioPagesTranslations = {
     filterLabel: 'Filter',
     counts: (skills, memories, categories) =>
       `${skills} ${skills === 1 ? 'Skill' : 'Skills'} · ${memories} ${memories === 1 ? 'Erinnerung' : 'Erinnerungen'} · ${categories} ${categories === 1 ? 'Kategorie' : 'Kategorien'}`,
-    graphHint: 'Für Details darüberfahren; Rechtsklick auf einen Knoten zum Bearbeiten oder Archivieren. In der Listenansicht lässt sich leichter suchen und aufräumen.',
+    graphHint:
+      'Für Details darüberfahren; Rechtsklick auf einen Knoten zum Bearbeiten oder Archivieren. In der Listenansicht lässt sich leichter suchen und aufräumen.',
     canvasLabel: 'Gedächtniskarte: Skills und Erinnerungen über die Zeit',
     play: 'Wachstum abspielen',
     pause: 'Wiedergabe pausieren',
@@ -162,6 +164,151 @@ export const deStudioPages: StudioPagesTranslations = {
     archiveConfirm: 'Archivieren',
     archiveTitle: name => `${name} archivieren?`,
     archiveBody: 'Der Skill wird archiviert und lässt sich mit `hermes curator restore` wiederherstellen.',
-    badges: { learned: 'gelernt', memory: 'Erinnerung', pinned: 'angeheftet', profileMemory: 'Profil', unknown: 'unbekannt' }
+    badges: {
+      learned: 'gelernt',
+      memory: 'Erinnerung',
+      pinned: 'angeheftet',
+      profileMemory: 'Profil',
+      unknown: 'unbekannt'
+    }
+  },
+  capabilities: {
+    title: 'Skills und Werkzeuge',
+    subtitle:
+      'Die Skills, die Hermes nutzt, die Werkzeuge, die es aufrufen kann, und die verbundenen Apps. Änderungen gelten für neue Sitzungen.',
+    tabsLabel: 'Kategorie',
+    tabs: { skills: 'Skills', toolsets: 'Werkzeuge', connectors: 'Konnektoren', plugins: 'Plugins' },
+    searchLabel: 'Suchen',
+    searchSkills: count => `${count} ${count === 1 ? 'Skill' : 'Skills'} durchsuchen`,
+    searchTools: 'Werkzeuge durchsuchen',
+    searchPlugins: 'Plugins durchsuchen',
+    sortLabel: 'Sortieren',
+    sort: { most: 'Am häufigsten', least: 'Am seltensten', name: 'Name' },
+    viewInMemory: 'In der Gedächtniskarte ansehen',
+    bulkMenu: 'Weitere Aktionen',
+    bulkAllSkills: 'Alle Skills',
+    bulkAllTools: 'Alle Werkzeuge',
+    disableUnused: 'Nie genutzte Skills ausschalten',
+    scopeAria: 'Für welches Profil diese Einstellungen gelten',
+    scopeDefault: 'Hermes (Standard)',
+    scopeCurrent: label => `${label} (aktuell)`,
+    usedTimes: count => (count === 0 ? 'Noch nicht genutzt' : `${count.toLocaleString()}-mal genutzt`),
+    emptyTitle: 'Nichts gefunden',
+    emptyNoMatch: query => `Nichts passt zu „${query}“.`,
+    skills: {
+      source: {
+        agent: 'Gelernt',
+        bundled: 'Integriert',
+        external: 'Externer Ordner',
+        hub: 'Skills-Hub',
+        local: 'Lokal'
+      },
+      learnedNote: 'von Hermes selbst geschrieben',
+      details: 'Details',
+      detailsAria: name => `Details zu ${name}`,
+      officialTitle: 'Offizielle Skills zum Installieren',
+      officialSource: category => `Offiziell · ${category}`,
+      browseHub: 'Skills-Hub durchsuchen',
+      hubTitle: 'Skills-Hub',
+      hubHint: 'Wähle bei einem Skill „+ Add to this Agent“, um ihn im ausgewählten Profil zu installieren.',
+      archiveEllipsis: 'Archivieren…',
+      editSkillMd: 'SKILL.md bearbeiten',
+      done: 'Fertig',
+      useInChat: 'Im Chat verwenden',
+      editing: name => `${name}/SKILL.md`,
+      emptyNone: 'Für dieses Profil sind noch keine Skills installiert.'
+    },
+    tools: {
+      toolCount: count => `${count} ${count === 1 ? 'Werkzeug' : 'Werkzeuge'}`,
+      footnote:
+        'Änderungen an Werkzeugsätzen gelten ab der nächsten neuen Sitzung; die laufende Sitzung behält ihren Prompt-Cache.',
+      includedTools: 'Enthaltene Werkzeuge',
+      includedToolsNote: count => `${count} ${count === 1 ? 'Werkzeug' : 'Werkzeuge'} · gilt für neue Sitzungen`,
+      callCount: count => `${count.toLocaleString()} ${count === 1 ? 'Aufruf' : 'Aufrufe'}`,
+      providers: 'Anbieter',
+      setup: 'Einrichtung',
+      emptyNone: 'Für dieses Profil sind keine Werkzeuge verfügbar.'
+    },
+    connectors: {
+      addCustom: 'Eigenen Konnektor hinzufügen',
+      searchApps: count => `${count} ${count === 1 ? 'App' : 'Apps'} durchsuchen`,
+      filtersLabel: 'Anzeigen',
+      filters: { all: 'Alle', connected: 'Verbunden', available: 'Verfügbar', off: 'Ausgeschaltet', local: 'Lokal' },
+      groups: { connected: 'Verbunden', local: 'Läuft lokal', available: 'Verfügbar', off: 'Ausgeschaltet' },
+      connectedNote: 'Gestörte Verbindungen zuerst.',
+      offNote: 'Anmeldungen bleiben erhalten.',
+      kindManaged: 'Verwaltet',
+      kindCatalog: 'MCP · Katalog',
+      kindCustom: 'MCP · Eigener',
+      kindPlugin: plugin => `MCP · Plugin ${plugin}`,
+      inCatalog: 'Im Hermes-Katalog',
+      hostedTwin: 'Verwaltete Version verfügbar',
+      alsoLocal: 'Läuft auch lokal',
+      open: name => `${name} öffnen`,
+      turnServerOn: name => `${name} einschalten`,
+      turnServerOff: name => `${name} ausschalten`,
+      tools: count => `${count} ${count === 1 ? 'Werkzeug' : 'Werkzeuge'}`,
+      toolsOff: count => `${count} ${count === 1 ? 'Werkzeug' : 'Werkzeuge'} aus`,
+      toolsOn: count => `${count} ${count === 1 ? 'Werkzeug' : 'Werkzeuge'} an`,
+      toolsSomeOn: (total, on) => `${total} Werkzeuge, ${on} an`,
+      accounts: count => `${count} Konten`,
+      state: {
+        accessExpired: 'Anmeldung abgelaufen',
+        available: 'Verfügbar',
+        connected: 'Verbunden',
+        connecting: 'Verbindet',
+        connectionUnknown: 'Status unbekannt',
+        couldNotConnect: 'Verbindung fehlgeschlagen',
+        offByYourOrganisation: 'Von deiner Organisation ausgeschaltet',
+        offForYou: 'Ausgeschaltet',
+        serverConnecting: 'Verbindet…',
+        serverError: 'Fehler',
+        serverNeedsAuth: 'Anmeldung nötig',
+        serverOff: 'Aus',
+        serverOn: 'Läuft',
+        serverOnUnused: 'Läuft, ungenutzt'
+      },
+      verb: {
+        authenticate: 'Anmelden',
+        connect: 'Verbinden',
+        install: 'Installieren',
+        openLogs: 'Protokolle öffnen',
+        reconnect: 'Erneut anmelden',
+        stopWaiting: 'Nicht mehr warten',
+        tryAgain: 'Erneut versuchen',
+        turnBackOn: 'Wieder einschalten'
+      },
+      manage: 'Verwalten',
+      reason: {
+        finishSignIn: 'Schließe die Anmeldung im Browser ab.',
+        reconnect: 'Melde dich erneut an, damit diese App weiter funktioniert.',
+        serverError: 'Der Server hat die Verbindung abgelehnt.',
+        serverNeedsAuth: 'Melde dich an, damit dieser Server antworten kann.'
+      },
+      segmentNoMatch: segment => `Kein Treffer in „${segment}“, daher werden alle Treffer angezeigt.`,
+      matchesElsewhere: count => `${count} weitere ${count === 1 ? 'Treffer' : 'Treffer'} in anderen Gruppen.`,
+      showAllMatches: 'Alle Treffer anzeigen',
+      loading: 'Katalog und lokale Server werden gelesen',
+      emptyTitle: 'Noch keine Apps. Füge einen lokalen Server hinzu, um loszulegen.',
+      noMatchTitle: 'Keine passenden Apps',
+      noMatchBody: 'Nichts passt. Verbinde Hermes mit deinem eigenen MCP-Server, um ihn hinzuzufügen.',
+      clearSearch: 'Suche löschen',
+      hostedFailedTitle: 'Die verwalteten Apps sind nicht erreichbar.',
+      hostedFailedBody: 'Lokale Server sind nicht betroffen und laufen weiter. Nichts wurde ausgeschaltet.',
+      retry: 'Erneut versuchen'
+    },
+    plugins: {
+      columnPlugin: 'Plugin',
+      columnDesktop: 'Desktop',
+      columnAgent: 'Agent',
+      checkUpdates: 'Nach Updates suchen',
+      uninstallEllipsis: 'Deinstallieren…',
+      browseCatalog: 'Plugin-Katalog durchsuchen',
+      catalogTitle: 'Plugin-Katalog',
+      catalogHint:
+        'Wähle bei einem Plugin „+ Add to this Agent“. Geprüfte Einträge werden mit ihrem festgelegten Commit im ausgewählten Profil installiert.',
+      settingsTip: 'Plugin-Einstellungen',
+      noMatch: query => `Kein Plugin passt zu „${query}“.`
+    }
   }
 }
