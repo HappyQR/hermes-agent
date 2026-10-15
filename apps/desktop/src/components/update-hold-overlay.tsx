@@ -5,7 +5,10 @@ import { Button } from '@/components/ui/button'
 import type { UpdateHoldWire } from '@/global'
 import { useI18n } from '@/i18n'
 import { AlertTriangle, FileText, Loader2, Power, RefreshCw } from '@/lib/icons'
+import { cn } from '@/lib/utils'
 import { $desktopBoot } from '@/store/boot'
+
+import { BOOT_CARD_CLASS } from './studio-onboarding/boot-kit'
 
 type Busy = 'quit' | 'recheck' | 'start' | null
 
@@ -91,9 +94,9 @@ export function UpdateHoldOverlay() {
       data-testid="update-hold-overlay"
       role="alertdialog"
     >
-      <div className="relative w-full max-w-[40rem] overflow-hidden rounded-xl border border-(--stroke-nous) bg-(--ui-chat-bubble-background) shadow-nous">
+      <div className={cn('relative w-full max-w-[40rem] overflow-hidden', BOOT_CARD_CLASS)}>
         <div className="flex items-start gap-3 px-5 py-4">
-          <AlertTriangle className="mt-0.5 size-5 shrink-0 text-amber-500" />
+          <AlertTriangle className="mt-0.5 size-5 shrink-0 text-(--ui-orange)" />
           <div>
             <h2 className="text-[0.9375rem] font-semibold tracking-tight" id={titleId}>
               {confirming ? copy.confirmTitle : unverified ? copy.titleUnverified : copy.title}
@@ -106,7 +109,7 @@ export function UpdateHoldOverlay() {
 
         <div className="grid gap-4 p-5 pt-0">
           <div
-            className="rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-xs text-(--ui-text-secondary)"
+            className="rounded-[10px] bg-[color-mix(in_srgb,var(--ui-orange)_10%,transparent)] px-3.5 py-3 text-xs text-(--ui-text-secondary)"
             data-testid="update-hold-detail"
           >
             <p>{unverified ? copy.unverified : hold.ownerPid ? copy.heldByProcess(hold.ownerPid) : copy.heldUnknown}</p>

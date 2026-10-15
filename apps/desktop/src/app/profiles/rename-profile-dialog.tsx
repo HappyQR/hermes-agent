@@ -20,7 +20,7 @@ import { slug } from '@/lib/sanitize'
 import { retireLocalProfileGateways } from '@/store/gateway'
 import { migrateTilesForProfile } from '@/store/session-states'
 
-import { isValidProfileName } from './create-profile-dialog'
+import { isValidProfileName } from './use-create-profile'
 
 // Display names are free text (Unicode fine) — no slug sanitizing.
 const identity = (raw: string) => raw

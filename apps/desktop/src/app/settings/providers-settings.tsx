@@ -36,6 +36,7 @@ import { providerGroup, providerMeta, providerPriority } from './helpers'
 import { LocalModelsSettings } from './local-models-settings'
 import { SettingsContent, SettingsSkeleton } from './primitives'
 import { SettingsProfileScope } from './profile-scope'
+import { useSettingsWindow } from './studio/window-context'
 import { useDeepLinkHighlight } from './use-deep-link-highlight'
 
 // The embedded terminal (and thus the "run disconnect command" path) only
@@ -392,6 +393,7 @@ export function ProvidersSettings({
   view
 }: ProvidersSettingsProps) {
   const { t } = useI18n()
+  const windowed = useSettingsWindow()
   const scopeProfile = useStore($settingsRequestProfile)
   const { rowProps, vars } = useEnvCredentials(scopeProfile)
   const [oauthProviders, setOauthProviders] = useState<OAuthProvider[]>([])
@@ -536,7 +538,8 @@ export function ProvidersSettings({
   const hasOauth = oauthProviders.length > 0
   // The sidebar subnav owns the Accounts/API-keys split now; with no OAuth
   // providers there's nothing for the "Accounts" view to show, so fall to keys.
-  const showApiKeys = view === 'keys' || (!hasOauth && view !== 'custom-endpoints')
+  // The Settings window shows both as sections, so each view stays itself there.
+  const showApiKeys = view === 'keys' || (!hasOauth && view !== 'custom-endpoints' && !windowed)
 
   const keyGroups = buildProviderKeyGroups(vars)
 
@@ -565,7 +568,7 @@ export function ProvidersSettings({
               value={keyQuery}
             />
             {visibleGroups.length > 0 ? (
-              <div className="grid gap-2">
+              <div className="grid gap-2" data-credential-list="">
                 {visibleGroups.map(group => (
                   <div className="scroll-mt-6 rounded-[6px]" id={providerKeyElementId(group.name)} key={group.name}>
                     <ProviderKeyRows

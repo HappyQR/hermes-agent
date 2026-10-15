@@ -12,6 +12,8 @@ import {
 } from '@/store/settings-scope'
 import type { ProfileInfo } from '@/types/hermes'
 
+import { useSettingsWindow } from './studio/window-context'
+
 // Settings-chip label: the Bot Mode title the Bots roster shows when set
 // (ui_meta['hermes-bots'].title), else the app-wide profileLabel
 // (display_name → slug). Scoped to this selector on purpose — the profile
@@ -49,6 +51,8 @@ export function ScopeChip({ active, label, onSelect }: { active: boolean; label:
  *  request keeps its unscoped default shape. */
 export function SettingsProfileScope({ className }: { className?: string }) {
   const { t } = useI18n()
+  // The Settings window picks the profile in its header and states the target under the hero.
+  const windowed = useSettingsWindow()
   const scope = t.settings.profileScope
   const override = useStore($settingsScopeOverride)
   const selected = useStore($settingsScopeProfile)
@@ -66,7 +70,7 @@ export function SettingsProfileScope({ className }: { className?: string }) {
     void refreshProfiles().catch(() => undefined)
   }, [])
 
-  if (profiles.length < 2) {
+  if (profiles.length < 2 || windowed) {
     return null
   }
 

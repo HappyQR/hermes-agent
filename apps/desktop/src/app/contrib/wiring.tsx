@@ -111,6 +111,7 @@ import { useGatewayRequest } from '../gateway/hooks/use-gateway-request'
 import { useHermesConfigRecord } from '../hooks/use-config-record'
 import { useKeybinds } from '../hooks/use-keybinds'
 import { useHudHandoff } from '../hud/handoff'
+import { KeybindsSheet } from '../keybinds-sheet'
 import { ModelPickerOverlay } from '../model-picker-overlay'
 import { ModelVisibilityOverlay } from '../model-visibility-overlay'
 import { mainChatOccupied, openSession, openSessionFromPicker } from '../open-session'
@@ -122,7 +123,6 @@ import { PersistentTerminal } from '../right-sidebar/terminal/persistent'
 import { closeAllTerminals } from '../right-sidebar/terminal/terminals'
 import {
   CRON_ROUTE,
-  navigateToWorkspacePage,
   routeSessionId,
   sessionRoute,
   SETTINGS_ROUTE,
@@ -184,7 +184,6 @@ import {
   useCreditsNoticeDemo,
   useFreshSessionRequest,
   useGatewayScopeRefresh,
-  useOpenKeybindsListener,
   usePublishRestartPreviewServer
 } from './wiring-effects'
 
@@ -448,7 +447,6 @@ export function ContribWiring({ children }: { children: ReactNode }) {
 
   const openProviderSettings = useCallback(() => navigate(`${SETTINGS_ROUTE}?tab=providers`), [navigate])
 
-  useOpenKeybindsListener(navigate)
   useCreditsNoticeDemo()
 
   // Post-turn rehydrate from stored history (same behavior as DesktopController,
@@ -1339,6 +1337,7 @@ export function ContribWiring({ children }: { children: ReactNode }) {
         profile={activeGatewayProfile}
       />
       <UpdatesOverlay />
+      <KeybindsSheet />
       <GatewayConnectingOverlay />
       <BootFailureOverlay />
       <UpdateHoldOverlay />
@@ -1386,10 +1385,10 @@ export function ContribWiring({ children }: { children: ReactNode }) {
         <Suspense fallback={null}>
           <CommandCenterView
             initialSection={commandCenterInitialSection}
+            onArchiveSession={sessionId => void archiveSession(sessionId)}
             onClose={closeOverlayToPreviousRoute}
             onDeleteSession={removeSession}
             onLoadMoreSessions={loadMoreSessions}
-            onNavigateRoute={path => navigateToWorkspacePage(navigate, path)}
             onOpenSession={openStoredSession}
           />
         </Suspense>

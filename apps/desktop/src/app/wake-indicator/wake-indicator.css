@@ -1,3 +1,6 @@
+/* The wake-word pill (prototype .wake): a purple capsule under the menu bar
+   with live level bars and a label. Painted from theme tokens; the window is
+   176×52 and transparent, so the shadow stays inside its margin. */
 .wake-indicator-surface {
   align-items: flex-start;
   background: transparent;
@@ -10,41 +13,101 @@
 }
 
 .wake-indicator-light {
-  backdrop-filter: blur(20px) saturate(1.2);
-  background: rgba(124, 58, 237, 0.62);
-  border: 1px solid rgba(216, 180, 254, 0.82);
+  --wake-tint: var(--ui-dot-purple, var(--ui-purple));
+
+  align-items: center;
+  background: color-mix(in srgb, var(--wake-tint) 88%, black);
   border-radius: 999px;
   box-shadow:
-    0 0 10px rgba(124, 58, 237, 0.7),
-    0 0 24px rgba(168, 85, 247, 0.48);
-  height: 28px;
+    0 0 0 0.5px color-mix(in srgb, var(--wake-tint) 60%, black),
+    0 6px 14px -6px color-mix(in srgb, var(--wake-tint) 75%, transparent);
+  color: var(--ui-on-accent, white);
+  display: inline-flex;
+  font-size: 12.5px;
+  font-weight: 600;
+  gap: 8px;
+  height: 30px;
+  max-width: calc(100vw - 16px);
   opacity: 0;
-  transform: scale(0.96);
+  padding: 0 14px 0 10px;
+  transform: translateY(-6px) scale(0.98);
   transition:
     opacity 500ms ease-out,
-    transform 500ms ease-out;
-  width: 120px;
+    transform 300ms cubic-bezier(0.34, 1.32, 0.64, 1);
+  white-space: nowrap;
+}
+
+.wake-indicator-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wake-indicator-bars {
+  align-items: center;
+  display: inline-flex;
+  flex: none;
+  gap: 3px;
+  height: 16px;
+}
+
+.wake-indicator-bars i {
+  background: currentColor;
+  border-radius: 2px;
+  display: block;
+  height: 30%;
+  width: 3px;
 }
 
 .wake-indicator-surface[data-state='detected'] .wake-indicator-light {
   animation: wake-indicator-breathe 2.5s ease-in-out infinite;
+  transform: none;
 }
 
 .wake-indicator-surface[data-state='capturing'] .wake-indicator-light {
   opacity: 1;
-  transform: scale(1);
+  transform: none;
+}
+
+.wake-indicator-surface[data-state='capturing'] .wake-indicator-bars i {
+  animation: wake-indicator-bar 900ms cubic-bezier(0.32, 0.72, 0, 1) infinite;
+}
+
+.wake-indicator-bars i:nth-child(2) {
+  animation-delay: -150ms;
+}
+
+.wake-indicator-bars i:nth-child(3) {
+  animation-delay: -300ms;
+}
+
+.wake-indicator-bars i:nth-child(4) {
+  animation-delay: -450ms;
+}
+
+.wake-indicator-bars i:nth-child(5) {
+  animation-delay: -600ms;
 }
 
 @keyframes wake-indicator-breathe {
   0%,
   100% {
-    opacity: 0.34;
-    transform: scale(0.96);
+    opacity: 0.4;
   }
 
   50% {
     opacity: 0.94;
-    transform: scale(1);
+  }
+}
+
+@keyframes wake-indicator-bar {
+  0%,
+  100% {
+    height: 25%;
+  }
+
+  50% {
+    height: 95%;
   }
 }
 
@@ -56,6 +119,10 @@
   .wake-indicator-surface[data-state='detected'] .wake-indicator-light {
     animation: none;
     opacity: 0.72;
-    transform: scale(1);
+  }
+
+  .wake-indicator-surface[data-state='capturing'] .wake-indicator-bars i {
+    animation: none;
+    height: 60%;
   }
 }
