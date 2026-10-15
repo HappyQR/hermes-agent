@@ -48,9 +48,6 @@ export function groupByCategory(skills: readonly SkillInfo[]): CategoryGroup[] {
   return [...groups.entries()].map(([category, members]) => ({ category, skills: members }))
 }
 
-// Long lists stay cheap: off-screen cards skip layout and paint.
-const LAZY_CARD = '[content-visibility:auto] [contain-intrinsic-size:auto_9.5rem]'
-
 interface SkillsGridProps {
   busy: boolean
   installing: ReadonlySet<string>
@@ -122,7 +119,7 @@ function SkillCard({ busy, onOpen, onToggle, skill }: SkillCardProps) {
   const source = skillSourceLabel(skill, c.skills.source)
 
   return (
-    <GridCard className={LAZY_CARD} data-skill={skill.name}>
+    <GridCard data-skill={skill.name}>
       <GridCardTop
         lead={<IconTile icon={tile.icon} tone={tile.tone} />}
         onOpen={() => onOpen(skill)}
@@ -164,7 +161,7 @@ function OfficialSkillCard({ installing, onInstall, onOpen, skill }: OfficialSki
   const tile = skillTile(skill.name, skill.category)
 
   return (
-    <GridCard className={LAZY_CARD} data-official-skill={skill.identifier}>
+    <GridCard data-official-skill={skill.identifier}>
       <GridCardTop
         lead={<IconTile icon={tile.icon} tone={tile.tone} />}
         onOpen={() => onOpen(skill)}

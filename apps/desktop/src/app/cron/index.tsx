@@ -6,7 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { PageLoader } from '@/components/page-loader'
 import { thisDeviceLabel } from '@/components/studio/pages/device'
-import { FormGroup, FormRow, FormSection } from '@/components/studio/pages/form'
+import { FORM_ROW_CLASS, FormGroup, FormRow, FormSection } from '@/components/studio/pages/form'
 import { StudioMasterDetail } from '@/components/studio/pages/master-detail'
 import {
   SheetBody,
@@ -53,6 +53,7 @@ import {
 import { type Translations, useI18n } from '@/i18n'
 import { requestModelOptions } from '@/lib/model-options'
 import { asText } from '@/lib/text'
+import { cn } from '@/lib/utils'
 import { $cronFocusJobId, $cronJobs, invalidateCronJobsRequests, setCronFocusJobId } from '@/store/cron'
 import { $changeEventsAvailable, $cronChangeTick } from '@/store/live-sync'
 import { notify, notifyError } from '@/store/notifications'
@@ -1090,8 +1091,11 @@ export function DeliverCheckboxes({
 
         return (
           <label
-            className="flex min-h-[2.625rem] cursor-pointer items-center gap-3 px-3.5 py-2 text-[0.8125rem]"
-            data-slot="studio-form-row"
+            className={cn(
+              FORM_ROW_CLASS,
+              'cursor-pointer @max-[28rem]/form-group:flex-row @max-[28rem]/form-group:items-center'
+            )}
+            data-slot="form-row"
             htmlFor={checkboxId}
             key={target.id}
           >

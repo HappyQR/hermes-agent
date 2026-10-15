@@ -1,16 +1,20 @@
 import type { ReactNode } from 'react'
 
+import { SheetHeader as OverlaySheetHeader } from '@/app/overlays/studio/sheet-header'
 import { Button } from '@/components/ui/button'
-import { DialogClose, DialogDescription, DialogTitle } from '@/components/ui/dialog'
+import { DialogClose } from '@/components/ui/dialog'
+import { StudioIcon } from '@/components/ui/studio-icon'
 import { useI18n } from '@/i18n'
-import { X } from '@/lib/icons'
-import { cn } from '@/lib/utils'
 
 // macOS sheet anatomy for page dialogs (prototype `.sheet` / `.sh-head` /
-// `.sh-body` / `.sh-foot`). The glass surface, top anchoring and motion come
+// `.sh-body` / `.sh-foot`), built on the overlays kit's sheet pieces
+// (app/overlays/studio/sheet-header) so every sheet in the app shares one
+// header, body and footer. The glass surface, top anchoring and motion come
 // from `DialogContent` (foundation.css); pass `STUDIO_SHEET_CONTENT[size]` as
 // its className and `STUDIO_SHEET_BODY` as its bodyClassName, plus
 // `showCloseButton={false}` — the header carries the close button.
+
+export { SheetBody, SheetFooter } from '@/app/overlays/studio/sheet-header'
 
 export type StudioSheetSize = 'md' | 'wide' | 'xwide'
 
@@ -33,58 +37,38 @@ interface SheetHeaderProps {
   title: ReactNode
 }
 
+/** A Dialog-hosted sheet header: tile, title (Dialog title) and the close X. */
 export function SheetHeader({ closable = true, description, lead, title, trailing }: SheetHeaderProps) {
   const { t } = useI18n()
 
-  return (
-    <div className="flex shrink-0 items-center gap-2.5 px-[18px] pt-4 pb-2.5" data-slot="studio-sheet-head">
-      {lead}
-      <div className="min-w-0 flex-1">
-        <DialogTitle className="m-0 truncate text-[0.9375rem] font-[650] tracking-normal">{title}</DialogTitle>
-        {description ? (
-          <DialogDescription className="mt-0.5 text-[0.78125rem] leading-normal text-(--ui-text-tertiary)">
-            {description}
-          </DialogDescription>
-        ) : null}
-      </div>
-      {trailing}
-      {closable ? (
-        <DialogClose asChild>
-          <Button
-            aria-label={t.common.close}
-            className="text-(--ui-text-tertiary) hover:text-(--ui-text-primary)"
-            size="icon-xs"
-            variant="ghost"
-          >
-            <X className="size-3.5" />
-          </Button>
-        </DialogClose>
-      ) : null}
-    </div>
-  )
-}
+  const close = closable ? (
+    <DialogClose asChild>
+      <Button
+        aria-label={t.common.close}
+        className="size-7 shrink-0 text-(--ui-text-tertiary) hover:bg-(--ui-hover) hover:text-(--ui-text-primary)"
+        size="icon-sm"
+        type="button"
+        variant="ghost"
+      >
+        <StudioIcon name="x" size={14} />
+      </Button>
+    </DialogClose>
+  ) : null
 
-export function SheetBody({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <div
-      className={cn(
-        'flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overscroll-contain px-[18px] pt-1 pb-4 [scrollbar-width:thin]',
-        className
-      )}
-      data-slot="studio-sheet-body"
-    >
-      {children}
-    </div>
-  )
-}
-
-export function SheetFooter({ children, className }: { children: ReactNode; className?: string }) {
-  return (
-    <div
-      className={cn('flex shrink-0 flex-wrap items-center gap-2 px-[18px] pt-3 pb-4', className)}
-      data-slot="studio-sheet-foot"
-    >
-      {children}
-    </div>
+    <OverlaySheetHeader
+      inDialog
+      lead={lead}
+      right={
+        trailing || close ? (
+          <>
+            {trailing}
+            {close}
+          </>
+        ) : undefined
+      }
+      subtitle={description}
+      title={title}
+    />
   )
 }

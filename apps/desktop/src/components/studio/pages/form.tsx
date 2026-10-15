@@ -1,48 +1,63 @@
 import type { ReactNode } from 'react'
 
+import {
+  FORM_GROUP_CLASS,
+  FORM_GROUP_INNER_CLASS,
+  FORM_ROW_CLASS,
+  FORM_ROW_CONTROL_CLASS,
+  FORM_ROW_DESC_CLASS,
+  FORM_ROW_STACK_CLASS,
+  FORM_ROW_TEXT_CLASS,
+  FORM_ROW_TITLE_CLASS,
+  FORM_SECTION_NOTE_CLASS,
+  FORM_SECTION_TITLE_CLASS
+} from '@/app/overlays/studio/form-group'
 import { StudioIcon } from '@/components/ui/studio-icon'
 import { cn } from '@/lib/utils'
 
-// Grouped-inset forms (System Settings; prototype `.form-sec` / `.form-group` /
-// `.f-row` / `.disclosure`): a titled section, a rounded group, rows that read
-// label/description on the left and the control on the right.
+// Grouped-inset forms for the workspace pages and their sheets (System
+// Settings; prototype `.form-sec` / `.form-group` / `.f-row` / `.disclosure`).
+// The look is the overlays kit's (app/overlays/studio/form-group) — one inset
+// group for Settings, sheets and pages; these wrappers add what page forms
+// need on top: real <label htmlFor> titles, label-less control rows, a note
+// under the group and pass-through group attributes (role, aria-*).
+
+/** The row look (padding, 42px minimum, own top hairline) for hand-built rows. */
+export { FORM_ROW_CLASS }
 
 interface FormSectionProps {
   children: ReactNode
   className?: string
   /** Muted trailing detail in the heading row (scope, counts). */
   meta?: ReactNode
+  /** Under the group (prototype `.form-sec .note`). */
   note?: ReactNode
   title?: ReactNode
 }
 
 export function FormSection({ children, className, meta, note, title }: FormSectionProps) {
   return (
-    <section className={cn('flex min-w-0 flex-col gap-2', className)} data-slot="studio-form-section">
+    <section className={cn('flex min-w-0 flex-col gap-2', className)} data-slot="form-section">
       {title || meta ? (
-        <h4 className="mx-1 my-0 flex items-center gap-2 text-[0.8125rem] font-[650] text-(--ui-text-primary)">
+        <h4 className={cn(FORM_SECTION_TITLE_CLASS, 'my-0')}>
           {title}
           {meta ? (
-            <span className="ml-auto inline-flex items-center gap-1 text-[0.71875rem] font-medium text-(--ui-text-tertiary)">
+            <span className="ml-auto inline-flex min-w-0 items-center gap-1 text-[0.71875rem] font-medium text-(--ui-text-tertiary)">
               {meta}
             </span>
           ) : null}
         </h4>
       ) : null}
       {children}
-      {note ? <p className="mx-1 -mt-0.5 mb-0 text-xs leading-normal text-(--ui-text-tertiary)">{note}</p> : null}
+      {note ? <p className={cn(FORM_SECTION_NOTE_CLASS, 'mb-0')}>{note}</p> : null}
     </section>
   )
 }
 
 export function FormGroup({ children, className, ...props }: React.ComponentProps<'div'>) {
   return (
-    <div
-      {...props}
-      className={cn('min-w-0 overflow-hidden rounded-[11px] bg-(--pg-card) shadow-(--pg-card-ring)', className)}
-      data-slot="studio-form-group"
-    >
-      {children}
+    <div {...props} className={cn(FORM_GROUP_CLASS, 'min-w-0', className)} data-slot="form-group">
+      <div className={FORM_GROUP_INNER_CLASS}>{children}</div>
     </div>
   )
 }
@@ -51,7 +66,7 @@ interface FormRowProps {
   children?: ReactNode
   className?: string
   description?: ReactNode
-  /** Associates the visible label with a control id. */
+  /** Makes the title a <label> for this control id. */
   htmlFor?: string
   id?: string
   /** Label on top, control full-width below (lists, text areas). */
@@ -61,35 +76,26 @@ interface FormRowProps {
 
 export function FormRow({ children, className, description, htmlFor, id, stack = false, title }: FormRowProps) {
   const Label = htmlFor ? 'label' : 'div'
+  const bare = !title && !description
 
   return (
-    <div
-      className={cn(
-        'flex min-h-[2.625rem] items-center gap-3 px-3.5 py-2 text-[0.8125rem]',
-        stack && 'flex-col items-stretch',
-        className
-      )}
-      data-slot="studio-form-row"
-      id={id}
-    >
-      {title || description ? (
-        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+    <div className={cn(FORM_ROW_CLASS, stack && FORM_ROW_STACK_CLASS, className)} data-slot="form-row" id={id}>
+      {bare ? null : (
+        <div className={FORM_ROW_TEXT_CLASS}>
           {title ? (
-            <Label className="text-(--ui-text-primary)" htmlFor={htmlFor}>
+            <Label className={FORM_ROW_TITLE_CLASS} htmlFor={htmlFor}>
               {title}
             </Label>
           ) : null}
-          {description ? (
-            <span className="text-[0.71875rem] leading-[1.4] text-(--ui-text-tertiary)">{description}</span>
-          ) : null}
+          {description ? <div className={FORM_ROW_DESC_CLASS}>{description}</div> : null}
         </div>
-      ) : null}
+      )}
       {children ? (
         <div
           className={cn(
-            'flex min-w-0 items-center gap-2',
             // A row without a label is all control.
-            !title && !description ? 'flex-1' : stack ? 'max-w-full' : 'max-w-[60%] flex-none'
+            bare ? 'flex min-w-0 flex-1 flex-wrap items-center gap-2' : FORM_ROW_CONTROL_CLASS,
+            stack && !bare && 'max-w-full justify-start'
           )}
         >
           {children}
@@ -112,8 +118,8 @@ export function FormDisclosure({ children, label, onOpenChange, open }: FormDisc
     <>
       <button
         aria-expanded={open}
-        className="flex w-full cursor-pointer items-center gap-1.5 px-3.5 py-2.5 text-left text-[0.8125rem] text-(--ui-text-secondary) outline-none hover:bg-(--ui-hover) focus-visible:bg-(--ui-hover)"
-        data-slot="studio-form-disclosure"
+        className="flex w-full cursor-pointer items-center gap-1.5 px-3.5 py-2.5 text-left text-[0.8125rem] text-(--ui-text-secondary) shadow-[inset_0_0.5px_0_var(--ui-line)] outline-none transition-colors duration-100 hover:bg-(--ui-hover) focus-visible:bg-(--ui-hover)"
+        data-slot="form-disclosure"
         onClick={() => onOpenChange(!open)}
         type="button"
       >

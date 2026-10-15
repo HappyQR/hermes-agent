@@ -94,12 +94,10 @@
 
 /* ── Rows that share one hairline ────────────────────────────────────────── */
 
-/* Rows inside an inset group separate with a single 0.5px hairline; wrappers
-   (conditional rows, context-menu triggers) keep the rule intact. */
-[data-slot='studio-list-row'] + [data-slot='studio-list-row'],
-[data-slot='studio-form-row'] + [data-slot='studio-form-row'],
-[data-slot='studio-form-row'] + [data-slot='studio-form-disclosure'],
-[data-slot='studio-form-disclosure'] + [data-slot='studio-form-row'] {
+/* Rows inside an inset list group separate with a single 0.5px hairline;
+   wrappers (conditional rows, context-menu triggers) keep the rule intact.
+   Form rows draw their own (app/overlays/studio/form-group). */
+[data-slot='studio-list-row'] + [data-slot='studio-list-row'] {
   box-shadow: inset 0 0.5px 0 var(--ui-line, var(--ui-stroke-tertiary));
 }
 
