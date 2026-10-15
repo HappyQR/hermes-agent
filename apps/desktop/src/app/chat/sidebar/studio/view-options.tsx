@@ -121,14 +121,14 @@ function GroupingChoices({ copy }: { copy: StudioCopy }) {
         value={grouping}
       >
         {GROUPINGS.map(id => (
-          <label className="flex h-6 cursor-pointer items-center gap-2 text-[0.8125rem]" key={id}>
+          <label className="flex min-h-6 cursor-pointer items-center gap-2 text-[0.8125rem] leading-tight" key={id}>
             <RadioGroupPrimitive.Item
               className="relative size-[15px] shrink-0 rounded-full bg-(--ui-bg-editor) shadow-[inset_0_0_0_0.5px_var(--ui-line-2),0_0.5px_1px_rgb(0_0_0/0.08)] outline-none focus-visible:ring-2 focus-visible:ring-ring/50 data-[state=checked]:bg-primary data-[state=checked]:shadow-none"
               value={id}
             >
               <RadioGroupPrimitive.Indicator className="absolute inset-[4.5px] rounded-full bg-white" />
             </RadioGroupPrimitive.Item>
-            <span className="min-w-0 truncate">{labels[id]}</span>
+            <span className="min-w-0">{labels[id]}</span>
           </label>
         ))}
       </RadioGroupPrimitive.Root>
@@ -212,17 +212,20 @@ function ShowChoices({ copy, f }: { copy: StudioCopy; f: SidebarCopy['filter'] }
             ))}
         </div>
       )}
-      <div className="mt-1 flex items-center gap-2.5">
+      {/* One row where the labels fit (the prototype's), two where they don't. */}
+      <div className="mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1.5">
         <SegmentedControl
           aria-label={copy.view.density}
+          className="shrink-0"
           onChange={setSessionListDensity}
           options={DENSITIES.map(id => ({ id, label: copy.view[id] }))}
           size="sm"
           value={density}
         />
-        <span className="flex-1" />
-        <span className="text-xs">{f.inboxStyle}</span>
-        <Switch aria-label={f.inboxStyle} checked={cardRows} onCheckedChange={setSidebarCardRows} size="xs" />
+        <span className="ml-auto flex items-center gap-2 whitespace-nowrap">
+          <span className="text-xs">{f.inboxStyle}</span>
+          <Switch aria-label={f.inboxStyle} checked={cardRows} onCheckedChange={setSidebarCardRows} size="xs" />
+        </span>
       </div>
     </div>
   )

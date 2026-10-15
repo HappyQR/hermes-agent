@@ -285,7 +285,9 @@ describe('ChatSidebar project entry', () => {
 // Messaging platforms group rows by owner the same way recents does once every
 // profile is on screen, so a Telegram thread is attributable to its profile
 // (#87715). The platform's row cap and load-more stay the section's.
-describe('ChatSidebar section labels', () => {
+// Studio: projects live in their own section above the list; the Sessions
+// header always reads "Sessions", and a project row scopes the list.
+describe('ChatSidebar Projects section', () => {
   const realProject = {
     id: '/repos/new-project',
     label: 'new-project',
@@ -307,6 +309,9 @@ describe('ChatSidebar section labels', () => {
     }
   ]
 
+  const projectsSection = (container: HTMLElement) =>
+    container.querySelector<HTMLElement>('[data-slot="sidebar-projects"]')!
+
   afterEach(() => {
     cleanup()
     $projectScope.set(ALL_PROJECTS)
@@ -315,40 +320,46 @@ describe('ChatSidebar section labels', () => {
     $sessions.set([])
   })
 
-  it('labels the section "Projects" when the grouped tree has a real project', () => {
-    setSidebarAgentsGrouped(true)
+  it('lists real projects in their own section, whatever the grouping', () => {
     $projectTree.set([realProject])
-
-    renderSidebar('/', 'chat')
-
-    expect(screen.getByText('Projects')).toBeTruthy()
-    expect(screen.queryByText('Sessions')).toBeNull()
-  })
-
-  it('keeps the "Sessions" label when grouping is on but no projects exist', () => {
-    // The source-filter toggle with an empty tree: the section lists plain
-    // chat sessions, so heading it "Projects" mislabeled them (#62537).
-    setSidebarAgentsGrouped(true)
-    $projectTree.set([])
     $sessions.set(sessionRows)
 
-    renderSidebar('/', 'chat')
+    const { container } = renderSidebar('/', 'chat')
 
+    expect(screen.getByText('Projects')).toBeTruthy()
     expect(screen.getByText('Sessions')).toBeTruthy()
-    expect(screen.queryByText('Projects')).toBeNull()
+    expect(within(projectsSection(container)).getByText('new-project')).toBeTruthy()
   })
 
-  it('keeps the "Sessions" label when the grouped tree is only the synthetic Home bucket', () => {
+  it('keeps the synthetic Home bucket out of the Projects section', () => {
     // No real projects — every session fell into Home. A lone Home bucket is
-    // the flat session list wearing a project costume, not a switcher.
+    // not a project: the section shows its empty line, the list its sessions.
     setSidebarAgentsGrouped(true)
     $projectTree.set(homeOnly)
     $sessions.set(sessionRows)
 
-    renderSidebar('/', 'chat')
+    const { container } = renderSidebar('/', 'chat')
 
+    expect(within(projectsSection(container)).queryByText('Home')).toBeNull()
+    expect(within(projectsSection(container)).getByText('No projects yet')).toBeTruthy()
     expect(screen.getByText('Sessions')).toBeTruthy()
-    expect(screen.queryByText('Projects')).toBeNull()
+  })
+
+  it('scopes the Sessions list from a project row and clears it from the chip', () => {
+    $projectTree.set([realProject])
+    $sessions.set(sessionRows)
+
+    const { container } = renderSidebar('/', 'chat')
+
+    fireEvent.click(within(projectsSection(container)).getByRole('button', { name: 'new-project' }))
+    expect($projectScope.get()).toBe(realProject.id)
+
+    const chip = container.querySelector<HTMLElement>('[data-slot="sidebar-scope-chip"]')
+    expect(chip?.textContent).toContain('new-project')
+
+    fireEvent.click(within(chip!).getByRole('button', { name: 'Show all sessions' }))
+    expect($projectScope.get()).toBe(ALL_PROJECTS)
+    expect(container.querySelector('[data-slot="sidebar-scope-chip"]')).toBeNull()
   })
 })
 
@@ -391,13 +402,13 @@ describe('ChatSidebar empty-profile sections', () => {
     expect(screen.getByText('tg-one')).toBeTruthy()
   })
 
-  it('still shows the blank state when a profile has nothing at all', () => {
+  it('still shows the empty line when a profile has nothing at all', () => {
     $messagingSessions.set([])
     $sidebarMessagingOpenIds.set([])
 
-    // SidebarBlankState: a centered "No sessions yet" plus a "New project"
-    // button, rendered INSTEAD of the session sections. Search stays: it is the
-    // door to ⌘K, not part of the list.
+    // Studio keeps its sections: the Sessions list says "No sessions yet" (the
+    // Projects section offers "New project…"). Search stays: it is the door to
+    // ⌘K, not part of the list.
     const { container } = renderSidebar('/', 'chat')
 
     expect(container.textContent).toContain('No sessions yet')

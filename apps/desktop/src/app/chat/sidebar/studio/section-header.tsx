@@ -134,7 +134,12 @@ export function SidebarSectionHeader({
           <Tip label={collapsed ? copy.expand : copy.collapse} placement="row">
             <button
               aria-expanded={!collapsed}
-              className="inline-flex min-w-0 shrink items-center gap-0.75 bg-transparent text-left"
+              // With an inline extra (the scope chip) the title keeps its width
+              // and the chip truncates instead.
+              className={cn(
+                'inline-flex items-center gap-0.75 bg-transparent text-left',
+                extra ? 'shrink-0' : 'min-w-0 shrink'
+              )}
               onClick={onToggle}
               type="button"
             >

@@ -4,11 +4,7 @@ import { useStore } from '@nanostores/react'
 import type * as React from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { Button } from '@/components/ui/button'
-import { Codicon } from '@/components/ui/codicon'
-import { GlyphSpinner } from '@/components/ui/glyph-spinner'
 import { Sidebar, SidebarContent } from '@/components/ui/sidebar'
-import { Tip } from '@/components/ui/tooltip'
 import { type SessionInfo } from '@/hermes'
 import { useI18n } from '@/i18n'
 import { cn } from '@/lib/utils'
@@ -56,7 +52,6 @@ import { $profileRailVisible } from '@/store/profile-rail-prefs'
 import { $projectScope, ALL_PROJECTS, exitProjectScope } from '@/store/project-scope'
 import {
   $activeProjectId,
-  $newProjectDropPlacement,
   $projectOwnerBySessionId,
   $projects,
   $projectTree,
@@ -64,7 +59,6 @@ import {
   $reposScanning,
   enterProject,
   followEnteredProjectCwd,
-  openProjectCreate,
   refreshProjects,
   refreshProjectTree,
   refreshWorktrees,
@@ -96,13 +90,17 @@ import { $workingSessionIds } from '@/store/session-states'
 import { markSessionUnread } from '@/store/session-unread-remote'
 import { $archivedSessions, loadArchivedSessions } from '@/store/sidebar-archive'
 import { $sidebarSessionRankIds } from '@/store/sidebar-sort'
-import { $sidebarEffectiveGrouping, $sidebarSourceFilter } from '@/store/sidebar-studio'
+import {
+  $sidebarEffectiveGrouping,
+  $sidebarSectionCollapsed,
+  $sidebarSourceFilter,
+  sidebarSectionCollapsed
+} from '@/store/sidebar-studio'
 
 import { type AppView } from '../../routes'
 import type { SidebarNavItem } from '../../types'
 import { type NewSessionSplitHandler } from '../new-session-drag'
 
-import { SidebarSectionAddButton } from './chrome'
 import { useGatewaySessionGroups } from './gateway-group-model'
 import { SidebarLoadMoreRow } from './load-more-row'
 import { orderByIds, reconcileOrderIds, resolveManualSessionOrderIds, sameIds } from './order'
@@ -116,8 +114,6 @@ import {
   overlayLiveLanes,
   overlayLivePreviews,
   PROJECT_PREVIEW_COUNT,
-  ProjectBackRow,
-  ProjectMenu,
   projectTreeCwd,
   reconcileEnteredProjectSessions,
   sessionBucketId,
@@ -125,12 +121,10 @@ import {
   type SidebarProjectTree,
   type SidebarWorkspaceTree,
   sortProjectsForOverview,
-  StartWorkButton,
   useRepoWorktreeMap
 } from './projects'
 import { WorktreeDialog } from './projects/worktree-dialog'
 import {
-  SidebarBlankState,
   SidebarLoadErrorState,
   SidebarSessionSkeletons,
   SidebarStorageCorruptNotice
@@ -139,10 +133,14 @@ import { buildSessionByAnyId, resolvePinnedSessions } from './session-index'
 import { SidebarSessionsSection } from './sessions-section'
 import { flatListGrouping } from './studio/flat-groupings'
 import { SidebarNav } from './studio/nav'
+import { projectNewSessionPath } from './studio/project-row'
+import { SidebarProjectsSection } from './studio/projects-section'
+import { SidebarScopeChip } from './studio/scope-chip'
 import { SidebarSearchButton } from './studio/search-button'
 import { SidebarSectionHeader, useSidebarSection } from './studio/section-header'
 import { mergeSessionPool } from './studio/session-pool'
 import { compareSourceBuckets, sessionSourceBucket } from './studio/session-source'
+import { SessionsAddButton } from './studio/sessions-add-button'
 import { SessionsFilteredEmpty, SessionsQuietEmpty } from './studio/sessions-empty'
 import { publishSidebarTopBarActions } from './studio/top-bar'
 import { useMessagingPaging } from './studio/use-messaging-paging'
@@ -161,11 +159,6 @@ const SCROLL_Y = 'overflow-y-auto overflow-x-hidden overscroll-contain scrollbar
 // The list reserves its bar's width whether or not one is showing, so filtering
 // or collapsing a section doesn't reflow every row sideways.
 const SCROLL_GUTTER = '[scrollbar-gutter:stable]'
-
-// The view toggle (overview group toggle / in-project back) is the one header
-// control that stays visible at all times — the stable navigation affordance.
-const HEADER_NAV_BTN =
-  'text-(--ui-text-tertiary) opacity-70 transition-opacity hover:bg-(--ui-control-hover-background) hover:text-foreground hover:opacity-100 focus-visible:opacity-100'
 
 interface ChatSidebarProps extends React.ComponentProps<typeof Sidebar> {
   currentView: AppView
@@ -239,6 +232,7 @@ export function ChatSidebar({
   const pinnedSessionIds = useStore($pinnedSessionIds)
   const unconfirmedPinWrites = useStore($unconfirmedPinWrites)
   const [pinsCollapsed, togglePins] = useSidebarSection('pinned')
+  const projectsCollapsed = sidebarSectionCollapsed(useStore($sidebarSectionCollapsed), 'projects')
   const [sessionsCollapsed, toggleSessions] = useSidebarSection('sessions')
   // The sidebar highlight tracks the FOCUSED session — the interacted tile's
   // tab, else the main selection — so it stays 1:1 with whatever tab is active.
@@ -534,6 +528,9 @@ export function ChatSidebar({
   // authoritatively on the backend (projects.tree). Parents reorder via
   // workspaceParentOrderIds; worktrees within a parent via workspaceOrderIds.
   const worktreeGroupingActive = agentsGrouped
+  // The Projects section lists the tree whenever it is open, so the tree's
+  // fetches follow it as well as the project grouping.
+  const projectsWanted = worktreeGroupingActive || !projectsCollapsed
   const gatewayReady = gatewayState === 'open'
 
   // The backend project tree is a structural snapshot, NOT a per-message feed.
@@ -548,7 +545,7 @@ export function ChatSidebar({
       return
     }
 
-    if (worktreeGroupingActive) {
+    if (projectsWanted) {
       void refreshProjects()
 
       // The all-profiles tree is served off every profile's databases at once
@@ -578,7 +575,7 @@ export function ChatSidebar({
     const warm = window.setTimeout(() => void refreshProjectTree(), PROJECT_TREE_WARM_MS)
 
     return () => window.clearTimeout(warm)
-  }, [activeConnectionId, worktreeGroupingActive, showAllProfiles, profileScope, gatewayReady])
+  }, [activeConnectionId, projectsWanted, showAllProfiles, profileScope, gatewayReady])
 
   // Widen the existing tree query when the user expands previews, without
   // repeating repo discovery. Initial load/scope changes use the effect above.
@@ -676,7 +673,7 @@ export function ChatSidebar({
   // session regrouping); the heavy disk crawl that surfaces brand-new repos is
   // throttled. Agent-driven changes already refresh via $workspaceChangeTick.
   useEffect(() => {
-    if (!worktreeGroupingActive || !gatewayReady) {
+    if (!projectsWanted || !gatewayReady) {
       return
     }
 
@@ -712,7 +709,7 @@ export function ChatSidebar({
       window.removeEventListener('focus', onActive)
       document.removeEventListener('visibilitychange', onActive)
     }
-  }, [worktreeGroupingActive, showAllProfiles, gatewayReady])
+  }, [projectsWanted, showAllProfiles, gatewayReady])
 
   // Apply the persisted repo + worktree orders to a project's repo subtrees.
   const orderRepos = useCallback(
@@ -915,30 +912,40 @@ export function ChatSidebar({
     }
   }, [])
 
+  // The project the Sessions list is scoped to (Studio: in every grouping).
+  const scopedProject = useMemo(
+    () => (projectScope === ALL_PROJECTS ? undefined : projectModel.find(node => node.id === projectScope)),
+    [projectModel, projectScope]
+  )
+
   // eslint-disable-next-line no-restricted-syntax -- legitimate non-atom ref write (see eslint rule comment)
   useEffect(() => {
-    if (!inProject || !enteredProject) {
+    if (!scopedProject) {
       lastProjectCwdSyncRef.current = null
 
       return
     }
 
-    if (lastProjectCwdSyncRef.current === enteredProject.id) {
+    if (lastProjectCwdSyncRef.current === scopedProject.id) {
       return
     }
 
-    syncProjectCwd(enteredProject)
-    lastProjectCwdSyncRef.current = enteredProject.id
-  }, [inProject, enteredProject, syncProjectCwd])
+    syncProjectCwd(scopedProject)
+    lastProjectCwdSyncRef.current = scopedProject.id
+  }, [scopedProject, syncProjectCwd])
 
   // A persisted scope can go stale (project archived/removed, or a profile
-  // switch swapped the whole catalog). Once projects have loaded, drop back to
-  // the overview if the scoped id is gone.
+  // switch swapped the whole catalog). Once projects have loaded, drop the
+  // scope if the scoped id is gone.
   useEffect(() => {
-    if (projectScope !== ALL_PROJECTS && projectsActive && !enteredProject) {
+    const gone = projectsActive
+      ? !enteredProject
+      : projectTree.length > 0 && !projectTree.some(node => node.id === projectScope)
+
+    if (projectScope !== ALL_PROJECTS && gone) {
       exitProjectScope()
     }
-  }, [projectScope, projectsActive, enteredProject])
+  }, [projectScope, projectsActive, enteredProject, projectTree])
 
   // The project overview (drill-in list) vs. the entered project's content.
   const projectOverview = projectsActive && !inProject ? agentProjectTree : undefined
@@ -998,21 +1005,14 @@ export function ChatSidebar({
     [projectModel, syncProjectCwd]
   )
 
-  // The section header must name what the section is showing. Grouped mode
-  // reads "Projects" only while there IS a project switcher to show: a real
-  // project row, or a tree still resolving (the loading state keeps the label
-  // stable instead of flapping to "Sessions" and back). The synthetic Home
-  // bucket alone is just the flat session list wearing a project costume —
-  // with no real projects the section lists plain chat sessions, so it keeps
-  // the "Sessions" label (#62537).
-  const hasProjectRows = projectModel.some(node => !node.isNoProject)
+  // Scope the Sessions list to a project from the Projects section, or clear it.
+  const selectScope = useCallback(
+    (id: null | string) => (id ? onEnterProject(id) : exitProjectScope()),
+    [onEnterProject]
+  )
 
-  const sessionsLabel =
-    inProject && enteredProject
-      ? enteredProject.label
-      : worktreeGroupingActive && (hasProjectRows || projectTreeLoading)
-        ? s.projects.sectionLabel
-        : s.sessions
+  // Real projects (the synthetic Home bucket is not one) for the Projects section.
+  const sectionProjects = useMemo(() => projectModel.filter(node => !node.isNoProject), [projectModel])
 
   // Mirror the section's skeleton gate (projectsLoading + nothing to show yet):
   // while the skeleton is up there's no point also spinning the header count.
@@ -1193,19 +1193,6 @@ export function ChatSidebar({
   const showSessionSkeletons = sessionsLoading && scopedSessions.length === 0
   const studioFiltersActive = filtersActive || sourceFilter.length > 0
 
-  // Filtered down to nothing still renders the section: the empty state is what
-  // tells you the filter — not an empty account — is why the list is bare.
-  // Messaging threads and cron jobs live inside this area too: a profile whose
-  // only sessions are messaging threads (or that only has scheduled jobs) must
-  // not collapse the whole sidebar to the blank state (#63593).
-  const showSessionSections =
-    showSessionSkeletons ||
-    sessionsLoadError ||
-    studioFiltersActive ||
-    agentSessions.length > 0 ||
-    pinnedSessions.length > 0 ||
-    projectModel.length > 0
-
   // The sidebar's session-area mode — exposed as data-attributes so custom
   // skins can target project mode (overview vs. entered), archived, or search
   // without relying on internal class names. `data-sessions-project` carries
@@ -1259,18 +1246,30 @@ export function ChatSidebar({
         <SidebarStorageCorruptNotice />
         {/* ONE scroller for nav and every section (prototype .sb-scroll); the
             long session list virtualizes against it. */}
-        <div
-          className={cn('min-h-0 flex-1', SCROLL_Y, SCROLL_GUTTER)}
-          data-sessions-mode={sessionsMode}
-          data-sessions-project={inProject ? (enteredProjectId ?? undefined) : undefined}
-          data-slot="sidebar-scroll"
-          ref={scrollerRef}
-        >
+        <div className={cn('min-h-0 flex-1', SCROLL_Y, SCROLL_GUTTER)} data-slot="sidebar-scroll" ref={scrollerRef}>
           <div className="flex min-h-full flex-col px-2.5 pb-2.5">
             <SidebarNav currentView={currentView} onNavigate={onNavigate} />
 
-            {showSessionSections ? (
-              <>
+            <SidebarProjectsSection
+              activeProjectId={activeProjectId}
+              dndSensors={dndSensors}
+              loading={projectTreeLoading}
+              onNewSessionInWorkspace={onNewSessionInWorkspace}
+              onNewSessionSplit={onNewSessionSplit}
+              onReorder={showAllProfiles ? undefined : reorderProjects}
+              onSelectScope={selectScope}
+              projects={sectionProjects}
+              scanning={reposScanning}
+              scopedProjectId={scopedProject?.id ?? null}
+            />
+
+            {/* The session area (Pinned + Sessions). Scoped into a project
+                grouping, the whole area is that project's drop target. */}
+            <div
+              className="flex flex-col"
+              data-sessions-mode={sessionsMode}
+              data-sessions-project={inProject ? (enteredProjectId ?? undefined) : undefined}
+            >
                 {pinnedSessions.length > 0 && (
                   <SidebarSessionsSection
                     activeSessionId={activeSidebarSessionId}
@@ -1315,7 +1314,6 @@ export function ChatSidebar({
                   // whichever view is active: flat recents, project lanes, and
                   // the overview previews all render the same card.
                   card={cardRows}
-                  collapsible={!inProject}
                   contentClassName="flex flex-col gap-px"
                   dndSensors={dndSensors}
                   emptyState={
@@ -1361,80 +1359,26 @@ export function ChatSidebar({
                     <SidebarSectionHeader
                       collapsed={sessionsCollapsed}
                       count={displayAgentSessions.length}
-                      meta={
-                        worktreeGroupingActive && reposScanning && !projectsSkeletonVisible ? (
-                          <GlyphSpinner ariaLabel={s.loading} className="text-[0.6875rem] text-(--ui-text-quaternary)" />
+                      extra={
+                        scopedProject ? (
+                          <SidebarScopeChip label={scopedProject.label} onClear={exitProjectScope} />
                         ) : undefined
                       }
                       onToggle={toggleSessions}
-                      title={sessionsLabel}
+                      title={s.sessions}
                       tools={
-                        inProject && enteredProject ? (
-                          <div className="group/workspace flex shrink-0 items-center gap-0.5">
-                            {enteredProject.path && <StartWorkButton repoPath={enteredProject.path} />}
-                            {/* Home has no folder and no record to rename, theme, or delete. */}
-                            {!enteredProject.isNoProject && (
-                              <ProjectMenu
-                                isActive={enteredProject.id === activeProjectId}
-                                onExitScope={exitProjectScope}
-                                project={enteredProject}
-                                scoped
-                              />
-                            )}
-                            <div className="grid size-6 place-items-center">
-                              <Tip label={s.showProjects}>
-                                <Button
-                                  aria-label={s.showProjects}
-                                  className={HEADER_NAV_BTN}
-                                  onClick={event => {
-                                    event.stopPropagation()
-                                    exitProjectScope()
-                                  }}
-                                  size="icon-xs"
-                                  variant="ghost"
-                                >
-                                  <Codicon name="list-unordered" size="0.75rem" />
-                                </Button>
-                              </Tip>
-                            </div>
-                          </div>
-                        ) : (
-                          <>
-                            {/* The flat-list header "+" is a drag source too: drag
-                                it onto a chat zone's tab strip / edge / center to
-                                create the session exactly there. Project-overview
-                                mode drags its "+" (the "New project" button) with
-                                the project-drag variant: a drop opens the SAME
-                                project dialog, and the created project starts at
-                                the dropped spot. */}
-                            <SidebarSectionAddButton
-                              ariaLabel={agentsGrouped ? s.projects.newButton : s.nav['new-session']}
-                              onNewProjectDrag={
-                                agentsGrouped
-                                  ? {
-                                      // Dragging the "New project" + arms WHERE the
-                                      // project should start; the dialog flow consumes
-                                      // it on create (see $newProjectDropPlacement).
-                                      onArm: placement => $newProjectDropPlacement.set(placement)
-                                    }
-                                  : undefined
-                              }
-                              onNewSessionSplit={agentsGrouped ? undefined : onNewSessionSplit}
-                              onPlainClick={() => {
-                                if (agentsGrouped) {
-                                  openProjectCreate()
-                                } else {
-                                  onNewSessionInWorkspace(null)
-                                }
-                              }}
-                            />
-                            <SidebarViewOptions sources={poolSources} />
-                          </>
-                        )
+                        <>
+                          <SidebarViewOptions sources={poolSources} />
+                          <SessionsAddButton
+                            cwd={scopedProject ? projectNewSessionPath(scopedProject) : null}
+                            onNewSession={onNewSessionInWorkspace}
+                            onNewSessionSplit={onNewSessionSplit}
+                          />
+                        </>
                       }
                     />
                   }
-                  label={sessionsLabel}
+                  label={s.sessions}
                   liveSessions={inProject ? enteredProjectOverlaySessions : undefined}
                   manualOrderIds={agentOrderManual ? agentOrderIds : sortOrderIds}
                   onArchiveSession={onArchiveSession}
@@ -1449,11 +1393,8 @@ export function ChatSidebar({
                   onToggle={toggleSessions}
                   onTogglePin={pinSession}
                   onToggleUnread={toggleUnread}
-                  open={inProject || !sessionsCollapsed}
+                  open={!sessionsCollapsed}
                   pinned={false}
-                  projectBackRow={
-                    inProject ? <ProjectBackRow label={s.projects.back} onClick={exitProjectScope} /> : undefined
-                  }
                   projectContent={inProject ? enteredProjectContent : undefined}
                   projectOverview={projectOverview}
                   projectOverviewHidden={overviewHidden}
@@ -1468,11 +1409,7 @@ export function ChatSidebar({
                   showProfileTags={showAllProfiles && !ownerGrouped}
                   sortable={!showAllProfiles && agentSessions.length > 1}
                 />
-
-              </>
-            ) : (
-              <SidebarBlankState onNewProject={openProjectCreate} />
-            )}
+            </div>
           </div>
         </div>
 

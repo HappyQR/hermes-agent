@@ -1,27 +1,24 @@
 import { useStore } from '@nanostores/react'
 import type * as React from 'react'
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 
 import { type NewSessionSplitHandler, startNewSessionDrag } from '@/app/chat/new-session-drag'
 import { Codicon } from '@/components/ui/codicon'
-import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import type { HermesGitWorktree } from '@/global'
 import type { SessionInfo } from '@/hermes'
 import { useI18n } from '@/i18n'
 import { displayPath } from '@/lib/display-path'
-import { $dismissedWorktreeIds, $removedWorktreeIds, dismissWorktree, setWorkspaceNodeOpen } from '@/store/layout'
-import { notifyError } from '@/store/notifications'
-import { removeWorktreePath } from '@/store/projects'
+import { $dismissedWorktreeIds, $removedWorktreeIds, setWorkspaceNodeOpen } from '@/store/layout'
 
 import { SidebarRowStack } from '../chrome'
 
 import { PROJECT_SESSION_PAGE, useRevealedRows, useWorkspaceNodeOpen } from './model'
+import { useRemoveWorktree } from './use-remove-worktree'
 import { SidebarWorkspaceGroup } from './workspace-group'
 import {
   mergeRepoWorktreeGroups,
   overlayRepoLanes,
   type SidebarProjectTree,
-  type SidebarSessionGroup,
   type SidebarWorkspaceTree
 } from './workspace-groups'
 import { WorkspaceAddButton, WorkspaceHeader, WorkspaceShowMoreRow } from './workspace-header'
@@ -161,30 +158,7 @@ function RepoFlatSection({
       (removedWorktrees.includes(group.id) && group.path && discoveredWorktreePaths.has(group.path))
   )
 
-  // Removal asks how: actually `git worktree remove` it, or just hide the lane
-  // and leave the worktree on disk. A dirty worktree escalates to a force prompt
-  // instead of erroring (those changes are usually throwaway).
-  const [removeTarget, setRemoveTarget] = useState<null | SidebarSessionGroup>(null)
-  const [forceTarget, setForceTarget] = useState<null | SidebarSessionGroup>(null)
-
-  const removeViaGit = async (group: SidebarSessionGroup, force = false) => {
-    if (!repo.path || !group.path) {
-      return
-    }
-
-    try {
-      await removeWorktreePath(repo.path, group.path, { force })
-      dismissWorktree(group.id, { removed: true })
-    } catch (err) {
-      // git refuses a non-force remove on a dirty/locked worktree — offer force
-      // rather than dead-ending on an error toast.
-      if (!force && /force|modified|untracked|dirty|locked|contains/i.test(String((err as Error)?.message ?? ''))) {
-        setForceTarget(group)
-      } else {
-        notifyError(err, s.projects.removeWorktreeFailed)
-      }
-    }
-  }
+  const { dialogs: removeDialog, requestRemove } = useRemoveWorktree(repo.path)
 
   const body = (
     <>
@@ -196,60 +170,10 @@ function RepoFlatSection({
           // "new session here" and "remove worktree" have no single target.
           onNewSession={group.isKanban ? undefined : onNewSession}
           onNewSessionSplit={group.isKanban ? undefined : onNewSessionSplit}
-          onRemove={group.isMain || group.isKanban ? undefined : () => setRemoveTarget(group)}
+          onRemove={group.isMain || group.isKanban ? undefined : () => requestRemove(group)}
           renderRows={renderRows}
         />
       ))}
-    </>
-  )
-
-  // Both removal prompts share the shape (hide-from-sidebar + cancel + a
-  // destructive action); only the copy and the destructive handler differ.
-  const worktreeDialog = (
-    target: null | SidebarSessionGroup,
-    setTarget: (next: null | SidebarSessionGroup) => void,
-    description: string,
-    destructiveLabel: string,
-    onDestructive: (group: SidebarSessionGroup) => void
-  ) => (
-    <ConfirmDialog
-      confirmLabel={destructiveLabel}
-      description={description}
-      destructive
-      // removeViaGit finishes on its own: it either dismisses the lane, escalates
-      // to the force prompt, or toasts. Nothing left for the dialog to wait on.
-      dismissOnConfirm
-      onClose={() => setTarget(null)}
-      onConfirm={() => {
-        if (target) {
-          onDestructive(target)
-        }
-      }}
-      open={Boolean(target)}
-      secondaryAction={{
-        label: s.projects.removeFromSidebar,
-        onClick: () => target && dismissWorktree(target.id)
-      }}
-      title={`${s.projects.removeWorktree} "${target?.label ?? ''}"?`}
-    />
-  )
-
-  const removeDialog = (
-    <>
-      {worktreeDialog(
-        removeTarget,
-        setRemoveTarget,
-        s.projects.removeWorktreeConfirm,
-        s.projects.removeWorktree,
-        group => void removeViaGit(group)
-      )}
-      {worktreeDialog(
-        forceTarget,
-        setForceTarget,
-        s.projects.removeWorktreeDirty,
-        s.projects.forceRemove,
-        group => void removeViaGit(group, true)
-      )}
     </>
   )
 

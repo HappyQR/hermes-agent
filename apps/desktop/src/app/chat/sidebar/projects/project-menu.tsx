@@ -19,9 +19,12 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover'
+import { StudioIcon } from '@/components/ui/studio-icon'
 import { useI18n } from '@/i18n'
 import { isDesktopFsRemoteMode } from '@/lib/desktop-fs'
+import { useKeybindHint } from '@/lib/keybinds/use-keybind-hint'
 import { cn } from '@/lib/utils'
+import { openWorktreeDialog } from '@/store/coding-status'
 import { $panesFlipped, dismissAutoProject, restoreAutoProject } from '@/store/layout'
 import { notify } from '@/store/notifications'
 import {
@@ -47,15 +50,19 @@ function useProjectActions({
   project,
   isActive,
   scoped,
-  onExitScope
+  onExitScope,
+  onNewSession
 }: {
   project: SidebarProjectTree
   isActive: boolean
   scoped: boolean
   onExitScope?: () => void
+  onNewSession?: () => void
 }) {
   const { t } = useI18n()
   const p = t.sidebar.projects
+  const studio = t.studio.sidebar.projects
+  const newWorktreeHint = useKeybindHint('workspace.newWorktree') ?? undefined
   const target = { id: project.id, name: project.label }
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false)
 
@@ -87,6 +94,31 @@ function useProjectActions({
       onExitScope?.()
     }
   }
+
+  // Studio: start work here — a session in the project, or a new worktree.
+  const leadItems: ActionItemSpec[] = [
+    ...(onNewSession
+      ? [
+          {
+            iconNode: <StudioIcon name="compose" size={15} />,
+            key: 'new-session',
+            label: studio.newSessionHere,
+            onSelect: onNewSession
+          }
+        ]
+      : []),
+    ...(project.path && !project.isNoProject
+      ? [
+          {
+            hint: newWorktreeHint,
+            iconNode: <StudioIcon name="branch" size={15} />,
+            key: 'new-worktree',
+            label: studio.newWorktree,
+            onSelect: () => void openWorktreeDialog({ repoPath: project.path ?? undefined })
+          }
+        ]
+      : [])
+  ]
 
   // Rename / add folder / set active — explicit projects only (auto ones lack a
   // materialized record). Appearance is handled per-surface (popover vs submenu)
@@ -155,7 +187,7 @@ function useProjectActions({
     />
   )
 
-  return { confirmDialog, dangerItem, identityItems, pathItems }
+  return { confirmDialog, dangerItem, identityItems, leadItems, pathItems }
 }
 
 // Per-project actions. The kebab keeps its row-anchored Appearance popover; the
@@ -166,10 +198,16 @@ export function ProjectMenu({
   isActive,
   scoped = false,
   onExitScope,
-  anchorRef
+  onNewSession,
+  anchorRef,
+  triggerClassName
 }: {
   project: SidebarProjectTree
   isActive: boolean
+  /** Studio: lead the menu with "New session in this project". */
+  onNewSession?: () => void
+  /** Studio: the kebab's look where the row owns the hover reveal. */
+  triggerClassName?: string
   // True when rendered in the entered-project header, so removal can leave the
   // now-defunct scope.
   scoped?: boolean
@@ -187,9 +225,10 @@ export function ProjectMenu({
   // when the panes are flipped (sidebar on the right).
   const panesFlipped = useStore($panesFlipped)
 
-  const { confirmDialog, dangerItem, identityItems, pathItems } = useProjectActions({
+  const { confirmDialog, dangerItem, identityItems, leadItems, pathItems } = useProjectActions({
     isActive,
     onExitScope,
+    onNewSession,
     project,
     scoped
   })
@@ -219,16 +258,19 @@ export function ProjectMenu({
     <DropdownMenuTrigger asChild>
       <button
         aria-label={p.menu}
-        className={cn(
-          'grid size-4 shrink-0 place-items-center rounded-sm bg-transparent text-(--ui-text-quaternary) opacity-0 transition-opacity hover:bg-(--ui-control-hover-background) hover:text-foreground data-[state=open]:opacity-100',
-          // In the project header reveal on the whole header hover; in overview
-          // rows reveal on the row hover.
-          scoped ? 'group-hover/section:opacity-100' : 'group-hover/workspace:opacity-100'
-        )}
+        className={
+          triggerClassName ??
+          cn(
+            'grid size-4 shrink-0 place-items-center rounded-sm bg-transparent text-(--ui-text-quaternary) opacity-0 transition-opacity hover:bg-(--ui-control-hover-background) hover:text-foreground data-[state=open]:opacity-100',
+            // In the project header reveal on the whole header hover; in overview
+            // rows reveal on the row hover.
+            scoped ? 'group-hover/section:opacity-100' : 'group-hover/workspace:opacity-100'
+          )
+        }
         onClick={event => event.stopPropagation()}
         type="button"
       >
-        <Codicon name="kebab-vertical" size="0.75rem" />
+        {triggerClassName ? <StudioIcon name="more" size={14} /> : <Codicon name="kebab-vertical" size="0.75rem" />}
       </button>
     </DropdownMenuTrigger>
   )
@@ -251,6 +293,12 @@ export function ProjectMenu({
           onCloseAutoFocus={event => event.preventDefault()}
           sideOffset={6}
         >
+          {leadItems.length > 0 && (
+            <>
+              {leadItems.map(item => renderActionItem(DROPDOWN_KIT, item))}
+              <DropdownMenuSeparator />
+            </>
+          )}
           {project.isAuto ? (
             // Inherited (auto) repos can still be themed — the change adopts the
             // repo as a real project. Rename / add-folder / set-active stay out
@@ -299,6 +347,8 @@ interface ProjectContextMenuProps {
   isActive: boolean
   scoped?: boolean
   onExitScope?: () => void
+  /** Studio: lead the menu with "New session in this project". */
+  onNewSession?: () => void
   children: React.ReactNode
 }
 
@@ -310,14 +360,16 @@ export function ProjectContextMenu({
   isActive,
   scoped = false,
   onExitScope,
+  onNewSession,
   children
 }: ProjectContextMenuProps) {
   const { t } = useI18n()
   const p = t.sidebar.projects
 
-  const { confirmDialog, dangerItem, identityItems, pathItems } = useProjectActions({
+  const { confirmDialog, dangerItem, identityItems, leadItems, pathItems } = useProjectActions({
     isActive,
     onExitScope,
+    onNewSession,
     project,
     scoped
   })
@@ -330,6 +382,12 @@ export function ProjectContextMenu({
 
   const items = (kit: MenuKit) => (
     <>
+      {leadItems.length > 0 && (
+        <>
+          {leadItems.map(item => renderActionItem(kit, item))}
+          <kit.Separator />
+        </>
+      )}
       {identityItems.map(item => renderActionItem(kit, item))}
       {canTheme && (
         <kit.Sub>
