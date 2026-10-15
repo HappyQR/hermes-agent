@@ -34,6 +34,39 @@ export const enStudioChat: StudioChatTranslations = {
     placeholderBusy: combo => `Add context, or ${combo} to queue for the next turn`,
     placeholderHero: 'Give Hermes a task — / for commands, @ to reference files'
   },
+  empty: {
+    greeting: {
+      lateNight: 'Working late',
+      morning: 'Good morning',
+      noon: 'Good afternoon',
+      afternoon: 'Good afternoon',
+      evening: 'Good evening'
+    },
+    startersLabel: 'Quick starts',
+    starters: {
+      fixError: {
+        title: 'Fix an error',
+        description: 'Paste the error and I’ll find the cause and fix it',
+        prompt: 'Help me look at this error:'
+      },
+      organizeFolder: {
+        title: 'Tidy up a folder',
+        description: 'File by type and date, with a list of what moved',
+        prompt: 'Organize ~/Downloads and file the invoices separately.'
+      },
+      schedule: {
+        title: 'Do something every day',
+        description: 'Like a 9 am AI news digest sent to Telegram',
+        prompt: 'Every morning at 9, summarize AI news and send it to Telegram.'
+      },
+      prototype: {
+        title: 'Prototype a web page',
+        description: 'Describe the idea, get a page you can click',
+        prompt: 'Build a clickable web page prototype for:'
+      }
+    },
+    continueFrom: 'Continue from Claude Code or Codex'
+  },
   transcript: {
     delegateSpawned: count => `Spawned ${count} subagent${count === 1 ? '' : 's'}`,
     delegateRunning: count => `${count} running`,

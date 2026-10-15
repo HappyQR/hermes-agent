@@ -34,6 +34,39 @@ export const jaStudioChat: StudioChatTranslations = {
     placeholderBusy: combo => `コンテキストを追加するか、${combo} で次のターンに予約`,
     placeholderHero: 'Hermes にタスクを — / でコマンド、@ でファイルを参照'
   },
+  empty: {
+    greeting: {
+      lateNight: '夜遅くまでお疲れさまです',
+      morning: 'おはようございます',
+      noon: 'こんにちは',
+      afternoon: 'こんにちは',
+      evening: 'こんばんは'
+    },
+    startersLabel: 'クイックスタート',
+    starters: {
+      fixError: {
+        title: 'エラーを直す',
+        description: 'エラーメッセージを貼れば、原因を突き止めて修正します',
+        prompt: 'このエラーを見てください：'
+      },
+      organizeFolder: {
+        title: 'フォルダを整理する',
+        description: '種類と日付で分類し、一覧を作ります',
+        prompt: '~/Downloads を整理して、請求書は別にまとめてください。'
+      },
+      schedule: {
+        title: '毎日決まった時間に',
+        description: '例：朝 9 時に AI ニュースをまとめて Telegram に送る',
+        prompt: '毎朝 9 時に AI ニュースをまとめて Telegram に送ってください。'
+      },
+      prototype: {
+        title: 'Web ページを試作する',
+        description: 'アイデアを伝えれば、クリックできるページに',
+        prompt: '次の内容でクリックできる Web ページの試作を作ってください：'
+      }
+    },
+    continueFrom: 'Claude Code や Codex から続ける'
+  },
   transcript: {
     delegateSpawned: count => `${count} 個のサブエージェントを起動`,
     delegateRunning: count => `${count} 件実行中`,

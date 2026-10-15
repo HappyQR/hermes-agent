@@ -34,6 +34,39 @@ export const deStudioChat: StudioChatTranslations = {
     placeholderBusy: combo => `Kontext ergänzen oder ${combo}, um es für den nächsten Zug einzureihen`,
     placeholderHero: 'Gib Hermes eine Aufgabe — / für Befehle, @ für Dateien'
   },
+  empty: {
+    greeting: {
+      lateNight: 'Noch wach?',
+      morning: 'Guten Morgen',
+      noon: 'Guten Tag',
+      afternoon: 'Guten Tag',
+      evening: 'Guten Abend'
+    },
+    startersLabel: 'Schnellstart',
+    starters: {
+      fixError: {
+        title: 'Einen Fehler beheben',
+        description: 'Füge die Fehlermeldung ein – ich finde die Ursache und behebe sie',
+        prompt: 'Hilf mir mit diesem Fehler:'
+      },
+      organizeFolder: {
+        title: 'Einen Ordner aufräumen',
+        description: 'Nach Typ und Datum ablegen, mit einer Übersicht',
+        prompt: 'Räume ~/Downloads auf und lege Rechnungen separat ab.'
+      },
+      schedule: {
+        title: 'Täglich etwas erledigen',
+        description: 'Zum Beispiel um 9 Uhr KI-News für Telegram zusammenfassen',
+        prompt: 'Fasse jeden Morgen um 9 Uhr KI-News zusammen und schicke sie an Telegram.'
+      },
+      prototype: {
+        title: 'Webseiten-Prototyp bauen',
+        description: 'Beschreibe die Idee und erhalte eine klickbare Seite',
+        prompt: 'Baue einen klickbaren Webseiten-Prototyp für:'
+      }
+    },
+    continueFrom: 'Aus Claude Code oder Codex fortsetzen'
+  },
   transcript: {
     delegateSpawned: count => `${count} Subagent${count === 1 ? '' : 'en'} gestartet`,
     delegateRunning: count => `${count} laufen`,

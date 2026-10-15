@@ -422,7 +422,7 @@ describe('rejected API key recovery', () => {
     // Fixing the key changes the outcome, so Retry stays as the follow-up click.
     openMoreRecoveries()
     expect(screen.getByRole('button', { name: 'Retry' })).toBeTruthy()
-    fireEvent.keyDown(document.activeElement ?? document.body, { key: 'Escape' })
+    fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Escape' })
 
     // The key is the fix the card leads with.
     ;(await screen.findByRole('button', { name: 'Update API key' })).click()

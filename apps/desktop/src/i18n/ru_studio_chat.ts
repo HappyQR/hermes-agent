@@ -34,6 +34,39 @@ export const ruStudioChat: StudioChatTranslations = {
     placeholderBusy: combo => `Добавьте контекст или нажмите ${combo}, чтобы отправить в следующем ходе`,
     placeholderHero: 'Дайте Hermes задачу — / для команд, @ для ссылок на файлы'
   },
+  empty: {
+    greeting: {
+      lateNight: 'Уже поздно',
+      morning: 'Доброе утро',
+      noon: 'Добрый день',
+      afternoon: 'Добрый день',
+      evening: 'Добрый вечер'
+    },
+    startersLabel: 'Быстрый старт',
+    starters: {
+      fixError: {
+        title: 'Исправить ошибку',
+        description: 'Вставьте текст ошибки — я найду причину и исправлю',
+        prompt: 'Помоги разобраться с этой ошибкой:'
+      },
+      organizeFolder: {
+        title: 'Навести порядок в папке',
+        description: 'Разложу по типу и дате и составлю список',
+        prompt: 'Наведи порядок в ~/Downloads и сложи счета отдельно.'
+      },
+      schedule: {
+        title: 'Делать что-то каждый день',
+        description: 'Например, дайджест новостей ИИ в Telegram в 9 утра',
+        prompt: 'Каждое утро в 9 собирай новости ИИ и отправляй их в Telegram.'
+      },
+      prototype: {
+        title: 'Прототип веб-страницы',
+        description: 'Опишите идею — получите кликабельную страницу',
+        prompt: 'Сделай кликабельный прототип веб-страницы для:'
+      }
+    },
+    continueFrom: 'Продолжить из Claude Code или Codex'
+  },
   transcript: {
     delegateSpawned: count => `Запущено субагентов: ${count}`,
     delegateRunning: count => `выполняется: ${count}`,

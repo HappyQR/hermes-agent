@@ -34,6 +34,39 @@ export const arStudioChat: StudioChatTranslations = {
     placeholderBusy: combo => `أضف سياقًا، أو اضغط ${combo} لإرساله في الجولة التالية`,
     placeholderHero: 'امنح Hermes مهمة — / للأوامر، @ للإشارة إلى الملفات'
   },
+  empty: {
+    greeting: {
+      lateNight: 'الوقت متأخر',
+      morning: 'صباح الخير',
+      noon: 'طاب يومك',
+      afternoon: 'طاب يومك',
+      evening: 'مساء الخير'
+    },
+    startersLabel: 'بدايات سريعة',
+    starters: {
+      fixError: {
+        title: 'إصلاح خطأ',
+        description: 'الصق رسالة الخطأ وسأحدد السبب وأصلحه',
+        prompt: 'ساعدني في فهم هذا الخطأ:'
+      },
+      organizeFolder: {
+        title: 'تنظيم مجلد',
+        description: 'أرشفة حسب النوع والتاريخ مع قائمة بما نُقل',
+        prompt: 'نظّم ~/Downloads وضع الفواتير في مكان منفصل.'
+      },
+      schedule: {
+        title: 'مهمة يومية مجدولة',
+        description: 'مثل ملخص أخبار الذكاء الاصطناعي في 9 صباحًا إلى Telegram',
+        prompt: 'كل صباح في الساعة 9، لخّص أخبار الذكاء الاصطناعي وأرسلها إلى Telegram.'
+      },
+      prototype: {
+        title: 'نموذج أولي لصفحة ويب',
+        description: 'صف الفكرة واحصل على صفحة قابلة للنقر',
+        prompt: 'أنشئ نموذجًا أوليًا لصفحة ويب قابلة للنقر من أجل:'
+      }
+    },
+    continueFrom: 'المتابعة من Claude Code أو Codex'
+  },
   transcript: {
     delegateSpawned: count => `أنشأ ${count} من الوكلاء الفرعيين`,
     delegateRunning: count => `${count} قيد التشغيل`,

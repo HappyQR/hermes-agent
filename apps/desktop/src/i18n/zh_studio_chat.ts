@@ -34,6 +34,35 @@ export const zhStudioChat: StudioChatTranslations = {
     placeholderBusy: combo => `补充上下文，或按 ${combo} 排队到下一回合`,
     placeholderHero: '给 Hermes 一个任务，/ 使用命令，@ 引用文件'
   },
+  empty: {
+    greeting: {
+      lateNight: '夜深了',
+      morning: '上午好',
+      noon: '中午好',
+      afternoon: '下午好',
+      evening: '晚上好'
+    },
+    startersLabel: '快速开始',
+    starters: {
+      fixError: { title: '修一个报错', description: '贴上错误信息，我来定位原因并修复', prompt: '帮我看看这个报错：' },
+      organizeFolder: {
+        title: '整理一个文件夹',
+        description: '按类型和日期归档，生成清单',
+        prompt: '帮我整理 ~/Downloads，把发票单独归档。'
+      },
+      schedule: {
+        title: '每天定时做件事',
+        description: '比如早上 9 点汇总新闻发到 Telegram',
+        prompt: '每天早上 9 点汇总 AI 新闻发到 Telegram。'
+      },
+      prototype: {
+        title: '做一个网页原型',
+        description: '描述想法，直接得到可点的页面',
+        prompt: '帮我做一个可点击的网页原型：'
+      }
+    },
+    continueFrom: '从 Claude Code 或 Codex 继续'
+  },
   transcript: {
     delegateSpawned: count => `派生了 ${count} 个子代理`,
     delegateRunning: count => `${count} 个运行中`,

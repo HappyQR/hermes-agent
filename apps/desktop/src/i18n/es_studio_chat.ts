@@ -34,6 +34,39 @@ export const esStudioChat: StudioChatTranslations = {
     placeholderBusy: combo => `Añade contexto o pulsa ${combo} para enviarlo en el próximo turno`,
     placeholderHero: 'Dale una tarea a Hermes: / para comandos, @ para citar archivos'
   },
+  empty: {
+    greeting: {
+      lateNight: 'Es tarde',
+      morning: 'Buenos días',
+      noon: 'Buenas tardes',
+      afternoon: 'Buenas tardes',
+      evening: 'Buenas noches'
+    },
+    startersLabel: 'Para empezar',
+    starters: {
+      fixError: {
+        title: 'Corregir un error',
+        description: 'Pega el mensaje de error y encontraré la causa para corregirlo',
+        prompt: 'Ayúdame con este error:'
+      },
+      organizeFolder: {
+        title: 'Ordenar una carpeta',
+        description: 'Archivar por tipo y fecha, con un listado',
+        prompt: 'Ordena ~/Downloads y archiva las facturas aparte.'
+      },
+      schedule: {
+        title: 'Hacer algo cada día',
+        description: 'Por ejemplo, un resumen de noticias de IA a las 9 en Telegram',
+        prompt: 'Cada mañana a las 9, resume las noticias de IA y envíalas a Telegram.'
+      },
+      prototype: {
+        title: 'Prototipar una página web',
+        description: 'Describe la idea y obtén una página navegable',
+        prompt: 'Crea un prototipo de página web navegable para:'
+      }
+    },
+    continueFrom: 'Continuar desde Claude Code o Codex'
+  },
   transcript: {
     delegateSpawned: count => `${count} subagente${count === 1 ? '' : 's'} lanzado${count === 1 ? '' : 's'}`,
     delegateRunning: count => `${count} en curso`,

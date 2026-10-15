@@ -2,6 +2,7 @@
 export interface StudioChatTranslations {
   contextUsage: string
   composer: StudioChatComposerTranslations
+  empty: StudioChatEmptyTranslations
   transcript: StudioChatTranscriptTranslations
   tray: StudioChatTrayTranslations
 }
@@ -109,4 +110,21 @@ export interface StudioChatTrayTranslations {
     openPullRequest: (number: number) => string
     copyWorktreePath: string
   }
+}
+
+/** The empty chat: greeting, starters, import link. */
+export interface StudioChatEmptyTranslations {
+  greeting: Record<'afternoon' | 'evening' | 'lateNight' | 'morning' | 'noon', string>
+  /** aria-label of the starter cards' group. */
+  startersLabel: string
+  starters: Record<
+    'fixError' | 'organizeFolder' | 'prototype' | 'schedule',
+    {
+      description: string
+      /** Drafted into the composer when the card is picked (not sent). */
+      prompt: string
+      title: string
+    }
+  >
+  continueFrom: string
 }

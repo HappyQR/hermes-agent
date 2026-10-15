@@ -105,11 +105,30 @@ export default {
     await escape(page, sleep)
   },
 
-  // The empty state (greeting, hero composer, starters).
+  // The empty state (greeting, hero composer, starters), then a starter drafted.
   async empty(page, { newChat, shot, sleep }) {
     await newChat(page)
-    await sleep(800)
+    await page.locator('.studio-empty-hello').first().waitFor({ state: 'visible', timeout: 15_000 }).catch(() => {})
+    await sleep(900)
     await shot(page, 'empty')
+    const starter = page.locator('.studio-empty-starters button').first()
+    if (await starter.count()) {
+      await starter.click()
+      await sleep(500)
+      await shot(page, 'empty-starter')
+      await page.keyboard.press('Meta+A')
+      await page.keyboard.press('Delete')
+    }
+  },
+
+  // Scrolled up: the jump-to-latest pill and the timeline rail.
+  async jump(page, { openSession, shot, sleep }) {
+    await openSession(page, '分组重构')
+    await page.locator('[data-slot="aui_thread-viewport"]').first().evaluate(el => {
+      el.scrollTop = 0
+    })
+    await sleep(800)
+    await shot(page, 'jump')
   },
 
   // The busy composer with a draft: primary + "more send options" menu.

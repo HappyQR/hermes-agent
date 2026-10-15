@@ -34,6 +34,39 @@ export const zhHantStudioChat: StudioChatTranslations = {
     placeholderBusy: combo => `補充上下文，或按 ${combo} 排入下一回合`,
     placeholderHero: '交給 Hermes 一個任務，/ 使用指令，@ 引用檔案'
   },
+  empty: {
+    greeting: {
+      lateNight: '夜深了',
+      morning: '早安',
+      noon: '午安',
+      afternoon: '午安',
+      evening: '晚上好'
+    },
+    startersLabel: '快速開始',
+    starters: {
+      fixError: {
+        title: '修正一個錯誤',
+        description: '貼上錯誤訊息，我來找出原因並修正',
+        prompt: '幫我看看這個錯誤：'
+      },
+      organizeFolder: {
+        title: '整理一個資料夾',
+        description: '依類型和日期歸檔，產生清單',
+        prompt: '幫我整理 ~/Downloads，把發票另外歸檔。'
+      },
+      schedule: {
+        title: '每天定時做件事',
+        description: '例如早上 9 點彙整新聞發到 Telegram',
+        prompt: '每天早上 9 點彙整 AI 新聞發到 Telegram。'
+      },
+      prototype: {
+        title: '做一個網頁原型',
+        description: '描述想法，直接得到可點擊的頁面',
+        prompt: '幫我做一個可點擊的網頁原型：'
+      }
+    },
+    continueFrom: '從 Claude Code 或 Codex 繼續'
+  },
   transcript: {
     delegateSpawned: count => `衍生了 ${count} 個子代理`,
     delegateRunning: count => `${count} 個執行中`,
