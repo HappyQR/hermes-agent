@@ -38,6 +38,7 @@ export const arStudioOverlays: StudioOverlaysTranslations = {
     dayDetail: (day, input, output) => `${day} · الإدخال ${input} · الإخراج ${output}`,
     searchSessions: 'ابحث في كل الجلسات بالعنوان أو المعرّف',
     tokens: count => `${count} رمز`,
+    archiveSession: 'أرشفة الجلسة',
     run: 'تشغيل',
     manageMemory: 'إدارة…'
   },

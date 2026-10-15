@@ -38,6 +38,7 @@ export const jaStudioOverlays: StudioOverlaysTranslations = {
     dayDetail: (day, input, output) => `${day} · 入力 ${input} · 出力 ${output}`,
     searchSessions: 'タイトルまたは ID ですべてのセッションを検索',
     tokens: count => `${count} トークン`,
+    archiveSession: 'セッションをアーカイブ',
     run: '実行',
     manageMemory: '管理…'
   },

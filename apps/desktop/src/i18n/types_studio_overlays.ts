@@ -38,6 +38,7 @@ export interface StudioOverlaysTranslations {
     dayDetail: (day: string, input: string, output: string) => string
     searchSessions: string
     tokens: (count: string) => string
+    archiveSession: string
     run: string
     manageMemory: string
   }

@@ -38,6 +38,7 @@ export const esStudioOverlays: StudioOverlaysTranslations = {
     dayDetail: (day, input, output) => `${day} · entrada ${input} · salida ${output}`,
     searchSessions: 'Buscar todas las sesiones por título o ID',
     tokens: count => `${count} tokens`,
+    archiveSession: 'Archivar sesión',
     run: 'Ejecutar',
     manageMemory: 'Gestionar…'
   },

@@ -38,6 +38,7 @@ export const ruStudioOverlays: StudioOverlaysTranslations = {
     dayDetail: (day, input, output) => `${day} · ввод ${input} · вывод ${output}`,
     searchSessions: 'Поиск по всем сеансам по названию или ID',
     tokens: count => `${count} токенов`,
+    archiveSession: 'Архивировать сеанс',
     run: 'Запустить',
     manageMemory: 'Управлять…'
   },

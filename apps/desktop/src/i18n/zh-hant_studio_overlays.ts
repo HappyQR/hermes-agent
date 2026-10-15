@@ -38,6 +38,7 @@ export const zhHantStudioOverlays: StudioOverlaysTranslations = {
     dayDetail: (day, input, output) => `${day} · 輸入 ${input} · 輸出 ${output}`,
     searchSessions: '依標題或 ID 搜尋所有工作階段',
     tokens: count => `${count} 詞元`,
+    archiveSession: '封存工作階段',
     run: '執行',
     manageMemory: '管理…'
   },

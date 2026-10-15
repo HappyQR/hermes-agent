@@ -38,6 +38,7 @@ export const zhStudioOverlays: StudioOverlaysTranslations = {
     dayDetail: (day, input, output) => `${day} · 输入 ${input} · 输出 ${output}`,
     searchSessions: '按标题或 ID 搜索全部会话',
     tokens: count => `${count} 词元`,
+    archiveSession: '归档会话',
     run: '运行',
     manageMemory: '管理…'
   },
