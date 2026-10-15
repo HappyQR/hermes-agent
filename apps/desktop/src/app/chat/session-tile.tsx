@@ -83,7 +83,7 @@ import { SessionStatusDot } from './session-status-dot'
 import { useSessionTileActions } from './session-tile-actions'
 import { tileOwnerRoute } from './session-tile-owner'
 import { reasoningEffortPending, type SessionView, SessionViewProvider } from './session-view'
-import { SessionContextMenu } from './sidebar/session-actions-menu'
+import { SessionActionsMenu, SessionContextMenu } from './sidebar/session-actions-menu'
 import { lastVisibleMessageIsUser } from './thread-loading'
 
 import { ChatView } from '.'
@@ -912,6 +912,31 @@ export function SessionTabMenu({
         {children}
       </SessionContextMenu>
     </span>
+  )
+}
+
+/** Studio: the toolbar title's dropdown — a tab's session verbs (pin, branch,
+ *  rename, archive, delete, …) for the focused chat, opened by a click. */
+export function SessionTitleMenu({ children, storedSessionId }: { children: React.ReactNode; storedSessionId: string }) {
+  const { pinId, profile, renameable, title } = useTileMenuRow(storedSessionId)
+  const pinned = useStore($pinnedSessionIds).includes(pinId)
+
+  return (
+    <SessionActionsMenu
+      align="start"
+      onArchive={() => void sessionTileDelegate()?.archiveSession(storedSessionId)}
+      onBranch={() => void sessionTileDelegate()?.branchSession(storedSessionId)}
+      onDelete={() => void sessionTileDelegate()?.deleteSession(storedSessionId)}
+      onPin={() => (pinned ? unpinSession(pinId) : pinSession(pinId))}
+      pinned={pinned}
+      profile={profile}
+      renameable={renameable}
+      sessionId={storedSessionId}
+      surface="tab"
+      title={title}
+    >
+      {children}
+    </SessionActionsMenu>
   )
 }
 

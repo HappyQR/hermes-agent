@@ -81,4 +81,6 @@ export interface WiringApi {
   chatRoutes: ReactNode
   terminal: ReactNode
   statusbar: ReactNode
+  /** Studio: the workspace toolbar (rendered in the workspace zone's titlebar band). */
+  toolbar: ReactNode
 }
