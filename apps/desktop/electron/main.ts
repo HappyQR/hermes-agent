@@ -28,7 +28,6 @@ import {
   type IpcMainEvent,
   type IpcMainInvokeEvent,
   Menu,
-  type MenuItemConstructorOptions,
   nativeTheme,
   powerMonitor,
   powerSaveBlocker,
@@ -62,6 +61,8 @@ import {
   packagedReleaseChannel
 } from './app-version'
 import { runAppInstallerChecker } from './appinstaller-checker'
+import { createApplicationMenuHost } from './application-menu-host'
+import type { MainMenuCommand } from './application-menu-model'
 import { installApplicationMenuAfterFirstWindow } from './application-menu-startup'
 import { stopBackendChild as stopBackendChildImpl, waitForBackendExit } from './backend-child'
 import {
@@ -655,7 +656,6 @@ import {
 import { registerWindowControlIpc, windowControlState } from './window-controls'
 import { revealAction, shouldFocusToTakeKeyboard } from './window-focus-policy'
 import { isAppSized, registerWindowSizing } from './window-growth'
-import { windowMenuTemplate } from './window-menu'
 import { createWindowOpenHandler } from './window-open-policy'
 import { installWindowRendererLifecycle } from './window-renderer-lifecycle'
 import { wireWindowReveal } from './window-reveal'
@@ -6484,142 +6484,50 @@ function sendWindowStateChanged(nextIsFullscreen?: boolean, target = mainWindow)
   webContents.send('hermes:window-state-changed', state)
 }
 
+function stepMainWindowZoom(step: number) {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    setAndPersistZoomLevel(mainWindow, mainWindow.webContents.getZoomLevel() + step)
+  }
+}
+
+// The application menu's main-side commands: what the built-in English menu
+// runs before any renderer has published, plus the items only main can do.
+// Close and Reload stay click-only — ⌘W/⌘R ride before-input-event
+// (installPreviewShortcut) so a focused surface can claim them.
+const MAIN_MENU_COMMAND_HANDLERS: Record<MainMenuCommand, (window: Electron.BaseWindow | undefined) => void> = {
+  'main.about': () => showAboutPanelFresh(),
+  'main.checkForUpdates': () => sendOpenUpdatesRequested(),
+  'main.newWindow': () => void createInstanceWindow(),
+  'main.openFolder': () => sendOpenFolderRequested(),
+  'main.closeTab': () => sendClosePreviewRequested(),
+  'main.reload': () => sendPreviewNavCommand('reload'),
+  'main.toggleDevTools': window => toggleDevTools(window || mainWindow),
+  'main.actualSize': () => setAndPersistZoomLevel(mainWindow, DEFAULT_ZOOM_LEVEL),
+  'main.zoomIn': () => stepMainWindowZoom(ZOOM_STEP),
+  'main.zoomOut': () => stepMainWindowZoom(-ZOOM_STEP),
+  'main.quickAsk': () => toggleQuickEntryWindow()
+}
+
+// macOS application menu (application-menu-host.ts): the focused window's
+// localized model once its renderer publishes one, the built-in English menu
+// before that; rebuilt only when the shown model changes.
+const applicationMenuHost = createApplicationMenuHost({
+  isMac: IS_MAC,
+  appName: APP_NAME,
+  buildMenu: template => Menu.buildFromTemplate(template),
+  setApplicationMenu: menu => Menu.setApplicationMenu(menu),
+  focusedWebContents: () => electronWebContents.getFocusedWebContents(),
+  focusedWindowContents: () => BrowserWindow.getFocusedWindow()?.webContents ?? null,
+  mainContents: () => (mainWindow && !mainWindow.isDestroyed() ? mainWindow.webContents : null),
+  runMainCommand: (id, window) => MAIN_MENU_COMMAND_HANDLERS[id](window),
+  // Quick Ask follows the Quick Entry switch in Settings.
+  isMainCommandEnabled: id => id !== 'main.quickAsk' || readQuickEntrySettings().enabled
+})
+
+applicationMenuHost.listen(ipcMain, app)
+
 function buildApplicationMenu() {
-  const template: MenuItemConstructorOptions[] = []
-
-  const checkForUpdatesItem = {
-    label: 'Check for Updates…',
-    click: () => sendOpenUpdatesRequested()
-  }
-
-  if (IS_MAC) {
-    template.push({
-      label: APP_NAME,
-      submenu: [
-        { label: `About ${APP_NAME}`, click: () => showAboutPanelFresh() },
-        checkForUpdatesItem,
-        { type: 'separator' },
-        { role: 'services' },
-        { type: 'separator' },
-        { role: 'hide' },
-        { role: 'hideOthers' },
-        { role: 'unhide' },
-        { type: 'separator' },
-        { role: 'quit' }
-      ]
-    })
-  }
-
-  template.push({
-    label: 'File',
-    submenu: [
-      // No accelerator: ⌘⇧N is a rebindable renderer keybind (session.newWindow);
-      // a menu accelerator would fight the rebind panel and (on macOS) be
-      // swallowed before the renderer sees it. Here purely for discoverability.
-      { click: () => createInstanceWindow(), label: 'New Window' },
-      // Same no-accelerator rationale: ⌘O is the rebindable renderer keybind
-      // (workspace.openFolder). Clicking runs the same open-folder-as-project
-      // flow through the renderer.
-      { click: () => sendOpenFolderRequested(), label: 'Open Folder…' },
-      { type: 'separator' },
-      IS_MAC
-        ? {
-            // NO accelerator: on macOS a registered ⌘W is consumed by the OS
-            // menu before the web contents ever sees it (and registerAccelerator
-            // false is a no-op on mac — electron#18295). Leaving it off lets the
-            // `before-input-event` handler below intercept ⌘W and route it to the
-            // renderer's close-active-tab. Clicking the item still closes the tab
-            // (or window) via the same request.
-            click: () => sendClosePreviewRequested(),
-            label: 'Close'
-          }
-        : { role: 'quit' }
-    ]
-  })
-  template.push({
-    label: 'Edit',
-    submenu: [
-      { role: 'undo' },
-      { role: 'redo' },
-      { type: 'separator' },
-      { role: 'cut' },
-      { role: 'copy' },
-      { role: 'paste' },
-      // ⌘⇧V is only wired up by this item existing: an accelerator with no menu
-      // entry is never translated into an editor command, so the chord was a
-      // no-op in every input in the app. The composer inserts plain text on
-      // every paste anyway, so this is the same result as ⌘V there — it's the
-      // terminal, preview, and other editable surfaces that need the strip.
-      { role: 'pasteAndMatchStyle' },
-      { role: 'delete' },
-      { role: 'selectAll' },
-      ...(IS_MAC
-        ? ([
-            { type: 'separator' },
-            {
-              label: 'Substitutions',
-              submenu: [{ role: 'showSubstitutions' }, { type: 'separator' }, { role: 'toggleTextReplacement' }]
-            }
-          ] satisfies MenuItemConstructorOptions[])
-        : [])
-    ]
-  })
-  template.push({
-    label: 'View',
-    submenu: [
-      // Not `role: 'reload'`: that hard-reloads the RENDERER (every pane, the
-      // whole shell) and a focused in-app browser needs ⌘R to mean "reload
-      // this page", the way it does in every other browser. ⇧⌘R
-      // (`forceReload`) below stays the unconditional escape hatch.
-      //
-      // No accelerator: ⌘R is claimed in `installPreviewShortcut`, which works
-      // on every platform (this menu exists only on macOS). Declaring it here
-      // too would fire the item and the input hook for one keypress.
-      { click: () => sendPreviewNavCommand('reload'), label: 'Reload' },
-      { role: 'forceReload' },
-      {
-        label: 'Toggle Developer Tools',
-        accelerator: process.platform === 'darwin' ? 'Alt+Cmd+I' : 'Ctrl+Shift+I',
-        click: (_menuItem, browserWindow) => toggleDevTools(browserWindow || mainWindow)
-      },
-      { type: 'separator' },
-      {
-        label: 'Actual Size',
-        accelerator: 'CommandOrControl+0',
-        click: () => {
-          setAndPersistZoomLevel(mainWindow, DEFAULT_ZOOM_LEVEL)
-        }
-      },
-      {
-        label: 'Zoom In',
-        accelerator: 'CommandOrControl+Plus',
-        click: () => {
-          if (mainWindow && !mainWindow.isDestroyed()) {
-            setAndPersistZoomLevel(mainWindow, mainWindow.webContents.getZoomLevel() + ZOOM_STEP)
-          }
-        }
-      },
-      {
-        label: 'Zoom Out',
-        accelerator: 'CommandOrControl+-',
-        click: () => {
-          if (mainWindow && !mainWindow.isDestroyed()) {
-            setAndPersistZoomLevel(mainWindow, mainWindow.webContents.getZoomLevel() - ZOOM_STEP)
-          }
-        }
-      },
-      { type: 'separator' },
-      { role: 'togglefullscreen' }
-    ]
-  })
-  template.push(windowMenuTemplate(IS_MAC))
-  template.push({
-    label: 'Help',
-    role: 'help',
-    submenu: [checkForUpdatesItem]
-  })
-
-  return Menu.buildFromTemplate(template)
+  return applicationMenuHost.buildMenu()
 }
 
 function toggleDevTools(window) {
@@ -13867,6 +13775,9 @@ function applyQuickEntrySettings(settings) {
   } else if (state.error === 'invalid') {
     rememberLog(`[quick-entry] shortcut ${state.shortcut} is not a valid accelerator`)
   }
+
+  // Window › Quick Ask follows the switch.
+  applicationMenuHost.refresh()
 
   return { ...state, enabled: settings.enabled }
 }
