@@ -94,12 +94,10 @@ type UpdateNotesView = ReturnType<typeof useUpdateNotes>
 /** The dialog's change list: fetched notes when they exist, else the commit changelog; plus the onward link. */
 function UpdateChangeList({
   commitGroups,
-  copyText,
   notes: fetched,
   rollback
 }: {
   commitGroups: readonly CommitGroup[]
-  copyText?: () => string
   notes: UpdateNotesView
   rollback: boolean
 }) {
@@ -119,27 +117,14 @@ function UpdateChangeList({
   return (
     <div className="grid gap-3">
       {pending && <Loader className="mx-auto size-5" label={u.checking} type="lemniscate-bloom" />}
-      {shown.map((group, index) => (
+      {shown.map(group => (
         <div key={group.id}>
-          <div className="flex items-center justify-between gap-2">
-            <p className="text-[0.625rem] font-semibold text-muted-foreground">{group.label}</p>
-            {index === 0 && copyText && (
-              <CopyButton
-                appearance="icon"
-                buttonSize="icon-xs"
-                className="-my-1 size-5 shrink-0 text-muted-foreground/70 hover:text-foreground"
-                iconClassName="size-3"
-                label={u.copyFullLog}
-                side="left"
-                text={copyText}
-              />
-            )}
-          </div>
-          <ul className="mt-1.5 grid gap-1.5 text-xs text-foreground">
+          <p className="text-[0.8125rem] font-semibold text-(--ui-text-primary)">{group.label}</p>
+          <ul className="mt-1 grid gap-1 text-[0.8125rem] text-(--ui-text-primary)">
             {group.items.map(item => (
               <li className="flex items-start gap-2" key={item}>
-                <span aria-hidden className="mt-1.5 inline-block size-1 shrink-0 rounded-full bg-primary" />
-                <span className="line-clamp-2 leading-snug" title={item}>
+                <span aria-hidden className="mt-2 inline-block size-1 shrink-0 rounded-full bg-(--ui-text-tertiary)" />
+                <span className="line-clamp-2 leading-[1.6]" title={item}>
                   {item}
                 </span>
               </li>
@@ -230,7 +215,7 @@ export function UpdatesOverlay() {
           the close button and trigger its tooltip immediately on open. */}
       <DialogContent
         bodyClassName="overflow-hidden p-0 gap-0"
-        className="max-w-sm"
+        className="max-w-[min(35rem,calc(100vw-2.5rem))]"
         onOpenAutoFocus={preventCloseButtonAutoFocus}
         showCloseButton={phase !== 'applying'}
       >
@@ -396,6 +381,43 @@ function IdleView({
     )
   }
 
+  return (
+    <UpdateAvailableView
+      behind={behind}
+      commits={commits}
+      notes={notes}
+      onInstall={onInstall}
+      onLater={onLater}
+      status={status}
+      target={target}
+      version={version}
+    />
+  )
+}
+
+/** The install pitch: what's new, the current version · channel, Update now / Maybe later. */
+function UpdateAvailableView({
+  behind,
+  commits,
+  notes,
+  onInstall,
+  onLater,
+  status,
+  target,
+  version
+}: {
+  behind: number
+  commits: readonly DesktopUpdateCommit[]
+  notes: UpdateNotesView
+  onInstall: () => void
+  onLater: () => void
+  status: DesktopUpdateStatus
+  target: UpdateTarget
+  version: DesktopVersionInfo | null
+}) {
+  const { t } = useI18n()
+  const u = t.updates
+
   const groups = buildCommitChangelog(commits, {
     labels: {
       new: u.changeLogNew,
@@ -433,32 +455,41 @@ function IdleView({
 
   const handleCopyFullLog = () => formatFullChangelogText(commits, behind, status.branch)
 
-  return (
-    <div className="grid gap-5 px-6 pb-6 pt-7 pr-8">
-      <div className="flex flex-col items-center gap-3 text-center">
-        <BrandMark className="size-16" />
+  const currentVersion = status.currentVersion ?? version?.appVersion
+  const channelName = status.branch ? channelCopy.branch(status.branch) : status.channel === 'stable' ? channelCopy.stable : channelCopy.main
 
-        <DialogTitle className="text-center text-xl">{title}</DialogTitle>
-        <DialogDescription className="text-center text-sm">{body}</DialogDescription>
+  return (
+    <div className="grid gap-4 px-6 pb-5 pt-6">
+      <div className="flex flex-col items-center gap-1.5 text-center">
+        <BrandMark className="size-14" />
+
+        <DialogTitle className="mt-1.5 text-center text-base font-bold">{title}</DialogTitle>
+        {currentVersion && (
+          <p className="text-[0.78125rem] text-(--ui-text-tertiary)">
+            {t.studio.overlays.updates.currentVersion(currentVersion, channelName)}
+          </p>
+        )}
+        <DialogDescription className="text-center text-[0.8125rem] leading-normal">{body}</DialogDescription>
       </div>
 
-      <UpdateChangeList
-        commitGroups={groups}
-        copyText={commits.length > 0 ? handleCopyFullLog : undefined}
-        notes={notes}
-        rollback={Boolean(rollbackTag)}
-      />
+      <div className="max-h-64 overflow-y-auto rounded-[0.75rem] bg-(--ui-bg-editor) px-3.5 py-3 shadow-[0_0_0_0.5px_var(--ui-line-2)]">
+        <UpdateChangeList commitGroups={groups} notes={notes} rollback={Boolean(rollbackTag)} />
+      </div>
 
-      <div className="grid gap-2">
-        <Button className="font-semibold" onClick={onInstall} size="lg">
-          {rollbackTag ? channelCopy.rollbackAction(rollbackTag) : u.updateNow}
-        </Button>
-        <Button className="font-medium" onClick={onLater} type="button" variant="text">
+      {remaining > 0 && <p className="text-center text-xs text-(--ui-text-tertiary)">{u.moreChanges(remaining)}</p>}
+
+      <div className="flex items-center gap-2">
+        {commits.length > 0 && (
+          <CopyButton buttonVariant="ghost" label={u.copyFullLog} showLabel text={handleCopyFullLog} />
+        )}
+        <span className="flex-1" />
+        <Button onClick={onLater} size="sm" type="button" variant="secondary">
           {u.maybeLater}
         </Button>
+        <Button onClick={onInstall} size="sm">
+          {rollbackTag ? channelCopy.rollbackAction(rollbackTag) : u.updateNow}
+        </Button>
       </div>
-
-      {remaining > 0 && <p className="text-center text-xs text-muted-foreground">{u.moreChanges(remaining)}</p>}
 
       <SyncStatusCard />
     </div>
@@ -631,7 +662,7 @@ function ApplyingView({
       />
 
       {recentLog.length > 1 ? (
-        <div className="max-h-24 overflow-hidden rounded-md border border-border/70 bg-muted/35 px-3 py-2 text-left font-mono text-[11px] leading-4 text-muted-foreground">
+        <div className="max-h-24 overflow-hidden rounded-[0.5rem] bg-(--ui-code-background) px-3 py-2 text-left font-mono text-[11px] leading-4 text-(--ui-text-tertiary) shadow-[0_0_0_0.5px_var(--ui-line-2)]">
           {recentLog.map((entry, index) => (
             <div className="truncate" key={`${entry.at}-${index}`}>
               {entry.message}
