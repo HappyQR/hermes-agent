@@ -11,7 +11,6 @@ import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { SearchField } from '@/components/ui/search-field'
 import { useContributions } from '@/contrib/react/use-contributions'
 import { useI18n } from '@/i18n'
-import { KeyboardIcon } from '@/lib/icons-studio-overlays'
 import { allKeybindActions, KEYBIND_CATEGORIES, KEYBIND_READONLY, KEYBINDS_AREA } from '@/lib/keybinds/actions'
 import { formatCombo } from '@/lib/keybinds/combo'
 import { $bindings } from '@/store/keybinds'
@@ -77,7 +76,7 @@ function KeybindsSheetContent() {
     >
       <SheetHeader
         closeLabel={s.close}
-        icon={KeyboardIcon}
+        glyph="keyboard"
         inDialog
         onClose={close}
         right={

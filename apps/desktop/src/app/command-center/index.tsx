@@ -11,7 +11,6 @@ import type { SessionInfo } from '@/hermes'
 import { useI18n } from '@/i18n'
 import { sessionTitle } from '@/lib/chat-runtime'
 import { triggerHaptic } from '@/lib/haptics'
-import { Pulse } from '@/lib/icons-studio-overlays'
 import { useStoreSelector } from '@/lib/use-session-slice'
 import { $pinnedSessionIds } from '@/store/layout'
 import { $sessionProfilesTruncated, $sessions } from '@/store/session'
@@ -156,7 +155,7 @@ export function CommandCenterView({
     >
       <SheetHeader
         closeLabel={sys.close}
-        icon={Pulse}
+        glyph="pulse"
         onClose={close}
         right={
           <SegmentedControl

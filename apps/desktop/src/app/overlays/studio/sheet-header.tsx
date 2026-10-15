@@ -2,8 +2,8 @@ import type { ReactNode } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { DialogDescription, DialogTitle } from '@/components/ui/dialog'
+import { StudioIcon, type StudioIconName } from '@/components/ui/studio-icon'
 import type { IconComponent } from '@/lib/icons'
-import { X } from '@/lib/icons'
 import { cn } from '@/lib/utils'
 
 import { IconTile, type TileTone } from './icon-tile'
@@ -12,6 +12,8 @@ interface SheetHeaderProps {
   className?: string
   /** Accessible name of the close button (the X carries no tooltip). */
   closeLabel?: string
+  /** Prototype glyph for the tile (preferred over `icon`). */
+  glyph?: StudioIconName
   icon?: IconComponent
   /** Render the title/subtitle as Radix Dialog title/description (Dialog-hosted sheets). */
   inDialog?: boolean
@@ -32,6 +34,7 @@ interface SheetHeaderProps {
 export function SheetHeader({
   className,
   closeLabel,
+  glyph,
   icon,
   inDialog = false,
   lead,
@@ -46,7 +49,7 @@ export function SheetHeader({
 
   return (
     <div className={cn('flex shrink-0 items-center gap-2.5 px-[1.125rem] pb-2.5 pt-4', className)} data-slot="sheet-header">
-      {lead ?? (icon ? <IconTile icon={icon} size={30} tone={tone} /> : null)}
+      {lead ?? (glyph || icon ? <IconTile glyph={glyph} icon={icon} size={30} tone={tone} /> : null)}
       <div className="min-w-0 flex-1">
         {inDialog ? (
           <DialogTitle className={titleClass}>{title}</DialogTitle>
@@ -71,7 +74,7 @@ export function SheetHeader({
           type="button"
           variant="ghost"
         >
-          <X className="size-3.5" />
+          <StudioIcon name="x" size={14} />
         </Button>
       ) : null}
     </div>
