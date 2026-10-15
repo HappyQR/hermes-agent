@@ -129,6 +129,7 @@ import {
 } from './section-states'
 import { buildSessionByAnyId, resolvePinnedSessions } from './session-index'
 import { SidebarSessionsSection } from './sessions-section'
+import { SidebarContributedSections } from './studio/contributed-sections'
 import { flatListGrouping } from './studio/flat-groupings'
 import { SidebarNav } from './studio/nav'
 import { projectNewSessionPath } from './studio/project-row'
@@ -1408,6 +1409,8 @@ export function ChatSidebar({
                   sortable={!showAllProfiles && agentSessions.length > 1}
                 />
             </div>
+
+            <SidebarContributedSections />
           </div>
         </div>
 
