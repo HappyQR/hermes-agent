@@ -1,7 +1,8 @@
 import { compactNumber } from '@hermes/shared'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { FormGroup, FormRow, FormSection } from '@/app/overlays/studio/form-group'
+import { FormGroup, FormSection } from '@/app/overlays/studio/form-group'
+import { SimpleRow } from '@/app/overlays/studio/simple-row'
 import { CARD_SURFACE_CLASS, StatCard } from '@/app/overlays/studio/stat-card'
 import { PageLoader } from '@/components/page-loader'
 import { Button } from '@/components/ui/button'
@@ -71,7 +72,7 @@ export function UsagePanel() {
   useRefreshHotkey(() => void refresh(period))
 
   const money = useMemo(
-    () => new Intl.NumberFormat(locale, { currency: 'USD', maximumFractionDigits: 2, style: 'currency' }),
+    () => new Intl.NumberFormat(locale, { currency: 'USD', currencyDisplay: 'narrowSymbol', maximumFractionDigits: 2, style: 'currency' }),
     [locale]
   )
 
@@ -241,15 +242,16 @@ function UsageList({
     <FormSection title={title}>
       <FormGroup>
         {rows.length === 0 ? (
-          <FormRow title={<span className="text-(--ui-text-tertiary)">{emptyLabel}</span>} />
+          <SimpleRow className="min-h-11" title={<span className="text-(--ui-text-tertiary)">{emptyLabel}</span>} />
         ) : (
           rows.map(row => (
-            <FormRow
+            <SimpleRow
+              className="min-h-11"
               key={row.key}
-              title={<span className={cn('block truncate', mono && 'font-mono text-[0.78125rem]')}>{row.label}</span>}
+              title={<span className={cn(mono && 'font-mono text-[0.78125rem]')}>{row.label}</span>}
             >
               <span className="text-[0.75rem] tabular-nums text-(--ui-text-tertiary)">{row.value}</span>
-            </FormRow>
+            </SimpleRow>
           ))
         )}
       </FormGroup>

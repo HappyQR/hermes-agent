@@ -154,6 +154,7 @@ export function SessionImportView({ owner, onClose, onOpenSession }: SessionImpo
           <aside className={cn('flex w-[15.625rem] shrink-0 flex-col gap-1.5 max-[760px]:w-full', selected && 'max-[760px]:hidden')}>
             <SegmentedControl
               aria-label={studio.sourceLabel}
+              className="auto-cols-auto"
               onChange={value => {
                 setSource(value)
                 setSelected(null)

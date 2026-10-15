@@ -214,9 +214,11 @@ export function UpdatesOverlay() {
       {/* This dialog has no inputs, so Radix's default autofocus would land on
           the close button and trigger its tooltip immediately on open. */}
       <DialogContent
+        blurBackdrop={false}
         bodyClassName="overflow-hidden p-0 gap-0"
         className="max-w-[min(35rem,calc(100vw-2.5rem))]"
         onOpenAutoFocus={preventCloseButtonAutoFocus}
+        overlayClassName="bg-(--ui-scrim)"
         showCloseButton={phase !== 'applying'}
       >
         {phase === 'applying' && (

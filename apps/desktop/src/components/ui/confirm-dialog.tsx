@@ -125,6 +125,7 @@ export function ConfirmDialog({
   return (
     <Dialog onOpenChange={value => !value && !busy && onClose()} open={open}>
       <DialogContent
+        blurBackdrop={false}
         bodyClassName="gap-2.5 px-5 pb-5 pt-6"
         className="max-w-md"
         onKeyDown={event => {
@@ -143,6 +144,7 @@ export function ConfirmDialog({
           event.preventDefault()
           confirmRef.current?.focus()
         }}
+        overlayClassName="bg-(--ui-scrim)"
         showCloseButton={false}
       >
         {/* The macOS alert sheet: brand mark, title and message centered. */}

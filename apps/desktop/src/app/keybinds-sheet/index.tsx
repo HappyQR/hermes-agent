@@ -2,8 +2,9 @@ import { useStore } from '@nanostores/react'
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 
-import { FormGroup, FormRow, FormSection } from '@/app/overlays/studio/form-group'
+import { FormGroup, FormSection } from '@/app/overlays/studio/form-group'
 import { SheetBody, SheetFooter, SheetHeader } from '@/app/overlays/studio/sheet-header'
+import { SimpleRow } from '@/app/overlays/studio/simple-row'
 import { SETTINGS_ROUTE } from '@/app/routes'
 import { settingsPageSearch } from '@/app/settings/studio/categories'
 import { Button } from '@/components/ui/button'
@@ -70,8 +71,10 @@ function KeybindsSheetContent() {
 
   return (
     <DialogContent
+      blurBackdrop={false}
       bodyClassName="flex min-h-0 flex-1 flex-col gap-0 overflow-hidden p-0"
       className="h-[min(40rem,calc(100vh-6rem))] max-w-[min(55rem,calc(100vw-2.5rem))]"
+      overlayClassName="bg-(--ui-scrim)"
       showCloseButton={false}
     >
       <SheetHeader
@@ -103,7 +106,7 @@ function KeybindsSheetContent() {
             <FormSection key={group.category} title={t.keybinds.categories[group.category]}>
               <FormGroup>
                 {group.rows.map(row => (
-                  <FormRow className="min-h-[2.125rem]" key={row.id} title={row.label}>
+                  <SimpleRow key={row.id} title={row.label}>
                     <span className="flex flex-wrap justify-end gap-x-2 text-[0.71875rem] tracking-[0.02em] whitespace-nowrap text-(--ui-text-tertiary)">
                       {row.combos.map(combo => (
                         <kbd className="font-sans" key={combo}>
@@ -111,7 +114,7 @@ function KeybindsSheetContent() {
                         </kbd>
                       ))}
                     </span>
-                  </FormRow>
+                  </SimpleRow>
                 ))}
               </FormGroup>
             </FormSection>
