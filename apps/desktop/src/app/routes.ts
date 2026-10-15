@@ -24,6 +24,8 @@ export const AUTOMATIONS_ROUTE = '/automations'
 export const PROFILES_ROUTE = '/profiles'
 export const AGENTS_ROUTE = '/agents'
 export const STARMAP_ROUTE = '/starmap'
+// Studio: the Memory page (star map + editable list). `/starmap` renders it too.
+export const MEMORY_ROUTE = '/memory'
 
 export type AppView =
   | 'session-import'
@@ -52,6 +54,7 @@ export type AppRouteId =
   | 'capabilities'
   | 'command-center'
   | 'cron'
+  | 'memory'
   | 'messaging'
   | 'new'
   | 'profiles'
@@ -79,7 +82,9 @@ export const APP_ROUTES = [
   { id: 'automations', path: AUTOMATIONS_ROUTE, view: 'cron' },
   { id: 'profiles', path: PROFILES_ROUTE, view: 'profiles' },
   { id: 'agents', path: AGENTS_ROUTE, view: 'agents' },
-  { id: 'starmap', path: STARMAP_ROUTE, view: 'starmap' }
+  { id: 'starmap', path: STARMAP_ROUTE, view: 'starmap' },
+  // Same page as /starmap (the `starmap` view is the Memory page).
+  { id: 'memory', path: MEMORY_ROUTE, view: 'starmap' }
 ] as const satisfies readonly AppRoute[]
 
 const APP_VIEW_BY_PATH = new Map<string, AppView>(APP_ROUTES.map(route => [route.path, route.view]))
@@ -166,15 +171,14 @@ export interface ProfileGroupHeaderContribution {
 // Views that render as a full-screen modal card (OverlayView) over the shell.
 // While one is open the app's titlebar control clusters must hide so they don't
 // bleed over the overlay (they sit at a higher z-index than the overlay card).
-// Studio: `cron` and `webhooks` are the Automations page, rendered in the
-// workspace like Capabilities.
+// Studio: `cron`/`webhooks` (Automations) and `starmap` (Memory) are pages,
+// rendered in the workspace like Capabilities.
 export const OVERLAY_VIEWS: ReadonlySet<AppView> = new Set([
   'session-import',
   'agents',
   'command-center',
   'profiles',
-  'settings',
-  'starmap'
+  'settings'
 ])
 
 export function isOverlayView(view: AppView): boolean {

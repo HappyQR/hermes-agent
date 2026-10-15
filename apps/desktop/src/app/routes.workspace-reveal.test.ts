@@ -21,6 +21,7 @@ import {
   AUTOMATIONS_ROUTE,
   CAPABILITIES_ROUTE,
   CRON_ROUTE,
+  MEMORY_ROUTE,
   MESSAGING_ROUTE,
   navigateToWorkspacePage,
   NEW_CHAT_ROUTE,
@@ -29,6 +30,7 @@ import {
   routeSessionId,
   sessionRoute,
   SETTINGS_ROUTE,
+  STARMAP_ROUTE,
   syncWorkspaceRoute,
   WEBHOOKS_ROUTE
 } from './routes'
@@ -94,7 +96,10 @@ describe('classification of targets carrying a query', () => {
     // The Automations page answers to its own path and both legacy ones.
     [`${AUTOMATIONS_ROUTE}?tab=blueprints`, 'cron'],
     [`${CRON_ROUTE}?tab=webhook`, 'cron'],
-    [WEBHOOKS_ROUTE, 'webhooks']
+    [WEBHOOKS_ROUTE, 'webhooks'],
+    // The Memory page answers to its own path and the legacy star map one.
+    [`${MEMORY_ROUTE}?view=list`, 'starmap'],
+    [STARMAP_ROUTE, 'starmap']
   ])('%s is not a session route', (to, view) => {
     expect(routeSessionId(to)).toBeNull()
     expect(appViewForPath(to)).toBe(view)
@@ -109,7 +114,7 @@ describe('syncWorkspaceRoute', () => {
     expect(fronted()).toBe(true)
   })
 
-  it.each([AUTOMATIONS_ROUTE, CRON_ROUTE, WEBHOOKS_ROUTE])('fronts on the Automations page at %s', route => {
+  it.each([AUTOMATIONS_ROUTE, CRON_ROUTE, WEBHOOKS_ROUTE, MEMORY_ROUTE, STARMAP_ROUTE])('fronts on the Studio page at %s', route => {
     syncWorkspaceRoute(route)
 
     expect($workspaceIsPage.get()).toBe(true)

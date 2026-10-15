@@ -1,8 +1,9 @@
 import { type Simulation } from 'd3-force'
-import { atom, type WritableAtom } from 'nanostores'
+import { atom } from 'nanostores'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { useThemeEpoch } from '@/hooks/use-theme-epoch'
+import { useI18n } from '@/i18n'
 import { createRendererLoopPauseController } from '@/lib/renderer-loop-pause'
 import { createDoubleTapDetector, isSmartZoomWheel } from '@/lib/trackpad-gestures'
 import type { StarmapGraph } from '@/types/hermes'
@@ -14,12 +15,9 @@ import { clamp, distToSegmentSq, fitScale, fitViewport, nodeRadius } from './geo
 import { NodeContextMenu, type NodeMenuTarget } from './node-context-menu'
 import { shouldIgnorePlaybackHotkey } from './playback-hotkey'
 import { drawScene, drawScramble } from './render'
-import { decodeShareCode, encodeShareCode, ShareCodeError } from './share-code'
-import { ShareControls } from './share-controls'
 import { buildSimulation } from './simulation'
-import { formatDate } from './text'
-import { buildTimeAxis, dateAtReveal, type TimeAxis } from './time-axis'
-import { Timeline } from './timeline'
+import { StarMapChrome } from './star-map-chrome'
+import { buildTimeAxis } from './time-axis'
 import type { FadeBuckets, MemoryCard, Palette, Ring, RingLabelRect, SimLink, SimNode, Viewport } from './types'
 
 // How long a full play-through sweep takes (ms), reveal 0 → 1. Longer = the
@@ -62,53 +60,11 @@ function invCineEase(y: number): number {
   return (lo + hi) / 2
 }
 
-function revealText(axis: TimeAxis, reveal: number): string {
-  const date = dateAtReveal(axis, reveal)
-
-  return date !== null ? formatDate(date) : `${Math.round(reveal * axis.size)} / ${axis.size}`
-}
-
-function RevealLabel({ axis, revealStore }: { axis: TimeAxis; revealStore: WritableAtom<number> }) {
-  const labelRef = useRef<HTMLSpanElement | null>(null)
-
-  const sync = useCallback(
-    (reveal: number) => {
-      const el = labelRef.current
-
-      if (el) {
-        el.textContent = revealText(axis, reveal)
-      }
-    },
-    [axis]
-  )
-
-  useEffect(() => revealStore.subscribe(sync), [revealStore, sync])
-
-  useEffect(() => {
-    sync(revealStore.get())
-  }, [revealStore, sync])
-
-  return (
-    <span className="tabular-nums text-foreground/75" ref={labelRef}>
-      {revealText(axis, revealStore.get())}
-    </span>
-  )
-}
-
 // A tilted, top-down star map of what Hermes has learned. Time is RADIAL: oldest
 // at the core, newest on the outer rings. This component owns the refs, effects
 // and pointer wiring; layout lives in simulation.ts and painting in render.ts.
-export function StarMap({
-  graph,
-  imported = false,
-  onImport,
-  onResetMap
-}: {
-  graph: StarmapGraph
-  imported?: boolean
-  onImport?: (graph: StarmapGraph) => void
-  onResetMap?: () => void
-}) {
+export function StarMap({ graph }: { graph: StarmapGraph }) {
+  const { t } = useI18n()
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const wrapRef = useRef<HTMLDivElement | null>(null)
 
@@ -183,27 +139,6 @@ export function StarMap({
   // constant creep. This ref is the camera's current (eased) fit radius.
   const camRadiusRef = useRef(RING_OUTER)
   const timeAxis = useMemo(() => buildTimeAxis(graph, 72), [graph])
-
-  // The current map as a WoW-style share code, recomputed only when the graph
-  // changes (encode walks every node/edge/card, so don't redo it per render).
-  const shareCode = useMemo(() => encodeShareCode(graph), [graph])
-
-  // Decode a pasted code and hand the resulting graph up to the StarmapView,
-  // which swaps it in for the live profile scan. Returns an error string for the
-  // Timeline to surface inline, or null on success.
-  const importCode = useCallback(
-    (code: string): null | string => {
-      try {
-        const next = decodeShareCode(code)
-        onImport?.(next)
-
-        return null
-      } catch (err) {
-        return err instanceof ShareCodeError ? err.message : 'Could not read that map code.'
-      }
-    },
-    [onImport]
-  )
 
   // Mark the canvas dirty and wake the (otherwise-idle) render loop.
   const invalidate = useCallback(() => invalidateRef.current(), [])
@@ -937,6 +872,7 @@ export function StarMap({
   return (
     <div className="relative min-h-0 flex-1 overflow-hidden" ref={wrapRef}>
       <canvas
+        aria-label={t.studio.pages.memory.canvasLabel}
         className="block touch-none select-none text-foreground"
         onContextMenu={onContextMenu}
         onDoubleClick={resetView}
@@ -957,37 +893,15 @@ export function StarMap({
         target={menuTarget}
       />
 
-      {/* Timeline scrubber — centered along the top, clear of the close button.
-          z-20 lifts it above the titlebar's app-region drag layer (z-10) so the
-          scrubber receives pointer events instead of dragging the window. */}
-      <div className="pointer-events-none absolute inset-x-0 top-6 z-20 flex justify-center px-12">
-        <Timeline
-          axis={timeAxis}
-          memoryColor={memoryColor}
-          onScrub={onScrub}
-          onTogglePlay={onTogglePlay}
-          playing={playing}
-          revealStore={revealStore}
-          ringStops={ringStops}
-        />
-      </div>
-
-      {/* Share / import (WoW-talent-style code) — bottom-right, mirroring the legend. */}
-      <div className="pointer-events-auto absolute bottom-2 right-2 z-20 [-webkit-app-region:no-drag]">
-        <ShareControls imported={imported} onImport={importCode} onResetMap={onResetMap} shareCode={shareCode} />
-      </div>
-
-      {/* Legend — bottom-left, one entry per line like a conventional key. */}
-      <div className="pointer-events-none absolute bottom-2 left-2 flex flex-col gap-1 text-[0.62rem] text-muted-foreground">
-        <span className="flex items-center gap-1.5">
-          <span className="inline-block size-2 rounded-full bg-[var(--theme-primary)]/80" /> skill
-        </span>
-        <span className="flex items-center gap-1.5">
-          <span className="inline-block size-2 rotate-45" style={{ backgroundColor: memoryColor }} /> memory
-        </span>
-        <span className="text-[0.58rem] text-muted-foreground/65">core = oldest · outer = newer</span>
-        <RevealLabel axis={timeAxis} revealStore={revealStore} />
-      </div>
+      <StarMapChrome
+        axis={timeAxis}
+        memoryColor={memoryColor}
+        onScrub={onScrub}
+        onTogglePlay={onTogglePlay}
+        playing={playing}
+        revealStore={revealStore}
+        ringStops={ringStops}
+      />
     </div>
   )
 }

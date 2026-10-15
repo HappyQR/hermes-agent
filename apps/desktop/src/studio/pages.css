@@ -181,3 +181,21 @@
     animation-duration: 2.4s;
   }
 }
+
+/* ── Memory map: the night-sky card ─────────────────────────────────────────
+   The star map builds its palette from the canvas ink (`color`), the theme
+   primary and the background (app/starmap/color.ts); scoping those here gives
+   the prototype's dark "space" in both appearances without touching the
+   renderer. */
+
+[data-slot='memory-space'] {
+  --dt-foreground: var(--pg-space-fg);
+  --dt-muted-foreground: rgb(233 236 255 / 0.7);
+  --dt-background: #0b0e1c;
+  --background: #0b0e1c;
+  --theme-primary: #8fb4ff;
+  --theme-secondary: #c79bff;
+
+  background: var(--pg-space-bg);
+  color: var(--pg-space-fg);
+}

@@ -4,6 +4,7 @@ export interface StudioPagesTranslations {
   automations: StudioAutomationsTranslations
   cron: StudioCronTranslations
   webhooks: StudioWebhooksTranslations
+  memory: StudioMemoryTranslations
 }
 
 export interface StudioPagesCommonTranslations {
@@ -112,4 +113,57 @@ export interface StudioWebhooksTranslations {
   promptQuestion: string
   moreOptions: string
   receiverSettings: string
+}
+
+export interface StudioMemoryTranslations {
+  title: string
+  subtitle: string
+  viewLabel: string
+  viewList: string
+  share: string
+  copyCode: string
+  codeCopied: string
+  codeCopiedBody: string
+  loadCode: string
+  loadCodeTitle: string
+  importInvalid: string
+  settings: string
+  filterLabel: string
+  counts: (skills: number, memories: number, categories: number) => string
+  graphHint: string
+  canvasLabel: string
+  play: string
+  pause: string
+  timeline: string
+  /** The timeline's label once the whole map is revealed. */
+  now: string
+  legendSkill: string
+  legendMemory: string
+  legendRadial: string
+  listMemory: string
+  listUser: string
+  listSkills: string
+  listSkillsScope: string
+  usage: (file: string, used: number, limit: number) => string
+  entries: (file: string, count: number) => string
+  emptyMemory: string
+  emptyUser: string
+  emptySkills: string
+  learnedBadge: string
+  usedTimes: (count: number) => string
+  lastActive: (date: string) => string
+  editRow: string
+  rowActionAria: (action: string, label: string) => string
+  editSkill: string
+  editMemory: string
+  archiveSkill: string
+  deleteMemory: string
+  editTitle: (label: string) => string
+  deleteMemoryTitle: (label: string) => string
+  deleteMemoryBody: string
+  archiveConfirm: string
+  archiveTitle: (name: string) => string
+  archiveBody: string
+  /** Hover-card badges drawn on the map. */
+  badges: { learned: string; memory: string; pinned: string; profileMemory: string; unknown: string }
 }

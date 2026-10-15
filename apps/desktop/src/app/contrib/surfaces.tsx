@@ -40,6 +40,7 @@ const ArtifactsView = lazy(async () => ({ default: (await import('../artifacts')
 const MessagingView = lazy(async () => ({ default: (await import('../messaging')).MessagingView }))
 const CapabilitiesView = lazy(async () => ({ default: (await import('../capabilities')).CapabilitiesView }))
 const AutomationsView = lazy(async () => ({ default: (await import('../automations')).AutomationsView }))
+const MemoryView = lazy(async () => ({ default: (await import('../memory')).MemoryView }))
 
 export function LegacySessionRedirect() {
   const { sessionId } = useParams()
@@ -199,7 +200,9 @@ export const ChatRoutesSurface = memo(function ChatRoutesSurface({
       <Route element={null} path="command-center" />
       <Route element={null} path="profiles" />
       <Route element={null} path="settings" />
-      <Route element={null} path="starmap" />
+      {/* Memory: `/starmap` (and `/journey`) open the same page. */}
+      <Route element={page(<MemoryView setStatusbarItemGroup={setStatusbarItemGroup} />)} path="memory" />
+      <Route element={page(<MemoryView setStatusbarItemGroup={setStatusbarItemGroup} />)} path="starmap" />
       {/* Registry-contributed pages (core features + plugins) render in the
           workspace pane like any built-in view — behind the same blast wall
           as every other contribution mount. */}

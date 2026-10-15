@@ -194,7 +194,6 @@ const AgentsView = lazy(async () => ({ default: (await import('../agents')).Agen
 const CommandCenterView = lazy(async () => ({ default: (await import('../command-center')).CommandCenterView }))
 const ProfilesView = lazy(async () => ({ default: (await import('../profiles')).ProfilesView }))
 const SettingsView = lazy(async () => ({ default: (await import('../settings')).SettingsView }))
-const StarmapView = lazy(async () => ({ default: (await import('../starmap')).StarmapView }))
 
 // Surfaces (the four wired panes), the render context + WiredPane, and the
 // WiringActions/WiringApi contracts all live in sibling modules — this file is
@@ -370,7 +369,6 @@ export function ContribWiring({ children }: { children: ReactNode }) {
     profilesOpen,
     resetOverlayReturnRoute,
     settingsOpen,
-    starmapOpen,
     toggleCommandCenter
   } = useOverlayRouting()
 
@@ -1399,12 +1397,6 @@ export function ContribWiring({ children }: { children: ReactNode }) {
       {profilesOpen && (
         <Suspense fallback={null}>
           <ProfilesView onClose={closeOverlayToPreviousRoute} />
-        </Suspense>
-      )}
-
-      {starmapOpen && (
-        <Suspense fallback={null}>
-          <StarmapView onClose={closeOverlayToPreviousRoute} />
         </Suspense>
       )}
 

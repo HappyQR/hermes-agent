@@ -21,8 +21,10 @@ import {
   CAPABILITIES_ROUTE,
   contributedRoutes,
   CRON_ROUTE,
+  MEMORY_ROUTE,
   MESSAGING_ROUTE,
   ROUTES_AREA,
+  STARMAP_ROUTE,
   WEBHOOKS_ROUTE
 } from '../routes'
 
@@ -32,8 +34,10 @@ const CapabilitiesView = lazy(async () => ({ default: (await import('../capabili
 const MessagingView = lazy(async () => ({ default: (await import('../messaging')).MessagingView }))
 const ArtifactsView = lazy(async () => ({ default: (await import('../artifacts')).ArtifactsView }))
 const AutomationsView = lazy(async () => ({ default: (await import('../automations')).AutomationsView }))
+const MemoryView = lazy(async () => ({ default: (await import('../memory')).MemoryView }))
 
 const automationsTitle = () => translateNow('studio.pages.automations.title')
+const memoryTitle = () => translateNow('studio.pages.memory.title')
 
 // Built-in page views + their pane titles, keyed by route.
 const BUILTIN_PAGES: Record<string, { render: () => ReactNode; title: string | (() => string) }> = {
@@ -42,7 +46,9 @@ const BUILTIN_PAGES: Record<string, { render: () => ReactNode; title: string | (
   [CAPABILITIES_ROUTE]: { render: () => <CapabilitiesView />, title: 'Capabilities' },
   [AUTOMATIONS_ROUTE]: { render: () => <AutomationsView />, title: automationsTitle },
   [CRON_ROUTE]: { render: () => <AutomationsView />, title: automationsTitle },
-  [WEBHOOKS_ROUTE]: { render: () => <AutomationsView defaultTab="webhook" />, title: automationsTitle }
+  [WEBHOOKS_ROUTE]: { render: () => <AutomationsView defaultTab="webhook" />, title: automationsTitle },
+  [MEMORY_ROUTE]: { render: () => <MemoryView />, title: memoryTitle },
+  [STARMAP_ROUTE]: { render: () => <MemoryView />, title: memoryTitle }
 }
 
 /** Humanize a route path into a tab title: `/my-atlas` → `My Atlas`. */

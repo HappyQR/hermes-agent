@@ -122,6 +122,8 @@ const ROUTE_AREAS: Record<string, DesktopFeatureArea> = {
   'command-center': 'command_center',
   cron: 'cron',
   kanban: 'kanban',
+  // Studio: the Memory page (/starmap renders it too).
+  memory: 'starmap',
   messaging: 'messaging',
   profiles: 'profiles',
   'session-import': 'session_import',
