@@ -489,6 +489,70 @@ function tagProjectSessionConnection(project: SidebarProjectTree, owner: Project
   }
 }
 
+// ── Creates and deletes the tree hasn't caught up with ──────────────────────
+// The all-profiles tree (REST) is cached server-side for a few seconds, and the
+// refresh right after a create or a delete lands inside that window as often as
+// not (the folder picker's own focus refresh fills the cache just before).
+// Replacing the tree with that answer dropped a project just created — it
+// showed up one create later — and brought back one just removed. This window's
+// own creates and deletes stay over the tree until an answer agrees, for
+// PENDING_PROJECT_MS at most, and only in the view they were made in.
+const PENDING_PROJECT_MS = 30_000
+
+interface PendingProject {
+  at: number
+  node?: SidebarProjectTree
+  view: string
+}
+
+const pendingCreated = new Map<string, PendingProject>()
+const pendingRemoved = new Map<string, PendingProject>()
+
+const projectTreeView = (connectionId: null | string): string => `${connectionId ?? ''}|${projectProfile() ?? '*'}`
+
+function holdCreatedProject(node: SidebarProjectTree): void {
+  pendingRemoved.delete(node.id)
+  pendingCreated.set(node.id, { at: Date.now(), node, view: projectTreeView(activeGatewayConnectionId()) })
+}
+
+function holdRemovedProject(id: string): void {
+  pendingCreated.delete(id)
+  pendingRemoved.set(id, { at: Date.now(), view: projectTreeView(activeGatewayConnectionId()) })
+}
+
+export function resetPendingProjectsForTests(): void {
+  pendingCreated.clear()
+  pendingRemoved.clear()
+}
+
+function withPendingProjects(projects: SidebarProjectTree[], connectionId: null | string): SidebarProjectTree[] {
+  const now = Date.now()
+  const view = projectTreeView(connectionId)
+  let next = projects
+
+  for (const [id, pending] of pendingRemoved) {
+    const listed = next.some(node => node.id === id)
+
+    if (!listed || now - pending.at > PENDING_PROJECT_MS) {
+      pendingRemoved.delete(id)
+    } else if (pending.view === view) {
+      next = next.filter(node => node.id !== id)
+    }
+  }
+
+  for (const [id, pending] of pendingCreated) {
+    const listed = next.some(node => node.id === id)
+
+    if (listed || now - pending.at > PENDING_PROJECT_MS) {
+      pendingCreated.delete(id)
+    } else if (pending.view === view && pending.node) {
+      next = [pending.node, ...next]
+    }
+  }
+
+  return next
+}
+
 function applyProjectTreePayload(res: ProjectTreePayload, owner: ProjectRowOwner): void {
   const scoped = new Set(res.scoped_session_ids ?? [])
   // The tree refreshes on every sessions.changed and window focus, and most of
@@ -497,7 +561,10 @@ function applyProjectTreePayload(res: ProjectTreePayload, owner: ProjectRowOwner
   $projectTree.set(
     replaceEqualDeep(
       $projectTree.get(),
-      (res.projects ?? []).map(project => tagProjectSessionConnection(project, owner))
+      withPendingProjects(
+        (res.projects ?? []).map(project => tagProjectSessionConnection(project, owner)),
+        owner.connectionId
+      )
     )
   )
   $activeProjectId.set(res.active_id ?? null)
@@ -1171,7 +1238,10 @@ export async function createProject(input: CreateProjectInput): Promise<ProjectI
     }
 
     if (!$projectTree.get().some(node => node.id === created.id)) {
-      $projectTree.set([projectInfoToTreeNode(created), ...$projectTree.get()])
+      const node = projectInfoToTreeNode(created)
+
+      $projectTree.set([node, ...$projectTree.get()])
+      holdCreatedProject(node)
     }
 
     if (input.use) {
@@ -1347,6 +1417,7 @@ export async function deleteProject(id: string): Promise<void> {
 
   $projects.set(snap.projects.filter(project => project.id !== id))
   $projectTree.set(snap.tree.filter(node => node.id !== id))
+  holdRemovedProject(id)
 
   if (snap.active === id) {
     $activeProjectId.set(null)
@@ -1358,15 +1429,23 @@ export async function deleteProject(id: string): Promise<void> {
     requestFreshSession()
   }
 
-  await persistOrRollback(snap, async () => {
-    applyPayload(
-      await gatewayRequestOn<ProjectsPayload>(
-        context.gateway,
-        'projects.delete',
-        projectParams({ id }, context.profile)
+  try {
+    await persistOrRollback(snap, async () => {
+      applyPayload(
+        await gatewayRequestOn<ProjectsPayload>(
+          context.gateway,
+          'projects.delete',
+          projectParams({ id }, context.profile)
+        )
       )
-    )
-  })
+    })
+  } catch (error) {
+    // Restored by the rollback: the project is back, so stop holding it out.
+    pendingRemoved.delete(id)
+
+    throw error
+  }
+
   void refreshProjectTree()
 }
 

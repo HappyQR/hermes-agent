@@ -29,6 +29,7 @@ import {
   projectNameForCwd,
   refreshProjects,
   refreshProjectTree,
+  resetPendingProjectsForTests,
   resolveNewSessionCwd,
   scanAndRecordRepos,
   startWorkInRepo,
@@ -513,6 +514,40 @@ describe('createProject', () => {
   afterEach(() => {
     setShowAllProfiles(false)
     $activeGatewayProfile.set('default')
+    resetPendingProjectsForTests()
+  })
+
+  // The all-profiles tree (REST) is cached server-side for a few seconds; the
+  // refresh right after a create answered without the new project, and taking
+  // that answer whole hid it until the next create.
+  it('keeps a just-created project while the all-profiles tree still answers without it', async () => {
+    const created = { folders: [], id: 'p_fresh', name: 'Fresh', primary_path: '/srv/fresh' }
+    const request = vi.fn().mockResolvedValue({ project: created })
+    activeGateway.mockReturnValue({ connectionState: 'open', request } as never)
+    vi.mocked(hermes.hermesApi).mockResolvedValue({ projects: [], active_id: null })
+    setShowAllProfiles(true)
+
+    await createProject({ folders: ['/srv/fresh'], name: created.name })
+    await vi.waitFor(() => expect(hermes.hermesApi).toHaveBeenCalled())
+    await new Promise(resolve => setTimeout(resolve, 0))
+
+    expect($projectTree.get().map(node => node.id)).toContain('p_fresh')
+  })
+
+  it('keeps a removed project out while the all-profiles tree still lists it', async () => {
+    const gone = { id: 'p_gone', label: 'Gone', path: '/srv/gone', repos: [], sessionCount: 0 }
+    $projects.set([{ folders: [], id: 'p_gone', name: 'Gone', primary_path: '/srv/gone' } as never])
+    $projectTree.set([gone as never])
+    const request = vi.fn().mockResolvedValue({ projects: [] })
+    activeGateway.mockReturnValue({ connectionState: 'open', request } as never)
+    vi.mocked(hermes.hermesApi).mockResolvedValue({ projects: [gone], active_id: null })
+    setShowAllProfiles(true)
+
+    await deleteProject('p_gone')
+    await vi.waitFor(() => expect(hermes.hermesApi).toHaveBeenCalled())
+    await new Promise(resolve => setTimeout(resolve, 0))
+
+    expect($projectTree.get().map(node => node.id)).not.toContain('p_gone')
   })
 
   it.each(['default', 'coder'])('creates in the active %s profile without leaving All profiles', async profile => {
