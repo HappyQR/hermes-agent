@@ -18,16 +18,10 @@ export const DAY = 86_400_000
 // the system wins instead and keeps its regional conventions (en-GB day
 // order, a 24-hour clock).
 const INTL_LOCALES = new Map<string, string | undefined>()
-let systemLocale: Intl.Locale | null | undefined
+let systemLocale: Intl.Locale | undefined
 
-function maximizedSystemLocale(): Intl.Locale | null {
-  if (systemLocale === undefined) {
-    try {
-      systemLocale = new Intl.Locale(new Intl.DateTimeFormat().resolvedOptions().locale).maximize()
-    } catch {
-      systemLocale = null
-    }
-  }
+function maximizedSystemLocale(): Intl.Locale {
+  systemLocale ??= new Intl.Locale(new Intl.DateTimeFormat().resolvedOptions().locale).maximize()
 
   return systemLocale
 }
@@ -45,7 +39,7 @@ export function intlLocale(uiLocale: string = getRuntimeI18nLocale()): string | 
     const ui = requested.maximize()
     const system = maximizedSystemLocale()
     // A tag that names its region ("en-GB") already says which conventions it wants.
-    const sameLanguage = system && system.language === ui.language && system.script === ui.script
+    const sameLanguage = system.language === ui.language && system.script === ui.script
 
     resolved = !requested.region && sameLanguage ? undefined : uiLocale
   } catch {
