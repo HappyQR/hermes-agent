@@ -233,8 +233,9 @@ export function ArtifactsView({ setStatusbarItemGroup: _setStatusbarItemGroup, .
       subtitle={s.subtitle}
       title={s.title}
       toolbar={
-        // The prototype's full-width type bar: the segmented track runs the page width.
-        <div className="flex min-w-0 rounded-[8px] bg-(--ui-fill)" data-tour="page-tabs">
+        // The type bar hugs its segments, like every other segmented control
+        // (the prototype ran its track the page width, half of it empty).
+        <div className="flex min-w-0" data-tour="page-tabs">
           <SegmentedControl<ArtifactView>
             aria-label={s.typeLabel}
             onChange={setView}
