@@ -42,12 +42,12 @@ describe('Win10 translucency defaults (regression for #90824)', () => {
     // platform defaults. The store's initial appearance is dark.
     expect($translucency.get()).toEqual({ ...WINDOWS_DARK, mode: 'clear' })
 
-    expect($translucency.get().material).not.toBe(defaultTranslucencyValues('dark', false).material)
+    expect($translucency.get()).not.toEqual({ ...defaultTranslucencyValues('dark', false), mode: 'clear' })
 
     // Light appearance must resolve the windows light table too.
     setAppearance('light')
     expect($translucency.get()).toEqual({ ...WINDOWS_LIGHT, mode: 'clear' })
-    expect($translucency.get().material).not.toBe(defaultTranslucencyValues('light', false).material)
+    expect($translucency.get()).not.toEqual({ ...defaultTranslucencyValues('light', false), mode: 'clear' })
   })
 
   it('keeps the mode clear when glass is unsupported', () => {

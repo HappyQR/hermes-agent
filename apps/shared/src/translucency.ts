@@ -125,15 +125,20 @@ export type TranslucencyValues = Omit<TranslucencyState, 'mode'>
 export type Appearance = 'light' | 'dark'
 
 /**
- * Glass starts at 29% tint, confined to the sidebar in both appearances.
- * Fade stays off so the content column and text remain fully opaque.
- * Frost keeps its platform/appearance tuning: macOS uses header/titlebar,
- * while Windows uses under-window, the live acrylic backdrop.
+ * Glass is confined to the sidebar in both appearances. Fade stays off so the
+ * content column and text remain fully opaque.
+ *
+ * macOS (Studio): the popover frost under 36% of the sidebar colour. Measured
+ * over the design's desktop gradient on macOS 26, it is the one pairing whose
+ * rail picks up the desktop's colour the way the design does in both
+ * appearances; header/titlebar read as flat grey and under-window as neutral
+ * grey, whatever the tint. Windows keeps 29% over under-window, the live
+ * acrylic backdrop.
  */
 const DEFAULT_VALUES: Record<'mac' | 'windows', Record<Appearance, TranslucencyValues>> = {
   mac: {
-    light: { intensity: 29, fade: 0, material: 'header', scope: DEFAULT_GLASS_SCOPE },
-    dark: { intensity: 29, fade: 0, material: 'titlebar', scope: DEFAULT_GLASS_SCOPE }
+    light: { intensity: 64, fade: 0, material: 'popover', scope: DEFAULT_GLASS_SCOPE },
+    dark: { intensity: 64, fade: 0, material: 'popover', scope: DEFAULT_GLASS_SCOPE }
   },
   windows: {
     light: { intensity: 29, fade: 0, material: 'under-window', scope: DEFAULT_GLASS_SCOPE },
