@@ -172,6 +172,35 @@ export const isChatWindow = (search = typeof window === 'undefined' ? '' : windo
 let railObserver: null | ResizeObserver = null
 let railTarget: Element | null = null
 let railTrackingOn = false
+// While no rail is held — tracking began before the sidebar mounted (the
+// shell paints before the sessions zone settles), or the rail unmounted — the
+// DOM is watched for it, one measure per frame at most. Once a rail is found
+// the ResizeObserver owns the seam again and the watch stops.
+let railSeeker: MutationObserver | null = null
+let railSeekFrame = 0
+
+const seekRail = (seeking: boolean): void => {
+  if (!seeking) {
+    railSeeker?.disconnect()
+    railSeeker = null
+    cancelAnimationFrame(railSeekFrame)
+    railSeekFrame = 0
+
+    return
+  }
+
+  if (railSeeker || typeof MutationObserver === 'undefined') {
+    return
+  }
+
+  railSeeker = new MutationObserver(() => {
+    railSeekFrame ||= requestAnimationFrame(() => {
+      railSeekFrame = 0
+      measureRailEdge()
+    })
+  })
+  railSeeker.observe(document.body, { childList: true, subtree: true })
+}
 
 const measureRailEdge = (): void => {
   const root = document.documentElement
@@ -188,6 +217,8 @@ const measureRailEdge = (): void => {
       railObserver.observe(rail)
     }
   }
+
+  seekRail(railTrackingOn && !rail)
 
   if (!rail) {
     // No rail in this window (e.g. a pane-only layout): the seam sits at the
@@ -245,6 +276,7 @@ const stopRailTracking = (): void => {
   }
 
   railTarget = null
+  seekRail(false)
   window.removeEventListener('resize', measureRailEdge)
   document.documentElement.style.removeProperty('--glass-rail-edge')
 }
