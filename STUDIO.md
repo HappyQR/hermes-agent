@@ -14,7 +14,7 @@ Hermes Studio 是 Hermes Desktop 的 macOS 原生风格改版。这个仓库是 
 - Studio 不内置后端。启动时它找到 `~/.hermes/hermes-agent`，用 `hermes gateway ensure` 连上本机网关，和官方 Hermes.app 用的是同一个网关、同一份数据。
 - Studio 有自己的应用标识（`com.nousresearch.hermes-studio`）和本地设置目录（`~/Library/Application Support/Hermes Studio`），可以和官方 Hermes.app 同时安装。
 - `hermes update` 不会碰 Studio：官方更新只刷新 `Hermes.app`，而 Studio 的构建标记是 `updateMechanism: external`，App 内也不会自己去跑官方更新。
-- 前后端之间有接口契约（`DESKTOP_BACKEND_CONTRACT`），所以 Studio 必须和后端是同一个上游版本。`studio.sh sync` 做的就是这件事：把后端正在运行的那个上游提交合进 `studio` 分支，再重新构建。
+- 前后端之间有接口契约（`DESKTOP_BACKEND_CONTRACT`），而且桌面端连接后端的方式也会随版本变化（v0.22.1 用 `hermes gateway ensure`，v0.22.2 自己启动 `hermes serve`），所以 Studio 必须和后端是同一个上游版本。`studio.sh sync` 做的就是这件事：把 `studio` 分支同步到后端正在运行的那个版本的代码，再重新构建。
 
 ## 日常使用
 
@@ -26,7 +26,7 @@ hermes-studio status               # 看版本和是否需要同步
 hermes-studio build && hermes-studio install   # 只重新构建和安装
 ```
 
-`sync` 和 `update` 可以加 `--push`，同步后把 `studio` 分支推到 GitHub 上的 fork。
+`sync` 和 `update` 可以加 `--push`，同步后把 `studio` 分支推到 GitHub 上的 fork。`update` 还可以加 `--yes`，自动回答 `hermes update` 的确认提示（不在终端里交互运行时用）。`status` 会显示 Agent 版本、是否需要同步，以及装着的 App 是从哪个提交构建的、是否落后于分支。
 
 ## 合并冲突
 
@@ -36,6 +36,8 @@ hermes-studio build && hermes-studio install   # 只重新构建和安装
 - **接受上游的行为**：状态管理、接口调用、新功能逻辑。
 
 解决后运行 `git add -A && git commit --no-edit`，再运行 `hermes-studio build && hermes-studio install`。仓库开启了 `git rerere`，同样的冲突解决过一次，下次会自动复用。
+
+`sync` 不直接合并上游的提交，而是先生成一个「影子提交」：代码和 Agent 当前运行的版本完全一样，父提交是上一次同步的版本，再把它合并进 `studio`。这样每次合并只应用两个版本之间的代码变化，不受上游分支怎么走的影响。v0.22.2 就是这种情况：它是 release/0.22.1 分支的代码，只是把 v0.22.1 记成了父提交，直接合并会把 main 上的改动当成被撤销，以后从 main 发布的版本再合并时，这些改动会被悄悄丢掉。
 
 ## 在另一台 Mac 上安装
 
