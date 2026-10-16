@@ -11,7 +11,7 @@ import { $connectionsRegistry } from '@/store/connection-registry-state'
 import { $sidebarMessagingOpenIds, setSidebarAgentsGrouped, setSidebarGrouping } from '@/store/layout'
 import { $activeGatewayProfile, $profiles, setShowAllProfiles } from '@/store/profile'
 import { $projectScope, ALL_PROJECTS } from '@/store/project-scope'
-import { $projectTree } from '@/store/projects'
+import { $projectTree, $projectTreeLoading } from '@/store/projects'
 import {
   $currentCwd,
   $messagingSessions,
@@ -347,6 +347,34 @@ describe('ChatSidebar Projects section', () => {
     expect(within(projectsSection(container)).queryByText('Home')).toBeNull()
     expect(within(projectsSection(container)).getByRole('button', { name: 'New project…' })).toBeTruthy()
     expect(screen.getByText('Sessions')).toBeTruthy()
+  })
+
+  it('keeps both empty states through a background refresh', () => {
+    // The first loads are done; the window regaining focus refreshes the
+    // (still empty) project tree and session list. Neither may swap its empty
+    // state for skeletons, which read as the sidebar flickering.
+    act(() => {
+      $projectTreeLoading.set(true)
+      $projectTreeLoading.set(false)
+      $sessionsLoading.set(true)
+      $sessionsLoading.set(false)
+    })
+
+    const { container } = renderSidebar('/', 'chat')
+
+    act(() => {
+      $projectTreeLoading.set(true)
+      $sessionsLoading.set(true)
+    })
+
+    expect(within(projectsSection(container)).getByRole('button', { name: 'New project…' })).toBeTruthy()
+    expect(screen.getByText('No sessions yet')).toBeTruthy()
+    expect(container.querySelector('[data-slot="skeleton"]')).toBeNull()
+
+    act(() => {
+      $projectTreeLoading.set(false)
+      $sessionsLoading.set(false)
+    })
   })
 
   it('scopes the Sessions list from a project row and clears it from the chip', () => {

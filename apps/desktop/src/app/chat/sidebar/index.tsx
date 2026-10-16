@@ -130,6 +130,7 @@ import {
 import { buildSessionByAnyId, resolvePinnedSessions } from './session-index'
 import { SidebarSessionsSection } from './sessions-section'
 import { SidebarContributedSections } from './studio/contributed-sections'
+import { $projectTreeSettled, $reposScanSettled, $sessionsSettled } from './studio/first-load'
 import { flatListGrouping } from './studio/flat-groupings'
 import { SidebarNav } from './studio/nav'
 import { projectNewSessionPath } from './studio/project-row'
@@ -291,6 +292,10 @@ export function ChatSidebar({
   const projectTreeLoading = useStore($projectTreeLoading)
   const removedSessionIds = useStore($removedSessionIds)
   const reposScanning = useStore($reposScanning)
+  // Loading states show for each list's first fetch only (see first-load).
+  const projectTreeSettled = useStore($projectTreeSettled)
+  const reposScanSettled = useStore($reposScanSettled)
+  const sessionsSettled = useStore($sessionsSettled)
   const activeProjectId = useStore($activeProjectId)
   const projectScope = useStore($projectScope)
   const gatewayState = useStore($gatewayState)
@@ -1014,6 +1019,7 @@ export function ChatSidebar({
   const projectsSkeletonVisible =
     worktreeGroupingActive &&
     projectTreeLoading &&
+    !projectTreeSettled &&
     !projectOverview?.length &&
     !(inProject && (enteredProject?.sessionCount ?? 0) > 0)
 
@@ -1184,8 +1190,9 @@ export function ChatSidebar({
 
   // Skeletons mean "still loading", so they key off the UNFILTERED set. Keyed
   // off the filtered one, a filter that matches nothing showed skeletons on
-  // every background refresh instead of the empty state.
-  const showSessionSkeletons = sessionsLoading && scopedSessions.length === 0
+  // every background refresh instead of the empty state. Likewise only the
+  // first load: an empty list's background refreshes keep its empty state.
+  const showSessionSkeletons = sessionsLoading && !sessionsSettled && scopedSessions.length === 0
   const studioFiltersActive = filtersActive || sourceFilter.length > 0
 
   // The sidebar's session-area mode — exposed as data-attributes so custom
@@ -1248,13 +1255,13 @@ export function ChatSidebar({
             <SidebarProjectsSection
               activeProjectId={activeProjectId}
               dndSensors={dndSensors}
-              loading={projectTreeLoading}
+              loading={projectTreeLoading && !projectTreeSettled}
               onNewSessionInWorkspace={onNewSessionInWorkspace}
               onNewSessionSplit={onNewSessionSplit}
               onReorder={showAllProfiles ? undefined : reorderProjects}
               onSelectScope={selectScope}
               projects={sectionProjects}
-              scanning={reposScanning}
+              scanning={reposScanning && !reposScanSettled}
               scopedProjectId={scopedProject?.id ?? null}
             />
 
