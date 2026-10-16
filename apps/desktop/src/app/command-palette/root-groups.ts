@@ -13,14 +13,14 @@ import { canOpenNewWindow, openNewWindow } from '@/store/windows'
 import {
   AGENTS_ROUTE,
   ARTIFACTS_ROUTE,
+  AUTOMATIONS_ROUTE,
   CAPABILITIES_ROUTE,
   COMMAND_CENTER_ROUTE,
-  CRON_ROUTE,
+  MEMORY_ROUTE,
   MESSAGING_ROUTE,
   NEW_CHAT_ROUTE,
   PROFILES_ROUTE,
-  SETTINGS_ROUTE,
-  STARMAP_ROUTE
+  SETTINGS_ROUTE
 } from '../routes'
 import { SETTINGS_PAGE_IDS, SETTINGS_PAGES, settingsPageSearch } from '../settings/studio/categories'
 
@@ -88,19 +88,32 @@ export function goToGroup({ go, t }: RootGroupsContext): PaletteGroup {
         action: 'nav.cron',
         glyph: 'clock',
         id: 'nav-cron',
-        keywords: ['schedule', 'jobs'],
-        label: t.shell.statusbar.cron,
-        run: go(CRON_ROUTE)
+        keywords: ['automations', 'schedule', 'cron', 'jobs', 'webhooks', 'blueprints'],
+        // One name per page: the page's own heading, as the sidebar row reads.
+        label: t.studio.pages.automations.title,
+        run: go(AUTOMATIONS_ROUTE)
       },
-      { action: 'nav.artifacts', glyph: 'shapes', id: 'nav-artifacts', label: cc.nav.artifacts.title, run: go(ARTIFACTS_ROUTE) },
+      {
+        action: 'nav.artifacts',
+        glyph: 'shapes',
+        id: 'nav-artifacts',
+        label: cc.nav.artifacts.title,
+        run: go(ARTIFACTS_ROUTE)
+      },
       {
         glyph: 'graph',
         id: 'nav-starmap',
-        keywords: ['star map', 'memory', 'memories', 'skills', 'graph', 'learning', 'constellation'],
-        label: t.starmap.title,
-        run: go(STARMAP_ROUTE)
+        keywords: ['star map', 'starmap', 'memory', 'memories', 'skills', 'graph', 'learning', 'constellation'],
+        label: t.studio.pages.memory.title,
+        run: go(MEMORY_ROUTE)
       },
-      { action: 'nav.settings', glyph: 'gear', id: 'nav-settings', label: cc.nav.settings.title, run: go(SETTINGS_ROUTE) },
+      {
+        action: 'nav.settings',
+        glyph: 'gear',
+        id: 'nav-settings',
+        label: cc.nav.settings.title,
+        run: go(SETTINGS_ROUTE)
+      },
       // One row for the System Status sheet; its tabs are the note.
       {
         action: 'nav.commandCenter',
@@ -140,19 +153,17 @@ export function projectGroup({ projects, t }: RootGroupsContext): PaletteGroup {
         label: cc.openFolder,
         run: () => void openFolderAsProject()
       },
-      ...projects.map(
-        (project): PaletteItem => ({
-          comboHint: 'mod+enter',
-          ...(project.icon
-            ? { icon: codiconIcon(project.icon) }
-            : { glyph: project.isNoProject ? ('house' as const) : ('folder' as const) }),
-          id: `project-${project.id}`,
-          keywords: ['project', 'workspace', 'go to', project.label, ...(project.path ? [project.path] : [])],
-          label: project.label,
-          modLabel: cc.newSessionInProject(project.label),
-          runWithEvent: event => goToProject(project.id, { newSession: Boolean(event?.metaKey || event?.ctrlKey) })
-        })
-      )
+      ...projects.map((project): PaletteItem => ({
+        comboHint: 'mod+enter',
+        ...(project.icon
+          ? { icon: codiconIcon(project.icon) }
+          : { glyph: project.isNoProject ? ('house' as const) : ('folder' as const) }),
+        id: `project-${project.id}`,
+        keywords: ['project', 'workspace', 'go to', project.label, ...(project.path ? [project.path] : [])],
+        label: project.label,
+        modLabel: cc.newSessionInProject(project.label),
+        runWithEvent: event => goToProject(project.id, { newSession: Boolean(event?.metaKey || event?.ctrlKey) })
+      }))
     ]
   }
 }
