@@ -6,6 +6,7 @@ import { useLocation, useNavigate } from 'react-router'
 import { $narrowViewport } from '@/components/pane-shell/tree/store'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { StudioIcon } from '@/components/ui/studio-icon'
 import { Tip, TipKeybindLabel } from '@/components/ui/tooltip'
 import { Slot } from '@/contrib/react/slot'
 import { useContributions } from '@/contrib/react/use-contributions'
@@ -22,7 +23,6 @@ import { TITLEBAR_FIXED_TOOLS } from '@/store/titlebar-app-actions'
 import { appViewForPath, hidesFixedTitlebarClusters, isOverlayView } from '../routes'
 
 import { TITLEBAR_CHROME_CHANGED_EVENT, titlebarButtonClass, titlebarToolClusterClass } from './titlebar'
-import { TitlebarIcon } from './titlebar-icon'
 
 export interface TitlebarTool extends Tiered {
   id: string
@@ -103,7 +103,7 @@ export function TitlebarControls({ leftTools = [], tools = [] }: TitlebarControl
     ...TITLEBAR_FIXED_TOOLS.sidebar,
     actionId: 'view.toggleSidebar',
     badge: unreadBadge,
-    icon: <TitlebarIcon name="layout-sidebar-left" />,
+    icon: <StudioIcon name="sidebar" size={17} />,
     id: 'sidebar',
     label: `${t.titlebar.showSidebar}${unreadHint}`,
     onSelect: () => {
@@ -115,7 +115,7 @@ export function TitlebarControls({ leftTools = [], tools = [] }: TitlebarControl
   const newChatTool: TitlebarTool = {
     ...TITLEBAR_FIXED_TOOLS['new-chat'],
     actionId: 'session.new',
-    icon: <TitlebarIcon name="edit" />,
+    icon: <StudioIcon name="compose" size={17} />,
     id: 'new-chat',
     label: t.keybinds.actions['session.new'],
     onSelect: () => {
