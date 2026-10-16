@@ -62,8 +62,10 @@ export const ruStudioPages: StudioPagesTranslations = {
         hour: ['час', 'часа', 'часов'],
         minute: ['минуту', 'минуты', 'минут']
       }[unit]
+
       const tens = count % 100
       const ones = count % 10
+
       const form =
         tens >= 11 && tens <= 14 ? forms[2] : ones === 1 ? forms[0] : ones >= 2 && ones <= 4 ? forms[1] : forms[2]
 
