@@ -1,14 +1,19 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
+
+import { setRuntimeI18nLocale } from '@/i18n/runtime'
 
 import {
   calendarBucket,
   DAY,
+  fmtClock,
   fmtMonth,
   fmtMonthYear,
   formatAgo,
   HOUR,
+  intlLocale,
   MINUTE,
   nominalDayStart,
+  relativeTime,
   SECOND,
   sessionBucketLabel
 } from './time'
@@ -147,5 +152,37 @@ describe('sessionBucketLabel', () => {
     }
 
     expect(sessionBucketLabel(monthYearBucket, labels)).toBe(fmtMonthYear.format(monthYearBucket.at))
+  })
+})
+
+describe('intlLocale', () => {
+  const system = new Intl.Locale(new Intl.DateTimeFormat().resolvedOptions().locale).maximize()
+  // A UI language the test machine's system locale does not speak.
+  const foreign = system.language === 'zh' ? 'ja' : 'zh'
+
+  afterEach(() => setRuntimeI18nLocale('en'))
+
+  it('keeps the system locale when it speaks the UI language', () => {
+    expect(intlLocale(system.language)).toBeUndefined()
+  })
+
+  it('formats in the UI language when the system speaks another one', () => {
+    expect(intlLocale(foreign)).toBe(foreign)
+    expect(intlLocale('not a locale')).toBeUndefined()
+  })
+
+  it('honors a tag that names its own region', () => {
+    expect(intlLocale(`${system.language}-${system.region === 'GB' ? 'AU' : 'GB'}`)).toMatch(/-(GB|AU)$/)
+  })
+
+  it('drives the shared formatters from the active UI locale', () => {
+    const at = new Date(2026, 9, 16, 15, 4)
+
+    setRuntimeI18nLocale(foreign)
+
+    expect(fmtClock.format(at)).toBe(new Intl.DateTimeFormat(foreign, { hour: 'numeric', minute: '2-digit' }).format(at))
+    expect(relativeTime(Date.now() - 3 * MINUTE)).toBe(
+      new Intl.RelativeTimeFormat(foreign, { numeric: 'auto', style: 'short' }).format(-3, 'minute')
+    )
   })
 })

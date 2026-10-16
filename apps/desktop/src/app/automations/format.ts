@@ -1,5 +1,5 @@
 import type { StudioCronTranslations } from '@/i18n/types_studio_pages'
-import { DAY, startOfLocalDay } from '@/lib/time'
+import { DAY, intlLocale, startOfLocalDay } from '@/lib/time'
 
 // Run times on the Automations page read in the UI language ("明天 09:00",
 // "tomorrow 9:00 AM", "10月20日 10:00") so a schedule line never mixes two
@@ -30,7 +30,7 @@ function formattersFor(locale?: string): WhenFormatters {
 
   if (!formatters) {
     try {
-      formatters = createFormatters(locale)
+      formatters = createFormatters(locale === undefined ? undefined : intlLocale(locale))
     } catch {
       // A registered pack's tag Intl does not know: fall back to the system locale.
       formatters = createFormatters(undefined)

@@ -1,18 +1,93 @@
-// Canonical time/date formatting. Shared `Intl` instances (created once, not
-// per-render) + relative-time helpers. Every surface that shows a timestamp or
-// an age pulls from here so the rendered strings stay consistent app-wide.
+// Canonical time/date formatting. Shared `Intl` instances (created once per
+// locale, not per-render) + relative-time helpers. Every surface that shows a
+// timestamp or an age pulls from here so the rendered strings stay consistent
+// app-wide.
+
+import { getRuntimeI18nLocale } from '@/i18n/runtime'
 
 export const SECOND = 1000
 export const MINUTE = 60_000
 export const HOUR = 3_600_000
 export const DAY = 86_400_000
 
+// ── Locale ─────────────────────────────────────────────────────────────────
+// Timestamps read in the UI language (display.language), so a date never
+// reads in another language than the copy around it: a Chinese UI on an
+// English system says "11:59", not "11:59 AM". When the system locale speaks
+// the UI language (same language and script) and the UI tag names no region,
+// the system wins instead and keeps its regional conventions (en-GB day
+// order, a 24-hour clock).
+const INTL_LOCALES = new Map<string, string | undefined>()
+let systemLocale: Intl.Locale | null | undefined
+
+function maximizedSystemLocale(): Intl.Locale | null {
+  if (systemLocale === undefined) {
+    try {
+      systemLocale = new Intl.Locale(new Intl.DateTimeFormat().resolvedOptions().locale).maximize()
+    } catch {
+      systemLocale = null
+    }
+  }
+
+  return systemLocale
+}
+
+/** The `Intl` locale for a UI locale; `undefined` means the system locale. */
+export function intlLocale(uiLocale: string = getRuntimeI18nLocale()): string | undefined {
+  if (INTL_LOCALES.has(uiLocale)) {
+    return INTL_LOCALES.get(uiLocale)
+  }
+
+  let resolved: string | undefined
+
+  try {
+    const requested = new Intl.Locale(uiLocale)
+    const ui = requested.maximize()
+    const system = maximizedSystemLocale()
+    // A tag that names its region ("en-GB") already says which conventions it wants.
+    const sameLanguage = system && system.language === ui.language && system.script === ui.script
+
+    resolved = !requested.region && sameLanguage ? undefined : uiLocale
+  } catch {
+    // A pack tag Intl cannot parse: fall back to the system locale.
+    resolved = undefined
+  }
+
+  INTL_LOCALES.set(uiLocale, resolved)
+
+  return resolved
+}
+
+/** A shared date formatter that follows the UI language (see `intlLocale`). */
+export interface LocalizedDateFormat {
+  format: (date?: Date | number) => string
+}
+
+function localizedDateFormat(options: Intl.DateTimeFormatOptions): LocalizedDateFormat {
+  const byLocale = new Map<string, Intl.DateTimeFormat>()
+
+  return {
+    format: date => {
+      const locale = intlLocale()
+      const key = locale ?? ''
+      let format = byLocale.get(key)
+
+      if (!format) {
+        format = new Intl.DateTimeFormat(locale, options)
+        byLocale.set(key, format)
+      }
+
+      return format.format(date)
+    }
+  }
+}
+
 // ── Absolute date/time formatters ──────────────────────────────────────────
 // `hh:mm` clock (thread today/yesterday lines).
-export const fmtClock = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' })
+export const fmtClock = localizedDateFormat({ hour: 'numeric', minute: '2-digit' })
 
 // Compact "day + clock", no year/seconds (artifacts, thread fallback, cron runs).
-export const fmtDayTime = new Intl.DateTimeFormat(undefined, {
+export const fmtDayTime = localizedDateFormat({
   day: 'numeric',
   hour: 'numeric',
   minute: '2-digit',
@@ -20,21 +95,34 @@ export const fmtDayTime = new Intl.DateTimeFormat(undefined, {
 })
 
 // Medium date + short time (command center session detail).
-export const fmtDateTime = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' })
+export const fmtDateTime = localizedDateFormat({ dateStyle: 'medium', timeStyle: 'short' })
 
 // Weekday + full date + clock (message time tooltips).
-export const fmtFullDateTime = new Intl.DateTimeFormat(undefined, { dateStyle: 'full', timeStyle: 'short' })
+export const fmtFullDateTime = localizedDateFormat({ dateStyle: 'full', timeStyle: 'short' })
 
 // Date only, "5 Jun 2026" (starmap tooltip).
-export const fmtDate = new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
+export const fmtDate = localizedDateFormat({ day: 'numeric', month: 'short', year: 'numeric' })
 
 // Month name alone / with year — session-list date-bucket dividers ("September",
 // "September 2025").
-export const fmtMonth = new Intl.DateTimeFormat(undefined, { month: 'long' })
-export const fmtMonthYear = new Intl.DateTimeFormat(undefined, { month: 'long', year: 'numeric' })
+export const fmtMonth = localizedDateFormat({ month: 'long' })
+export const fmtMonthYear = localizedDateFormat({ month: 'long', year: 'numeric' })
 
 // ── Relative time ──────────────────────────────────────────────────────────
-const rtf = new Intl.RelativeTimeFormat(undefined, { numeric: 'auto', style: 'short' })
+const RELATIVE_FORMATS = new Map<string, Intl.RelativeTimeFormat>()
+
+function rtf(): Intl.RelativeTimeFormat {
+  const locale = intlLocale()
+  const key = locale ?? ''
+  let format = RELATIVE_FORMATS.get(key)
+
+  if (!format) {
+    format = new Intl.RelativeTimeFormat(locale, { numeric: 'auto', style: 'short' })
+    RELATIVE_FORMATS.set(key, format)
+  }
+
+  return format
+}
 
 // Localized bidirectional "in 5 min" / "2 hr ago" — coarsest sensible unit so a
 // daily job reads "in 14 hr", not "in 840 min".
@@ -44,18 +132,18 @@ export function relativeTime(targetMs: number, nowMs = Date.now()): string {
   const sign = diff < 0 ? -1 : 1
 
   if (abs < MINUTE) {
-    return rtf.format(sign * Math.round(abs / SECOND), 'second')
+    return rtf().format(sign * Math.round(abs / SECOND), 'second')
   }
 
   if (abs < HOUR) {
-    return rtf.format(sign * Math.round(abs / MINUTE), 'minute')
+    return rtf().format(sign * Math.round(abs / MINUTE), 'minute')
   }
 
   if (abs < DAY) {
-    return rtf.format(sign * Math.round(abs / HOUR), 'hour')
+    return rtf().format(sign * Math.round(abs / HOUR), 'hour')
   }
 
-  return rtf.format(sign * Math.round(abs / DAY), 'day')
+  return rtf().format(sign * Math.round(abs / DAY), 'day')
 }
 
 // A dated divider bucket below the sidebar's unlabelled "recent" head cluster

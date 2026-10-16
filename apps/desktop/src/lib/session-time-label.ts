@@ -1,4 +1,4 @@
-import { DAY, nominalDayStart } from '@/lib/time'
+import { DAY, intlLocale, nominalDayStart } from '@/lib/time'
 
 export interface SessionTimeLabels {
   yesterday: string
@@ -21,7 +21,7 @@ function formatter(kind: FormatterKind, locale: string | undefined): Intl.DateTi
 
   if (!format) {
     try {
-      format = new Intl.DateTimeFormat(locale, OPTIONS[kind])
+      format = new Intl.DateTimeFormat(locale === undefined ? undefined : intlLocale(locale), OPTIONS[kind])
     } catch {
       format = new Intl.DateTimeFormat(undefined, OPTIONS[kind])
     }
