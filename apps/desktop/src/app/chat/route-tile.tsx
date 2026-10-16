@@ -11,7 +11,7 @@ import { lazy, type ReactNode, Suspense } from 'react'
 
 import { ContribBoundary, ContribRender } from '@/contrib/react/boundary'
 import { useContributions } from '@/contrib/react/use-contributions'
-import { translateNow } from '@/i18n'
+import { LocalizedTabTitle, runtimeTranslations, type Translations } from '@/i18n'
 import { $routeTiles, closeRouteTile, type RouteTile } from '@/store/route-tiles'
 
 import {
@@ -36,14 +36,14 @@ const ArtifactsView = lazy(async () => ({ default: (await import('../artifacts')
 const AutomationsView = lazy(async () => ({ default: (await import('../automations')).AutomationsView }))
 const MemoryView = lazy(async () => ({ default: (await import('../memory')).MemoryView }))
 
-const automationsTitle = () => translateNow('studio.pages.automations.title')
-const memoryTitle = () => translateNow('studio.pages.memory.title')
+const automationsTitle = (t: Translations) => t.studio.pages.automations.title
+const memoryTitle = (t: Translations) => t.studio.pages.memory.title
 
-// Built-in page views + their pane titles, keyed by route.
-const BUILTIN_PAGES: Record<string, { render: () => ReactNode; title: string | (() => string) }> = {
-  [ARTIFACTS_ROUTE]: { render: () => <ArtifactsView />, title: 'Artifacts' },
-  [MESSAGING_ROUTE]: { render: () => <MessagingView />, title: 'Messaging' },
-  [CAPABILITIES_ROUTE]: { render: () => <CapabilitiesView />, title: 'Capabilities' },
+// Built-in page views + their pane titles (each page's own heading), keyed by route.
+const BUILTIN_PAGES: Record<string, { render: () => ReactNode; title: (t: Translations) => string }> = {
+  [ARTIFACTS_ROUTE]: { render: () => <ArtifactsView />, title: t => t.studio.pages.artifacts.title },
+  [MESSAGING_ROUTE]: { render: () => <MessagingView />, title: t => t.studio.pages.messaging.title },
+  [CAPABILITIES_ROUTE]: { render: () => <CapabilitiesView />, title: t => t.studio.pages.capabilities.title },
   [AUTOMATIONS_ROUTE]: { render: () => <AutomationsView />, title: automationsTitle },
   [CRON_ROUTE]: { render: () => <AutomationsView />, title: automationsTitle },
   [WEBHOOKS_ROUTE]: { render: () => <AutomationsView defaultTab="webhook" />, title: automationsTitle },
@@ -66,7 +66,7 @@ function routeTitle(path: string): string {
   const builtin = BUILTIN_PAGES[path]
 
   if (builtin) {
-    return typeof builtin.title === 'function' ? builtin.title() : builtin.title
+    return builtin.title(runtimeTranslations())
   }
 
   return contributedRoutes().find(r => r.path === path)?.title ?? humanizePath(path)
@@ -121,6 +121,13 @@ export const watchRouteTiles = paneMirror<RouteTile>({
   dir: t => t.dir,
   minWidth: '22rem',
   title: routeTitle,
+  // The string above is sampled at sync time; a built-in page's tab follows
+  // the live locale (it may load, or switch, after the tile registered).
+  tabTitle: path => {
+    const builtin = BUILTIN_PAGES[path]
+
+    return builtin ? <LocalizedTabTitle select={builtin.title} /> : routeTitle(path)
+  },
   render: path => <RouteTilePane path={path} />,
   close: closeRouteTile
 })
