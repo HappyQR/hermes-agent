@@ -7,7 +7,7 @@ import { asText } from '@/lib/text'
 import { openCronRun } from '../cron/open-cron-run'
 
 import { formatClock } from './format'
-import { describeCron, type ScheduleCopy } from './schedule-builder'
+import { describeCron, describeInterval, type ScheduleCopy } from './schedule-builder'
 
 /** Summary copy from the legacy `t.cron` helpers plus the Studio additions. */
 export function scheduleCopyFor(t: Translations, locale?: string): ScheduleCopy {
@@ -21,6 +21,7 @@ export function scheduleCopyFor(t: Translations, locale?: string): ScheduleCopy 
     everyDayAt: c.everyDayAt,
     everyDayOfWeekAt: c.everyDayOfWeekAt,
     everyHourAt: c.everyHourAt,
+    everyInterval: s.everyInterval,
     monthlyOnDayAt: c.monthlyOnDayAt,
     topOfHour: c.topOfHour,
     weekdayShort: day => s.weekdaysShort[(day + 6) % 7],
@@ -43,6 +44,11 @@ export function cronExpr(job: CronJob): string {
  *  anything else shows the backend's own display. */
 export function cronScheduleText(job: CronJob, copy: ScheduleCopy): string {
   const expr = asText(job.schedule?.expr)
+  const minutes = job.schedule?.kind === 'interval' ? (job.schedule.minutes ?? 0) : 0
+
+  if (minutes > 0) {
+    return describeInterval(minutes, copy)
+  }
 
   return (
     (expr ? describeCron(expr, copy) : null) ||

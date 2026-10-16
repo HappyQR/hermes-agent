@@ -57,6 +57,10 @@ export const deStudioPages: StudioPagesTranslations = {
     durationMinutes: (minutes, seconds) => (seconds ? `${minutes} min ${seconds} s` : `${minutes} min`),
     durationHours: (hours, minutes) => (minutes ? `${hours} h ${minutes} min` : `${hours} h`),
     weeklyOnDaysAt: (days, time) => `Jeden ${days} um ${time}`,
+    everyInterval: (count, unit) =>
+      count === 1
+        ? { day: 'Jeden Tag', hour: 'Jede Stunde', minute: 'Jede Minute' }[unit]
+        : `Alle ${count} ${{ day: 'Tage', hour: 'Stunden', minute: 'Minuten' }[unit]}`,
     weekdaysShort: ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'],
     daySeparator: ', ',
     sheet: {

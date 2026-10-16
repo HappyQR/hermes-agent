@@ -54,6 +54,11 @@ export const zhHantStudioPages: StudioPagesTranslations = {
     durationMinutes: (minutes, seconds) => (seconds ? `${minutes} 分 ${seconds} 秒` : `${minutes} 分鐘`),
     durationHours: (hours, minutes) => (minutes ? `${hours} 小時 ${minutes} 分` : `${hours} 小時`),
     weeklyOnDaysAt: (days, time) => `每週${days} ${time}`,
+    everyInterval: (count, unit) => {
+      const word = { day: '天', hour: '小時', minute: '分鐘' }[unit]
+
+      return count === 1 ? `每${word}` : `每 ${count} ${word}`
+    },
     weekdaysShort: ['一', '二', '三', '四', '五', '六', '日'],
     daySeparator: '、',
     sheet: {

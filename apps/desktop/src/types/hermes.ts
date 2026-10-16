@@ -1058,6 +1058,8 @@ export interface CronJobSchedule {
   display?: string
   expr?: string
   kind?: string
+  /** `kind: 'interval'` jobs ("every 15m"). */
+  minutes?: number
 }
 
 export interface CronJobUpdates {

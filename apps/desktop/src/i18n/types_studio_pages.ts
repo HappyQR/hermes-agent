@@ -74,6 +74,8 @@ export interface StudioCronTranslations {
   durationHours: (hours: number, minutes: number) => string
   /** Weekly on several days: "Every Mon, Wed at 9:00". */
   weeklyOnDaysAt: (days: string, time: string) => string
+  /** An interval job ("every 15m"), in its largest whole unit. */
+  everyInterval: (count: number, unit: 'day' | 'hour' | 'minute') => string
   /** Short weekday names, Monday first. */
   weekdaysShort: [string, string, string, string, string, string, string]
   daySeparator: string

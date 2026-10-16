@@ -56,6 +56,10 @@ export const jaStudioPages: StudioPagesTranslations = {
     durationMinutes: (minutes, seconds) => (seconds ? `${minutes} 分 ${seconds} 秒` : `${minutes} 分`),
     durationHours: (hours, minutes) => (minutes ? `${hours} 時間 ${minutes} 分` : `${hours} 時間`),
     weeklyOnDaysAt: (days, time) => `毎週${days} ${time}`,
+    everyInterval: (count, unit) =>
+      count === 1
+        ? { day: '毎日', hour: '1 時間ごと', minute: '毎分' }[unit]
+        : `${count} ${{ day: '日', hour: '時間', minute: '分' }[unit]}ごと`,
     weekdaysShort: ['月', '火', '水', '木', '金', '土', '日'],
     daySeparator: '・',
     sheet: {

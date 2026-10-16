@@ -158,6 +158,7 @@ export interface ScheduleCopy {
   weekdayShort: (cronDay: number) => string
   weekdaysAt: (time: string) => string
   weeklyOnDaysAt: (days: string, time: string) => string
+  everyInterval: (count: number, unit: 'day' | 'hour' | 'minute') => string
 }
 
 export function describePreset(preset: SchedulePreset, copy: ScheduleCopy): string {
@@ -190,4 +191,13 @@ export function describeCron(expr: string, copy: ScheduleCopy): null | string {
   const preset = cronToPreset(expr)
 
   return preset ? describePreset(preset, copy) : null
+}
+
+/** An interval job ("every 15m") in its largest whole unit: "Every 15 minutes". */
+export function describeInterval(minutes: number, copy: ScheduleCopy): string {
+  if (minutes % 1440 === 0) {
+    return copy.everyInterval(minutes / 1440, 'day')
+  }
+
+  return minutes % 60 === 0 ? copy.everyInterval(minutes / 60, 'hour') : copy.everyInterval(minutes, 'minute')
 }

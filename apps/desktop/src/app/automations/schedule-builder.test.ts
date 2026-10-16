@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   cronToPreset,
   DEFAULT_SCHEDULE_PRESET,
+  describeInterval,
   describePreset,
   parseTimeValue,
   presetTimeValue,
@@ -18,6 +19,7 @@ const copy: ScheduleCopy = {
   everyDayAt: time => `Every day at ${time}`,
   everyDayOfWeekAt: (day, time) => `Every ${day} at ${time}`,
   everyHourAt: minute => `Every hour at :${minute}`,
+  everyInterval: (count, unit) => `Every ${count} ${unit}`,
   monthlyOnDayAt: (day, time) => `Monthly on day ${day} at ${time}`,
   topOfHour: 'At the top of every hour',
   weekdayShort: day => ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][day],
@@ -70,5 +72,18 @@ describe('schedule summaries', () => {
     expect(parseTimeValue('21:40')).toEqual({ hour: 21, minute: 40 })
     expect(parseTimeValue('')).toBeNull()
     expect(parseTimeValue('24:00')).toBeNull()
+  })
+})
+
+describe('interval jobs', () => {
+  it.each([
+    [15, 'Every 15 minute'],
+    [60, 'Every 1 hour'],
+    [90, 'Every 90 minute'],
+    [120, 'Every 2 hour'],
+    [1440, 'Every 1 day'],
+    [4320, 'Every 3 day']
+  ])('reads %i minutes in its largest whole unit', (minutes, text) => {
+    expect(describeInterval(minutes, copy)).toBe(text)
   })
 })

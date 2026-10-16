@@ -55,6 +55,23 @@ export const arStudioPages: StudioPagesTranslations = {
     durationMinutes: (minutes, seconds) => (seconds ? `${minutes} د ${seconds} ث` : `${minutes} د`),
     durationHours: (hours, minutes) => (minutes ? `${hours} س ${minutes} د` : `${hours} س`),
     weeklyOnDaysAt: (days, time) => `كل ${days} الساعة ${time}`,
+    everyInterval: (count, unit) => {
+      const [one, two, few, many] = {
+        day: ['يوم', 'يومين', 'أيام', 'يومًا'],
+        hour: ['ساعة', 'ساعتين', 'ساعات', 'ساعة'],
+        minute: ['دقيقة', 'دقيقتين', 'دقائق', 'دقيقة']
+      }[unit]
+
+      if (count === 1) {
+        return `كل ${one}`
+      }
+
+      if (count === 2) {
+        return `كل ${two}`
+      }
+
+      return count <= 10 ? `كل ${count} ${few}` : `كل ${count} ${many}`
+    },
     weekdaysShort: ['الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت', 'الأحد'],
     daySeparator: '، ',
     sheet: {

@@ -56,6 +56,23 @@ export const ruStudioPages: StudioPagesTranslations = {
     durationMinutes: (minutes, seconds) => (seconds ? `${minutes} мин ${seconds} с` : `${minutes} мин`),
     durationHours: (hours, minutes) => (minutes ? `${hours} ч ${minutes} мин` : `${hours} ч`),
     weeklyOnDaysAt: (days, time) => `Каждую неделю: ${days}, в ${time}`,
+    everyInterval: (count, unit) => {
+      const forms = {
+        day: ['день', 'дня', 'дней'],
+        hour: ['час', 'часа', 'часов'],
+        minute: ['минуту', 'минуты', 'минут']
+      }[unit]
+      const tens = count % 100
+      const ones = count % 10
+      const form =
+        tens >= 11 && tens <= 14 ? forms[2] : ones === 1 ? forms[0] : ones >= 2 && ones <= 4 ? forms[1] : forms[2]
+
+      if (count === 1) {
+        return unit === 'hour' || unit === 'day' ? `Каждый ${form}` : `Каждую ${form}`
+      }
+
+      return `Каждые ${count} ${form}`
+    },
     weekdaysShort: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
     daySeparator: ', ',
     sheet: {
