@@ -101,6 +101,11 @@ export const jaStudioSidebar: StudioSidebarTranslations = {
     renameConfirm: '名前を変更',
     delete: '削除…'
   },
+  draft: {
+    noProject: 'プロジェクトなし',
+    projectAria: name => `プロジェクト：${name}`,
+    profileAria: name => `プロファイル：${name}`
+  },
   footer: {
     updateAvailable: name => `${name} が利用可能`,
     updateGeneric: 'アップデートがあります',

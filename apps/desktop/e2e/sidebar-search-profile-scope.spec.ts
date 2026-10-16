@@ -9,6 +9,10 @@
  * shared word must surface that profile's marker and never the other one's,
  * across default → ssprobe-b → default.
  *
+ * Hermes Studio: the sidebar's search is a button into ⌘K's Sessions &
+ * Projects scope, where the sidebar answers with these full-text hits (the
+ * "In session content" group), so the hits are read from the palette's list.
+ *
  * Prerequisite: `npm run build` (dist/) and the repo's `.venv`.
  */
 
@@ -54,6 +58,8 @@ function seedSession(sandbox: Sandbox, home: string, sessionId: string, marker: 
 }
 
 const sidebar = (page: Page) => page.locator('[data-slot="sidebar"]').first()
+const palette = (page: Page) => page.locator('[data-slot="command-palette"]')
+const hits = (page: Page, text: string) => palette(page).getByRole('option').filter({ hasText: text })
 const rail = (page: Page) => page.getByRole('group', { name: 'Profiles' })
 const railButton = (page: Page, name: string) => rail(page).getByRole('button', { name, exact: true })
 
@@ -78,14 +84,18 @@ async function selectProfile(page: Page, name: string): Promise<void> {
 
 async function expectSearchScopedTo(page: Page, profile: keyof typeof MARKER): Promise<void> {
   const other = profile === 'default' ? PROFILE_B : 'default'
-  const search = page.getByRole('textbox', { name: 'Search sessions' })
 
-  await search.fill('')
+  // The sidebar's search button opens the palette on the sessions scope.
+  await sidebar(page).getByRole('button', { name: 'Search sessions, pages and commands' }).click()
+  const search = palette(page).getByRole('combobox')
+
+  await expect(search).toBeVisible({ timeout: 10_000 })
   await search.fill('zebra')
   // Only the backend can match "zebra" here, so this waits for the server hits.
-  await expect(sidebar(page).getByText(MARKER[profile])).toBeVisible({ timeout: 30_000 })
-  await expect(sidebar(page).getByText(MARKER[other])).toHaveCount(0)
-  await search.fill('')
+  await expect(hits(page, MARKER[profile]).first()).toBeVisible({ timeout: 30_000 })
+  await expect(hits(page, MARKER[other])).toHaveCount(0)
+  await page.keyboard.press('Escape')
+  await expect(palette(page)).toHaveCount(0)
 }
 
 test.describe('sidebar session search — profile scope', () => {

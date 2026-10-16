@@ -1533,7 +1533,8 @@ export interface StartWorkSessionRequest {
   draft?: string
   /** Stack the fresh session as a tab when main already holds a chat (palette/⌘O opens-from-nowhere). */
   openTab?: boolean
-  path: string
+  /** The workspace to start in; `null` = a detached draft with no folder (Home's "+"). */
+  path: null | string
   token: number
 }
 
@@ -1599,6 +1600,14 @@ export function requestStartWorkSession(path: string, draft?: string, options?: 
     path: target,
     token: startWorkToken
   })
+}
+
+/** A fresh draft with no workspace at all — the new-chat screen's "No project"
+ *  pick, the same detached start as the sidebar's Home "+" (path null never
+ *  falls back to a remembered folder). */
+export function requestDetachedSession(): void {
+  startWorkToken += 1
+  $startWorkSessionRequest.set({ path: null, token: startWorkToken })
 }
 
 export async function removeWorktreePath(

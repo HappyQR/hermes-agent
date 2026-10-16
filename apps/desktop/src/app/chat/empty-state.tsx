@@ -5,6 +5,7 @@ import { useInRouterContext, useNavigate } from 'react-router'
 
 import { requestComposerFocus, requestComposerInsert } from '@/app/chat/composer/focus'
 import { useComposerScope } from '@/app/chat/composer/scope'
+import { DraftProfileChip, DraftProjectChip } from '@/app/chat/sidebar/studio/draft-chips'
 import { SESSION_IMPORT_ROUTE } from '@/app/routes'
 import { BrandMark } from '@/components/brand-mark'
 import { Intro, type IntroProps, useIntroBody } from '@/components/chat/intro'
@@ -102,18 +103,26 @@ function EmptyStateBlocks({ personality, seed }: IntroProps) {
             </button>
           ))}
         </div>
-        {inRouter && <ImportLink label={copy.continueFrom} />}
+        {inRouter && <EmptyMeta chips={target === 'main'} label={copy.continueFrom} />}
       </div>
     </>
   )
 }
 
-// Isolated: useNavigate() throws outside a <Router>.
-function ImportLink({ label }: { label: string }) {
+// Isolated: useNavigate() throws outside a <Router>. The main chat's draft also
+// gets the project and profile chips (prototype .empty-meta); a tile's draft
+// keeps only the import link — the chips steer the main workspace.
+function EmptyMeta({ chips, label }: { chips: boolean; label: string }) {
   const navigate = useNavigate()
 
   return (
     <div className="studio-empty-meta">
+      {chips && (
+        <>
+          <DraftProjectChip />
+          <DraftProfileChip />
+        </>
+      )}
       <button className="studio-empty-link" onClick={() => navigate(SESSION_IMPORT_ROUTE)} type="button">
         <StudioIcon name="import" size={13} />
         {label}

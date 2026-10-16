@@ -101,6 +101,11 @@ export const enStudioSidebar: StudioSidebarTranslations = {
     renameConfirm: 'Rename',
     delete: 'Delete…'
   },
+  draft: {
+    noProject: 'No project',
+    projectAria: name => `Project: ${name}`,
+    profileAria: name => `Profile: ${name}`
+  },
   footer: {
     updateAvailable: name => `${name} available`,
     updateGeneric: 'Update available',

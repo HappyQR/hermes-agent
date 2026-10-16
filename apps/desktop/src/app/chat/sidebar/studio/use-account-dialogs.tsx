@@ -23,19 +23,19 @@ export interface AccountDialogs {
 /**
  * The profile dialogs the account menu opens (create, rename, delete, SOUL.md).
  *
- * While the profile rail is hidden the account menu is the profile door, so
- * it also takes over what the mounted rail used to own: answering the
- * `profile.create` hotkey, re-pulling the profile list when the window comes
- * back, and the one remote-override dialog its menu item opens. With the rail
- * on, the rail keeps those (two answers would open two dialogs).
+ * `owner`: the account menu is the profile door while the profile rail is
+ * hidden, so it then also takes over what the mounted rail used to own:
+ * answering the `profile.create` hotkey, re-pulling the profile list when the
+ * window comes back, and the one remote-override dialog its menu item opens.
+ * With the rail on — and for any other host (the new-chat profile chip) —
+ * those stay with their owner (two answers would open two dialogs).
  */
-export function useAccountDialogs(railVisible: boolean): AccountDialogs {
+export function useAccountDialogs(owner: boolean): AccountDialogs {
   const profiles = useStore($profiles)
   const [createOpen, setCreateOpen] = useState(false)
   const [pendingRename, setPendingRename] = useState<null | ProfileInfo>(null)
   const [pendingDelete, setPendingDelete] = useState<null | ProfileInfo>(null)
   const [pendingSoul, setPendingSoul] = useState<null | string>(null)
-  const owner = !railVisible
 
   useProfileRailRefreshOnActive(owner)
 

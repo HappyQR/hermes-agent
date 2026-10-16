@@ -101,6 +101,11 @@ export const zhStudioSidebar: StudioSidebarTranslations = {
     renameConfirm: '重命名',
     delete: '删除…'
   },
+  draft: {
+    noProject: '不关联项目',
+    projectAria: name => `项目：${name}`,
+    profileAria: name => `配置档案：${name}`
+  },
   footer: {
     updateAvailable: name => `${name} 可用`,
     updateGeneric: '有可用更新',

@@ -91,6 +91,27 @@ export default {
     await closeMenus(page, sleep)
   },
 
+  async 'empty-chips'(page, { shot, sleep }) {
+    await page.keyboard.press('Meta+N')
+    await page.locator('[data-slot="draft-project-chip"]').first().waitFor({ state: 'visible', timeout: 15_000 })
+    await sleep(900)
+    await shot(page, 'empty-chips')
+  },
+
+  async 'empty-chips-project'(page, { shot, sleep }) {
+    await page.locator('[data-slot="draft-project-chip"]').first().click()
+    await sleep(500)
+    await shot(page, 'empty-chips-project')
+    await closeMenus(page, sleep)
+  },
+
+  async 'empty-chips-profile'(page, { shot, sleep }) {
+    await page.locator('[data-slot="draft-profile-chip"]').first().click()
+    await sleep(500)
+    await shot(page, 'empty-chips-profile')
+    await closeMenus(page, sleep)
+  },
+
   async 'sidebar-row-menu'(page, { shot, sleep }) {
     const row = page.locator(`${SIDEBAR} .group.row-hover`).nth(1)
     await row.click({ button: 'right' })
