@@ -28,6 +28,7 @@ import App from './app'
 import { RootErrorBoundary } from './components/error-boundary'
 import { HapticsProvider } from './components/haptics-provider'
 import { RootTooltipProvider } from './components/ui/tooltip'
+import { bootRuntimeLocale } from './i18n/last-locale'
 import { ProfileI18nProvider as I18nProvider } from './i18n/profile-provider'
 import { installClipboardShim } from './lib/clipboard'
 import { queryClient } from './lib/query-client'
@@ -87,6 +88,8 @@ if (winParam === 'overlay') {
   // main window's visibility state to :root so decorative infinite
   // animations stop producing frames when nobody can see them.
   installRendererAnimationPauseState()
+  // Boot surfaces paint before the backend's display.language arrives.
+  bootRuntimeLocale()
 
   createRoot(document.getElementById('root')!).render(
     <StrictMode>

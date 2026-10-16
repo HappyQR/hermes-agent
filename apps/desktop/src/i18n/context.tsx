@@ -13,6 +13,7 @@ import {
   normalizeLocale,
   resolveInitialLocale
 } from './languages'
+import { lastLocale, rememberLocale } from './last-locale'
 import { $appLocaleVersion, normalizeLocaleId, resolveTranslations } from './registry'
 import { $requestedLocale, setRuntimeI18nLocale } from './runtime'
 import type { Locale, Translations } from './types'
@@ -91,6 +92,9 @@ export interface I18nProviderProps {
   children: ReactNode
   configClient?: I18nConfigClient | null
   initialLocale?: unknown
+  /** The app window: start from the last settled language (boot surfaces paint
+   *  before the config loads) and remember each one the config or the user settles. */
+  persistLocale?: boolean
   /** Reconcile when the window's config owner changes, without remounting its children. */
   scopeKey?: string
 }
@@ -99,9 +103,13 @@ export function I18nProvider({
   children,
   configClient = defaultConfigClient,
   initialLocale,
+  persistLocale = false,
   scopeKey
 }: I18nProviderProps) {
-  const [locale, setLocaleState] = useState<Locale>(() => normalizeLocale(initialLocale))
+  const [locale, setLocaleState] = useState<Locale>(() =>
+    normalizeLocale(initialLocale ?? (persistLocale ? lastLocale() : undefined))
+  )
+
   const [isLoadingConfig, setIsLoadingConfig] = useState(false)
   const [isSavingLocale, setIsSavingLocale] = useState(false)
   const [configLoadError, setConfigLoadError] = useState<Error | null>(null)
@@ -133,6 +141,13 @@ export function I18nProvider({
     setRuntimeI18nLocale(locale)
     applyDocumentLocale(locale, isRtlLocale(locale))
   }, [locale, registryVersion])
+
+  // A failed config read settles on English; that fallback is not a choice.
+  useEffect(() => {
+    if (persistLocale && !configLoadError) {
+      rememberLocale(locale)
+    }
+  }, [configLoadError, locale, persistLocale])
 
   // A saved `display.language` the app could not render at read time (`pl`
   // before its pack arrived) is parked in $requestedLocale; the moment a
