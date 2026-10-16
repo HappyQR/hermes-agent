@@ -118,6 +118,7 @@ import { Butterbar } from '../shell/butterbar'
 import { registerInspectorBand } from '../shell/inspector/inspector-band'
 import { $agentsPaneOpen } from '../shell/inspector/inspector-state'
 import { INSPECTOR_PANE_SIZE } from '../shell/inspector/kinds'
+import { registerSessionsBand } from '../shell/sessions-band'
 import { TermsButterbar } from '../shell/terms-butterbar'
 import { WorkspaceToolbarBand } from '../shell/toolbar/workspace-toolbar'
 
@@ -466,8 +467,10 @@ registry.registerMany([
 ])
 
 registerLayoutPresets()
-// Studio: the inspector zone's segmented header.
+// Studio: the inspector zone's segmented header; the sessions column's band
+// without its SESSIONS | BOTS strip.
 registerInspectorBand()
+registerSessionsBand()
 
 declareDefaultTree(DEFAULT_TREE, BASIC_TREE)
 
