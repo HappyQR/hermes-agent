@@ -99,9 +99,8 @@ export function DraftProjectChip() {
               }
             }}
           >
-            <span className="grid shrink-0 place-items-center" style={project.color ? { color: project.color } : undefined}>
-              <StudioIcon name="folder" size={15} />
-            </span>
+            {/* Inline: the menu row tints a bare svg tertiary otherwise. */}
+            <StudioIcon name="folder" size={15} style={project.color ? { color: project.color } : undefined} />
             <span className="min-w-0 flex-1 truncate">{project.label}</span>
             {project.id === current?.id ? check : null}
           </DropdownMenuItem>
