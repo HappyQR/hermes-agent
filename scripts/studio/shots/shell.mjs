@@ -55,7 +55,8 @@ export default {
     await shot(page, 'split')
     await layoutMenu().click()
     await sleep(400)
-    await page.getByRole('menuitem', { name: /^(单栏|Single pane)$/ }).click()
+    // A checkbox item: it reads checked while no split tile is open.
+    await page.getByRole('menuitemcheckbox', { name: /^(单栏|Single pane)$/ }).click()
     await sleep(800)
   },
   inspector: async (page, { shot, sleep }) => {
