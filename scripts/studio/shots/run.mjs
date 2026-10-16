@@ -363,6 +363,11 @@ async function main() {
       await sleep(4000)
       console.log(`  · ${scenario.title}`)
     }
+    // The titler runs after each turn, so a session's live title push can land
+    // while the next one is in front; reload once to list the stored titles.
+    await page.reload()
+    await composer(page, 60_000)
+    await sleep(2500)
   }
 
   for (let i = 0; i < args.length; i++) {
