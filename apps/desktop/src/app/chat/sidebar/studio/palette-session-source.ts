@@ -62,7 +62,7 @@ export function contentMatches(
 /**
  * The sidebar's server full-text session search, answered inside ⌘K through
  * the palette's source seam (command-palette/scopes.ts): registered while the
- * palette is open, so 全部 offers "Search all session content", and in the
+ * palette is open, so All offers "Search all session content", and in the
  * Sessions & Projects scope it lists the sessions whose content matches the
  * query — ranked by the backend, with the matching snippet.
  */
