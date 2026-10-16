@@ -91,6 +91,10 @@ export const zhHantStudioChat: StudioChatTranslations = {
     join: clauses => clauses.join('，'),
     moreCommands: (first, more) => `${first} 及另外 ${more} 條指令`
   },
+  voice: {
+    label: '語音對話',
+    doneSpeaking: '說完了'
+  },
   transcript: {
     searchResults: '搜尋結果',
     delegatedTask: '委派的任務',

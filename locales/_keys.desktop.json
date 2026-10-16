@@ -4938,6 +4938,8 @@
     "studio.chat.tray.titles.subagent",
     "studio.chat.tray.titles.todo",
     "studio.chat.tray.todoCaption",
+    "studio.chat.voice.doneSpeaking",
+    "studio.chat.voice.label",
     "studio.menu.app.about",
     "studio.menu.app.checkForUpdates",
     "studio.menu.app.hide",

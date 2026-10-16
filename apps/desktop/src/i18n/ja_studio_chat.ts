@@ -92,6 +92,10 @@ export const jaStudioChat: StudioChatTranslations = {
     join: clauses => clauses.join('、'),
     moreCommands: (first, more) => `${first} ほか ${more} 件のコマンド`
   },
+  voice: {
+    label: '音声会話',
+    doneSpeaking: '話し終えた'
+  },
   transcript: {
     searchResults: '検索結果',
     delegatedTask: '委任したタスク',

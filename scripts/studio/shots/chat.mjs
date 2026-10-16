@@ -105,6 +105,23 @@ export default {
     await escape(page, sleep)
   },
 
+  // A live voice conversation (run with --fake-media: Chromium's fake mic lets
+  // the real conversation open and listen), then ended again.
+  async 'voice-live'(page, { openSession, shot, sleep }) {
+    await openSession(page, '分组重构')
+    const talk = composerRoot(page).locator('[data-slot="composer-talk"]').first()
+    if (await talk.count()) {
+      await talk.click()
+      await sleep(2500)
+    }
+    await shot(page, 'voice-live')
+    const end = composerRoot(page).locator('[data-slot="studio-voice-end"], button[aria-label="结束语音对话"]').first()
+    if (await end.count()) {
+      await end.click()
+      await sleep(500)
+    }
+  },
+
   // The empty state (greeting, hero composer, starters), then a starter drafted.
   async empty(page, { newChat, shot, sleep }) {
     await newChat(page)

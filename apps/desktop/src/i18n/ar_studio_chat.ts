@@ -121,6 +121,10 @@ export const arStudioChat: StudioChatTranslations = {
     moreCommands: (first, more) =>
       `${first} + ${arCount(more, ['أمر آخر', 'أمران آخران', 'أوامر أخرى', 'أمرًا آخر', 'أمر آخر'])}`
   },
+  voice: {
+    label: 'محادثة صوتية',
+    doneSpeaking: 'انتهيت من الكلام'
+  },
   transcript: {
     searchResults: 'نتائج البحث',
     delegatedTask: 'مهمة مفوَّضة',

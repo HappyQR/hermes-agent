@@ -104,6 +104,10 @@ export const deStudioChat: StudioChatTranslations = {
     join: clauses => clauses.join(' · '),
     moreCommands: (first, more) => `${first} + ${more} ${more === 1 ? 'Befehl' : 'Befehle'}`
   },
+  voice: {
+    label: 'Sprachunterhaltung',
+    doneSpeaking: 'Fertig gesprochen'
+  },
   transcript: {
     searchResults: 'Suchergebnisse',
     delegatedTask: 'Delegierte Aufgabe',

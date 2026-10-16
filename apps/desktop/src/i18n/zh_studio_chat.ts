@@ -87,6 +87,10 @@ export const zhStudioChat: StudioChatTranslations = {
     join: clauses => clauses.join('，'),
     moreCommands: (first, more) => `${first} 及另外 ${more} 条命令`
   },
+  voice: {
+    label: '语音对话',
+    doneSpeaking: '说完了'
+  },
   transcript: {
     searchResults: '搜索结果',
     delegatedTask: '委派的任务',

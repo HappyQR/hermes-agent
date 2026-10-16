@@ -96,6 +96,10 @@ export const esStudioChat: StudioChatTranslations = {
     join: clauses => clauses.map((clause, index) => (index === 0 ? clause : lowerFirst(clause))).join(', '),
     moreCommands: (first, more) => `${first} + ${more} ${more === 1 ? 'comando' : 'comandos'}`
   },
+  voice: {
+    label: 'Conversación por voz',
+    doneSpeaking: 'Ya terminé'
+  },
   transcript: {
     searchResults: 'Resultados de búsqueda',
     delegatedTask: 'Tarea delegada',
