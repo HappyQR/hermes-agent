@@ -238,7 +238,9 @@ cmd_sync() {
   fi
   if [ "$push" = 1 ]; then
     bold "Pushing $BRANCH to origin"
-    git_repo push origin "$BRANCH"
+    # The first push after an upstream release carries that release's objects;
+    # git's default HTTP buffer drops packs that large mid-upload.
+    git_repo -c http.postBuffer=1048576000 push origin "$BRANCH"
   fi
 }
 
