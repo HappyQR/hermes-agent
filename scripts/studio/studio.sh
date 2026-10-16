@@ -8,7 +8,9 @@
 # that branch, so the app and its backend always speak the same protocol, then
 # rebuilds and reinstalls /Applications/Hermes Studio.app.
 #
-#   studio.sh update   [--skip-agent] [--push]   hermes update, then sync
+#   studio.sh update   [--skip-agent] [--yes] [--push]
+#                                                 hermes update, then sync
+#                                                 (--yes answers hermes update's prompts)
 #   studio.sh sync     [--no-build] [--push]     merge the agent's commit, build, install
 #   studio.sh build                               deps + renderer + packaged .app
 #   studio.sh install                             copy the built app into place
@@ -196,17 +198,20 @@ cmd_sync() {
 }
 
 cmd_update() {
-  local skip_agent=0 sync_args=()
+  local skip_agent=0 agent_args=() sync_args=()
   for arg in "$@"; do
     case "$arg" in
       --skip-agent) skip_agent=1 ;;
+      # Unattended runs: hermes update otherwise stops on its migration and
+      # stash-restore prompts.
+      --yes|-y) agent_args+=(--yes) ;;
       *) sync_args+=("$arg") ;;
     esac
   done
   if [ "$skip_agent" = 0 ]; then
     bold "Updating Hermes Agent (hermes update)"
     command -v hermes >/dev/null || die "'hermes' is not on PATH."
-    hermes update
+    hermes update "${agent_args[@]+"${agent_args[@]}"}"
   fi
   cmd_sync "${sync_args[@]+"${sync_args[@]}"}"
 }
@@ -225,6 +230,6 @@ case "${1:-status}" in
   status) cmd_status ;;
   link) cmd_link ;;
   open) open -a "$INSTALLED_APP" ;;
-  -h|--help|help) sed -n '2,20p' "$0" | sed 's/^# \{0,1\}//' ;;
+  -h|--help|help) awk 'NR == 1 { next } /^#/ { sub(/^# ?/, ""); print; next } { exit }' "$0" ;;
   *) die "Unknown command: $1 (try: update, sync, build, install, status, link, open)" ;;
 esac
