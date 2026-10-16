@@ -47,6 +47,19 @@
   border-radius: 0;
   padding: 0.375rem 0.875rem;
   box-shadow: inset 0 0.5px 0 var(--ui-line);
+  /* Hover like the window's own rows (the shared row-hover reads this). */
+  --ui-row-hover-background: var(--ui-hover);
+}
+
+/* A credential list hosted in a padded cell runs edge to edge, as the
+   window's rows do, so a row's hover spans the card instead of floating as
+   a square inside the cell's gutter. The rows keep that gutter inside. */
+[data-slot='settings-window'] [data-slot='form-cell'] [data-credential-list] {
+  margin-inline: -0.875rem;
+}
+
+[data-slot='settings-window'] [data-slot='form-cell'] [data-credential-list] [data-slot='credential-card'] {
+  padding-inline: 0.875rem;
 }
 
 /* An open card is a disclosure, not a selection (prototype .disclosure): no
