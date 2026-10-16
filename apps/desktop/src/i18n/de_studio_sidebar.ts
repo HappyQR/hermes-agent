@@ -30,9 +30,13 @@ export const deStudioSidebar: StudioSidebarTranslations = {
     newSessionHere: 'Neue Session in diesem Projekt',
     newSessionInLane: 'Neue Session in dieser Spur'
   },
+  dateGroupToday: 'Heute',
+  projectGroupNone: 'Ohne Projekt',
   scope: {
     tip: 'Nur Sessions dieses Projekts werden angezeigt',
-    clear: 'Alle Sessions anzeigen'
+    clear: 'Alle Sessions anzeigen',
+    allProfilesTip: 'Sessions aller Profile werden angezeigt',
+    allProfilesClear: 'Nur Sessions dieses Profils anzeigen'
   },
   sessions: {
     viewOptions: 'Darstellungsoptionen',
@@ -112,9 +116,7 @@ export const deStudioSidebar: StudioSidebarTranslations = {
     updateBackend: 'Backend-Update verfügbar',
     updateView: 'Zum Anzeigen klicken',
     updateBehind: count =>
-      count === 1
-        ? '1 Commit zurück · Zum Anzeigen klicken'
-        : `${count} Commits zurück · Zum Anzeigen klicken`,
+      count === 1 ? '1 Commit zurück · Zum Anzeigen klicken' : `${count} Commits zurück · Zum Anzeigen klicken`,
     updateApplying: 'Wird aktualisiert…',
     updateRestart: 'Neu starten, um das Update abzuschließen',
     account: 'Profile und Gateways',

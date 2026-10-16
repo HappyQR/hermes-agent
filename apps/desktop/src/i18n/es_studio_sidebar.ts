@@ -30,9 +30,13 @@ export const esStudioSidebar: StudioSidebarTranslations = {
     newSessionHere: 'Nueva sesión en este proyecto',
     newSessionInLane: 'Nueva sesión en este carril'
   },
+  dateGroupToday: 'Hoy',
+  projectGroupNone: 'Sin proyecto',
   scope: {
     tip: 'Solo se muestran las sesiones de este proyecto',
-    clear: 'Mostrar todas las sesiones'
+    clear: 'Mostrar todas las sesiones',
+    allProfilesTip: 'Se muestran las sesiones de todos los perfiles',
+    allProfilesClear: 'Mostrar solo las sesiones de este perfil'
   },
   sessions: {
     viewOptions: 'Opciones de vista',

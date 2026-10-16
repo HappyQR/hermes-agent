@@ -29,9 +29,13 @@ export const jaStudioSidebar: StudioSidebarTranslations = {
     newSessionHere: 'このプロジェクトで新規セッション',
     newSessionInLane: 'このレーンで新規セッション'
   },
+  dateGroupToday: '今日',
+  projectGroupNone: 'プロジェクト外',
   scope: {
     tip: 'このプロジェクトのセッションのみ表示',
-    clear: 'すべてのセッションを表示'
+    clear: 'すべてのセッションを表示',
+    allProfilesTip: 'すべてのプロファイルのセッションを表示中',
+    allProfilesClear: 'このプロファイルのセッションのみ表示'
   },
   sessions: {
     viewOptions: '表示オプション',

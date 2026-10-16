@@ -26,8 +26,10 @@ export const ruStudioSidebar: StudioSidebarTranslations = {
     open: 'Открыть',
     pendingPairing: count =>
       `${count} ${plural(count, 'запрос на сопряжение ожидает', 'запроса на сопряжение ожидают', 'запросов на сопряжение ожидают')}`,
-    cronJobs: count => `${count} ${plural(count, 'запланированная задача', 'запланированные задачи', 'запланированных задач')}`,
-    cronFailing: count => `${count} ${plural(count, 'задача завершается', 'задачи завершаются', 'задач завершаются')} с ошибкой`
+    cronJobs: count =>
+      `${count} ${plural(count, 'запланированная задача', 'запланированные задачи', 'запланированных задач')}`,
+    cronFailing: count =>
+      `${count} ${plural(count, 'задача завершается', 'задачи завершаются', 'задач завершаются')} с ошибкой`
   },
   section: {
     expand: 'Развернуть',
@@ -45,9 +47,13 @@ export const ruStudioSidebar: StudioSidebarTranslations = {
     newSessionHere: 'Новый сеанс в этом проекте',
     newSessionInLane: 'Новый сеанс в этой ветке'
   },
+  dateGroupToday: 'Сегодня',
+  projectGroupNone: 'Вне проектов',
   scope: {
     tip: 'Показаны только сеансы этого проекта',
-    clear: 'Показать все сеансы'
+    clear: 'Показать все сеансы',
+    allProfilesTip: 'Показаны сеансы всех профилей',
+    allProfilesClear: 'Показывать только сеансы этого профиля'
   },
   sessions: {
     viewOptions: 'Параметры вида',

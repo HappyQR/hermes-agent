@@ -30,9 +30,16 @@ export interface StudioSidebarTranslations {
     newSessionHere: string
     newSessionInLane: string
   }
+  /** The time grouping's caption over today's sessions (the plain "Today"). */
+  dateGroupToday: string
+  /** The project grouping's caption over sessions outside every project. */
+  projectGroupNone: string
   scope: {
     tip: string
     clear: string
+    /** The Sessions header chip while the list spans every profile. */
+    allProfilesTip: string
+    allProfilesClear: string
   }
   sessions: {
     viewOptions: string

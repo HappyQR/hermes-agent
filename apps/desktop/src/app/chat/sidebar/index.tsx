@@ -46,6 +46,7 @@ import {
   $profileScope,
   ALL_PROFILES,
   normalizeProfileKey,
+  setShowAllProfiles,
   sidebarProfileForScope
 } from '@/store/profile'
 import { $projectScope, ALL_PROJECTS, exitProjectScope } from '@/store/project-scope'
@@ -122,16 +123,12 @@ import {
   useRepoWorktreeMap
 } from './projects'
 import { WorktreeDialog } from './projects/worktree-dialog'
-import {
-  SidebarLoadErrorState,
-  SidebarSessionSkeletons,
-  SidebarStorageCorruptNotice
-} from './section-states'
+import { SidebarLoadErrorState, SidebarSessionSkeletons, SidebarStorageCorruptNotice } from './section-states'
 import { buildSessionByAnyId, resolvePinnedSessions } from './session-index'
 import { SidebarSessionsSection } from './sessions-section'
 import { SidebarContributedSections } from './studio/contributed-sections'
 import { $projectTreeSettled, $reposScanSettled, $sessionsSettled } from './studio/first-load'
-import { flatListGrouping } from './studio/flat-groupings'
+import { flatListGrouping, type ProjectBucketOf } from './studio/flat-groupings'
 import { SidebarNav } from './studio/nav'
 import { projectNewSessionPath } from './studio/project-row'
 import { SidebarProjectsSection } from './studio/projects-section'
@@ -228,7 +225,11 @@ export function ChatSidebar({
   // The active sort key as an id order. The flat list applies it within its
   // dividers; groups apply it to their own lanes.
   const sortOrderIds = useStore($sidebarSessionRankIds)
-  const agentsGrouped = effectiveGrouping === 'project'
+  // Studio lists projects in the Projects section, so the Sessions list never
+  // turns into upstream's project overview (which repeated them, with a Home
+  // lane): it stays the chronological list, captioned by project only when
+  // that grouping is picked.
+  const agentsGrouped = false
   const showAllSessions = useStore($sidebarShowAllSessions)
   const pinnedSessionIds = useStore($pinnedSessionIds)
   const unconfirmedPinWrites = useStore($unconfirmedPinWrites)
@@ -470,7 +471,8 @@ export function ChatSidebar({
         local: scopedSessions,
         matches: session =>
           (!filtersNarrow || sessionMatchesFilters(session)) &&
-          (projectScope === ALL_PROJECTS || sessionMatchesProjectFilter(session, [projectScope], projects, projectOwners)),
+          (projectScope === ALL_PROJECTS ||
+            sessionMatchesProjectFilter(session, [projectScope], projects, projectOwners)),
         messaging: visibleMessagingSessions
       }),
     [
@@ -488,7 +490,10 @@ export function ChatSidebar({
 
   // Source buckets present in the list — View options' source chips.
   const poolSources = useMemo(
-    () => [...new Set([...scopedSessions, ...visibleMessagingSessions].map(sessionSourceBucket))].sort(compareSourceBuckets),
+    () =>
+      [...new Set([...scopedSessions, ...visibleMessagingSessions].map(sessionSourceBucket))].sort(
+        compareSourceBuckets
+      ),
     [scopedSessions, visibleMessagingSessions]
   )
 
@@ -744,7 +749,10 @@ export function ChatSidebar({
             isHiddenFromProjects
           )
         ),
-      activeProjectId
+      // No active-first rule: scoping the list to a project (a click on it)
+      // also makes it active, so the clicked row jumped to the top, and back
+      // once a refresh cleared the active pointer.
+      null
     )
 
     // Layer the user's manual drag-order on top of the deterministic sort. Empty
@@ -765,16 +773,7 @@ export function ChatSidebar({
     })
 
     return orderProjectsByIds(deduped, projectOrderIds)
-  }, [
-    projectTree,
-    dismissedAutoProjects,
-    orderRepos,
-    activeProjectId,
-    projectFilter,
-    projectOrderIds,
-    isHiddenFromProjects,
-    s
-  ])
+  }, [projectTree, dismissedAutoProjects, orderRepos, projectFilter, projectOrderIds, isHiddenFromProjects, s])
 
   // The overview only renders in grouped mode; the model stays live regardless
   // so scoping is consistent across views.
@@ -1014,6 +1013,18 @@ export function ChatSidebar({
   // Real projects (the synthetic Home bucket is not one) for the Projects section.
   const sectionProjects = useMemo(() => projectModel.filter(node => !node.isNoProject), [projectModel])
 
+  // The project grouping's caption for a session: the project the list scopes
+  // it to (the Projects section's own rule), or none outside every project.
+  const projectBucketOf = useCallback<ProjectBucketOf>(
+    session => {
+      const id = sessionBucketId(session, projects, projectOwners)
+      const project = id ? sectionProjects.find(node => node.id === id) : undefined
+
+      return project ? { id: project.id, label: project.label } : null
+    },
+    [projects, projectOwners, sectionProjects]
+  )
+
   // Mirror the section's skeleton gate (projectsLoading + nothing to show yet):
   // while the skeleton is up there's no point also spinning the header count.
   const projectsSkeletonVisible =
@@ -1070,10 +1081,9 @@ export function ChatSidebar({
 
   // The archived view is its own (single, capped) query — paging the live
   // sessions list from under it would just fold un-archived rows back in.
-  const hasMoreSessions =
-    (showAllProfiles
-      ? Object.values(sessionProfilesTruncated).some(Boolean)
-      : Boolean(sessionProfilesTruncated[profileScope]))
+  const hasMoreSessions = showAllProfiles
+    ? Object.values(sessionProfilesTruncated).some(Boolean)
+    : Boolean(sessionProfilesTruncated[profileScope])
 
   const displayRecentsCountRef = useRef(0)
   const loadedRecentsCountRef = useRef(0)
@@ -1272,145 +1282,157 @@ export function ChatSidebar({
               data-sessions-mode={sessionsMode}
               data-sessions-project={inProject ? (enteredProjectId ?? undefined) : undefined}
             >
-                {pinnedSessions.length > 0 && (
-                  <SidebarSessionsSection
-                    activeSessionId={activeSidebarSessionId}
-                    // Inbox style rides whichever view is active — pinned rows
-                    // included, so one column never mixes card and inline
-                    // geometry at the section boundary.
-                    card={cardRows}
-                    contentClassName="flex flex-col gap-px"
-                    dndSensors={dndSensors}
-                    emptyState={null}
-                    header={
-                      <SidebarSectionHeader
-                        collapsed={pinsCollapsed}
-                        count={pinnedSessions.length}
-                        onToggle={togglePins}
-                        title={s.pinned}
-                      />
-                    }
-                    label={s.pinned}
-                    onArchiveSession={onArchiveSession}
-                    onBranchSession={onBranchSession}
-                    onDeleteSession={onDeleteSession}
-                    onReorderSessions={reorderPinned}
-                    onResumeSession={onResumeSession}
-                    onToggle={togglePins}
-                    onTogglePin={unpinSession}
-                    onToggleUnread={toggleUnread}
-                    open={!pinsCollapsed}
-                    pinned
-                    rootClassName="mt-1.5 p-0"
-                    sessions={pinnedSessions}
-                    showProfileTags={showAllProfiles}
-                    sortable={pinnedSessions.length > 1}
-                  />
-                )}
-
-                {inProject && projectLoadFailed && <SidebarLoadErrorState onRetry={retryProject} />}
+              {pinnedSessions.length > 0 && (
                 <SidebarSessionsSection
-                  activeProjectId={activeProjectId}
                   activeSessionId={activeSidebarSessionId}
-                  // Inbox style is a render variant, not a grouping — it rides
-                  // whichever view is active: flat recents, project lanes, and
-                  // the overview previews all render the same card.
+                  // Inbox style rides whichever view is active — pinned rows
+                  // included, so one column never mixes card and inline
+                  // geometry at the section boundary.
                   card={cardRows}
                   contentClassName="flex flex-col gap-px"
                   dndSensors={dndSensors}
-                  emptyState={
-                    inProject && projectLoadFailed ? null : showSessionSkeletons || (inProject && projectLoading) ? (
-                      <SidebarSessionSkeletons />
-                    ) : !inProject && sessionsLoadError ? (
-                      <SidebarLoadErrorState onRetry={() => void onRetrySessions()} />
-                    ) : studioFiltersActive && !inProject ? (
-                      <SessionsFilteredEmpty />
-                    ) : (
-                      <SessionsQuietEmpty
-                        text={inProject ? s.projectEmpty : pinnedSessions.length > 0 ? s.allPinned : s.noSessions}
-                      />
-                    )
-                  }
-                  footer={
-                    // Hidden only when workspace-grouped — those groups page
-                    // themselves. Profile groups don't: this one footer fetches the
-                    // next page, which grows every profile at once.
-                    !agentsGrouped && !showSessionSkeletons && (hasMoreSessions || hasMoreMessaging) ? (
-                      <SidebarLoadMoreRow
-                        loading={
-                          sessionsLoading ||
-                          recentsLoadMorePending ||
-                          Object.keys(messagingLoadMorePending).length > 0
-                        }
-                        onClick={loadMoreList}
-                        // Recents are post-filtered to non-project sessions, so a
-                        // backend page size (50) is not a truthful "rows you'll
-                        // see" count. Use the generic label instead of a fake N.
-                        step={0}
-                      />
-                    ) : null
-                  }
-                  forceEmptyState={showSessionSkeletons}
-                  // Archived is a plain list, and so is a magnitude-ranked one.
-                  // Otherwise project lanes stay chronological whatever the flat
-                  // list does — only the flat list can swap its dividers for
-                  // WORKING / DONE.
-                  grouping={flatListGrouping(effectiveGrouping, rankedGlobally)}
-                  groups={displayAgentGroups}
+                  emptyState={null}
                   header={
                     <SidebarSectionHeader
-                      collapsed={sessionsCollapsed}
-                      count={displayAgentSessions.length}
-                      extra={
-                        scopedProject ? (
-                          <SidebarScopeChip label={scopedProject.label} onClear={exitProjectScope} />
-                        ) : undefined
-                      }
-                      onToggle={toggleSessions}
-                      title={s.sessions}
-                      tools={
-                        <>
-                          <SidebarViewOptions sources={poolSources} />
-                          <SessionsAddButton
-                            cwd={scopedProject ? projectNewSessionPath(scopedProject) : null}
-                            onNewSession={onNewSessionInWorkspace}
-                            onNewSessionSplit={onNewSessionSplit}
-                          />
-                        </>
-                      }
+                      collapsed={pinsCollapsed}
+                      count={pinnedSessions.length}
+                      onToggle={togglePins}
+                      title={s.pinned}
                     />
                   }
-                  label={s.sessions}
-                  liveSessions={inProject ? enteredProjectOverlaySessions : undefined}
-                  manualOrderIds={agentOrderManual ? agentOrderIds : sortOrderIds}
+                  label={s.pinned}
                   onArchiveSession={onArchiveSession}
                   onBranchSession={onBranchSession}
                   onDeleteSession={onDeleteSession}
-                  onEnterProject={onEnterProject}
-                  onNewSessionInWorkspace={onNewSessionInWorkspace}
-                  onNewSessionSplit={onNewSessionSplit}
-                  onReorderProjects={showAllProfiles ? undefined : reorderProjects}
-                  onReorderSessions={showAllProfiles ? undefined : reorderSessions}
+                  onReorderSessions={reorderPinned}
                   onResumeSession={onResumeSession}
-                  onToggle={toggleSessions}
-                  onTogglePin={pinSession}
+                  onToggle={togglePins}
+                  onTogglePin={unpinSession}
                   onToggleUnread={toggleUnread}
-                  open={!sessionsCollapsed}
-                  pinned={false}
-                  projectContent={inProject ? enteredProjectContent : undefined}
-                  projectOverview={projectOverview}
-                  projectOverviewHidden={overviewHidden}
-                  projectOverviewPreviews={overviewPreviews}
-                  projectRepoWorktrees={inProject ? scopedRepoWorktrees : undefined}
-                  projectsLoading={worktreeGroupingActive ? projectTreeLoading : false}
-                  removedSessionIds={inProject ? removedSessionIds : undefined}
+                  open={!pinsCollapsed}
+                  pinned
                   rootClassName="mt-1.5 p-0"
-                  scrollElement={scrollElement}
-                  sessions={displayAgentSessions}
-                  // Every profile in one flat list: each row says whose it is (#66003).
-                  showProfileTags={showAllProfiles && !ownerGrouped}
-                  sortable={!showAllProfiles && agentSessions.length > 1}
+                  sessions={pinnedSessions}
+                  showProfileTags={showAllProfiles}
+                  sortable={pinnedSessions.length > 1}
                 />
+              )}
+
+              {inProject && projectLoadFailed && <SidebarLoadErrorState onRetry={retryProject} />}
+              <SidebarSessionsSection
+                activeProjectId={activeProjectId}
+                activeSessionId={activeSidebarSessionId}
+                // Inbox style is a render variant, not a grouping — it rides
+                // whichever view is active: flat recents, project lanes, and
+                // the overview previews all render the same card.
+                card={cardRows}
+                contentClassName="flex flex-col gap-px"
+                dndSensors={dndSensors}
+                emptyState={
+                  inProject && projectLoadFailed ? null : showSessionSkeletons || (inProject && projectLoading) ? (
+                    <SidebarSessionSkeletons />
+                  ) : !inProject && sessionsLoadError ? (
+                    <SidebarLoadErrorState onRetry={() => void onRetrySessions()} />
+                  ) : studioFiltersActive && !inProject ? (
+                    <SessionsFilteredEmpty />
+                  ) : (
+                    <SessionsQuietEmpty
+                      text={inProject ? s.projectEmpty : pinnedSessions.length > 0 ? s.allPinned : s.noSessions}
+                    />
+                  )
+                }
+                footer={
+                  // Hidden only when workspace-grouped — those groups page
+                  // themselves. Profile groups don't: this one footer fetches the
+                  // next page, which grows every profile at once.
+                  !agentsGrouped && !showSessionSkeletons && (hasMoreSessions || hasMoreMessaging) ? (
+                    <SidebarLoadMoreRow
+                      loading={
+                        sessionsLoading || recentsLoadMorePending || Object.keys(messagingLoadMorePending).length > 0
+                      }
+                      onClick={loadMoreList}
+                      // Recents are post-filtered to non-project sessions, so a
+                      // backend page size (50) is not a truthful "rows you'll
+                      // see" count. Use the generic label instead of a fake N.
+                      step={0}
+                    />
+                  ) : null
+                }
+                forceEmptyState={showSessionSkeletons}
+                // Archived is a plain list, and so is a magnitude-ranked one.
+                // Otherwise project lanes stay chronological whatever the flat
+                // list does — only the flat list can swap its dividers for
+                // WORKING / DONE.
+                grouping={flatListGrouping(effectiveGrouping, rankedGlobally)}
+                groups={displayAgentGroups}
+                header={
+                  <SidebarSectionHeader
+                    collapsed={sessionsCollapsed}
+                    count={displayAgentSessions.length}
+                    extra={
+                      scopedProject || showAllProfiles ? (
+                        <>
+                          {scopedProject && <SidebarScopeChip label={scopedProject.label} onClear={exitProjectScope} />}
+                          {/* The list's own scope, not the account's: Bot Mode
+                              widens it whenever it opens a bot chat. */}
+                          {showAllProfiles && (
+                            <SidebarScopeChip
+                              clear={t.studio.sidebar.scope.allProfilesClear}
+                              icon="people"
+                              label={t.profiles.allProfiles}
+                              onClear={() => setShowAllProfiles(false)}
+                              tip={t.studio.sidebar.scope.allProfilesTip}
+                            />
+                          )}
+                        </>
+                      ) : undefined
+                    }
+                    onToggle={toggleSessions}
+                    title={s.sessions}
+                    tools={
+                      <>
+                        <SidebarViewOptions sources={poolSources} />
+                        <SessionsAddButton
+                          cwd={scopedProject ? projectNewSessionPath(scopedProject) : null}
+                          onNewSession={onNewSessionInWorkspace}
+                          onNewSessionSplit={onNewSessionSplit}
+                        />
+                      </>
+                    }
+                  />
+                }
+                label={s.sessions}
+                liveSessions={inProject ? enteredProjectOverlaySessions : undefined}
+                manualOrderIds={agentOrderManual ? agentOrderIds : sortOrderIds}
+                onArchiveSession={onArchiveSession}
+                onBranchSession={onBranchSession}
+                onDeleteSession={onDeleteSession}
+                onEnterProject={onEnterProject}
+                onNewSessionInWorkspace={onNewSessionInWorkspace}
+                onNewSessionSplit={onNewSessionSplit}
+                onReorderProjects={showAllProfiles ? undefined : reorderProjects}
+                onReorderSessions={showAllProfiles ? undefined : reorderSessions}
+                onResumeSession={onResumeSession}
+                onToggle={toggleSessions}
+                onTogglePin={pinSession}
+                onToggleUnread={toggleUnread}
+                open={!sessionsCollapsed}
+                pinned={false}
+                projectBucketOf={projectBucketOf}
+                projectContent={inProject ? enteredProjectContent : undefined}
+                projectOverview={projectOverview}
+                projectOverviewHidden={overviewHidden}
+                projectOverviewPreviews={overviewPreviews}
+                projectRepoWorktrees={inProject ? scopedRepoWorktrees : undefined}
+                projectsLoading={worktreeGroupingActive ? projectTreeLoading : false}
+                removedSessionIds={inProject ? removedSessionIds : undefined}
+                rootClassName="mt-1.5 p-0"
+                scrollElement={scrollElement}
+                sessions={displayAgentSessions}
+                // Every profile in one flat list: each row says whose it is (#66003).
+                showProfileTags={showAllProfiles && !ownerGrouped}
+                sortable={!showAllProfiles && agentSessions.length > 1}
+              />
             </div>
 
             <SidebarContributedSections />

@@ -29,9 +29,13 @@ export const zhStudioSidebar: StudioSidebarTranslations = {
     newSessionHere: '在此项目中新建会话',
     newSessionInLane: '在此通道新建会话'
   },
+  dateGroupToday: '今天',
+  projectGroupNone: '未归入项目',
   scope: {
     tip: '只显示这个项目的会话',
-    clear: '显示所有会话'
+    clear: '显示所有会话',
+    allProfilesTip: '正在显示所有配置档案的会话',
+    allProfilesClear: '只显示当前配置档案的会话'
   },
   sessions: {
     viewOptions: '显示选项',

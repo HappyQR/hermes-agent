@@ -1,29 +1,39 @@
-import { StudioIcon } from '@/components/ui/studio-icon'
+import { StudioIcon, type StudioIconName } from '@/components/ui/studio-icon'
 import { Tip } from '@/components/ui/tooltip'
 import { useI18n } from '@/i18n'
 
+interface SidebarScopeChipProps {
+  label: string
+  onClear: () => void
+  /** Defaults to the project scope's folder, tip and clear copy. */
+  icon?: StudioIconName
+  tip?: string
+  clear?: string
+}
+
 /**
- * The Sessions header's project scope chip (prototype `.sb-scope`): the list
- * shows only this project's sessions until the ✕ clears it.
+ * The Sessions header's scope chip (prototype `.sb-scope`): the list shows only
+ * this project's sessions — or every profile's — until the ✕ clears it.
  */
-export function SidebarScopeChip({ label, onClear }: { label: string; onClear: () => void }) {
+export function SidebarScopeChip({ clear, icon = 'folder', label, onClear, tip }: SidebarScopeChipProps) {
   const { t } = useI18n()
   const copy = t.studio.sidebar.scope
+  const clearLabel = clear ?? copy.clear
 
   return (
     <span
       className="ml-1 inline-flex h-4.5 max-w-32 min-w-0 shrink items-center gap-0.5 rounded-full bg-(--ui-accent-soft) pr-0.5 pl-1.75 text-[0.6875rem] font-semibold text-(--ui-accent-text) motion-safe:animate-[studio-pop-in_200ms_var(--studio-spring)_both]"
       data-slot="sidebar-scope-chip"
     >
-      <Tip label={copy.tip} placement="row">
+      <Tip label={tip ?? copy.tip} placement="row">
         <span className="flex min-w-0 items-center gap-0.5">
-          <StudioIcon name="folder" size={11} />
+          <StudioIcon name={icon} size={11} />
           <span className="min-w-0 truncate">{label}</span>
         </span>
       </Tip>
-      <Tip label={copy.clear} placement="row">
+      <Tip label={clearLabel} placement="row">
         <button
-          aria-label={copy.clear}
+          aria-label={clearLabel}
           className="grid size-3.75 shrink-0 place-items-center rounded-full text-current hover:bg-[color-mix(in_srgb,var(--ui-accent)_22%,transparent)]"
           onClick={event => {
             event.stopPropagation()

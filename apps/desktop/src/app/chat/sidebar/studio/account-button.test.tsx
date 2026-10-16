@@ -146,13 +146,14 @@ describe('SidebarAccount', () => {
     expect(within(menu).queryByText(en.profiles.allProfiles)).toBeNull()
   })
 
-  it('names All profiles when the unified view spans several profiles', () => {
+  it('keeps naming the active profile while the list spans every profile', () => {
     $showAllProfiles.set(true)
     renderAccount()
 
-    expect(screen.getByRole('button', { name: new RegExp(copy.account) }).textContent).toContain(
-      en.profiles.allProfiles
-    )
+    const button = screen.getByRole('button', { name: new RegExp(copy.account) })
+
+    expect(button.textContent).toContain('default')
+    expect(button.textContent).not.toContain(en.profiles.allProfiles)
   })
 
   it("wears the profile's picture, but not Bot Mode's 160px face copy", async () => {

@@ -30,7 +30,9 @@ const SECTION_COLLAPSED_KEY = 'hermes.desktop.studio.sidebarSectionsCollapsed'
 
 const sectionCollapsedCodec: Codec<Record<string, boolean>> = Codecs.json(value =>
   value && typeof value === 'object' && !Array.isArray(value)
-    ? Object.fromEntries(Object.entries(value).filter((entry): entry is [string, boolean] => typeof entry[1] === 'boolean'))
+    ? Object.fromEntries(
+        Object.entries(value).filter((entry): entry is [string, boolean] => typeof entry[1] === 'boolean')
+      )
     : {}
 )
 
@@ -101,27 +103,39 @@ export function openSessionSearch(): void {
  *  `date` grouping; `source` and `none` exist only in the fork. */
 export type StudioGrouping = 'none' | 'profile' | 'project' | 'source' | 'status' | 'time'
 
-export const STUDIO_GROUPING_ORDER: readonly StudioGrouping[] = ['time', 'project', 'status', 'source', 'profile', 'none']
+export const STUDIO_GROUPING_ORDER: readonly StudioGrouping[] = [
+  'time',
+  'project',
+  'status',
+  'source',
+  'profile',
+  'none'
+]
 
-type GroupingOverride = 'none' | 'source'
+type GroupingOverride = 'none' | 'project' | 'source'
 
 const GROUPING_OVERRIDE_KEY = 'hermes.desktop.studio.sidebarGroupingOverride'
 
 const groupingOverrideCodec: Codec<GroupingOverride | null> = {
-  decode: raw => (raw === 'none' || raw === 'source' ? raw : null),
+  decode: raw => (raw === 'none' || raw === 'project' || raw === 'source' ? raw : null),
   encode: value => value
 }
 
 // `source` and `none` cannot live in upstream's grouping codec, so they ride on
 // top of it: while an override is set the upstream grouping rests on `date`
 // (never `project`, which would keep the project tree's fetches running).
+// `project` rides here too: upstream's own `project` is the project overview,
+// which it turns on by itself (creating a project, ⌘K "go to project", opening
+// a folder) and which repeats the Projects section. Studio's is the
+// prototype's: a caption per project over the same list, only when chosen.
 export const $sidebarGroupingOverride = persistentAtom<GroupingOverride | null>(
   GROUPING_OVERRIDE_KEY,
   null,
   groupingOverrideCodec
 )
 
-const fromUpstream = (grouping: SidebarGrouping): StudioGrouping => (grouping === 'date' ? 'time' : grouping)
+const fromUpstream = (grouping: SidebarGrouping): StudioGrouping =>
+  grouping === 'date' || grouping === 'project' ? 'time' : grouping
 
 export const $sidebarEffectiveGrouping: ReadableAtom<StudioGrouping> = computed(
   [$sidebarGrouping, $sidebarGroupingOverride],
@@ -129,7 +143,7 @@ export const $sidebarEffectiveGrouping: ReadableAtom<StudioGrouping> = computed(
 )
 
 export function setStudioGrouping(grouping: StudioGrouping): void {
-  if (grouping === 'none' || grouping === 'source') {
+  if (grouping === 'none' || grouping === 'project' || grouping === 'source') {
     if ($sidebarGrouping.get() === 'project') {
       setSidebarGrouping('date')
     }

@@ -67,8 +67,6 @@ export function useGatewayIdentity(): GatewayIdentity {
 }
 
 export interface AccountIdentity {
-  /** All profiles is on: the button names the scope, not one profile. */
-  all: boolean
   color: null | string
   isDefault: boolean
   name: string
@@ -86,22 +84,17 @@ export function useAllProfilesView(): boolean {
   return showAll && profiles.length > 1
 }
 
-/** Who the account button shows: the active profile (or All profiles). */
+/** Who the account button shows: the active profile, always. The All profiles
+ *  view is a scope of the Sessions list (its header chip says so); naming it
+ *  here made the account look switched whenever Bot Mode opened a bot chat. */
 export function useAccountIdentity(): AccountIdentity {
-  const { t } = useI18n()
   const profiles = useStore($profiles)
   const colors = useStore($profileColors)
-  const allView = useAllProfilesView()
   const gatewayProfile = useStore($activeGatewayProfile)
   const key = normalizeProfileKey(gatewayProfile)
   const active = profiles.find(profile => normalizeProfileKey(profile.name) === key)
 
-  if (allView) {
-    return { all: true, color: null, isDefault: false, name: t.profiles.allProfiles, profile: key }
-  }
-
   return {
-    all: false,
     color: resolveProfileColor(active?.name ?? key, colors),
     isDefault: active ? active.is_default : key === 'default',
     name: active ? profileLabel(active) : key,

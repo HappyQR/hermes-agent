@@ -13,11 +13,9 @@ import { Tip } from '@/components/ui/tooltip'
 import { useI18n } from '@/i18n'
 import { cn } from '@/lib/utils'
 import { $sidebarListGroupIds, $sidebarWorkspaceNodeOpen, setWorkspaceNodesOpen } from '@/store/layout'
-import { $projectTree } from '@/store/projects'
 import { $unreadFinishedSessionIds, markAllSessionsRead } from '@/store/session'
 import { ackAllSessionsRead } from '@/store/session-unread'
 import {
-  $sidebarEffectiveGrouping,
   $sidebarSectionCollapsed,
   registerSidebarSection,
   setAllSidebarSectionsCollapsed,
@@ -36,14 +34,10 @@ export function useSidebarSection(id: SidebarSectionId, defaultCollapsed = false
   return [collapsed, () => toggleSidebarSection(id, defaultCollapsed)]
 }
 
-/** The group folds the active grouping draws (date/status/source dividers, or
- *  project rows) — what "Expand/Collapse all groups" acts on. */
+/** The group folds the active grouping draws (its dividers, project captions
+ *  included) — what "Expand/Collapse all groups" acts on. */
 function useGroupFoldIds(): string[] {
-  const grouping = useStore($sidebarEffectiveGrouping)
-  const listGroupIds = useStore($sidebarListGroupIds)
-  const projects = useStore($projectTree)
-
-  return grouping === 'project' ? projects.map(project => project.id) : listGroupIds
+  return useStore($sidebarListGroupIds)
 }
 
 /** Header right-click menu. Its own component so the stores it reads are only

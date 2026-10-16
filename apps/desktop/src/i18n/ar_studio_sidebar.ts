@@ -29,9 +29,13 @@ export const arStudioSidebar: StudioSidebarTranslations = {
     newSessionHere: 'جلسة جديدة في هذا المشروع',
     newSessionInLane: 'جلسة جديدة في هذا المسار'
   },
+  dateGroupToday: 'اليوم',
+  projectGroupNone: 'خارج المشاريع',
   scope: {
     tip: 'تُعرض جلسات هذا المشروع فقط',
-    clear: 'عرض كل الجلسات'
+    clear: 'عرض كل الجلسات',
+    allProfilesTip: 'تُعرض جلسات كل الملفات الشخصية',
+    allProfilesClear: 'عرض جلسات هذا الملف الشخصي فقط'
   },
   sessions: {
     viewOptions: 'خيارات العرض',

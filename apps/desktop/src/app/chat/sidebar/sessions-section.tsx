@@ -11,7 +11,12 @@ import type { HermesGitWorktree } from '@/global'
 import type { SessionInfo } from '@/hermes'
 import { useI18n } from '@/i18n'
 import { flattenSessionsWithBranches } from '@/lib/session-branch-tree'
-import { groupEntriesByRecency, hideCollapsedGroupRows, type SidebarListRow, toSessionRows } from '@/lib/session-date-groups'
+import {
+  groupEntriesByRecency,
+  hideCollapsedGroupRows,
+  type SidebarListRow,
+  toSessionRows
+} from '@/lib/session-date-groups'
 import { sessionBucketLabel } from '@/lib/time'
 import { cn } from '@/lib/utils'
 import {
@@ -39,7 +44,12 @@ import { WorkspaceAddButton } from './projects/workspace-header'
 import { ReorderableList, useSortableBindings } from './reorderable-list'
 import { SidebarSessionSkeletons } from './section-states'
 import { SidebarSessionRow } from './session-row'
-import { groupFlatEntries } from './studio/flat-groupings'
+import {
+  groupEntriesByDay,
+  groupEntriesByProject,
+  groupFlatEntries,
+  type ProjectBucketOf
+} from './studio/flat-groupings'
 import { VirtualSessionList } from './virtual-session-list'
 
 export const VIRTUALIZE_THRESHOLD = 25
@@ -174,9 +184,12 @@ interface SidebarSessionsSectionProps {
   // Which dividers to fold into the flat list: `date` gives the chronological
   // "Yesterday" / "Last week" separators (flat recents + entered-project lanes),
   // `status` splits into the five status buckets and `source` into one bucket
-  // per source. `none` for pinned and the project overview, where the order
-  // isn't strictly by recency so a bucket would be misleading.
-  grouping?: 'date' | 'none' | 'source' | 'status'
+  // per source, `project` into one caption per project. `none` for pinned and
+  // the project overview, where the order isn't strictly by recency so a
+  // bucket would be misleading.
+  grouping?: 'date' | 'none' | 'project' | 'source' | 'status'
+  // The `project` grouping's bucket for a session (its project, or none).
+  projectBucketOf?: ProjectBucketOf
   // Keep the caller's row order instead of re-sorting by group recency
   // (defaults to `pinned`, the only pre-ordered caller). The search results
   // set it too: their order is the backend's ranking (exact id matches
@@ -238,6 +251,7 @@ export function SidebarSessionsSection({
   dndSensors,
   showProfileTags = false,
   grouping = 'none',
+  projectBucketOf,
   preserveOrder = pinned,
   card = false,
   header,
@@ -426,13 +440,15 @@ export function SidebarSessionsSection({
   const flatRows: SidebarListRow[] = useMemo(() => {
     const rows =
       grouping === 'date'
-        ? groupEntriesByRecency(displayEntries)
-        : grouping === 'none'
-          ? toSessionRows(displayEntries)
-          : groupFlatEntries(grouping, displayEntries, dotStates, t.studio.sidebar)
+        ? groupEntriesByDay(displayEntries, t.sidebar.dateDivider, t.studio.sidebar.dateGroupToday)
+        : grouping === 'project'
+          ? groupEntriesByProject(displayEntries, projectBucketOf ?? (() => null), t.studio.sidebar.projectGroupNone)
+          : grouping === 'none'
+            ? toSessionRows(displayEntries)
+            : groupFlatEntries(grouping, displayEntries, dotStates, t.studio.sidebar)
 
     return manualOrderIds?.length ? orderRowsWithinGroups(rows, manualOrderIds) : rows
-  }, [grouping, displayEntries, dotStates, manualOrderIds, t])
+  }, [grouping, displayEntries, dotStates, manualOrderIds, projectBucketOf, t])
 
   // Closed date/status buckets keep their divider and drop the sessions under
   // it. Same array when nothing is collapsed so the virtualizer's rows ref
@@ -557,39 +573,38 @@ export function SidebarSessionsSection({
   )
 }
 
-interface SectionInnerContext
-  extends Pick<
-    SidebarSessionsSectionProps,
-    | 'activeProjectId'
-    | 'activeSessionId'
-    | 'card'
-    | 'contentClassName'
-    | 'dndSensors'
-    | 'embeddedGroups'
-    | 'emptyState'
-    | 'groups'
-    | 'liveSessions'
-    | 'onArchiveSession'
-    | 'onBranchSession'
-    | 'onDeleteSession'
-    | 'onEnterProject'
-    | 'onNewSessionInWorkspace'
-    | 'onNewSessionSplit'
-    | 'onReorderProjects'
-    | 'onResumeSession'
-    | 'onTogglePin'
-    | 'onToggleUnread'
-    | 'pinned'
-    | 'projectBackRow'
-    | 'projectContent'
-    | 'projectOverview'
-    | 'projectOverviewHidden'
-    | 'projectOverviewPreviews'
-    | 'projectRepoWorktrees'
-    | 'removedSessionIds'
-    | 'scrollElement'
-    | 'showProfileTags'
-  > {
+interface SectionInnerContext extends Pick<
+  SidebarSessionsSectionProps,
+  | 'activeProjectId'
+  | 'activeSessionId'
+  | 'card'
+  | 'contentClassName'
+  | 'dndSensors'
+  | 'embeddedGroups'
+  | 'emptyState'
+  | 'groups'
+  | 'liveSessions'
+  | 'onArchiveSession'
+  | 'onBranchSession'
+  | 'onDeleteSession'
+  | 'onEnterProject'
+  | 'onNewSessionInWorkspace'
+  | 'onNewSessionSplit'
+  | 'onReorderProjects'
+  | 'onResumeSession'
+  | 'onTogglePin'
+  | 'onToggleUnread'
+  | 'pinned'
+  | 'projectBackRow'
+  | 'projectContent'
+  | 'projectOverview'
+  | 'projectOverviewHidden'
+  | 'projectOverviewPreviews'
+  | 'projectRepoWorktrees'
+  | 'removedSessionIds'
+  | 'scrollElement'
+  | 'showProfileTags'
+> {
   dividerAction: React.ReactNode
   dividerToggle: {
     ariaLabel: (label: string, open: boolean) => string

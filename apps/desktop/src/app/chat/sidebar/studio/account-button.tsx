@@ -25,12 +25,12 @@ const TONE_DOT: Record<GatewayTone, string> = {
 }
 
 /** The active profile's tile: its picture, else its color with its initial,
- *  the home mark for the default profile, people for All profiles. Prototype
- *  `.avatar` (30px in the footer, 22px in the new-chat profile chip). */
+ *  or the home mark for the default profile. Prototype `.avatar` (30px in the
+ *  footer, 22px in the new-chat profile chip). */
 export function AccountTile({ className, pending = false }: { className: string; pending?: boolean }) {
   const identity = useAccountIdentity()
-  const picture = useProfilePicture(identity.all ? null : identity.profile)
-  const colored = Boolean(identity.color) && !identity.all
+  const picture = useProfilePicture(identity.profile)
+  const colored = Boolean(identity.color)
 
   if (picture && !pending) {
     return (
@@ -44,8 +44,6 @@ export function AccountTile({ className, pending = false }: { className: string;
 
   if (pending) {
     face = <span className="studio-ring-run size-3.5" />
-  } else if (identity.all) {
-    face = <StudioIcon name="people" size={16} />
   } else if (identity.color) {
     face = profileShortLabel(identity.name)
   } else {

@@ -78,6 +78,8 @@ vi.mock('@/i18n', () => ({
         showMoreIn: (count: number, label: string) => `Show ${count} more in ${label}`
       },
       profiles: { switchToProfile: (label: string) => `Switch to ${label}` },
+      // Every date group is captioned (today's included), so each carries a "+".
+      studio: { sidebar: { dateGroupToday: 'Today', projectGroupNone: 'Not in a project' } },
       statusStack: { coding: { switchFailed: (label: string) => `Could not switch to ${label}` } }
     }
   })
@@ -582,7 +584,7 @@ describe('flat-list date-divider new-session drag source', () => {
       />
     )
 
-    fireEvent.pointerDown(screen.getByRole('button', { name: 'New session' }), { button: 0 })
+    fireEvent.pointerDown(screen.getAllByRole('button', { name: 'New session' })[0], { button: 0 })
     commitLatestDrag()
 
     expect(onNewSessionSplit).toHaveBeenCalledWith('right', {
@@ -620,7 +622,7 @@ describe('flat-list date-divider new-session drag source', () => {
     // jsdom can't measure a virtual viewport, so mount the divider action the
     // virtualizer would render and assert its drag wiring directly.
     render(<>{lastProps!.dividerAction}</>)
-    fireEvent.pointerDown(screen.getByRole('button', { name: 'New session' }), { button: 0 })
+    fireEvent.pointerDown(screen.getAllByRole('button', { name: 'New session' })[0], { button: 0 })
     commitLatestDrag()
 
     expect(onNewSessionSplit).toHaveBeenCalledWith('right', {
@@ -655,7 +657,7 @@ describe('flat-list date-divider new-session drag source', () => {
       />
     )
 
-    fireEvent.pointerDown(screen.getByRole('button', { name: 'New session' }), { button: 0 })
+    fireEvent.pointerDown(screen.getAllByRole('button', { name: 'New session' })[0], { button: 0 })
 
     expect(startNewSessionDrag).not.toHaveBeenCalled()
   })

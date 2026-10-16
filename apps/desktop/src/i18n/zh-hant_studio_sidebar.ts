@@ -29,9 +29,13 @@ export const zhHantStudioSidebar: StudioSidebarTranslations = {
     newSessionHere: '在此專案中新增工作階段',
     newSessionInLane: '在此通道新增工作階段'
   },
+  dateGroupToday: '今天',
+  projectGroupNone: '未歸入專案',
   scope: {
     tip: '只顯示這個專案的工作階段',
-    clear: '顯示所有工作階段'
+    clear: '顯示所有工作階段',
+    allProfilesTip: '正在顯示所有設定檔的工作階段',
+    allProfilesClear: '只顯示目前設定檔的工作階段'
   },
   sessions: {
     viewOptions: '顯示選項',

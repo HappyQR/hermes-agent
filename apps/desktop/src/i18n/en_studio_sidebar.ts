@@ -29,9 +29,13 @@ export const enStudioSidebar: StudioSidebarTranslations = {
     newSessionHere: 'New session in this project',
     newSessionInLane: 'New session in this lane'
   },
+  dateGroupToday: 'Today',
+  projectGroupNone: 'Not in a project',
   scope: {
     tip: "Only showing this project's sessions",
-    clear: 'Show all sessions'
+    clear: 'Show all sessions',
+    allProfilesTip: 'Showing sessions from every profile',
+    allProfilesClear: "Show only this profile's sessions"
   },
   sessions: {
     viewOptions: 'View options',
