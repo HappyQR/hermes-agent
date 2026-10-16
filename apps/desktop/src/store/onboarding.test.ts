@@ -12,6 +12,7 @@ import {
   confirmOnboardingModel,
   type DesktopOnboardingState,
   type OnboardingContext,
+  recheckExternalSignin,
   refreshOnboarding,
   requestDesktopOnboarding,
   resetBootRaceWindowForTests,
@@ -1220,5 +1221,104 @@ describe('setOnboardingModel', () => {
       expect(flow.label).toBe('OpenAI OAuth (ChatGPT)')
       expect(flow.saving).toBe(false)
     }
+  })
+
+  describe('the model a finished external sign-in confirms', () => {
+    const readyGateway: OnboardingContext['requestGateway'] = async method => {
+      if (method === 'reload.env') {
+        return {} as never
+      }
+
+      if (method === 'setup.status') {
+        return { provider_configured: true } as never
+      }
+
+      if (method === 'setup.runtime_check') {
+        return { ok: true } as never
+      }
+
+      throw new Error(`unexpected gateway method: ${method}`)
+    }
+
+    // Nous Portal heads the list unconfigured, as model.options returns it
+    // with include_unconfigured.
+    function installOptions(providers: unknown[], recommended: Record<string, string>) {
+      const asked: string[] = []
+
+      installApiMock(async ({ path }: { path: string }) => {
+        if (path.startsWith('/api/model/options')) {
+          return { providers }
+        }
+
+        if (path.startsWith('/api/model/recommended-default?')) {
+          const provider = new URLSearchParams(path.split('?')[1]).get('provider') ?? ''
+          asked.push(provider)
+
+          return { provider, model: recommended[provider] ?? '', free_tier: false }
+        }
+
+        throw new Error(`unexpected api path: ${path}`)
+      })
+
+      return asked
+    }
+
+    function externalPending(id: string, name: string) {
+      $desktopOnboarding.set(
+        baseState({
+          configured: true,
+          manual: true,
+          requested: true,
+          flow: {
+            copied: false,
+            provider: { ...makeOAuthProvider(id, name), flow: 'external' },
+            status: 'external_pending'
+          }
+        })
+      )
+    }
+
+    const nous = { authenticated: false, models: ['z-ai/glm-5'], name: 'Nous Portal', slug: 'nous' }
+
+    it('lands a Claude Code sign-in on an Anthropic model', async () => {
+      const asked = installOptions(
+        [nous, { authenticated: true, models: ['claude-sonnet-5-5'], name: 'Anthropic', slug: 'anthropic' }],
+        { anthropic: 'claude-sonnet-5-5', nous: 'z-ai/glm-5' }
+      )
+
+      externalPending('claude-code', 'Claude Code')
+
+      await recheckExternalSignin(onboardingContext(readyGateway))
+
+      expect(asked).toEqual(['anthropic'])
+      expect($desktopOnboarding.get().flow).toMatchObject({
+        currentModel: 'claude-sonnet-5-5',
+        providerSlug: 'anthropic',
+        status: 'confirming_model'
+      })
+    })
+
+    it('falls back only to a signed-in provider', async () => {
+      installOptions([nous, { authenticated: true, models: ['gpt-6.1-sol'], name: 'Codex', slug: 'openai-codex' }], {
+        nous: 'z-ai/glm-5',
+        'openai-codex': 'gpt-6.1-sol'
+      })
+      externalPending('some-cli', 'Some CLI')
+
+      await recheckExternalSignin(onboardingContext(readyGateway))
+
+      expect($desktopOnboarding.get().flow).toMatchObject({ providerSlug: 'openai-codex', status: 'confirming_model' })
+    })
+
+    it('skips the confirm card when no signed-in provider can stand in', async () => {
+      installOptions([nous], { nous: 'z-ai/glm-5' })
+      externalPending('some-cli', 'Some CLI')
+
+      await recheckExternalSignin(onboardingContext(readyGateway))
+
+      const state = $desktopOnboarding.get()
+      expect(state.flow.status).toBe('idle')
+      expect(state.manual).toBe(false)
+    })
   })
 })

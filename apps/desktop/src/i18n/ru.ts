@@ -1408,6 +1408,7 @@ export const ruOverrides = {
     providers: {
       connectAccount: 'Подключить аккаунт',
       haveApiKey: 'Ввести API-ключ вместо этого?',
+      accountsLoadFailed: 'Не удалось загрузить аккаунты.',
       intro:
         'Войдите по подписке — копировать API-ключ не нужно. Hermes проведёт вход в браузере прямо здесь, в приложении.',
       connected: 'Подключено',

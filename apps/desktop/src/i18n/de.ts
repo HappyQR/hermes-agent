@@ -2303,6 +2303,7 @@ export const deOverrides = {
     providers: {
       connectAccount: 'Ein Konto verbinden',
       haveApiKey: 'Haben Sie stattdessen einen API-Key?',
+      accountsLoadFailed: 'Konten konnten nicht geladen werden.',
       intro:
         'Melden Sie sich mit einem Abo an – kein API-Key zum Kopieren. Hermes übernimmt die Browser-Anmeldung für Sie, direkt hier in der App.',
       connected: 'Verbunden',

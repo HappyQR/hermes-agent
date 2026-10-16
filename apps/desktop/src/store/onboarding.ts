@@ -348,6 +348,10 @@ function notifyGatewayTools(tools: string[] | undefined) {
 // card — the user gets the undefined-model auto-selection behaviour
 // we had before, which works but is surprising. The confirm step is
 // opportunistic polish, not a hard requirement for onboarding.
+// Accounts-tab rows that are not model providers: the synthetic `claude-code`
+// row borrows Claude Code's login, and the models it unlocks are Anthropic's.
+const ACCOUNT_MODEL_PROVIDERS: Record<string, string> = { 'claude-code': 'anthropic' }
+
 async function fetchProviderDefaultModel(
   preferredSlugs: string[],
   profile?: ProfileScope
@@ -366,13 +370,22 @@ async function fetchProviderDefaultModel(
     return null
   }
 
-  // Try each preferred slug (lowercased), fall back to the first provider
-  // returned (model.options orders by recency / authenticated state, so
-  // the just-authenticated provider is usually first anyway).
-  const lower = preferredSlugs.map(s => s.toLowerCase())
+  // Try each preferred slug (lowercased; an account row that is no model
+  // provider itself stands for the one its models live under), else fall back
+  // to the first SIGNED-IN provider returned (model.options orders by recency /
+  // authenticated state, so the just-authenticated provider is usually first
+  // anyway). The list includes unconfigured providers, so its head can be one
+  // nobody signed in to: a Claude Code sign-in landed on Nous Portal's free
+  // model, and saving it failed with "Nous Portal is not connected".
+  const lower = preferredSlugs.map(s => s.toLowerCase()).map(slug => ACCOUNT_MODEL_PROVIDERS[slug] ?? slug)
 
   const matched =
-    providers.find((p: ModelOptionProvider) => lower.includes(String(p.slug).toLowerCase())) ?? providers[0]
+    providers.find((p: ModelOptionProvider) => lower.includes(String(p.slug).toLowerCase())) ??
+    providers.find((p: ModelOptionProvider) => p.authenticated === true)
+
+  if (!matched) {
+    return null
+  }
 
   const models = matched.models ?? []
 

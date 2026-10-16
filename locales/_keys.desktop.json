@@ -3701,6 +3701,7 @@
     "settings.poolLimits.warmBotBackendsTitle",
     "settings.profileScope.appliesTo",
     "settings.profileScope.editsProfile",
+    "settings.providers.accountsLoadFailed",
     "settings.providers.collapse",
     "settings.providers.connectAccount",
     "settings.providers.connectAnother",

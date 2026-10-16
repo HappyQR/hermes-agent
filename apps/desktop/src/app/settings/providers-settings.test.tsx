@@ -43,6 +43,7 @@ vi.mock('@/store/onboarding', () => ({
 // Load once at module scope so no test's 15s budget pays the heavy transform
 // + import (the first-test timeout flake under CI load).
 const { ProvidersSettings } = await import('./providers-settings')
+const { SettingsWindowContext } = await import('./studio/window-context')
 const { $settingsScopeOverride } = await import('@/store/settings-scope')
 const { $activeGatewayProfile, $profiles } = await import('@/store/profile')
 
@@ -462,5 +463,39 @@ describe('ProvidersSettings', () => {
     fireEvent.click(row)
 
     await waitFor(() => expect(startManualLocalEndpoint).toHaveBeenCalledWith(null))
+  })
+
+  describe('in the Settings window', () => {
+    // The window shows Accounts as its own section, so it never falls back
+    // to the API keys while the account list is missing.
+    function renderWindowAccounts() {
+      return render(
+        <SettingsWindowContext.Provider value>
+          <ProvidersSettings onClose={vi.fn()} onViewChange={vi.fn()} view="accounts" />
+        </SettingsWindowContext.Provider>
+      )
+    }
+
+    it('holds a placeholder, not an empty card, while the account list loads', async () => {
+      listOAuthProviders.mockReturnValue(new Promise(() => undefined))
+
+      const view = renderWindowAccounts()
+
+      await waitFor(() => expect(view.container.querySelector('[aria-busy="true"]')).toBeTruthy())
+      expect(screen.queryByText('Nous Portal')).toBeNull()
+    })
+
+    it('says the account list failed and loads it again on Retry', async () => {
+      listOAuthProviders.mockRejectedValueOnce(new Error('backend unavailable'))
+
+      renderWindowAccounts()
+
+      expect(await screen.findByText('Could not load accounts.')).toBeTruthy()
+
+      fireEvent.click(screen.getByRole('button', { name: 'Retry' }))
+
+      expect(await screen.findByText('Nous Portal')).toBeTruthy()
+      expect(listOAuthProviders).toHaveBeenCalledTimes(2)
+    })
   })
 })

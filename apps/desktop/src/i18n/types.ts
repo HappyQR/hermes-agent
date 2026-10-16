@@ -1730,6 +1730,7 @@ export interface Translations extends NoticeTranslations {
     providers: {
       connectAccount: string
       haveApiKey: string
+      accountsLoadFailed: string
       intro: string
       connected: string
       collapse: string

@@ -2295,6 +2295,7 @@ export const esOverrides = {
     providers: {
       connectAccount: 'Conectar una cuenta',
       haveApiKey: '¿Tienes una clave API?',
+      accountsLoadFailed: 'No se pudieron cargar las cuentas.',
       intro:
         'Inicia sesión con una suscripción, sin copiar claves API. Hermes ejecuta el inicio de sesión del navegador por ti, aquí mismo en la app.',
       connected: 'Conectado',

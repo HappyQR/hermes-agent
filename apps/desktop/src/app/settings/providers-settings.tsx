@@ -16,12 +16,14 @@ import {
 import { Button } from '@/components/ui/button'
 import { RowButton } from '@/components/ui/row-button'
 import { SearchField } from '@/components/ui/search-field'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Tip } from '@/components/ui/tooltip'
 import { disconnectOAuthProvider, listOAuthProviders } from '@/hermes'
 import { useI18n } from '@/i18n'
 import { Check, ChevronDown, ChevronRight, KeyRound, Loader2, Terminal, Trash2 } from '@/lib/icons'
 import { normalize } from '@/lib/text'
 import { cn } from '@/lib/utils'
+import { withTimeout } from '@/lib/with-timeout'
 import { confirm } from '@/store/confirm'
 import { $localModelsEnabled } from '@/store/local-models-flag'
 import { notify, notifyError } from '@/store/notifications'
@@ -42,6 +44,37 @@ import { useDeepLinkHighlight } from './use-deep-link-highlight'
 // The embedded terminal (and thus the "run disconnect command" path) only
 // exists in the Electron desktop shell, not the web dashboard.
 const canRunInTerminal = () => typeof window !== 'undefined' && Boolean(window.hermesDesktop?.terminal)
+
+// The account list answers in well under a second; past this it is stuck.
+const OAUTH_LIST_TIMEOUT_MS = 20_000
+
+type OAuthListState = 'failed' | 'loading' | 'ready'
+
+// Until the account list lands the Accounts view says so, and a failed load
+// offers a retry: an empty card read as "no accounts connected".
+function AccountsPending({ onRetry, state }: { onRetry: () => void; state: OAuthListState }) {
+  const { t } = useI18n()
+
+  if (state === 'failed') {
+    return (
+      <div className="flex items-center justify-between gap-3">
+        <p className="m-0 text-[length:var(--conversation-caption-font-size)] text-(--ui-text-secondary)">
+          {t.settings.providers.accountsLoadFailed}
+        </p>
+        <Button onClick={onRetry} size="sm" type="button" variant="secondary">
+          {t.common.retry}
+        </Button>
+      </div>
+    )
+  }
+
+  return (
+    <div aria-busy="true" className="grid gap-2 py-1">
+      <Skeleton className="h-3.5 w-48 max-w-full" />
+      <Skeleton className="h-3 w-72 max-w-full" />
+    </div>
+  )
+}
 
 // Parallel group headers ("Connected", "Other providers") so the expanded list
 // reads as its own section instead of bleeding into the connected group.
@@ -397,6 +430,8 @@ export function ProvidersSettings({
   const scopeProfile = useStore($settingsRequestProfile)
   const { rowProps, vars } = useEnvCredentials(scopeProfile)
   const [oauthProviders, setOauthProviders] = useState<OAuthProvider[]>([])
+  const [oauthList, setOauthList] = useState<OAuthListState>('loading')
+  const [oauthAttempt, setOauthAttempt] = useState(0)
   const [openProvider, setOpenProvider] = useState<null | string>(null)
   const [disconnecting, setDisconnecting] = useState<null | string>(null)
   // Free-text filter for the API-keys view (provider name / env-var key / desc).
@@ -436,6 +471,7 @@ export function ProvidersSettings({
     // OAuth providers are best-effort — a failure here just hides the panel.
     const { providers } = await listOAuthProviders(scopeProfile)
     setOauthProviders(providers)
+    setOauthList('ready')
   }, [scopeProfile])
 
   useEffect(() => {
@@ -446,19 +482,39 @@ export function ProvidersSettings({
         return
       }
 
+      const started = performance.now()
+
       try {
-        const { providers } = await listOAuthProviders(scopeProfile)
+        const { providers } = await withTimeout(
+          listOAuthProviders(scopeProfile),
+          OAUTH_LIST_TIMEOUT_MS,
+          'The account list did not answer'
+        )
 
         if (!cancelled) {
           setOauthProviders(providers)
+          setOauthList('ready')
         }
-      } catch {
-        // Ignore — the OAuth panel just won't render.
+      } catch (error) {
+        if (cancelled) {
+          return
+        }
+
+        // The panel waits on this list; say it failed (with a retry) and
+        // leave a trace, rather than an empty card nobody can explain.
+        setOauthList('failed')
+
+        if (view === 'accounts') {
+          const detail = error instanceof Error ? error.message : String(error)
+          const elapsed = Math.round(performance.now() - started)
+
+          window.hermesDesktop?.logLine?.(`[settings] account list failed after ${elapsed}ms: ${detail}`)
+        }
       }
     })()
 
     return () => void (cancelled = true)
-  }, [onboardingActive, scopeProfile])
+  }, [oauthAttempt, onboardingActive, scopeProfile, view])
 
   // External (CLI-managed) providers can't be cleared via the API by design —
   // Hermes never deletes creds another tool owns behind a silent API call.
@@ -608,15 +664,25 @@ export function ProvidersSettings({
   return (
     <SettingsContent>
       <SettingsProfileScope className="mb-5" />
-      <OAuthPicker
-        disconnecting={disconnecting}
-        onDisconnect={provider => void handleDisconnect(provider)}
-        onTerminalDisconnect={provider => void handleTerminalDisconnect(provider)}
-        onWantApiKey={() => onViewChange('keys')}
-        onWantLocalModels={() => onViewChange('local')}
-        profile={scopeProfile}
-        providers={oauthProviders}
-      />
+      {hasOauth || oauthList === 'ready' ? (
+        <OAuthPicker
+          disconnecting={disconnecting}
+          onDisconnect={provider => void handleDisconnect(provider)}
+          onTerminalDisconnect={provider => void handleTerminalDisconnect(provider)}
+          onWantApiKey={() => onViewChange('keys')}
+          onWantLocalModels={() => onViewChange('local')}
+          profile={scopeProfile}
+          providers={oauthProviders}
+        />
+      ) : (
+        <AccountsPending
+          onRetry={() => {
+            setOauthList('loading')
+            setOauthAttempt(attempt => attempt + 1)
+          }}
+          state={oauthList}
+        />
+      )}
     </SettingsContent>
   )
 }
