@@ -6,14 +6,11 @@ User-facing overview: `/STUDIO.md`.
 
 ## Sources of truth
 
-- **Design:** the interactive prototype (React + htm, Chinese copy) at
-  `/private/tmp/claude-501/-Users-happyq/4a0e0031-cc6b-4fcf-8d0d-ec31ad2f24c1/scratchpad/hermes-proto/`
-  (`styles.css` tokens + component CSS, `core.js` primitives, `app.js` shell/state, `chat.js`,
-  `sidebar.js`, `inspector.js`, `pages.js`, `settings.js`, `overlays.js`, `transcript.js`,
-  `data.js` incl. the old→new feature map). Reproduce its look and interaction faithfully.
-- **Implementation maps** (file/line-level plans, decisions, tests at risk):
-  `.../scratchpad/maps/{foundation-shell,sidebar,chat,pages-overlays}.md`.
-- **Current-feature inventories** (nothing may be lost): `.../scratchpad/inventory/*.md`.
+- **Design:** the interactive prototype (React + htm, Chinese copy; a private claude.ai
+  artifact, not part of this repo). Its look and interaction are what the shipped surfaces
+  reproduce; `/STUDIO.md` lists where the app deliberately differs and why.
+- The implementation maps and feature inventories used during the redesign were working
+  notes and are not kept. The rule they enforced still holds: nothing may be lost.
 
 ## Non-negotiables
 
@@ -72,15 +69,18 @@ Screenshots of the real app (sandboxed: own HERMES_HOME, scripted mock model, ne
 `~/.hermes`):
 
 ```bash
-S=/private/tmp/claude-501/-Users-happyq/4a0e0031-cc6b-4fcf-8d0d-ec31ad2f24c1/scratchpad
-HERMES_RUNTIME_DIR=$S/studio-runtime node scripts/studio/shots/run.mjs --seed \
-  --sandbox $S/sandbox-<area> --port <unique port> \
-  --installs-from $S/studio-sandbox/hermes-home \
-  --hermes /Users/happyq/Projects/hermes-studio/.hermes/bin/hermes \
-  --out $S/shots-<area> [--only a,b] [--shots scripts/studio/shots/<area>.mjs] [--scheme dark]
+SHOTS=${TMPDIR:-/tmp}/hermes-studio-shots
+node scripts/studio/shots/run.mjs --seed --native \
+  --sandbox $SHOTS/<area> --port <unique port> \
+  --out $SHOTS/<area>/out [--only a,b] [--shots scripts/studio/shots/<area>.mjs] [--scheme dark]
 ```
 
-`--seed` creates six conversations (tool runs, approval, clarify, sub-agents, error). Put
+The backend is this checkout's `.hermes/bin/hermes` (from `source ./activate`; `--hermes`
+points elsewhere, `HERMES_RUNTIME_DIR` picks its runtime). `--installs-from <hermes-home>`
+reuses another sandbox's prepared environment, `--native` captures the real macOS window
+(glass, traffic lights) instead of the renderer. `--seed` creates six conversations (tool
+runs, approval, clarify, sub-agents, error); the `live` shot in `chat.mjs` sends one more and
+captures it while it waits on a choice. Put
 area-specific shots in `scripts/studio/shots/<area>.mjs` (`export default { name: async (page,
 { shot, sleep, openSession, newChat, send, composer }) => {} }`). Use a unique `--port` and
 `--sandbox` per parallel run. A test window appears on screen while it runs.
