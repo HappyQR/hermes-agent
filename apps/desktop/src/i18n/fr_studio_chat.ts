@@ -105,6 +105,8 @@ export const frStudioChat: StudioChatTranslations = {
     moreCommands: (first, more) => `${first} + ${more} ${more <= 1 ? 'commande' : 'commandes'}`
   },
   transcript: {
+    searchResults: 'Résultats de recherche',
+    delegatedTask: 'Tâche déléguée',
     delegateSpawned: count => `${count} sous-agent${count > 1 ? 's' : ''} lancé${count > 1 ? 's' : ''}`,
     delegateRunning: count => `${count} en cours`,
     delegateAllDone: 'Tout est terminé',

@@ -146,12 +146,14 @@ function DelegateRowView({ row }: { row: DelegateRow }) {
  * them nothing.
  */
 export const DelegateTool: FC<Pick<ToolPart, 'args' | 'result' | 'toolCallId'>> = ({ args, result, toolCallId }) => {
+  const { t } = useI18n()
+  const untitled = t.studio.chat.transcript.delegatedTask
   const sessionId = useStore(useSessionView().$runtimeId)
   const live = useSessionSlice($subagentsBySession, sessionId)
 
   const rows = useMemo(
-    () => mergeDelegateRows(delegateRowsFromCall(args, result, toolCallId), live, toolCallId),
-    [args, live, result, toolCallId]
+    () => mergeDelegateRows(delegateRowsFromCall(args, result, toolCallId, untitled), live, toolCallId),
+    [args, live, result, toolCallId, untitled]
   )
 
   if (rows.length === 0) {

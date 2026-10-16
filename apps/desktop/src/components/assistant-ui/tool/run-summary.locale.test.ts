@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { setRuntimeI18nLocale } from '@/i18n'
 import { summarizeShellCommand } from '@/lib/summarize-command'
 
+import { delegateRowsFromCall } from './delegate-model'
 import { summarizeToolRun, type ToolCallLike, toolPresentVerb } from './run-summary'
 
 function tool(toolName: string, args: Record<string, unknown> = {}, result?: unknown): ToolCallLike {
@@ -88,5 +89,13 @@ describe('tool-run summaries in the UI language', () => {
     expect(summarizeToolRun([tool('terminal', { command: 'cd x && npm test && npm run lint' })], true)).toBe(
       'Running npm test + 1 command'
     )
+  })
+
+  it('names a delegated child with no goal in the UI language', () => {
+    const untitled = () => delegateRowsFromCall({}, { results: [{ status: 'completed' }] })[0]?.goal
+
+    expect(untitled()).toBe('Delegated task')
+    setRuntimeI18nLocale('zh')
+    expect(untitled()).toBe('委派的任务')
   })
 })

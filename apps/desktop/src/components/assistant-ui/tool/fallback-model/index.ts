@@ -1,6 +1,7 @@
 import { stripAnsi } from '@hermes/shared/ansi'
 
 import { runtimeTranslations, type ToolTitleKey, translateNow } from '@/i18n'
+import type { StudioChatToolRunTranslations } from '@/i18n/types_studio_chat'
 import { normalizeExternalUrl } from '@/lib/external-link'
 import { isFileMediaPath, mediaKind } from '@/lib/media'
 import { summarizeShellCommand } from '@/lib/summarize-command'
@@ -1360,7 +1361,8 @@ function dynamicTitle(
   part: ToolPart,
   args: Record<string, unknown>,
   result: Record<string, unknown>,
-  fallback: ToolTitleParts
+  fallback: ToolTitleParts,
+  toolRun: StudioChatToolRunTranslations
 ): ToolTitleParts {
   const skillTitle = skillActivityTitle(part)
 
@@ -1445,10 +1447,7 @@ function dynamicTitle(
         translateNow(
           'assistant.tool.titleTemplates.actionCommand',
           action,
-          withoutLeadingAction(
-            compactPreview(summarizeShellCommand(command, runtimeTranslations().studio.chat.toolRun.moreCommands), 160),
-            action
-          )
+          withoutLeadingAction(compactPreview(summarizeShellCommand(command, toolRun.moreCommands), 160), action)
         )
       )
     }
@@ -1489,7 +1488,13 @@ export function toolPreviewOutcome(part: ToolPart): { previewTarget: string; sta
   }
 }
 
-export function buildToolView(part: ToolPart, inlineDiff: string): ToolView {
+/** `toolRun` is the run copy: React callers pass the provider's, so the view
+ *  re-words on a language switch; others get the runtime locale's. */
+export function buildToolView(
+  part: ToolPart,
+  inlineDiff: string,
+  toolRun: StudioChatToolRunTranslations = runtimeTranslations().studio.chat.toolRun
+): ToolView {
   const argsRecord = parseMaybeObject(part.args)
   const resultRecord = toolResultRecord(part)
   const meta = toolMeta(part.toolName)
@@ -1511,7 +1516,8 @@ export function buildToolView(part: ToolPart, inlineDiff: string): ToolView {
     part,
     argsRecord,
     resultRecord,
-    titlePartsFromAction(baseTitle, part.result === undefined ? meta.pendingAction : undefined)
+    titlePartsFromAction(baseTitle, part.result === undefined ? meta.pendingAction : undefined),
+    toolRun
   )
 
   const unavailable = part.result === undefined && part.completedAt !== undefined

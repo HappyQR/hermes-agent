@@ -34,9 +34,10 @@ export function isToolCallPart<T extends { type: string }>(part: T): part is Ext
 
 type RunCategory = ToolRunCategory
 
-// The UI language's run copy (Hermes Studio: t.studio.chat.toolRun). Read at
-// call time — summaries are computed in store selectors, outside React — so
-// the line follows `display.language` like every other module-level string.
+// The UI language's run copy (Hermes Studio: t.studio.chat.toolRun). React
+// callers pass `useI18n().t.studio.chat.toolRun` so a language switch is part
+// of their memo/selector keys; this runtime read is the default for callers
+// outside React.
 const runCopy = (): StudioChatToolRunTranslations => runtimeTranslations().studio.chat.toolRun
 
 // Clause order is fixed so the same run always reads the same way, whichever
@@ -103,21 +104,21 @@ function isPending(tool: ToolCallLike): boolean {
  * the status line that covers the gap before a tool starts, so the same run is
  * described in the same words from the moment the model drafts it.
  */
-export function toolPresentVerb(toolName: string): string {
+export function toolPresentVerb(toolName: string, copy: StudioChatToolRunTranslations = runCopy()): string {
   if (toolName === 'skill_view') {
     return translateNow('assistant.tool.skillActivity.loading')
   }
 
-  return runCopy().categories[toolCategory(toolName)].present
+  return copy.categories[toolCategory(toolName)].present
 }
 
 /** The thing a tool acted on, as the header should name it. */
-function toolTarget(tool: ToolCallLike): string {
+function toolTarget(tool: ToolCallLike, copy: StudioChatToolRunTranslations): string {
   const args = parseMaybeObject(tool.args)
   const category = toolCategory(tool.toolName)
 
   if (category === 'run') {
-    return summarizeShellCommand(firstStringField(args, ['command', 'code']), runCopy().moreCommands)
+    return summarizeShellCommand(firstStringField(args, ['command', 'code']), copy.moreCommands)
   }
 
   // A lone search names what its own row names — the quoted query for
@@ -149,16 +150,21 @@ function toolTarget(tool: ToolCallLike): string {
  * command is the exception — "ran 5 commands" is the useful reading, and a
  * command line only earns its space while it's the thing you're waiting on.
  */
-function clause(category: RunCategory, tools: ToolCallLike[], live: boolean): string {
-  const copy = runCopy().categories[category]
+function clause(
+  category: RunCategory,
+  tools: ToolCallLike[],
+  live: boolean,
+  copy: StudioChatToolRunTranslations
+): string {
+  const words = copy.categories[category]
   const count = tools.reduce((sum, tool) => sum + unitCount(tool), 0)
-  const target = count === 1 && category !== 'interact' ? toolTarget(tools[0]) : ''
+  const target = count === 1 && category !== 'interact' ? toolTarget(tools[0], copy) : ''
 
   if (target && (live || category !== 'run')) {
-    return copy.named(target, live)
+    return words.named(target, live)
   }
 
-  return copy.counted(count, live)
+  return words.counted(count, live)
 }
 
 /**
@@ -176,7 +182,11 @@ function clause(category: RunCategory, tools: ToolCallLike[], live: boolean): st
  * split out before this sees them (`splitRunItems`), so there is no aggregate
  * diff to report here; each edit carries its own +N/−M on its card.
  */
-export function summarizeToolRun(tools: readonly ToolCallLike[], live: boolean): string {
+export function summarizeToolRun(
+  tools: readonly ToolCallLike[],
+  live: boolean,
+  copy: StudioChatToolRunTranslations = runCopy()
+): string {
   // Which clause narrates in the present tense: normally the outstanding call,
   // but sequential calls leave gaps where the run is still going and nothing is
   // pending. The most recent call covers these, and it's the one the ticker is
@@ -209,7 +219,7 @@ export function summarizeToolRun(tools: readonly ToolCallLike[], live: boolean):
   const clauses = CATEGORY_ORDER.flatMap(category => {
     const group = byCategory.get(category)
 
-    return group ? [clause(category, group, category === liveCategory)] : []
+    return group ? [clause(category, group, category === liveCategory, copy)] : []
   })
 
   const failed = tools.filter(toolCallFailed).length
@@ -219,5 +229,5 @@ export function summarizeToolRun(tools: readonly ToolCallLike[], live: boolean):
   }
 
   // The locale joins (English: "Explored 3 files, ran 5 commands").
-  return runCopy().join([...skillClauses, ...clauses])
+  return copy.join([...skillClauses, ...clauses])
 }

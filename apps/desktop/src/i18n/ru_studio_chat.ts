@@ -109,6 +109,8 @@ export const ruStudioChat: StudioChatTranslations = {
     moreCommands: (first, more) => `${first} и ещё ${ruCount(more, ['команда', 'команды', 'команд'])}`
   },
   transcript: {
+    searchResults: 'Результаты поиска',
+    delegatedTask: 'Поручённая задача',
     delegateSpawned: count => `Запущено субагентов: ${count}`,
     delegateRunning: count => `выполняется: ${count}`,
     delegateAllDone: 'Все готово',

@@ -92,6 +92,8 @@ export const zhHantStudioChat: StudioChatTranslations = {
     moreCommands: (first, more) => `${first} 及另外 ${more} 條指令`
   },
   transcript: {
+    searchResults: '搜尋結果',
+    delegatedTask: '委派的任務',
     delegateSpawned: count => `衍生了 ${count} 個子代理`,
     delegateRunning: count => `${count} 個執行中`,
     delegateAllDone: '全部完成',
