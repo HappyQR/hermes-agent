@@ -106,9 +106,21 @@ cmd_status() {
     info "Sync            : needed — run 'studio.sh sync' to merge $label"
   fi
   if [ -d "$INSTALLED_APP" ]; then
-    local built
-    built="$(plutil -extract CFBundleShortVersionString raw "$INSTALLED_APP/Contents/Info.plist" 2>/dev/null || echo '?')"
-    info "Installed app   : $INSTALLED_APP (version $built)"
+    # A local build carries no release version (0.0.0); its install stamp says
+    # which commit it was built from, and so whether it trails the branch.
+    local stamp="$INSTALLED_APP/Contents/Resources/install-stamp.json" commit="" built=""
+    if [ -f "$stamp" ]; then
+      commit="$(plutil -extract commit raw -o - "$stamp" 2>/dev/null || true)"
+      built="$(plutil -extract builtAt raw -o - "$stamp" 2>/dev/null || true)"
+    fi
+    if [ -n "$commit" ]; then
+      info "Installed app   : $INSTALLED_APP (built from ${commit:0:10} on ${built%%T*})"
+      if [ "$commit" != "$(git_repo rev-parse HEAD)" ]; then
+        info "                  behind the branch — run 'studio.sh build && studio.sh install'"
+      fi
+    else
+      info "Installed app   : $INSTALLED_APP"
+    fi
   else
     info "Installed app   : not installed yet (run 'studio.sh build && studio.sh install')"
   fi
