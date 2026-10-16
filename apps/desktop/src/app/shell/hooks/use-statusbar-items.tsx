@@ -482,15 +482,18 @@ export function useStatusbarItems({
         variant: 'action'
       },
       {
-        hidden: !sessionsShowing,
+        // Studio: the sidebar's account menu switches gateways; this is the
+        // door while the sidebar (and with it that menu) is hidden.
+        hidden: sessionsShowing,
         id: 'gateway-switcher',
         lockedVisible: true,
         render: () => <StatusbarGatewaySwitcher />
       },
       {
         // The rail's stand-in: the profile picker moves down here while the
-        // colored strip is hidden, so switching profiles always has a door.
-        hidden: !sessionsShowing || profileRailVisible,
+        // colored strip is hidden, so switching profiles always has a door —
+        // in Studio, while the sidebar's account menu is hidden too.
+        hidden: sessionsShowing || profileRailVisible,
         id: 'profile-switcher',
         lockedVisible: true,
         render: () => <ProfileSwitcher compact />
