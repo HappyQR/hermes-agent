@@ -4,6 +4,7 @@ import { useMemo } from 'react'
 
 import { listAllProfileSessions } from '@/hermes'
 import { sessionTitle } from '@/lib/chat-runtime'
+import { normalizeSessionSource } from '@/lib/session-source'
 import { $pinnedSessionIds } from '@/store/layout'
 import { $cronSessions, $messagingSessions, $sessions } from '@/store/session'
 import { $unconfirmedPinWrites } from '@/store/session-pin-sync'
@@ -23,6 +24,25 @@ export interface SessionEntry {
 type SessionRow = Awaited<ReturnType<typeof listAllProfileSessions>>['sessions'][number]
 
 const RECENT_COUNT = 5
+
+// The ⌘K landing lists conversations, as the sidebar's recents do: kanban
+// workers, subagent and tool runs, one-shot jobs, editor (ACP) wakes and
+// scheduled runs stay out (SIDEBAR_EXCLUDED_SOURCES in use-session-list-actions).
+// Search still reaches them through the full page below.
+const RECENT_EXCLUDED_SOURCES = new Set(['acp', 'cron', 'kanban', 'oneshot', 'subagent', 'tool'])
+
+interface RecentCandidate {
+  last_active?: null | number
+  source?: null | string
+}
+
+/** The newest conversations, most recent first. */
+export function recentConversations<T extends RecentCandidate>(rows: readonly T[], count = RECENT_COUNT): T[] {
+  return rows
+    .filter(row => !RECENT_EXCLUDED_SOURCES.has(normalizeSessionSource(row.source) ?? ''))
+    .sort((a, b) => (b.last_active ?? 0) - (a.last_active ?? 0))
+    .slice(0, count)
+}
 
 const toSessionEntry = (session: SessionRow): SessionEntry => ({
   git_branch: session.git_branch ?? null,
@@ -94,14 +114,7 @@ export function usePaletteSessions() {
     return liveRows.filter(session => !pinned.has(session.id)).map(toSessionEntry)
   }, [liveRows, pinnedSessions])
 
-  const recentSessions = useMemo(
-    () =>
-      [...liveRows]
-        .sort((a, b) => (b.last_active ?? 0) - (a.last_active ?? 0))
-        .slice(0, RECENT_COUNT)
-        .map(toSessionEntry),
-    [liveRows]
-  )
+  const recentSessions = useMemo(() => recentConversations(liveRows).map(toSessionEntry), [liveRows])
 
   const archivedSessions = useMemo(() => (archivedQuery.data?.sessions ?? []).map(toSessionEntry), [archivedQuery.data])
 
