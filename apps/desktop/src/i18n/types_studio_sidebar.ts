@@ -105,6 +105,15 @@ export interface StudioSidebarTranslations {
     renameConfirm: string
     delete: string
   }
+  /** The new-chat screen's project and profile chips (under the starters). */
+  draft: {
+    /** The project chip's label (and menu row) when the draft has no project. */
+    noProject: string
+    /** The project chip's accessible name. */
+    projectAria: (name: string) => string
+    /** The profile chip's accessible name. */
+    profileAria: (name: string) => string
+  }
   footer: {
     /** `name` is the bold product + version, e.g. "Hermes v0.22.2". */
     updateAvailable: (name: string) => string

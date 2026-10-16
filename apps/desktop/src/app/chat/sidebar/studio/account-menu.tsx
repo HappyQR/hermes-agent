@@ -77,24 +77,19 @@ function Hinted({ action, children }: { action: string; children: React.ReactNod
   )
 }
 
-interface AccountMenuItemsProps {
+interface AccountProfileRowsProps {
   close: () => void
-  dialogs: AccountDialogs
+  dialogs: Pick<AccountDialogs, 'openDelete' | 'openRename' | 'openSoul'>
   switchToRest: (agent: FleetAgent) => void
 }
 
 /**
- * The account menu (prototype HP.ProfileMenu): All profiles, this gateway's
- * profiles, every other gateway's, profile management, the gateway, system
- * status, settings, shortcuts and updates. It replaces the profile rail and
- * the status bar's gateway/profile items as the default door.
+ * The profile half of the account menu: this gateway's header and profile
+ * rows, then every other gateway's group. Shared with the new-chat screen's
+ * profile chip, so both switch through the same paths (remote and
+ * multi-connection routing included).
  */
-export function AccountMenuItems({ close, dialogs, switchToRest }: AccountMenuItemsProps) {
-  const { t } = useI18n()
-  const p = t.profiles
-  const copy = t.studio.sidebar.footer
-  const navigate = useNavigate()
-  const profiles = useStore($profiles)
+export function AccountProfileRows({ close, dialogs, switchToRest }: AccountProfileRowsProps) {
   const showAll = useStore($showAllProfiles)
   const gatewayProfile = useStore($activeGatewayProfile)
   const multipleConnections = useStore($hasMultipleConnections)
@@ -102,8 +97,6 @@ export function AccountMenuItems({ close, dialogs, switchToRest }: AccountMenuIt
   const activeConnectionId = useStore($activeConnectionId)
   const roster = useStore($fleetRoster)
   const order = useStore($profileOrder)
-  const advanced = useStore($showsAdvancedChrome)
-  const railVisible = useStore($profileRailVisible)
   const rows = useActiveProfiles()
   const gateway = useGatewayIdentity()
   const activeKey = normalizeProfileKey(gatewayProfile)
@@ -119,21 +112,8 @@ export function AccountMenuItems({ close, dialogs, switchToRest }: AccountMenuIt
     [activeConnectionId, multipleConnections, order, registry?.connections, roster]
   )
 
-  // Nothing to widen to with one profile; while ALL is on, keep the way back.
-  const offerAll = profiles.length > 1 || showAll
-
   return (
     <>
-      {offerAll && (
-        <>
-          <DropdownMenuCheckboxItem checked={showAll} onCheckedChange={() => toggleShowAllProfiles()}>
-            <Hinted action="profile.toggleAll">
-              <span className="min-w-0 flex-1 truncate">{p.allProfiles}</span>
-            </Hinted>
-          </DropdownMenuCheckboxItem>
-          <DropdownMenuSeparator />
-        </>
-      )}
       <DropdownMenuLabel className={cn(dropdownMenuSectionLabel, 'flex items-center gap-1.5')}>
         <span className="truncate">{gateway.label}</span>
         <span aria-hidden="true">·</span>
@@ -162,6 +142,48 @@ export function AccountMenuItems({ close, dialogs, switchToRest }: AccountMenuIt
           slot="sidebar-account-gateway"
         />
       ))}
+    </>
+  )
+}
+
+interface AccountMenuItemsProps {
+  close: () => void
+  dialogs: AccountDialogs
+  switchToRest: (agent: FleetAgent) => void
+}
+
+/**
+ * The account menu (prototype HP.ProfileMenu): All profiles, this gateway's
+ * profiles, every other gateway's, profile management, the gateway, system
+ * status, settings, shortcuts and updates. It replaces the profile rail and
+ * the status bar's gateway/profile items as the default door.
+ */
+export function AccountMenuItems({ close, dialogs, switchToRest }: AccountMenuItemsProps) {
+  const { t } = useI18n()
+  const p = t.profiles
+  const copy = t.studio.sidebar.footer
+  const navigate = useNavigate()
+  const profiles = useStore($profiles)
+  const showAll = useStore($showAllProfiles)
+  const advanced = useStore($showsAdvancedChrome)
+  const railVisible = useStore($profileRailVisible)
+
+  // Nothing to widen to with one profile; while ALL is on, keep the way back.
+  const offerAll = profiles.length > 1 || showAll
+
+  return (
+    <>
+      {offerAll && (
+        <>
+          <DropdownMenuCheckboxItem checked={showAll} onCheckedChange={() => toggleShowAllProfiles()}>
+            <Hinted action="profile.toggleAll">
+              <span className="min-w-0 flex-1 truncate">{p.allProfiles}</span>
+            </Hinted>
+          </DropdownMenuCheckboxItem>
+          <DropdownMenuSeparator />
+        </>
+      )}
+      <AccountProfileRows close={close} dialogs={dialogs} switchToRest={switchToRest} />
       <DropdownMenuSeparator />
       <DropdownMenuItem onSelect={dialogs.openCreate}>
         <StudioIcon name="plus" size={15} />

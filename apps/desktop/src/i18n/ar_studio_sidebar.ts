@@ -101,6 +101,11 @@ export const arStudioSidebar: StudioSidebarTranslations = {
     renameConfirm: 'إعادة التسمية',
     delete: 'حذف…'
   },
+  draft: {
+    noProject: 'بدون مشروع',
+    projectAria: name => `المشروع: ${name}`,
+    profileAria: name => `الملف الشخصي: ${name}`
+  },
   footer: {
     updateAvailable: name => `يتوفر ${name}`,
     updateGeneric: 'يتوفر تحديث',

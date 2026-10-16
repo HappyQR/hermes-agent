@@ -101,6 +101,11 @@ export const zhHantStudioSidebar: StudioSidebarTranslations = {
     renameConfirm: '重新命名',
     delete: '刪除…'
   },
+  draft: {
+    noProject: '不關聯專案',
+    projectAria: name => `專案：${name}`,
+    profileAria: name => `設定檔：${name}`
+  },
   footer: {
     updateAvailable: name => `${name} 可用`,
     updateGeneric: '有可用的更新',

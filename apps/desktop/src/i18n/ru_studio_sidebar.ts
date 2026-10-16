@@ -117,6 +117,11 @@ export const ruStudioSidebar: StudioSidebarTranslations = {
     renameConfirm: 'Переименовать',
     delete: 'Удалить…'
   },
+  draft: {
+    noProject: 'Без проекта',
+    projectAria: name => `Проект: ${name}`,
+    profileAria: name => `Профиль: ${name}`
+  },
   footer: {
     updateAvailable: name => `Доступна версия ${name}`,
     updateGeneric: 'Доступно обновление',

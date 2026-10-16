@@ -23,9 +23,12 @@ const TONE_DOT: Record<GatewayTone, string> = {
   warn: 'bg-(--ui-dot-orange)'
 }
 
-/** The 30px profile tile with the gateway's status dot on its corner. */
-function AccountAvatar({ pending, tone }: { pending: boolean; tone: GatewayTone }) {
+/** The active profile's tile: its color with its initial, the home mark for
+ *  the default profile, people for All profiles. Prototype `.avatar` (30px in
+ *  the footer, 22px in the new-chat profile chip). */
+export function AccountTile({ className, pending = false }: { className: string; pending?: boolean }) {
   const identity = useAccountIdentity()
+  const colored = Boolean(identity.color) && !identity.all
 
   let face: React.ReactNode
 
@@ -40,19 +43,25 @@ function AccountAvatar({ pending, tone }: { pending: boolean; tone: GatewayTone 
   }
 
   return (
+    <span
+      aria-hidden="true"
+      className={cn(
+        'grid shrink-0 place-items-center font-bold uppercase leading-none',
+        colored ? 'text-white' : 'bg-(--ui-control-active-background) text-(--ui-text-secondary)',
+        className
+      )}
+      style={colored ? { backgroundColor: identity.color ?? undefined } : undefined}
+    >
+      {face}
+    </span>
+  )
+}
+
+/** The 30px profile tile with the gateway's status dot on its corner. */
+function AccountAvatar({ pending, tone }: { pending: boolean; tone: GatewayTone }) {
+  return (
     <span className="relative shrink-0">
-      <span
-        aria-hidden="true"
-        className={cn(
-          'grid size-7.5 place-items-center rounded-lg text-[0.8125rem] font-bold uppercase leading-none',
-          identity.color && !identity.all
-            ? 'text-white'
-            : 'bg-(--ui-control-active-background) text-(--ui-text-secondary)'
-        )}
-        style={identity.color && !identity.all ? { backgroundColor: identity.color } : undefined}
-      >
-        {face}
-      </span>
+      <AccountTile className="size-7.5 rounded-lg text-[0.8125rem]" pending={pending} />
       <span
         aria-hidden="true"
         className={cn(
@@ -110,7 +119,7 @@ export function SidebarAccount() {
   const railVisible = useStore($profileRailVisible)
   const multipleConnections = useStore($hasMultipleConnections)
   const [open, setOpen] = useState(false)
-  const dialogs = useAccountDialogs(railVisible)
+  const dialogs = useAccountDialogs(!railVisible)
   const { dialog: localDeviceDialog, pendingRoute, switchToRest } = useSwitchToRest()
 
   // The rail keeps the fleet roster fresh while it is mounted.
