@@ -32,6 +32,7 @@ import { ResponseMessageIds } from '@/components/assistant-ui/thread/response-gr
 import { ResponseLoadingIndicator, TurnActivityIndicator } from '@/components/assistant-ui/thread/status'
 import { threadMessageIndex } from '@/components/assistant-ui/thread/thread-message-index'
 import { MessageTimelineTimestamp } from '@/components/assistant-ui/thread/timeline-timestamp'
+import { replyTurnDurationS } from '@/components/assistant-ui/thread/turn-duration'
 import { useMessageReactions, useTapbackDoubleClick } from '@/components/assistant-ui/thread/use-message-reactions'
 import { AGENT_MESSAGE_RE } from '@/components/assistant-ui/thread/user-message'
 import { isApprovalActivity, isCurrentTurnMessage } from '@/components/assistant-ui/tool/approval-activity'
@@ -248,9 +249,10 @@ const AssistantMessageBody: FC<AssistantMessageProps & { collapsedNotice?: null 
   // ChatMessage.interim).
   const isInterim = useAuiState(s => s.message.metadata?.custom?.interim === true)
 
-  // Whole-turn wall-clock seconds (set once at completion — referentially
-  // stable across the 30 Hz delta stream, so this adds no per-token renders).
-  const turnDurationS = useAuiState(s => s.message.metadata?.custom?.durationS as number | undefined)
+  // Whole-turn wall-clock seconds: the live-measured value, else the turn's
+  // persisted span (a reloaded turn). A primitive, so the 30 Hz delta stream
+  // adds no per-token renders; the lookups ride the shared message index.
+  const turnDurationS = useAuiState(s => replyTurnDurationS(s.thread.messages, s.message))
 
   // Response-scope text accessors (#118864). The DEFAULT copy/read-aloud reads
   // only THIS message's text: joining the whole response group mixed sealed
