@@ -4,8 +4,6 @@ import { useI18n } from '@/i18n'
 import { useKeybindHint } from '@/lib/keybinds/use-keybind-hint'
 import { resetBrowseState } from '@/store/composer-input-history'
 
-import { pickPlaceholder } from '../composer-utils'
-
 interface UseComposerPlaceholderOptions {
   /** A turn is running: the placeholder says how to queue for the next one. */
   busy?: boolean
@@ -14,12 +12,27 @@ interface UseComposerPlaceholderOptions {
   sessionId: null | string | undefined
 }
 
+/** Which pool the resting line comes from, and where in it (0–1). */
+interface RestingPick {
+  pool: 'followUp' | 'newSession'
+  slot: number
+}
+
+const rollPick = (sessionId: null | string | undefined): RestingPick => ({
+  pool: sessionId ? 'followUp' : 'newSession',
+  slot: Math.random()
+})
+
 /**
  * The composer's placeholder text. A resting starter (new session) / continuation
  * (existing session) is picked once and only re-rolled when we genuinely move to
  * a *different* conversation — the null→id persist of a freshly-started session
  * keeps its starter so the text doesn't flip mid-stream. While the transport is
  * down, it swaps to a reconnecting / starting message instead.
+ *
+ * The pick is a pool and a slot, not a string: the language can change under a
+ * mounted composer (the boot locale settles, Settings switches it), and the
+ * line follows it instead of staying in the language it was picked in.
  */
 export function useComposerPlaceholder({
   busy = false,
@@ -32,9 +45,7 @@ export function useComposerPlaceholder({
   const newSessionPlaceholders = t.composer.newSessionPlaceholders
   const followUpPlaceholders = t.composer.followUpPlaceholders
 
-  const [restingPlaceholder, setRestingPlaceholder] = useState(() =>
-    pickPlaceholder(sessionId ? followUpPlaceholders : newSessionPlaceholders)
-  )
+  const [restingPick, setRestingPick] = useState(() => rollPick(sessionId))
 
   const prevSessionIdRef = useRef(sessionId)
 
@@ -54,8 +65,11 @@ export function useComposerPlaceholder({
     }
 
     resetBrowseState(prev)
-    setRestingPlaceholder(pickPlaceholder(sessionId ? followUpPlaceholders : newSessionPlaceholders))
-  }, [followUpPlaceholders, newSessionPlaceholders, sessionId])
+    setRestingPick(rollPick(sessionId))
+  }, [sessionId])
+
+  const restingPool = restingPick.pool === 'followUp' ? followUpPlaceholders : newSessionPlaceholders
+  const restingPlaceholder = restingPool[Math.floor(restingPick.slot * restingPool.length)] ?? restingPool[0] ?? ''
 
   // When the transport is disabled it's because the gateway isn't open.
   // Distinguish a cold start ("Starting Hermes...") from a dropped connection
