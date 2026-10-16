@@ -90,6 +90,7 @@ function prepareSandbox(mockUrl) {
   else if (fs.existsSync(parked)) fs.renameSync(parked, installs)
   fs.mkdirSync(userData, { recursive: true })
   seedProject(project)
+  gitProject(project)
   const config = [
     'model:',
     `  default: ${MODEL_ID}`,
@@ -106,6 +107,12 @@ function prepareSandbox(mockUrl) {
     '  run: false',
     'display:',
     '  language: zh',
+    // New sessions start in the seeded repo, which the Projects sidebar lists.
+    'terminal:',
+    `  cwd: ${project}`,
+    'desktop:',
+    '  repo_scan_roots:',
+    `    - ${path.dirname(project)}`,
     // An explicit answer keeps the shared-metrics consent strip out of every shot.
     'telemetry:',
     '  shared_metrics:',
@@ -116,6 +123,34 @@ function prepareSandbox(mockUrl) {
   ].join('\n')
   fs.writeFileSync(path.join(hermesHome, 'config.yaml'), config)
   fs.writeFileSync(path.join(hermesHome, '.env'), `OPENAI_API_KEY=studio-mock-key\nOPENAI_BASE_URL=${mockUrl}/v1\n`)
+}
+
+// The seeded project as a repo on a feature branch with work in progress, so
+// the toolbar has branch and diff chips and the sidebar a project lane.
+function gitProject(root) {
+  const git = (...args) => spawnSync('git', ['-C', root, ...args], { encoding: 'utf8' })
+  git('init', '-q', '-b', 'main')
+  git('-c', 'user.name=Hermes Studio', '-c', 'user.email=studio@example.invalid', 'add', '-A')
+  git('-c', 'user.name=Hermes Studio', '-c', 'user.email=studio@example.invalid', 'commit', '-q', '-m', 'Initial commit')
+  git('checkout', '-q', '-b', 'feat/sidebar-groups')
+  fs.appendFileSync(path.join(root, 'src/store/session-groups.ts'), '\n// TODO: group by source\n')
+}
+
+// Scheduled jobs for the Automations page (the prototype's examples).
+function seedCronJobs() {
+  const jobs = [
+    ['0 9 * * *', '每日 AI 新闻摘要', '汇总过去 24 小时 AI 领域的重要新闻，每条一句话，附来源链接。'],
+    ['30 9 * * 1-5', '工作日站会提醒', '9:45 站会前提醒我，列出昨天的进展和今天的计划。'],
+    ['0 10 * * 1', '每周依赖安全审计', '检查项目依赖的安全公告，有高危问题时告诉我。'],
+    ['every 15m', 'NAS 磁盘巡检', '检查 NAS 的磁盘使用率，超过 85% 时提醒我。', '--paused'],
+    ['0 9 1 * *', '月度账单整理', '整理上个月的账单，按类别汇总成表格。']
+  ]
+  for (const [schedule, name, prompt, ...flags] of jobs) {
+    spawnSync(hermesLauncher, ['cron', 'create', '--name', name, '--deliver', 'local', ...flags, schedule, prompt], {
+      env: appEnv(),
+      encoding: 'utf8'
+    })
+  }
 }
 
 function writeWindowState() {
@@ -332,6 +367,7 @@ async function main() {
   if (flag('seed') || !fs.existsSync(hermesHome)) {
     await sleep(1000)
     prepareSandbox(mock.url)
+    seedCronJobs()
   }
   writeWindowState()
 
