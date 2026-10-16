@@ -39,7 +39,7 @@ import type {
 
 import { CapToolbarSlot, useInCapabilitiesToolbar } from './toolbar-slots'
 
-// 连接器 (prototype pages.js:79-91): filter chips (all · connected · available
+// Connectors (prototype pages.js:79-91): filter chips (all · connected · available
 // · off · local) over app cards — logo, name, kind · tools, a state tag with
 // the account, the reason or description, and the next step (Connect, Sign in
 // again, Manage…). The name is the card's stretched link to its sheet. Same

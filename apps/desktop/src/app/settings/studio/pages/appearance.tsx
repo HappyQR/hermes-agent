@@ -18,7 +18,7 @@ function AppearanceExtras() {
   ) : null
 }
 
-/** 外观 Appearance: mode + accent, themes, window, fonts and scaling, pet (device-local). */
+/** Appearance: mode + accent, themes, window, fonts and scaling, pet (device-local). */
 export function AppearancePage() {
   const { t } = useI18n()
   const s = t.studio.settings.sections.appearance

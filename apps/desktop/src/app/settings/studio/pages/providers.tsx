@@ -23,7 +23,7 @@ const VIEW_SECTION: Record<ProviderView, string> = {
   local: 'local'
 }
 
-/** 账户与提供商 Accounts & Providers: accounts, API keys, custom endpoints, local models (drill-in). */
+/** Accounts & Providers: accounts, API keys, custom endpoints, local models (drill-in). */
 export function ProvidersPage({
   location,
   onClose,

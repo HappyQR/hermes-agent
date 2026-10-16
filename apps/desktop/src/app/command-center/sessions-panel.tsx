@@ -70,7 +70,7 @@ interface SessionsPanelProps {
   sessions: readonly SessionInfo[]
 }
 
-/** 会话: every loaded session, newest first, with pin / export / archive / delete. */
+/** Sessions: every loaded session, newest first, with pin / export / archive / delete. */
 export function SessionsPanel({
   hasMore,
   loadMorePending,

@@ -4,7 +4,7 @@ import { useI18n } from '@/i18n'
 import { GatewaySettings } from '../../gateway-settings'
 import { SettingsWindowSection } from '../section'
 
-/** 网关与连接 Gateways & Connections: this window's connection, saved connections, remote updates (machine-level). */
+/** Gateways & Connections: this window's connection, saved connections, remote updates (machine-level). */
 export function GatewaysPage() {
   const { t } = useI18n()
   const s = t.studio.settings.sections.gateways

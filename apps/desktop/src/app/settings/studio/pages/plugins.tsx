@@ -100,7 +100,7 @@ function PluginDrill({
   )
 }
 
-/** 插件 Plugins: one row per plugin with settings (drill-in with Back), then Install & Enable. */
+/** Plugins: one row per plugin with settings (drill-in with Back), then Install & Enable. */
 export function PluginsPage() {
   const { t } = useI18n()
   const s = t.studio.settings.sections.plugins

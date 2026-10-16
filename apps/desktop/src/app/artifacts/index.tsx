@@ -33,7 +33,7 @@ interface ArtifactsViewProps extends React.ComponentProps<'section'> {
 // One grid page; "Show more" adds another.
 const GALLERY_PAGE = 48
 
-/** 产物 (prototype pages.js:296-306): what the last 30 sessions produced — web
+/** Artifacts (prototype pages.js:296-306): what the last 30 sessions produced — web
  *  pages, images, files and links — as a gallery; any item opens Quick Look. */
 export function ArtifactsView({ setStatusbarItemGroup: _setStatusbarItemGroup, ...props }: ArtifactsViewProps) {
   const { t } = useI18n()

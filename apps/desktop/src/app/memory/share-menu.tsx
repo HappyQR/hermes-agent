@@ -26,7 +26,7 @@ import type { StarmapGraph } from '@/types/hermes'
 
 import { decodeShareCode, encodeShareCode, ShareCodeError } from '../starmap/share-code'
 
-// 分享 (prototype pages.js:397): copy this map as a share code, load someone
+// Share (prototype pages.js:397): copy this map as a share code, load someone
 // else's, or refresh the scan. A loaded map replaces the canvas until "Back to
 // my map"; the list view always shows the live graph.
 

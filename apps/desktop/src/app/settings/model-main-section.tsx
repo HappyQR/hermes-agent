@@ -221,7 +221,7 @@ function SpeedControl({
   ) : null
 }
 
-/** Standard / Fast / Ultrafast as one segmented control (the window's 速度 row). */
+/** Standard / Fast / Ultrafast as one segmented control (the window's Speed row). */
 function SpeedSegments({ fastSupported, onWriteDefault, speedValue, ultrafastSupported }: ModelMainSectionProps) {
   const { t } = useI18n()
   const m = t.settings.model
@@ -242,7 +242,7 @@ function SpeedSegments({ fastSupported, onWriteDefault, speedValue, ultrafastSup
   )
 }
 
-/** The Settings window: one row per choice (prototype 模型 › 主模型). */
+/** The Settings window: one row per choice (prototype Models › Main model). */
 function WindowModelMainSection(props: ModelMainSectionProps) {
   const { t } = useI18n()
   const m = t.settings.model

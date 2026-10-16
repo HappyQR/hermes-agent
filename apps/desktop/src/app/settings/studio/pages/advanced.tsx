@@ -34,7 +34,7 @@ function AdvancedSections({ api }: { api: ConfigSettingsLayoutApi }) {
   )
 }
 
-/** 高级 Advanced: agent, terminal backend, subagents, output limits, in-app updates (profile). */
+/** Advanced: agent, terminal backend, subagents, output limits, in-app updates (profile). */
 export function AdvancedPage(props: ConfigPageProps) {
   return (
     <ConfigPage legacySection="advanced" {...props}>

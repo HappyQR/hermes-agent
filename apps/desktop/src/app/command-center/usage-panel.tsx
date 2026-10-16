@@ -31,7 +31,7 @@ export function cacheHitPercent(totals: Pick<AnalyticsTotals, 'total_cache_read'
   return prompt > 0 && cached > 0 ? Math.round((cached / prompt) * 100) : null
 }
 
-/** 用量: period switch, totals incl. cost, daily stacked bars, top models and skills. */
+/** Usage: period switch, totals incl. cost, daily stacked bars, top models and skills. */
 export function UsagePanel() {
   const { t, locale } = useI18n()
   const cc = t.commandCenter

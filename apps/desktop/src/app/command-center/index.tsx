@@ -24,7 +24,7 @@ export type CommandCenterSection = 'maintenance' | 'sessions' | 'system' | 'usag
 
 const SECTIONS = ['sessions', 'system', 'usage', 'maintenance'] as const satisfies readonly CommandCenterSection[]
 
-// ⌘. with no deep link lands on 系统 (the prototype's default tab).
+// ⌘. with no deep link lands on System (the prototype's default tab).
 const DEFAULT_SECTION: CommandCenterSection = 'system'
 
 // Stable empty arrays so the selector returns the same reference when we're
@@ -89,7 +89,7 @@ function useSection(initialSection: CommandCenterSection | undefined) {
   return [section, setSection] as const
 }
 
-/** 系统状态 (former Command Center): a wide sheet with 会话 / 系统 / 用量 / 维护 tabs. */
+/** System Status (former Command Center): a wide sheet with Sessions / System / Usage / Maintenance tabs. */
 export function CommandCenterView({
   initialSection,
   onArchiveSession,

@@ -17,7 +17,7 @@ import { WebhooksView } from '../webhooks'
 
 import { type AutomationCreateKind, requestAutomationCreate } from './requests'
 
-// 自动化 — scheduled jobs, webhooks and blueprints on one page (prototype
+// Automations — scheduled jobs, webhooks and blueprints on one page (prototype
 // pages.js:195-272). The tabs are the existing views re-hosted: one CronView
 // instance serves both Scheduled and Blueprints (so the editor sheet and the
 // blueprint catalog survive the switch), WebhooksView keeps its profile-owned

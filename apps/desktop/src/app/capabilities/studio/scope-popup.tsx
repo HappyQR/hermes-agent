@@ -7,7 +7,7 @@ import { $profileColors, normalizeProfileKey } from '@/store/profile'
 
 import type { CapabilityScope } from '../scope-selector'
 
-// 应用于 (prototype pages.js:13-19): which profile the page edits, as a pop-up
+// Applies to (prototype pages.js:13-19): which profile the page edits, as a pop-up
 // button in the toolbar — the muted lead-in, the profile's tile and its name.
 // With one profile there is nothing to choose: the same chip, read-only. A
 // pinned scope (Bot Mode) shows none — its host already names the bot.

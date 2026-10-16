@@ -33,7 +33,7 @@ function connectedPlatforms(status: StatusResponse): string[] {
     .sort((left, right) => left.localeCompare(right))
 }
 
-/** 系统: gateway health cards, gateway actions, and the recent-log tail. */
+/** System: gateway health cards, gateway actions, and the recent-log tail. */
 export function SystemPanel() {
   const { t } = useI18n()
   const cc = t.commandCenter

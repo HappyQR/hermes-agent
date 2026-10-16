@@ -54,7 +54,7 @@ function ToolsSections({ api }: { api: ConfigSettingsLayoutApi }) {
   )
 }
 
-/** 工具与密钥 Tools & Keys: tool service keys, server environment, toolsets (profile). */
+/** Tools & Keys: tool service keys, server environment, toolsets (profile). */
 export function ToolsPage(props: ConfigPageProps) {
   return (
     <ConfigPage legacySection="advanced" {...props}>

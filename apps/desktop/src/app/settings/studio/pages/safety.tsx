@@ -31,7 +31,7 @@ function SafetySections({ api }: { api: ConfigSettingsLayoutApi }) {
   )
 }
 
-/** 安全与隐私 Safety & Privacy: command approval, privacy, browser and network (profile). */
+/** Safety & Privacy: command approval, privacy, browser and network (profile). */
 export function SafetyPage(props: ConfigPageProps) {
   return (
     <ConfigPage legacySection="safety" {...props}>

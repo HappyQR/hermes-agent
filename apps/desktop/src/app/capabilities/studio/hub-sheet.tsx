@@ -12,7 +12,7 @@ import { notify, notifyError } from '@/store/notifications'
 
 import { EmbeddedHubPicker } from '../skills/embedded-hub-picker'
 
-// 技能中心 (prototype pages.js:31; overlays.js:342): the live Skills Hub page in
+// Skills Hub (prototype pages.js:31; overlays.js:342): the live Skills Hub page in
 // an extra-wide sheet. "+ Add to this Agent" inside the frame installs into the
 // page's profile through the hub action pipeline; the frame (and its message
 // listener) exists only while the sheet is open.

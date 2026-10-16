@@ -1,6 +1,6 @@
 /* Hermes Studio — pages styles (fork-owned; loaded after foundation.css).
 
-   Workspace pages (技能与工具 · 消息平台 · 自动化 · 产物 · 记忆 · 看板), their
+   Workspace pages (Skills & Tools · Messaging · Automations · Artifacts · Memory · Kanban), their
    sheets, and the inspector pane bodies. Components live in
    src/components/studio/pages/; this file holds what Tailwind classes cannot
    express on their own: page tokens, sibling hairlines, line clamps, the

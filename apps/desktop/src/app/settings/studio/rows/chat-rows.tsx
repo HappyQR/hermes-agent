@@ -17,7 +17,7 @@ type Thinking = 'collapse' | 'hide' | 'show'
 const reasoningShown = (value: unknown) => !(value === false || value === 'false' || value === 0)
 
 /**
- * 思考过程 Thinking: one 3-way choice over the two settings it replaced —
+ * Thinking: one 3-way choice over the two settings it replaced —
  * `display.show_reasoning` (profile config: Hidden = off) and the
  * device-local "collapse thinking by default" (Show / Collapsed). Both deep
  * link targets (`?field=display.show_reasoning`, `?setting=appearance.reasoning-collapsed`)
@@ -73,7 +73,7 @@ export function ThinkingRow({ api }: { api: ConfigSettingsLayoutApi }) {
   )
 }
 
-/** 显示时间戳: `display.timestamps` (profile config) — the timeline timestamps everywhere. */
+/** Show timestamps: `display.timestamps` (profile config) — the timeline timestamps everywhere. */
 export function TimestampsRow({ api }: { api: ConfigSettingsLayoutApi }) {
   const { t } = useI18n()
   const config = api.config

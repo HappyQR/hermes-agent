@@ -3,7 +3,7 @@ import { atom } from 'nanostores'
 import type { StudioIconName } from '@/components/ui/studio-icon'
 
 /**
- * ⌘K scopes (prototype .pal-scopes): 全部 / 会话与项目 / 页面 / 命令 / 设置.
+ * ⌘K scopes (prototype .pal-scopes): All / Sessions & Projects / Pages / Commands / Settings.
  * Every palette group carries the scope it belongs to; a scoped view lists
  * its groups even with an empty query.
  */
@@ -33,7 +33,7 @@ export function cycleScope(current: PaletteScopeId, step: 1 | -1): PaletteScopeI
 // from `$paletteQuery`. The sessions area's server full-text search is the
 // intended first source: it registers under scope `sessions`, answers the
 // query, and the palette lists its hits under that scope (and offers a
-// "Search all session content" row from 全部 once the source exists).
+// "Search all session content" row from All once the source exists).
 
 export interface PaletteExternalItem {
   detail?: string
@@ -92,8 +92,8 @@ export interface ScopedGroup {
 
 /**
  * The groups a scope shows before ranking. With a query: every group in the
- * scope (all of them under 全部). Without one, 全部 is the curated landing
- * (recent sessions, 前往, the first few commands) and a scope lists its groups
+ * scope (all of them under All). Without one, All is the curated landing
+ * (recent sessions, Go to, the first few commands) and a scope lists its groups
  * minus the typed-only ones.
  */
 export function groupsForScope<G extends ScopedGroup>({

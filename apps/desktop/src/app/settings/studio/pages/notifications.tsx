@@ -8,7 +8,7 @@ import { ToggleRow } from '../../primitives'
 import { SettingsScopeBadge } from '../scope'
 import { SettingsWindowSection } from '../section'
 
-/** 触感反馈: the haptics mute (it also silences the completion cue). */
+/** Haptic feedback: the haptics mute (it also silences the completion cue). */
 function HapticsRow() {
   const { t } = useI18n()
   const muted = useStore($hapticsMuted)
@@ -23,7 +23,7 @@ function HapticsRow() {
   )
 }
 
-/** 通知 Notifications: desktop alerts, sound and haptics (device-local). */
+/** Notifications: desktop alerts, sound and haptics (device-local). */
 export function NotificationsPage() {
   const { t } = useI18n()
   const s = t.studio.settings.sections.notifications

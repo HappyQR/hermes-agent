@@ -20,7 +20,7 @@ import { buildShortcutGroups } from './model'
 import { $keybindsSheetOpen, openKeybindsSheet, setKeybindsSheetOpen } from './store'
 
 /**
- * ⌘/ — the read-only map of every bound shortcut (prototype "键盘快捷键"
+ * ⌘/ — the read-only map of every bound shortcut (prototype "Keyboard Shortcuts"
  * sheet). Rebinding stays in Settings › Keyboard & Shortcuts; the footer link
  * goes there.
  */

@@ -19,7 +19,7 @@ import type { SettingsPageProps } from '../../types'
 import { SettingsWindowSection } from '../section'
 
 /**
- * 配置: export / import / reset (the old rail-footer icons), all on the profile
+ * Configuration: export / import / reset (the old rail-footer icons), all on the profile
  * the Settings window edits. Import keeps the classic path — the hidden file
  * input of a ConfigSettings draft, with its toolsets-wipe confirm and autosave.
  */
@@ -158,7 +158,7 @@ function DiagnosticsRows() {
   )
 }
 
-/** 关于 Hermes About: version hero, updates, configuration, diagnostics, uninstall. */
+/** About Hermes: version hero, updates, configuration, diagnostics, uninstall. */
 export function AboutPage(props: Pick<SettingsPageProps, 'onConfigSaved' | 'onMainModelChanged'>) {
   const { t } = useI18n()
   const s = t.studio.settings.sections.about

@@ -24,7 +24,7 @@ import { canOpenSessionWindow, openSessionInNewWindow } from '@/store/windows'
 import { SubagentTranscript } from '../chat/composer/status-stack/subagent-transcript'
 import { PanelEmpty } from '../overlays/panel'
 
-// The inspector's 代理 pane body (prototype inspector.js:329-367): a summary
+// The inspector's Agents pane body (prototype inspector.js:329-367): a summary
 // strip, then one card per sub-agent — goal and meta on the head, the live
 // stream, touched files, steer/stop while it runs and its full transcript when
 // expanded. Same scope as the /agents overlay: live work from every session

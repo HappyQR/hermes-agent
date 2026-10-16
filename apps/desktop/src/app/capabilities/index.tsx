@@ -54,7 +54,7 @@ interface CapabilitiesViewProps extends React.ComponentProps<'section'> {
   fixedConnection?: string
 }
 
-/** The Capabilities page SHELL (技能与工具, prototype pages.js:21-109): the page
+/** The Capabilities page SHELL (Skills & Tools, prototype pages.js:21-109): the page
  *  head with the tab switch, the toolbar (search, scope, each tab's controls),
  *  the refresh hotkey, and the dispatch to one tab component per tab. Each tab
  *  owns its list, sheets and writes. */

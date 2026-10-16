@@ -232,7 +232,7 @@ function CommandPaletteBody({ onExited }: { onExited: () => void }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contributed, dismissedAutoProjects, go, projectTree, selectTick, t, updateVersionLabel])
 
-  // The long, granular lists. On 全部 they only surface once the user types —
+  // The long, granular lists. On All they only surface once the user types —
   // otherwise they'd bury the landing; a scope lists the ones not marked
   // typed-only. Branch rows rank last: they scale with whatever worktrees
   // happen to exist, so on a tie they're the least likely thing meant.
@@ -283,7 +283,7 @@ function CommandPaletteBody({ onExited }: { onExited: () => void }) {
   )
 
   // Deep-link into a nested page (e.g. `/pet list` → pets picker) or a scope
-  // (Settings' ⌘K → 设置; the sessions sidebar's full-text search → 会话与项目).
+  // (Settings' ⌘K → Settings; the sessions sidebar's full-text search → Sessions & Projects).
   useEffect(() => {
     if (pendingPage) {
       const scoped = SCOPE_PAGES[pendingPage]

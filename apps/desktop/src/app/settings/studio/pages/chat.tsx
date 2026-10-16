@@ -38,7 +38,7 @@ function ChatSections({ api }: { api: ConfigSettingsLayoutApi }) {
   )
 }
 
-/** 对话 Chat: replies, messages, embeds and attachments (profile config + device rows, one draft). */
+/** Chat: replies, messages, embeds and attachments (profile config + device rows, one draft). */
 export function ChatPage({
   onConfigSaved,
   onMainModelChanged

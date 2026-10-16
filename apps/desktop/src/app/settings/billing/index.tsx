@@ -75,7 +75,7 @@ function SummaryCard({ label, value, tone }: { label: string; tone?: 'muted' | '
   )
 }
 
-/** Balance, plan and auto-reload at a glance; the Settings window titles it 概览 Overview (prototype). */
+/** Balance, plan and auto-reload at a glance; the Settings window titles it Overview (prototype). */
 function BillingSummary({ summary }: { summary: BillingSummaryItemView[] }) {
   const { t } = useI18n()
 

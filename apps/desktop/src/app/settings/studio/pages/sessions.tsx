@@ -4,7 +4,7 @@ import { AutoArchiveSetting, SessionsSettings } from '../../sessions-settings'
 import { SettingsScopeBadge } from '../scope'
 import { SettingsWindowSection } from '../section'
 
-/** 会话与归档 Sessions & Archive: auto-archive, then the archived sessions with Unarchive / Delete. */
+/** Sessions & Archive: auto-archive, then the archived sessions with Unarchive / Delete. */
 export function SessionsPage() {
   const { t } = useI18n()
   const s = t.studio.settings.sections.sessions

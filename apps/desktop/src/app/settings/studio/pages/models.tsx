@@ -76,7 +76,7 @@ function ModelsSections({
   )
 }
 
-/** 模型 Models: main model, fallbacks, auxiliary models, mixture of agents (profile). */
+/** Models: main model, fallbacks, auxiliary models, mixture of agents (profile). */
 export function ModelsPage({ location, ...props }: ConfigPageProps & { location: SettingsWindowLocation }) {
   return (
     <ConfigPage legacySection="model" {...props}>

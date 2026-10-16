@@ -8,7 +8,7 @@ import { ScreenshotSettings } from '../../screenshot-settings'
 import { SettingsScopeBadge } from '../scope'
 import { SettingsWindowSection } from '../section'
 
-/** 键盘与快捷操作 Keyboard: shortcuts, Quick Ask, HUD gesture and window capture (device-local). */
+/** Keyboard: shortcuts, Quick Ask, HUD gesture and window capture (device-local). */
 export function KeyboardPage() {
   const { t } = useI18n()
   const s = t.studio.settings.sections.keyboard

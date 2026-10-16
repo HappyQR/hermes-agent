@@ -6,7 +6,7 @@ import { OnboardingSettings } from '../../onboarding-settings'
 import { SettingsScopeBadge } from '../scope'
 import { SettingsWindowSection } from '../section'
 
-/** 通用 General: language and startup, tips, window and system (device-local). */
+/** General: language and startup, tips, window and system (device-local). */
 export function GeneralPage() {
   const { t } = useI18n()
   const s = t.studio.settings.sections.general

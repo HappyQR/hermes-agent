@@ -16,7 +16,7 @@ import type { NodeActions } from '../starmap/node-actions'
 
 import { learnedSkills, memoryCharCount, type MemoryRow, memoryRows } from './graph-model'
 
-// 列表 (prototype pages.js:404-414): what Hermes remembers (MEMORY.md), what it
+// List (prototype pages.js:404-414): what Hermes remembers (MEMORY.md), what it
 // knows about you (USER.md) and the skills it wrote itself, each row editable
 // and removable through the same actions as the map's right-click menu.
 

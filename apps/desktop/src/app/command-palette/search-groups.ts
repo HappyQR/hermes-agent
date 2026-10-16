@@ -158,7 +158,7 @@ export function sessionGroups(
 
 /**
  * Deep links straight to a Capabilities sub-tab and to each configured MCP
- * server. The 前往 row only lands on the top-level Skills view; typing
+ * server. The Go to row only lands on the top-level Skills view; typing
  * "mcp"/"tools"/"skills" should jump to the exact tab.
  */
 export function capabilityGroups(mcpServers: readonly string[], { go, t }: SearchGroupsContext): PaletteGroup[] {
@@ -361,7 +361,7 @@ export function settingsSearchGroups(catalog: SettingsCatalog, { go, t }: Search
 /**
  * Groups published by external sources (see scopes.ts), shown as the source
  * ordered them after the palette's own ranked rows. While a sessions source is
- * registered, 全部 offers a row that hands the query to it.
+ * registered, All offers a row that hands the query to it.
  */
 export function externalGroups({
   onSearchContent,

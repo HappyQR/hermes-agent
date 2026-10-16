@@ -12,7 +12,7 @@ import { toolsetCalls } from '../toolsets/toolsets-data'
 
 import { toolsetTile } from './tiles'
 
-// 工具 (prototype pages.js:70-77): one inset row per toolset — tile, name,
+// Tools (prototype pages.js:70-77): one inset row per toolset — tile, name,
 // what it does · how many tools · how often they ran, a "Needs keys" tag, the
 // on/off switch and a chevron into the tool sheet.
 

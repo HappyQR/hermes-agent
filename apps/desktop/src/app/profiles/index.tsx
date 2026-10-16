@@ -37,7 +37,7 @@ interface ProfilesViewProps {
 
 const NEW_PROFILE = '\u0000new'
 
-/** 配置档案 — the Profiles sheet: list, detail, SOUL.md, and the rail's profile actions. */
+/** Profiles — the Profiles sheet: list, detail, SOUL.md, and the rail's profile actions. */
 export function ProfilesView({ onClose }: ProfilesViewProps) {
   const { t } = useI18n()
   const p = t.profiles
@@ -236,7 +236,7 @@ export function ProfilesView({ onClose }: ProfilesViewProps) {
       />
 
       {/* The rail mounts the one "Connect to a remote host" dialog; with the
-          rail hidden, this sheet hosts it so the 操作 menu item still works. */}
+          rail hidden, this sheet hosts it so the Actions menu item still works. */}
       {!railVisible && <ProfileRemoteOverrideDialog profileNames={(profiles ?? []).map(profile => profile.name)} />}
     </OverlayView>
   )

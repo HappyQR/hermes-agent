@@ -13,7 +13,7 @@ import { formatWhen } from '../automations/format'
 import { artifactImageSrc, type ArtifactRecord } from './artifact-utils'
 import { type ArtifactViewKind, fileExtension, viewKindOf } from './view-kind'
 
-// 产物 gallery tile (prototype pages.js:301-303 `.g-item`): a 4:3 thumbnail
+// Artifacts gallery tile (prototype pages.js:301-303 `.g-item`): a 4:3 thumbnail
 // that lifts on hover, the name and "session · time". Activating it opens
 // Quick Look.
 

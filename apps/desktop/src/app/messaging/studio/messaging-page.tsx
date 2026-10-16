@@ -15,7 +15,7 @@ import type { MessagingPlatformInfo } from '@/types/hermes'
 
 import { PlatformTile } from '../platform-tile'
 
-// 消息平台 (prototype pages.js:111-193): System Settings master/detail — the
+// Messaging (prototype pages.js:111-193): System Settings master/detail — the
 // platform list (search, status filter, tile · name · state, a pending-pairing
 // count or a status dot) beside the selected platform's detail. Data, writes
 // and scope guards stay in MessagingView; this is the page around them.

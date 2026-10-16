@@ -36,7 +36,7 @@ export function useProfileRoute(profile: ProfileInfo) {
 }
 
 /**
- * 操作 ▾ — the profile rail's context menu, mirrored in the Profiles sheet:
+ * Actions ▾ — the profile rail's context menu, mirrored in the Profiles sheet:
  * new window, default, colour, rename, SOUL.md, export, remote host, delete.
  */
 export function ProfileActionsMenu({

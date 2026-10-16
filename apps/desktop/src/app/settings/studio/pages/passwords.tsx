@@ -8,7 +8,7 @@ import { vaultOwnerKey, VaultSettings } from '../../vault-settings'
 import { SettingsScopeBadge } from '../scope'
 import { SettingsWindowSection } from '../section'
 
-/** 密码与登录 Passwords & Logins: saved credentials, password managers (per profile vault). */
+/** Passwords & Logins: saved credentials, password managers (per profile vault). */
 export function PasswordsPage() {
   const { t } = useI18n()
   const s = t.studio.settings.sections.passwords

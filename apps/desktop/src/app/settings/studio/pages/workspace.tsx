@@ -32,7 +32,7 @@ function WorkspaceSections({ api }: { api: ConfigSettingsLayoutApi }) {
   )
 }
 
-/** 工作区 Workspace: projects, execution, checkpoints (profile). */
+/** Workspace: projects, execution, checkpoints (profile). */
 export function WorkspacePage(props: ConfigPageProps) {
   return (
     <ConfigPage legacySection="workspace" {...props}>

@@ -6,7 +6,7 @@ import { openCatalogPluginInstall } from '@/store/plugin-catalog-install'
 
 import { CatalogSheetFrame } from './hub-sheet'
 
-// 浏览插件目录: the live Plugin Catalog page (docs site) in an extra-wide sheet.
+// Browse plugin catalog: the live Plugin Catalog page (docs site) in an extra-wide sheet.
 // `?embed=picker` adds "+ Add to this Agent" per card, which posts
 //   { type: 'hermes-plugin-pick', name, repo, sha, subdir, tier, installCmd }
 // to this window; a pick opens the shared dual-target install modal (agent half

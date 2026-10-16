@@ -17,7 +17,7 @@ import type { ProfileInfo } from '@/types/hermes'
 import { useCreateProfile } from './use-create-profile'
 
 /**
- * 新建配置档案 — the Profiles sheet's inline create pane (same flow as the
+ * New profile — the Profiles sheet's inline create pane (same flow as the
  * rail's Create dialog: name, clone source, optional SOUL.md) plus a colour.
  */
 export function CreateProfilePane({

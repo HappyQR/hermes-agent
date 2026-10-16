@@ -18,7 +18,7 @@ import { ConfigPage, type ConfigPageProps, ConfigRows, placedFields } from '../c
 import { SettingsScopeBadge } from '../scope'
 import { SettingsWindowSection } from '../section'
 
-// The compression switch stays visible; its tuning folds into 压缩细节.
+// The compression switch stays visible; its tuning folds into Compression details.
 const COMPRESSION_SWITCH = 'compression.enabled'
 
 const DETAILS_ORDER = [
@@ -133,7 +133,7 @@ function MemorySections({ api }: { api: ConfigSettingsLayoutApi }) {
   )
 }
 
-/** 记忆与上下文 Memory & Context: long-term memory, context and compression, maintenance (profile). */
+/** Memory & Context: long-term memory, context and compression, maintenance (profile). */
 export function MemoryPage(props: ConfigPageProps) {
   return (
     <ConfigPage legacySection="memory" {...props}>

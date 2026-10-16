@@ -1,8 +1,8 @@
 import type { ArtifactRecord } from './artifact-utils'
 
-// The page's five filters (prototype 全部/网页/图片/文件/链接). 网页 is a view
+// The page's five filters (prototype All/Web/Images/Files/Links). Web is a view
 // over `file` artifacts that are HTML documents — the index keeps its three
-// kinds (artifact-utils), so 文件 here means files that are not web pages.
+// kinds (artifact-utils), so Files here means files that are not web pages.
 
 export const ARTIFACT_VIEWS = ['all', 'web', 'image', 'file', 'link'] as const
 

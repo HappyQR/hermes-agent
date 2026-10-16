@@ -26,8 +26,8 @@ import { filterGraph, graphCounts, MEMORY_FILTERS, type MemoryFilter } from './g
 import { MemoryList } from './memory-list'
 import { MemoryShareMenu } from './share-menu'
 
-// 记忆 (prototype pages.js:389-416): what Hermes remembers, knows about you and
-// has learned, as the star map (图谱) or an editable list (列表). `/starmap`
+// Memory (prototype pages.js:389-416): what Hermes remembers, knows about you and
+// has learned, as the star map (Map) or an editable list (List). `/starmap`
 // renders this page too; `/journey` opens it. The star map engine (simulation,
 // renderer, share codes) is app/starmap's.
 

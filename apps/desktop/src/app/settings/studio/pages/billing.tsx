@@ -7,7 +7,7 @@ import { useSettingsDrill } from '../drill'
 import type { SettingsWindowLocation } from '../use-settings-location'
 
 /**
- * 账单 Billing: the billing page lays out its own sections (overview cards,
+ * Billing: the billing page lays out its own sections (overview cards,
  * plan, payment and credits, usage); Plans is a drill-in with Back.
  */
 export function BillingPage({ location }: { location: SettingsWindowLocation }) {

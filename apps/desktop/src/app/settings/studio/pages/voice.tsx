@@ -20,7 +20,7 @@ function VoiceShortcutHintRow() {
 }
 
 /**
- * 唤醒词: the gateway's wake-word listener (the composer's ear toggle, same
+ * Wake word: the gateway's wake-word listener (the composer's ear toggle, same
  * store and RPC). The phrase is read-only: no config key edits it.
  */
 function WakeWordRows() {
@@ -84,7 +84,7 @@ function VoiceSections({ api }: { api: ConfigSettingsLayoutApi }) {
   )
 }
 
-/** 语音 Voice: conversation, speech to text, read aloud, wake word (profile). */
+/** Voice: conversation, speech to text, read aloud, wake word (profile). */
 export function VoicePage(props: ConfigPageProps) {
   return (
     <ConfigPage legacySection="voice" {...props}>

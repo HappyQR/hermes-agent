@@ -21,7 +21,7 @@ import { categoryLabel } from './labels'
 import { skillSourceLabel } from './skill-sheets'
 import { skillTile } from './tiles'
 
-// 技能 (prototype pages.js:45-67): installed skills as cards, grouped by
+// Skills (prototype pages.js:45-67): installed skills as cards, grouped by
 // category in the list's sort order, then the official skills that can still
 // be installed. A card's switch turns the skill on/off; its title and Details
 // open the skill sheet.

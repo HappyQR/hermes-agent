@@ -39,7 +39,7 @@ export interface RootGroupsContext {
   updateVersionLabel: string
 }
 
-/** 前往: where you can go. Pages scope; the whole group is the ⌘K landing's middle block. */
+/** Go to: where you can go. Pages scope; the whole group is the ⌘K landing's middle block. */
 export function goToGroup({ go, t }: RootGroupsContext): PaletteGroup {
   const cc = t.commandCenter
 
@@ -215,7 +215,7 @@ function contributedItem(item: RootGroupsContext['contributed'][number], t: Tran
   }
 }
 
-/** 命令: things you can do — the System Status quick actions plus every registry-contributed row. */
+/** Commands: things you can do — the System Status quick actions plus every registry-contributed row. */
 export function commandsGroup({ contributed, go, t, updateVersionLabel }: RootGroupsContext): PaletteGroup {
   const cc = t.commandCenter
 
@@ -269,7 +269,7 @@ export function commandsGroup({ contributed, go, t, updateVersionLabel }: RootGr
   return { heading: cc.commands, items: items.sort((a, b) => rank(a.id) - rank(b.id)), scope: 'actions' }
 }
 
-/** 外观: the theme / mode / pet pickers (nested pages) and pet generation. */
+/** Appearance: the theme / mode / pet pickers (nested pages) and pet generation. */
 export function appearanceGroup({ t }: RootGroupsContext): PaletteGroup {
   const cc = t.commandCenter
 
@@ -309,7 +309,7 @@ export function appearanceGroup({ t }: RootGroupsContext): PaletteGroup {
   }
 }
 
-/** 设置: the Settings window's 19 categories, in sidebar order. */
+/** Settings: the Settings window's 19 categories, in sidebar order. */
 export function settingsGroup({ go, t }: RootGroupsContext): PaletteGroup {
   return {
     heading: t.commandCenter.settings,

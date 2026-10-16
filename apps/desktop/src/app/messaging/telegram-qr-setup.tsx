@@ -245,7 +245,7 @@ export function TelegramQrSetup({ onApplied, platform, scopeProfile }: TelegramQ
 
   const s = t.studio.pages.messaging
 
-  // 扫码快速设置 (prototype pages.js:150-154): one card on the page; the code
+  // Quick setup by QR code (prototype pages.js:150-154): one card on the page; the code
   // itself and the allowlist review live in the QR sheet.
   return (
     <>
