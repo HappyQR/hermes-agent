@@ -9,19 +9,20 @@
  * Prerequisite: `npm run build` must have been run so dist/ exists.
  */
 
-import { expect, test, type Page } from '@playwright/test'
+import { expect, type Page, test } from '@playwright/test'
 
-import {
-  type MockBackendFixture,
-  setupMockBackend,
-  waitForAppReady,
-} from './fixtures'
 import {
   createBackgroundReleaseHandle,
   restartMockServer,
   SIDEBAR_CROSS_TEXTS,
   SIDEBAR_TEXTS,
 } from '../../../tests-js/scripts/mock-server'
+
+import {
+  type MockBackendFixture,
+  setupMockBackend,
+  waitForAppReady,
+} from './fixtures'
 
 /** Background-running dot aria-label (from i18n en.ts). */
 const BG_DOT_LABEL = 'Background task running'
@@ -120,6 +121,7 @@ test.describe('sidebar states — background process and subagent', () => {
     const viewportText = await page
       .locator('[data-slot="aui_thread-viewport"]')
       .textContent()
+
     expect(viewportText).toContain(SIDEBAR_TEXTS.finalText)
   })
 })
@@ -289,8 +291,10 @@ test.describe('sidebar states — cross-session dot transition', () => {
     // background process hasn't exited yet.
     await page.screenshot({ path: 'test-results/cross-session-bg-dot-before-switch.png' })
 
-    // Create a new session (click "New session" button).
-    await page.locator('button:has-text("New session")').first().click()
+    // Create a new session: the sidebar top bar's compose button (icon-only,
+    // so it is found by its accessible name, scoped to the top bar — the
+    // Sessions header's "+" carries the same name).
+    await page.locator('[data-slot="sidebar-top-bar"]').getByRole('button', { exact: true, name: 'New session' }).click()
     await page.waitForTimeout(2000)
 
     // Now let the background process finish. The session A dot should
