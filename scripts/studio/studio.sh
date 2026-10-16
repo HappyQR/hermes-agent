@@ -115,7 +115,10 @@ cmd_status() {
     fi
     if [ -n "$commit" ]; then
       info "Installed app   : $INSTALLED_APP (built from ${commit:0:10} on ${built%%T*})"
-      if [ "$commit" != "$(git_repo rev-parse HEAD)" ]; then
+      # Only what goes into the app counts: a docs or script commit since the
+      # build leaves the installed app current.
+      if [ "$commit" != "$(git_repo rev-parse HEAD)" ] \
+        && ! git_repo diff --quiet "$commit" HEAD -- apps package.json package-lock.json 2>/dev/null; then
         info "                  behind the branch — run 'studio.sh build && studio.sh install'"
       fi
     else
