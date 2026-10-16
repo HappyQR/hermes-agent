@@ -40,9 +40,29 @@ def _token_status(source: str, source_label: str, creds: dict[str, Any]) -> dict
     }
 
 
+def _pooled_hermes_pkce_login() -> Optional[dict[str, Any]]:
+    """The first Hermes-owned Anthropic OAuth row in the credential pool, shaped like the PKCE file.
+
+    ``hermes auth add anthropic`` keeps its login as a pool row (``manual:hermes_pkce``) and never
+    writes the PKCE file, so a card reading only the file kept a fresh sign-in "not connected".
+    """
+    try:
+        from hermes_cli.auth import read_credential_pool
+        from hermes_cli.auth_oauth_grants import _is_pkce_row
+        rows = read_credential_pool("anthropic")
+    except Exception:
+        return None
+    for row in rows if isinstance(rows, list) else []:
+        if isinstance(row, dict) and row.get("auth_type") == "oauth" and _is_pkce_row(row) and row.get("access_token"):
+            return {"accessToken": row["access_token"], "refreshToken": row.get("refresh_token"),
+                    "expiresAt": row.get("expires_at_ms")}
+    return None
+
+
 def _anthropic_oauth_status() -> dict[str, Any]:
-    """Status for the "Anthropic Account" card: Hermes-managed PKCE file first, then the
-    registry-ordered env vars (process env — where Bitwarden-sourced secrets land — then .env).
+    """Status for the "Anthropic Account" card: Hermes-managed PKCE file first, then its pooled
+    login (``hermes auth add anthropic``), then the registry-ordered env vars (process env —
+    where Bitwarden-sourced secrets land — then .env).
 
     Claude Code's ``~/.claude/.credentials.json`` is deliberately NOT read here; it has its own
     ``claude-code`` entry, and counting it here would shadow a real ANTHROPIC_API_KEY.
@@ -54,6 +74,9 @@ def _anthropic_oauth_status() -> dict[str, Any]:
         hermes_creds = None
     if hermes_creds and hermes_creds.get("accessToken"):
         return _token_status("hermes_pkce", f"Hermes PKCE ({_get_hermes_oauth_file()})", hermes_creds)
+    pooled = _pooled_hermes_pkce_login()
+    if pooled:
+        return _token_status("hermes_pkce", "Hermes PKCE (credential pool)", pooled)
 
     env_var_order: tuple = ("ANTHROPIC_API_KEY", "ANTHROPIC_TOKEN", "CLAUDE_CODE_OAUTH_TOKEN")
     try:
