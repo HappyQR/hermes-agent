@@ -2,7 +2,8 @@
 
 /* Zone titlebar bands (components/pane-shell/tree/renderer/zone-band.tsx) move the
    window; anything interactive inside them must still take clicks. */
-[data-zone-band] :is(a, button, input, select, textarea, [role='button'], [role='combobox'], [role='tab'], [role='tablist']) {
+[data-zone-band]
+  :is(a, button, input, select, textarea, [role='button'], [role='combobox'], [role='tab'], [role='tablist']) {
   -webkit-app-region: no-drag;
 }
 
@@ -66,6 +67,34 @@
   background: var(--ui-chat-surface-background);
   box-shadow: 0 0 0 0.5px var(--ui-line-2);
   clip-path: inset(-2px -2px 0 -2px);
+}
+
+/* Under window glass the chat surface is the window material (transparent), so
+   an attached tab cannot take it: it showed the strip's own fill with the
+   strip's line running under it, a box parked on a line. Glass draws the strip
+   as part of the material and the active tab as a raised segment instead, the
+   way Safari's and Finder's tab bars sit on theirs. */
+:root[data-hermes-glass] [data-panel-header]:has(> [data-zone-band]) > [data-zone-tabstrip] {
+  align-items: center;
+  background: transparent;
+}
+
+:root[data-hermes-glass] [data-panel-header]:has(> [data-zone-band]) > [data-zone-tabstrip] [role='tablist'] {
+  align-items: center;
+}
+
+:root[data-hermes-glass] [data-panel-header]:has(> [data-zone-band]) > [data-zone-tabstrip] [data-tree-tab] {
+  height: 26px;
+  border-radius: 7px;
+}
+
+:root[data-hermes-glass]
+  [data-panel-header]:has(> [data-zone-band])
+  > [data-zone-tabstrip]
+  [data-tree-tab][data-active='true'] {
+  background: var(--ui-control-active-background);
+  box-shadow: none;
+  clip-path: none;
 }
 
 /* The inspector's chips (prototype .ptabs / .ptab): free-standing rounded
