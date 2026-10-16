@@ -20,6 +20,7 @@ import { $activeConnectionId, $hasMultipleConnections } from '@/store/connection
 import { $defaultProfileRoute, setDefaultProfile } from '@/store/default-profile'
 import { notify, notifyError } from '@/store/notifications'
 import { $profileColors, profileLabel, setProfileColor } from '@/store/profile'
+import { chooseProfilePicture, removeProfilePicture, useProfilePicture } from '@/store/profile-picture'
 import { openRemoteOverrideDialog } from '@/store/profile-remote-override'
 import { runExportProfileFlow } from '@/store/profile-share'
 import { canOpenNewWindow, openNewWindow } from '@/store/windows'
@@ -37,7 +38,8 @@ export function useProfileRoute(profile: ProfileInfo) {
 
 /**
  * Actions ▾ — the profile rail's context menu, mirrored in the Profiles sheet:
- * new window, default, colour, rename, SOUL.md, export, remote host, delete.
+ * new window, default, picture, colour, rename, SOUL.md, export, remote host,
+ * delete.
  */
 export function ProfileActionsMenu({
   onDelete,
@@ -57,6 +59,7 @@ export function ProfileActionsMenu({
   const multipleConnections = useStore($hasMultipleConnections)
   const route = useProfileRoute(profile)
   const [colorOpen, setColorOpen] = useState(false)
+  const picture = useProfilePicture(profile.name)
   const label = profileLabel(profile)
   const isLaunchDefault = defaultRoute?.connectionId === route.connectionId && defaultRoute?.profile === route.profile
 
@@ -95,6 +98,16 @@ export function ProfileActionsMenu({
             {isLaunchDefault ? p.defaultProfile : p.setAsDefault}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
+          <DropdownMenuItem onSelect={() => chooseProfilePicture(profile.name)}>
+            <StudioIcon name="photo" size={14} />
+            {p.choosePicture}
+          </DropdownMenuItem>
+          {picture && (
+            <DropdownMenuItem onSelect={() => removeProfilePicture(profile.name)}>
+              <StudioIcon name="x-circle" size={14} />
+              {p.removePicture}
+            </DropdownMenuItem>
+          )}
           {!profile.is_default && (
             <DropdownMenuItem onSelect={() => setColorOpen(true)}>
               <StudioIcon name="brush" size={14} />

@@ -7,6 +7,7 @@ import { useI18n } from '@/i18n'
 import { profileShortLabel } from '@/lib/profile-short-label'
 import { cn } from '@/lib/utils'
 import { $hasMultipleConnections } from '@/store/connections'
+import { useProfilePicture } from '@/store/profile-picture'
 import { $profileRailVisible } from '@/store/profile-rail-prefs'
 import { registerSidebarAccount } from '@/store/sidebar-studio'
 
@@ -23,12 +24,21 @@ const TONE_DOT: Record<GatewayTone, string> = {
   warn: 'bg-(--ui-dot-orange)'
 }
 
-/** The active profile's tile: its color with its initial, the home mark for
- *  the default profile, people for All profiles. Prototype `.avatar` (30px in
- *  the footer, 22px in the new-chat profile chip). */
+/** The active profile's tile: its picture, else its color with its initial,
+ *  the home mark for the default profile, people for All profiles. Prototype
+ *  `.avatar` (30px in the footer, 22px in the new-chat profile chip). */
 export function AccountTile({ className, pending = false }: { className: string; pending?: boolean }) {
   const identity = useAccountIdentity()
+  const picture = useProfilePicture(identity.all ? null : identity.profile)
   const colored = Boolean(identity.color) && !identity.all
+
+  if (picture && !pending) {
+    return (
+      <span aria-hidden="true" className={cn('grid shrink-0 overflow-hidden', className)}>
+        <img alt="" className="size-full object-cover" draggable={false} src={picture} />
+      </span>
+    )
+  }
 
   let face: React.ReactNode
 

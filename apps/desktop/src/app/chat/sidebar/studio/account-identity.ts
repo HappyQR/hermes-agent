@@ -45,10 +45,18 @@ export function useGatewayIdentity(): GatewayIdentity {
   const open = gatewayState === 'open'
 
   const status = open ? copy.ready : gatewayState === 'connecting' ? copy.connecting : copy.disconnected
-  const tone: GatewayTone = open ? (inference && !inference.ready ? 'warn' : 'good') : gatewayState === 'connecting' ? 'warn' : 'bad'
+
+  const tone: GatewayTone = open
+    ? inference && !inference.ready
+      ? 'warn'
+      : 'good'
+    : gatewayState === 'connecting'
+      ? 'warn'
+      : 'bad'
 
   // The registry names This device in English until the user renames it.
-  const label = !active || (active.kind === 'local' && active.label === LOCAL_DEFAULT_LABEL) ? copy.thisDevice : active.label
+  const label =
+    !active || (active.kind === 'local' && active.label === LOCAL_DEFAULT_LABEL) ? copy.thisDevice : active.label
 
   return {
     label,
@@ -64,6 +72,18 @@ export interface AccountIdentity {
   color: null | string
   isDefault: boolean
   name: string
+  /** The active profile's key (its picture is keyed on it). */
+  profile: string
+}
+
+/** Whether the unified All profiles view is in effect. Bot Mode turns the
+ *  switch on whenever it opens a bot's chat, but with a single profile there
+ *  is nothing to unify and the sidebar ignores it (`profiles.length > 1`). */
+export function useAllProfilesView(): boolean {
+  const profiles = useStore($profiles)
+  const showAll = useStore($showAllProfiles)
+
+  return showAll && profiles.length > 1
 }
 
 /** Who the account button shows: the active profile (or All profiles). */
@@ -71,19 +91,20 @@ export function useAccountIdentity(): AccountIdentity {
   const { t } = useI18n()
   const profiles = useStore($profiles)
   const colors = useStore($profileColors)
-  const showAll = useStore($showAllProfiles)
+  const allView = useAllProfilesView()
   const gatewayProfile = useStore($activeGatewayProfile)
   const key = normalizeProfileKey(gatewayProfile)
   const active = profiles.find(profile => normalizeProfileKey(profile.name) === key)
 
-  if (showAll) {
-    return { all: true, color: null, isDefault: false, name: t.profiles.allProfiles }
+  if (allView) {
+    return { all: true, color: null, isDefault: false, name: t.profiles.allProfiles, profile: key }
   }
 
   return {
     all: false,
     color: resolveProfileColor(active?.name ?? key, colors),
     isDefault: active ? active.is_default : key === 'default',
-    name: active ? profileLabel(active) : key
+    name: active ? profileLabel(active) : key,
+    profile: key
   }
 }

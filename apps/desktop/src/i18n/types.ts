@@ -2582,6 +2582,10 @@ export interface Translations extends NoticeTranslations {
     failedSetDefault: string
     setColor: (color: string) => string
     autoColor: string
+    choosePicture: string
+    removePicture: string
+    pictureFailed: string
+    pictureUnreadable: string
     noProfiles: string
     selectPrompt: string
     refresh: string

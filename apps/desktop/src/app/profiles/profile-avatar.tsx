@@ -5,6 +5,7 @@ import { resolveProfileColor } from '@/lib/profile-color'
 import { profileShortLabel } from '@/lib/profile-short-label'
 import { cn } from '@/lib/utils'
 import { $profileColors, profileLabel } from '@/store/profile'
+import { useProfilePicture } from '@/store/profile-picture'
 import type { ProfileInfo } from '@/types/hermes'
 
 const SIZE = {
@@ -13,8 +14,8 @@ const SIZE = {
 } as const
 
 /**
- * A profile's tile in the Profiles sheet (prototype .avatar): its colour with
- * a white initial; the default profile keeps its home mark.
+ * A profile's tile in the Profiles sheet (prototype .avatar): its picture,
+ * else its colour with a white initial; the default profile keeps its home mark.
  */
 export function ProfileAvatar({
   profile,
@@ -24,6 +25,15 @@ export function ProfileAvatar({
   size?: keyof typeof SIZE
 }) {
   const colors = useStore($profileColors)
+  const picture = useProfilePicture(profile.name)
+
+  if (picture) {
+    return (
+      <span aria-hidden className={cn('inline-flex shrink-0 overflow-hidden', SIZE[size])}>
+        <img alt="" className="size-full object-cover" draggable={false} src={picture} />
+      </span>
+    )
+  }
 
   if (profile.is_default) {
     return <IconTile glyph="house" size={size === 'xl' ? 44 : 30} tone="graphite" />

@@ -37,7 +37,7 @@ import { COMMAND_CENTER_ROUTE, PROFILES_ROUTE, SETTINGS_ROUTE } from '../../../r
 import { FleetGatewayMenuGroup } from '../fleet-gateway-menu-group'
 import { buildRestGroups, type FleetAgent } from '../fleet-rail'
 
-import { useGatewayIdentity } from './account-identity'
+import { useAllProfilesView, useGatewayIdentity } from './account-identity'
 import { AccountProfileRow } from './account-profile-row'
 import { GatewaySubmenu } from './gateway-submenu'
 import type { AccountDialogs } from './use-account-dialogs'
@@ -90,7 +90,7 @@ interface AccountProfileRowsProps {
  * multi-connection routing included).
  */
 export function AccountProfileRows({ close, dialogs, switchToRest }: AccountProfileRowsProps) {
-  const showAll = useStore($showAllProfiles)
+  const allView = useAllProfilesView()
   const gatewayProfile = useStore($activeGatewayProfile)
   const multipleConnections = useStore($hasMultipleConnections)
   const registry = useStore($connectionsRegistry)
@@ -121,7 +121,7 @@ export function AccountProfileRows({ close, dialogs, switchToRest }: AccountProf
       </DropdownMenuLabel>
       {rows.map(({ keybind, profile }) => (
         <AccountProfileRow
-          active={!showAll && normalizeProfileKey(profile.name) === activeKey}
+          active={!allView && normalizeProfileKey(profile.name) === activeKey}
           close={close}
           connectionId={profile.is_default ? activeConnectionId : namedConnectionId}
           dialogs={dialogs}
@@ -168,8 +168,9 @@ export function AccountMenuItems({ close, dialogs, switchToRest }: AccountMenuIt
   const advanced = useStore($showsAdvancedChrome)
   const railVisible = useStore($profileRailVisible)
 
-  // Nothing to widen to with one profile; while ALL is on, keep the way back.
-  const offerAll = profiles.length > 1 || showAll
+  // Nothing to widen to with one profile (the switch is inert there, even
+  // when Bot Mode has turned it on).
+  const offerAll = profiles.length > 1
 
   return (
     <>

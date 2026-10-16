@@ -42,9 +42,12 @@ vi.mock('@/store/notifications', () => ({
   notifyError: vi.fn()
 }))
 
-vi.mock('@/store/gateway', () => ({
-  retireLocalProfileGateways: vi.fn()
-}))
+vi.mock('@/store/gateway', async () => {
+  const { atom } = await import('nanostores')
+
+  // No socket: profile pictures stay unasked.
+  return { $gateway: atom(null), retireLocalProfileGateways: vi.fn() }
+})
 
 // The sheet's 操作 menu reads the connection identity (launch routes, the
 // multi-gateway gate) and offers export/import; neither is under test here.

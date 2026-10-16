@@ -5,6 +5,7 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vite
 
 import { I18nProvider, TRANSLATIONS } from '@/i18n'
 import { $connectionsRegistry } from '@/store/connection-registry-state'
+import { $gateway } from '@/store/gateway'
 import type * as ProfileStore from '@/store/profile'
 import { $activeGatewayProfile, $profileCreateRequest, $profiles, $showAllProfiles } from '@/store/profile'
 import { $profileRailVisible } from '@/store/profile-rail-prefs'
@@ -59,6 +60,26 @@ const profile = (name: string, isDefault = false): ProfileInfo => ({
 const en = TRANSLATIONS.en
 const copy = en.studio.sidebar.footer
 
+/** A data URL whose PNG header says `edge`×`edge` (all the picture code reads). */
+const pngOf = (edge: number) =>
+  'data:image/png;base64,' +
+  btoa(
+    String.fromCharCode(
+      ...[0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13, 0x49, 0x48, 0x44, 0x52],
+      ...[0, 0, edge >> 8, edge & 0xff, 0, 0, edge >> 8, edge & 0xff, 8, 6, 0, 0, 0]
+    )
+  )
+
+function fakeGateway(avatar: null | string) {
+  const request = vi.fn(async (method: string) =>
+    method === 'profiles.get_asset' ? (avatar ? { data: avatar, found: true } : { found: false }) : {}
+  )
+
+  $gateway.set({ request } as never)
+
+  return request
+}
+
 function renderAccount() {
   return render(
     <MemoryRouter>
@@ -98,6 +119,7 @@ describe('SidebarAccount', () => {
   afterEach(() => {
     cleanup()
     vi.clearAllMocks()
+    $gateway.set(null as never)
   })
 
   it('names the active profile and the gateway it is on', () => {
@@ -107,6 +129,54 @@ describe('SidebarAccount', () => {
 
     expect(button.textContent).toContain('default')
     expect(button.textContent).toContain(`This computer · ${copy.ready}`)
+  })
+
+  it('keeps naming the profile when Bot Mode turns All profiles on with a single profile', async () => {
+    $profiles.set([profile('default', true)])
+    $showAllProfiles.set(true)
+    renderAccount()
+
+    const button = screen.getByRole('button', { name: new RegExp(copy.account) })
+
+    expect(button.textContent).toContain('default')
+    expect(button.textContent).not.toContain(en.profiles.allProfiles)
+
+    const menu = await openMenu()
+
+    expect(within(menu).queryByText(en.profiles.allProfiles)).toBeNull()
+  })
+
+  it('names All profiles when the unified view spans several profiles', () => {
+    $showAllProfiles.set(true)
+    renderAccount()
+
+    expect(screen.getByRole('button', { name: new RegExp(copy.account) }).textContent).toContain(
+      en.profiles.allProfiles
+    )
+  })
+
+  it("wears the profile's picture, but not Bot Mode's 160px face copy", async () => {
+    const picture = pngOf(256)
+    const request = fakeGateway(picture)
+
+    const view = renderAccount()
+
+    await act(async () => {
+      await Promise.resolve()
+    })
+
+    expect(request).toHaveBeenCalledWith('profiles.get_asset', { asset: 'avatar', name: 'default' })
+    expect(view.container.querySelector('img')?.getAttribute('src')).toBe(picture)
+
+    cleanup()
+    fakeGateway(pngOf(160))
+    const faceOnly = renderAccount()
+
+    await act(async () => {
+      await Promise.resolve()
+    })
+
+    expect(faceOnly.container.querySelector('img')).toBeNull()
   })
 
   it("lists this gateway's profiles and switches from a row", async () => {

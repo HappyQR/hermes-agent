@@ -26,6 +26,7 @@ import {
   setProfileColor
 } from '@/store/profile'
 import { $profileDotStateByScope, profileDotSummaryFor } from '@/store/profile-dot-state'
+import { chooseProfilePicture, removeProfilePicture, useProfilePicture } from '@/store/profile-picture'
 import { $profileRemoteOverrides, openRemoteOverrideDialog } from '@/store/profile-remote-override'
 import { runExportProfileFlow } from '@/store/profile-share'
 import type { ProfileInfo } from '@/types/hermes'
@@ -60,7 +61,10 @@ function RowTrailing({
   const { t } = useI18n()
   const copy = t.studio.sidebar.footer
   const hint = useKeybindHint(keybind ?? '')
-  const summary = useStoreSelector($profileDotStateByScope, byScope => profileDotSummaryFor(byScope, connectionId, name))
+
+  const summary = useStoreSelector($profileDotStateByScope, byScope =>
+    profileDotSummaryFor(byScope, connectionId, name)
+  )
 
   if (!active && summary?.needsInputCount) {
     return (
@@ -120,8 +124,8 @@ function ColorSubmenu({ color, name }: { color: null | string; name: string }) {
 /**
  * One profile in the account menu (prototype ProfileMenu row): clicking it
  * switches and closes the menu; hovering (or →) opens its submenu — open in a
- * new window, set as default, color, rename, SOUL.md, export, remote host,
- * delete. The submenu leads with "Switch to this profile" for the keyboard.
+ * new window, set as default, picture, color, rename, SOUL.md, export, remote
+ * host, delete. The submenu leads with "Switch to this profile" for the keyboard.
  */
 export function AccountProfileRow({
   profile,
@@ -138,6 +142,7 @@ export function AccountProfileRow({
   const colors = useStore($profileColors)
   const label = profileLabel(profile)
   const color = resolveProfileColor(profile.name, colors)
+  const picture = useProfilePicture(profile.name)
   const { cancelPrewarm, notePointerMove, startPrewarm } = useProfilePrewarm(profile.name, prewarmProfilePick)
   const launch = useProfileLaunchActions({ connectionId, label, profile: profile.name })
   const remoteHost = useStore($profileRemoteOverrides)[normalizeProfileKey(profile.name)]?.host ?? null
@@ -161,7 +166,13 @@ export function AccountProfileRow({
         onPointerLeave={cancelPrewarm}
         onPointerMove={notePointerMove}
       >
-        <ProfileGlyph aria-hidden="true" color={color} isDefault={profile.is_default} name={profile.name} />
+        <ProfileGlyph
+          aria-hidden="true"
+          color={color}
+          isDefault={profile.is_default}
+          name={profile.name}
+          picture={picture}
+        />
         <span className="min-w-0 flex-1 truncate">
           {label}
           {profile.is_default ? copy.defaultSuffix : ''}
@@ -195,6 +206,16 @@ export function AccountProfileRow({
           <span>{launch.isDefault ? p.defaultProfile : p.setAsDefault}</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
+        <DropdownMenuItem onSelect={() => chooseProfilePicture(profile.name)}>
+          <StudioIcon name="photo" size={15} />
+          <span>{p.choosePicture}</span>
+        </DropdownMenuItem>
+        {picture && (
+          <DropdownMenuItem onSelect={() => removeProfilePicture(profile.name)}>
+            <StudioIcon name="x-circle" size={15} />
+            <span>{p.removePicture}</span>
+          </DropdownMenuItem>
+        )}
         {/* The default profile has no color of its own (it wears the home mark). */}
         {!profile.is_default && <ColorSubmenu color={color} name={profile.name} />}
         <DropdownMenuItem onSelect={() => dialogs.openRename(profile)}>
