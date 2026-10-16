@@ -42,6 +42,22 @@ export default {
     await shot(page, 'layout-menu')
     await escape(page, sleep)
   },
+  // Prototype scene "分屏": the focused session and another side by side.
+  split: async (page, { shot, sleep }) => {
+    const layoutMenu = () => page.locator('[data-slot="toolbar-capsule"] button').first()
+
+    await layoutMenu().click()
+    await sleep(400)
+    await page.getByRole('menuitem', { name: /^(左右分屏|Split side by side)$/ }).click()
+    await sleep(400)
+    await page.locator('[role="menu"]').last().getByRole('menuitem').first().click()
+    await sleep(1800)
+    await shot(page, 'split')
+    await layoutMenu().click()
+    await sleep(400)
+    await page.getByRole('menuitem', { name: /^(单栏|Single pane)$/ }).click()
+    await sleep(800)
+  },
   inspector: async (page, { shot, sleep }) => {
     await page.locator('[data-slot="toolbar-inspector-toggle"]').first().click()
     await sleep(900)
