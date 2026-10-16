@@ -27,8 +27,7 @@ export const jaStudioSidebar: StudioSidebarTranslations = {
     auto: '自動',
     actions: 'プロジェクトの操作',
     newSessionHere: 'このプロジェクトで新規セッション',
-    newSessionInLane: 'このレーンで新規セッション',
-    empty: 'プロジェクトはまだありません'
+    newSessionInLane: 'このレーンで新規セッション'
   },
   scope: {
     tip: 'このプロジェクトのセッションのみ表示',

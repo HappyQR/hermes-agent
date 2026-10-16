@@ -43,8 +43,7 @@ export const ruStudioSidebar: StudioSidebarTranslations = {
     auto: 'Авто',
     actions: 'Действия с проектом',
     newSessionHere: 'Новый сеанс в этом проекте',
-    newSessionInLane: 'Новый сеанс в этой ветке',
-    empty: 'Проектов пока нет'
+    newSessionInLane: 'Новый сеанс в этой ветке'
   },
   scope: {
     tip: 'Показаны только сеансы этого проекта',

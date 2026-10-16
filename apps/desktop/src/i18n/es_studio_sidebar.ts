@@ -28,8 +28,7 @@ export const esStudioSidebar: StudioSidebarTranslations = {
     auto: 'Auto',
     actions: 'Acciones del proyecto',
     newSessionHere: 'Nueva sesión en este proyecto',
-    newSessionInLane: 'Nueva sesión en este carril',
-    empty: 'Aún no hay proyectos'
+    newSessionInLane: 'Nueva sesión en este carril'
   },
   scope: {
     tip: 'Solo se muestran las sesiones de este proyecto',

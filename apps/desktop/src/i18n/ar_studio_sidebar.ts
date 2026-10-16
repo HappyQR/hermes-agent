@@ -27,8 +27,7 @@ export const arStudioSidebar: StudioSidebarTranslations = {
     auto: 'تلقائي',
     actions: 'إجراءات المشروع',
     newSessionHere: 'جلسة جديدة في هذا المشروع',
-    newSessionInLane: 'جلسة جديدة في هذا المسار',
-    empty: 'لا توجد مشاريع بعد'
+    newSessionInLane: 'جلسة جديدة في هذا المسار'
   },
   scope: {
     tip: 'تُعرض جلسات هذا المشروع فقط',

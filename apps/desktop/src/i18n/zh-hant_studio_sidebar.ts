@@ -27,8 +27,7 @@ export const zhHantStudioSidebar: StudioSidebarTranslations = {
     auto: '自動',
     actions: '專案動作',
     newSessionHere: '在此專案中新增工作階段',
-    newSessionInLane: '在此通道新增工作階段',
-    empty: '還沒有專案'
+    newSessionInLane: '在此通道新增工作階段'
   },
   scope: {
     tip: '只顯示這個專案的工作階段',

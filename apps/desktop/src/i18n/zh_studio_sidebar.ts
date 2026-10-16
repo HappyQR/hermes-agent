@@ -27,8 +27,7 @@ export const zhStudioSidebar: StudioSidebarTranslations = {
     auto: '自动',
     actions: '项目操作',
     newSessionHere: '在此项目中新建会话',
-    newSessionInLane: '在此通道新建会话',
-    empty: '还没有项目'
+    newSessionInLane: '在此通道新建会话'
   },
   scope: {
     tip: '只显示这个项目的会话',

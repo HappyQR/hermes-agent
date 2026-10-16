@@ -28,8 +28,7 @@ export const frStudioSidebar: StudioSidebarTranslations = {
     auto: 'Auto',
     actions: 'Actions du projet',
     newSessionHere: 'Nouvelle session dans ce projet',
-    newSessionInLane: 'Nouvelle session dans ce couloir',
-    empty: 'Aucun projet pour l’instant'
+    newSessionInLane: 'Nouvelle session dans ce couloir'
   },
   scope: {
     tip: 'Seules les sessions de ce projet sont affichées',

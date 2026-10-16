@@ -337,7 +337,7 @@ describe('ChatSidebar Projects section', () => {
 
   it('keeps the synthetic Home bucket out of the Projects section', () => {
     // No real projects — every session fell into Home. A lone Home bucket is
-    // not a project: the section shows its empty line, the list its sessions.
+    // not a project: the section offers its first one, the list its sessions.
     setSidebarAgentsGrouped(true)
     $projectTree.set(homeOnly)
     $sessions.set(sessionRows)
@@ -345,7 +345,7 @@ describe('ChatSidebar Projects section', () => {
     const { container } = renderSidebar('/', 'chat')
 
     expect(within(projectsSection(container)).queryByText('Home')).toBeNull()
-    expect(within(projectsSection(container)).getByText('No projects yet')).toBeTruthy()
+    expect(within(projectsSection(container)).getByRole('button', { name: 'New project…' })).toBeTruthy()
     expect(screen.getByText('Sessions')).toBeTruthy()
   })
 

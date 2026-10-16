@@ -29,7 +29,6 @@ export interface StudioSidebarTranslations {
     actions: string
     newSessionHere: string
     newSessionInLane: string
-    empty: string
   }
   scope: {
     tip: string

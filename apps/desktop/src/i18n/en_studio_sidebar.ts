@@ -27,8 +27,7 @@ export const enStudioSidebar: StudioSidebarTranslations = {
     auto: 'Auto',
     actions: 'Project actions',
     newSessionHere: 'New session in this project',
-    newSessionInLane: 'New session in this lane',
-    empty: 'No projects yet'
+    newSessionInLane: 'New session in this lane'
   },
   scope: {
     tip: "Only showing this project's sessions",

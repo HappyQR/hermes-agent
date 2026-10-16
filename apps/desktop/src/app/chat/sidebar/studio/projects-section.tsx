@@ -127,15 +127,20 @@ export function SidebarProjectsSection({
   let body: React.ReactNode
 
   if (!projects.length) {
+    // No projects yet: the section's one row is the way to make the first,
+    // drawn like the rows around it rather than as a framed notice.
     body = loading ? (
       <SidebarSessionSkeletons />
     ) : (
-      <div className="mx-2 mt-0.5 mb-1 flex flex-wrap items-center gap-x-1.5 gap-y-1 rounded-lg px-2.5 py-2 text-xs text-(--ui-text-tertiary) shadow-[inset_0_0_0_1px_var(--ui-line)]">
-        <span>{copy.empty}</span>
-        <Button onClick={openProjectCreate} size="xs" variant="text">
-          {copy.newProject}
-        </Button>
-      </div>
+      <button
+        className="flex h-7.5 w-full min-w-0 items-center gap-2 rounded-[7px] px-2 text-left text-[0.8125rem] text-(--ui-text-tertiary) transition-colors duration-[120ms] [-webkit-app-region:no-drag] hover:bg-(--ui-hover) hover:text-(--ui-text-primary)"
+        data-slot="sidebar-projects-empty"
+        onClick={openProjectCreate}
+        type="button"
+      >
+        <StudioIcon className="shrink-0" name="folder-plus" size={16} />
+        <span className="min-w-0 truncate">{copy.newProject}</span>
+      </button>
     )
   } else if (draggable && onReorder) {
     body = (
