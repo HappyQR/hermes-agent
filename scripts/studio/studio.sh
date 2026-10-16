@@ -4,8 +4,8 @@
 #
 # The agent stays an official install (~/.hermes/hermes-agent, updated by
 # `hermes update`). This fork only carries the desktop redesign on the
-# `studio` branch. `sync` merges the exact upstream commit the agent runs into
-# that branch, so the app and its backend always speak the same protocol, then
+# `studio` branch. `sync` brings that branch onto the exact upstream tree the
+# agent runs, so the app and its backend always speak the same protocol, then
 # rebuilds and reinstalls /Applications/Hermes Studio.app.
 #
 #   studio.sh update   [--skip-agent] [--yes] [--push]
@@ -52,6 +52,35 @@ agent_label() {
     || git -C "$AGENT_ROOT" rev-parse --short HEAD
 }
 
+# Studio follows upstream through a chain of shadow commits: each carries the
+# exact tree of the release the agent runs, parented on the previous one, and
+# the branch merges those rather than upstream's own commits. A merge then
+# applies only what changed between the two releases' trees, whatever
+# upstream's branch topology. Merging a release cut from a side branch
+# directly (v0.22.2 is the release/0.22.1 tree with v0.22.1 recorded as a
+# parent) would book upstream's step back from main as Studio's own change,
+# and every later main-lineage merge would quietly keep it.
+SHADOW_TRAILER="Studio-Upstream"
+
+# The upstream tree the branch was last synced to: the newest shadow commit,
+# or, before the first, the newest upstream commit the branch contains.
+synced_base() {
+  local shadow
+  shadow="$(git_repo log --format=%H -1 --grep="^$SHADOW_TRAILER: " "$BRANCH")"
+  if [ -n "$shadow" ]; then
+    printf '%s' "$shadow"
+  else
+    git_repo merge-base "$BRANCH" "$1"
+  fi
+}
+
+# Whether the branch already sits on the tree of the given upstream commit.
+synced_to() {
+  local base
+  base="$(synced_base "$1" 2>/dev/null)" || return 1
+  [ -n "$base" ] && [ "$(git_repo rev-parse "$base^{tree}")" = "$(git_repo rev-parse "$1^{tree}")" ]
+}
+
 require_clean_branch() {
   local current
   current="$(git_repo branch --show-current)"
@@ -71,8 +100,8 @@ cmd_status() {
   bold "Hermes Studio"
   info "Studio checkout : $REPO ($(git_repo branch --show-current) @ $(git_repo rev-parse --short HEAD))"
   info "Hermes Agent    : $AGENT_ROOT ($label)"
-  if git_repo cat-file -e "$target^{commit}" 2>/dev/null && git_repo merge-base --is-ancestor "$target" HEAD; then
-    info "Sync            : up to date — the studio branch already contains $label"
+  if git_repo cat-file -e "$target^{commit}" 2>/dev/null && synced_to "$target"; then
+    info "Sync            : up to date — the studio branch is on $label"
   else
     info "Sync            : needed — run 'studio.sh sync' to merge $label"
   fi
@@ -96,12 +125,16 @@ cmd_merge() {
     git_repo fetch "$UPSTREAM" "$target" --quiet \
       || die "Commit $target (the agent's HEAD) is not on $UPSTREAM. Is the agent on a private branch?"
   fi
-  if git_repo merge-base --is-ancestor "$target" HEAD; then
-    info "Already contains $label — nothing to merge."
+  if synced_to "$target"; then
+    info "Already on $label — nothing to merge."
     return 0
   fi
+  local base shadow
+  base="$(synced_base "$target")"
+  shadow="$(git_repo commit-tree "$target^{tree}" -p "$base" -m "upstream $label" -m "$SHADOW_TRAILER: $target")"
   bold "Merging $label into $BRANCH"
-  if ! git_repo -c rerere.enabled=true -c rerere.autoupdate=true merge --no-edit -m "studio: merge upstream $label" "$target"; then
+  info "From $(git_repo rev-parse --short "$base") to the tree of $(git_repo rev-parse --short "$target") (shadow $(git_repo rev-parse --short "$shadow"))"
+  if ! git_repo -c rerere.enabled=true -c rerere.autoupdate=true merge --no-edit -m "studio: merge upstream $label" "$shadow"; then
     warn "Merge stopped on conflicts:"
     git_repo diff --name-only --diff-filter=U | sed 's/^/    /' >&2
     cat >&2 <<EOF
