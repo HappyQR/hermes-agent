@@ -191,9 +191,48 @@ export function scenarios(project) {
       match: '查一下 OpenRouter 还剩多少额度',
       fail: 'invalid_api_key: OpenRouter 拒绝了这个密钥（已过期）',
       steps: [{ text: '' }]
+    },
+    // Not seeded: the `live` shot sends it and captures the turn in front,
+    // waiting on its choice (the prototype's "实时运行" scene).
+    {
+      title: '整理 Hermes 发布说明',
+      match: '发布说明整理成一页网页',
+      steps: [
+        {
+          reasoning: '用户要一页发布说明网页，再加一个每周提醒。先列出步骤，再确认写法。',
+          text: '好的，我来整理发布说明。开始之前先确认一件事：',
+          toolCalls: [
+            // Desktop sessions defer the todo tool behind the tool_call bridge.
+            {
+              name: 'tool_call',
+              args: {
+                calls: [
+                  {
+                    name: 'todo_list',
+                    arguments: {
+                      todos: [
+                        { id: 'collect', content: '收集 v0.22 以来合并的改动', status: 'pending' },
+                        { id: 'page', content: '生成发布说明网页', status: 'pending' },
+                        { id: 'remind', content: '设置每周一 10:00 的提醒', status: 'pending' }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              name: 'clarify',
+              args: { questions: [{ question: '发布说明用哪种写法？', choices: ['要点清单', '面向用户的故事', '技术细节完整版'] }] }
+            }
+          ]
+        },
+        { text: '好的，按要点清单来写。' }
+      ]
     }
   ]
 }
+
+export const LIVE_PROMPT = '帮我把 Hermes 的发布说明整理成一页网页，顺便定个每周提醒。'
 
 // The order sessions are created in; the last one ends up on top.
 export const SEND_ORDER = [

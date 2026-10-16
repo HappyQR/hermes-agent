@@ -1,6 +1,8 @@
 // Chat-surface shots for the Studio harness (run.mjs --shots scripts/studio/shots/chat.mjs).
 // Each shot leaves the app as it found it (Escape closes what it opened).
 
+import { LIVE_PROMPT } from './scenarios.mjs'
+
 const composerRoot = page => page.locator('[data-slot="composer-root"]').first()
 
 async function escape(page, sleep, times = 1) {
@@ -11,6 +13,17 @@ async function escape(page, sleep, times = 1) {
 }
 
 export default {
+  // Prototype scene "实时运行": a fresh turn shot in front while it waits on a
+  // choice. Not a reopened seeded one: reopening a turn that waits in the
+  // background paints its replies twice (also in upstream v0.22.1).
+  async live(page, { newChat, send, shot, sleep }) {
+    await newChat(page)
+    await send(page, LIVE_PROMPT)
+    await page.getByText('发布说明用哪种写法？').first().waitFor({ timeout: 60_000 })
+    await sleep(2500)
+    await shot(page, 'live')
+  },
+
   // The activity tray with its first panel chip open.
   async tray(page, { openSession, shot, sleep }) {
     await openSession(page, '分组重构')
