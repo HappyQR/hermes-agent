@@ -5,7 +5,6 @@ import { MessageHoverTime } from '@/components/assistant-ui/thread/message-hover
 import { ReactionPicker } from '@/components/assistant-ui/thread/message-reactions'
 import { useMessageReactions } from '@/components/assistant-ui/thread/use-message-reactions'
 import { TooltipIconButton } from '@/components/assistant-ui/tooltip-icon-button'
-import { formatElapsed } from '@/components/chat/activity-timer'
 import { ActionsMenu, type MenuKit } from '@/components/ui/actions-menu'
 import { Button } from '@/components/ui/button'
 import { CopyButton } from '@/components/ui/copy-button'
@@ -169,10 +168,12 @@ export const StudioAssistantFooter: FC<MessageActionProps & { durationS?: number
           </Tip>
         </BranchPickerPrimitive.Root>
         <MessageHoverTime className="studio-msg-meta" />
+        {/* Reply meta (prototype "model · tokens · 48 秒"): only the turn time
+            is known per message — and only for turns watched live. */}
         {durationS !== undefined && (
-          <Tip label={copy.turnDuration(formatElapsed(durationS))} side="top">
+          <Tip label={copy.turnDuration(studio.replyDuration(durationS))} side="top">
             <span className="studio-msg-meta tabular-nums" data-slot="aui_turn-duration">
-              {formatElapsed(durationS)}
+              {studio.replyDuration(durationS)}
             </span>
           </Tip>
         )}

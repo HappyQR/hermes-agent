@@ -121,7 +121,17 @@ export const arStudioChat: StudioChatTranslations = {
     moreCommands: (first, more) =>
       `${first} + ${arCount(more, ['أمر آخر', 'أمران آخران', 'أوامر أخرى', 'أمرًا آخر', 'أمر آخر'])}`
   },
+  voice: {
+    label: 'محادثة صوتية',
+    doneSpeaking: 'انتهيت من الكلام'
+  },
   transcript: {
+    replyDuration: seconds => {
+      const m = Math.floor(seconds / 60)
+      const s = seconds % 60
+
+      return m === 0 ? `${s} ث` : s === 0 ? `${m} د` : `${m} د ${s} ث`
+    },
     searchResults: 'نتائج البحث',
     delegatedTask: 'مهمة مفوَّضة',
     delegateSpawned: count => `أنشأ ${count} من الوكلاء الفرعيين`,

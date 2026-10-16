@@ -104,7 +104,17 @@ export const deStudioChat: StudioChatTranslations = {
     join: clauses => clauses.join(' · '),
     moreCommands: (first, more) => `${first} + ${more} ${more === 1 ? 'Befehl' : 'Befehle'}`
   },
+  voice: {
+    label: 'Sprachunterhaltung',
+    doneSpeaking: 'Fertig gesprochen'
+  },
   transcript: {
+    replyDuration: seconds => {
+      const m = Math.floor(seconds / 60)
+      const s = seconds % 60
+
+      return m === 0 ? `${s} s` : s === 0 ? `${m} min` : `${m} min ${s} s`
+    },
     searchResults: 'Suchergebnisse',
     delegatedTask: 'Delegierte Aufgabe',
     delegateSpawned: count => `${count} Subagent${count === 1 ? '' : 'en'} gestartet`,

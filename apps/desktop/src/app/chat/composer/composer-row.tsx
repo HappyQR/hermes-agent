@@ -24,6 +24,7 @@ import { RICH_INPUT_SLOT } from './rich-editor'
 import { SendCluster } from './send-cluster'
 import type { VoiceActivityState } from './types'
 import { VoiceActivity, VoicePlaybackActivity } from './voice-activity'
+import { VoiceCapsule } from './voice-capsule'
 import { VoiceMenu } from './voice-menu'
 
 type Requester = <T = unknown>(method: string, params?: Record<string, unknown>) => Promise<T>
@@ -60,8 +61,8 @@ export interface StudioComposerControlsProps extends UpstreamControlsProps {
 
 /**
  * The right side of the Studio composer row (prototype `.cmp-row`): context
- * gauge · "model · effort" · mic · primary. The HUD's Spotlight bar and the
- * live voice conversation keep upstream's controls.
+ * gauge · "model · effort" · mic · primary. A live voice conversation turns it
+ * into the voice capsule; the HUD's Spotlight bar keeps upstream's controls.
  */
 export function StudioComposerControls(props: StudioComposerControlsProps) {
   const { onCompress, onRedirect, requestGateway, ...upstream } = props
@@ -81,8 +82,12 @@ export function StudioComposerControls(props: StudioComposerControlsProps) {
     [reasoning, reasoningMenu]
   )
 
-  if (hudMode || upstream.conversation.active) {
+  if (hudMode) {
     return <ComposerControls {...upstream} />
+  }
+
+  if (upstream.conversation.active) {
+    return <VoiceCapsule {...upstream.conversation} disabled={upstream.disabled} />
   }
 
   const { compactModelPill = false, disabled, foldVoice = false, hideModelPill = false, minimal = false } = upstream

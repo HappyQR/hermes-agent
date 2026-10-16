@@ -382,7 +382,7 @@ function ConversationIndicator({
 // the mic — the one time wake genuinely must not listen). Backend refusals
 // ({started:false, reason}) keep the toggle off and put the reason/hint in
 // the tooltip.
-function WakeWordButton({ disabled, pausedForVoice = false }: { disabled: boolean; pausedForVoice?: boolean }) {
+export function WakeWordButton({ disabled, pausedForVoice = false }: { disabled: boolean; pausedForVoice?: boolean }) {
   const { t } = useI18n()
   const c = t.composer
   const wake = useStore($wakeWord)

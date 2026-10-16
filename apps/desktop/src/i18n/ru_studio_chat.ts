@@ -108,7 +108,17 @@ export const ruStudioChat: StudioChatTranslations = {
     join: clauses => clauses.map((clause, index) => (index === 0 ? clause : lowerFirst(clause))).join(', '),
     moreCommands: (first, more) => `${first} и ещё ${ruCount(more, ['команда', 'команды', 'команд'])}`
   },
+  voice: {
+    label: 'Голосовой разговор',
+    doneSpeaking: 'Я закончил'
+  },
   transcript: {
+    replyDuration: seconds => {
+      const m = Math.floor(seconds / 60)
+      const s = seconds % 60
+
+      return m === 0 ? `${s} с` : s === 0 ? `${m} мин` : `${m} мин ${s} с`
+    },
     searchResults: 'Результаты поиска',
     delegatedTask: 'Поручённая задача',
     delegateSpawned: count => `Запущено субагентов: ${count}`,

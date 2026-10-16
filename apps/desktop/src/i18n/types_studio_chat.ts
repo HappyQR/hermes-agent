@@ -6,10 +6,13 @@ export interface StudioChatTranslations {
   toolRun: StudioChatToolRunTranslations
   transcript: StudioChatTranscriptTranslations
   tray: StudioChatTrayTranslations
+  voice: StudioChatVoiceTranslations
 }
 
 /** Messages, their actions, cards and decisions in the transcript. */
 export interface StudioChatTranscriptTranslations {
+  /** A reply's turn time in the footer meta (prototype "48 秒"). */
+  replyDuration: (seconds: number) => string
   /** The web search row's detail label. */
   searchResults: string
   /** A delegated child's title when its call carried no goal. */
@@ -159,4 +162,12 @@ export interface StudioChatToolRunTranslations {
   /** A compound shell command: its first real segment and how many follow
    *  ("npm test + 2 commands"). */
   moreCommands: (first: string, more: number) => string
+}
+
+/** The live voice conversation capsule (statuses reuse t.composer). */
+export interface StudioChatVoiceTranslations {
+  /** The capsule's group label. */
+  label: string
+  /** Ends the current take and sends it (the classic pill's "Stop"). */
+  doneSpeaking: string
 }

@@ -87,7 +87,17 @@ export const zhStudioChat: StudioChatTranslations = {
     join: clauses => clauses.join('，'),
     moreCommands: (first, more) => `${first} 及另外 ${more} 条命令`
   },
+  voice: {
+    label: '语音对话',
+    doneSpeaking: '说完了'
+  },
   transcript: {
+    replyDuration: seconds => {
+      const m = Math.floor(seconds / 60)
+      const s = seconds % 60
+
+      return m === 0 ? `${s} 秒` : s === 0 ? `${m} 分钟` : `${m} 分 ${s} 秒`
+    },
     searchResults: '搜索结果',
     delegatedTask: '委派的任务',
     delegateSpawned: count => `派生了 ${count} 个子代理`,

@@ -14,7 +14,8 @@
 // Options: --sandbox <dir> (default $TMPDIR/hermes-studio-shots), --out <dir>,
 // --scheme light|dark, --size 1440x900, --hermes <launcher> (backend command,
 // default this checkout's .hermes/bin/hermes from `source ./activate`), --hold <seconds>,
-// --native (macOS: capture the real window — glass, traffic lights — not the renderer).
+// --native (macOS: capture the real window — glass, traffic lights — not the renderer),
+// --fake-media (Chromium's fake mic/camera + auto-granted prompt, so voice surfaces can run).
 // Needs `npm run build` in apps/desktop first. Never touches ~/.hermes: the
 // backend runs with HOME and HERMES_HOME inside the sandbox.
 
@@ -336,7 +337,11 @@ async function main() {
 
   const app = await _electron.launch({
     executablePath: electronBinary(),
-    args: [DESKTOP, '--disable-gpu-sandbox'],
+    args: [
+      DESKTOP,
+      '--disable-gpu-sandbox',
+      ...(flag('fake-media') ? ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream'] : [])
+    ],
     env: appEnv(),
     cwd: DESKTOP,
     colorScheme: scheme

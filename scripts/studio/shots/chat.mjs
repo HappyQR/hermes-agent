@@ -105,6 +105,38 @@ export default {
     await escape(page, sleep)
   },
 
+  // A live voice conversation (run with --fake-media: Chromium's fake mic lets
+  // the real conversation open and listen), then ended again.
+  async 'voice-live'(page, { openSession, shot, sleep }) {
+    await openSession(page, '分组重构')
+    const talk = composerRoot(page).locator('[data-slot="composer-talk"]').first()
+    if (await talk.count()) {
+      await talk.click()
+      await sleep(2500)
+    }
+    await shot(page, 'voice-live')
+    const end = composerRoot(page).locator('[data-slot="studio-voice-end"], button[aria-label="结束语音对话"]').first()
+    if (await end.count()) {
+      await end.click()
+      await sleep(500)
+    }
+  },
+
+  // A turn watched live: its reply footer carries the turn time (the meta the
+  // prototype reads as "model · tokens · 48 秒"; only the time exists per reply,
+  // and only until the transcript re-hydrates, so the shot is taken at once).
+  async 'reply-meta'(page, { composer, shot, sleep }) {
+    await sleep(3000)
+    await page.keyboard.press('Meta+N')
+    await sleep(1500)
+    const editor = await composer(page)
+    await editor.click()
+    await editor.pressSequentially('ping', { delay: 30 })
+    await editor.press('Enter')
+    await page.locator('[data-slot="aui_turn-duration"]').last().waitFor({ state: 'visible', timeout: 45_000 }).catch(() => {})
+    await shot(page, 'reply-meta')
+  },
+
   // The empty state (greeting, hero composer, starters), then a starter drafted.
   async empty(page, { newChat, shot, sleep }) {
     await newChat(page)
