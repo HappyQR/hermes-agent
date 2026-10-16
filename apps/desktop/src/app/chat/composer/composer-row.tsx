@@ -7,7 +7,6 @@ import {
   dropdownMenuSectionLabel,
   DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu'
-import { GlyphSpinner } from '@/components/ui/glyph-spinner'
 import { StudioIcon } from '@/components/ui/studio-icon'
 import { type Translations, useI18n } from '@/i18n'
 import { $hudMode } from '@/store/hud'
@@ -19,7 +18,7 @@ import { ComposerControls } from './controls'
 import { MicButton } from './mic-button'
 import { ModelMenuExtras } from './model-menu-extras'
 import { ModelPill } from './model-pill'
-import { useReasoningSummary } from './reasoning-pill'
+import { ReasoningPill, type ReasoningSummary, useReasoningSummary } from './reasoning-pill'
 import { RICH_INPUT_SLOT } from './rich-editor'
 import { SendCluster } from './send-cluster'
 import type { VoiceActivityState } from './types'
@@ -31,7 +30,7 @@ type Requester = <T = unknown>(method: string, params?: Record<string, unknown>)
 
 /** The pill's effort in the reader's language ("中", "Medium"); a clamped pick
  *  shows both ends ("Ultra→Max"), like the upstream pill's short labels. */
-function effortName(summary: NonNullable<ReturnType<typeof useReasoningSummary>>, t: Translations): string {
+function effortName(summary: ReasoningSummary, t: Translations): string {
   const o = t.shell.modelOptions
 
   const levels: Record<string, string> = {
@@ -60,8 +59,11 @@ export interface StudioComposerControlsProps extends UpstreamControlsProps {
 
 /**
  * The right side of the Studio composer row (prototype `.cmp-row`): context
- * gauge · "model · effort" · mic · primary. A live voice conversation turns it
- * into the voice capsule; the HUD's Spotlight bar keeps upstream's controls.
+ * gauge · model · reasoning effort · mic · primary. The model and the effort
+ * are separate pills, each with its own menu; a compact composer has room for
+ * the model chevron only, so its menu carries the effort rows too. A live
+ * voice conversation turns the row into the voice capsule; the HUD's
+ * Spotlight bar keeps upstream's controls.
  */
 export function StudioComposerControls(props: StudioComposerControlsProps) {
   const { onCompress, requestGateway, ...upstream } = props
@@ -70,15 +72,17 @@ export function StudioComposerControls(props: StudioComposerControlsProps) {
   const reasoning = useReasoningSummary(upstream.state.model)
   const reasoningMenu = upstream.state.model.reasoningMenuContent
 
+  const compactPill = upstream.compactModelPill ?? false
+
   const extras = useMemo(
     () =>
-      reasoning ? (
+      compactPill && reasoning ? (
         <>
           {reasoningMenu}
           <DropdownMenuSeparator className="mx-0" />
         </>
       ) : null,
-    [reasoning, reasoningMenu]
+    [compactPill, reasoning, reasoningMenu]
   )
 
   if (hudMode) {
@@ -97,24 +101,11 @@ export function StudioComposerControls(props: StudioComposerControlsProps) {
         <>
           <ContextRingPill compact={compactModelPill} onCompress={onCompress} requestGateway={requestGateway} />
           <ModelMenuExtras.Provider value={extras}>
-            <ModelPill
-              compact={compactModelPill}
-              disabled={disabled}
-              effort={
-                reasoning && !compactModelPill
-                  ? {
-                      label: reasoning.pending ? (
-                        <GlyphSpinner className="opacity-50" spinner="braille" />
-                      ) : (
-                        effortName(reasoning, t)
-                      ),
-                      title: reasoning.title
-                    }
-                  : undefined
-              }
-              model={upstream.state.model}
-            />
+            <ModelPill compact={compactModelPill} disabled={disabled} model={upstream.state.model} />
           </ModelMenuExtras.Provider>
+          {!compactModelPill && (
+            <ReasoningPill disabled={disabled} formatLabel={summary => effortName(summary, t)} model={upstream.state.model} />
+          )}
         </>
       )}
       {!minimal &&

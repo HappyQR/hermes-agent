@@ -553,11 +553,6 @@ button.composer-pill[data-tone='warn']:hover {
   background: var(--ui-hover);
 }
 
-.composer-model-effort {
-  color: var(--ui-text-tertiary);
-  font-weight: 400;
-}
-
 [data-slot='composer-context-ring'] {
   gap: 0.3125rem;
   padding: 0 0.4375rem;

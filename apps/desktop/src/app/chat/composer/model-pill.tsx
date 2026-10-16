@@ -1,6 +1,6 @@
 import { useStore } from '@nanostores/react'
 import { atom } from 'nanostores'
-import { type ReactNode, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { useSessionView } from '@/app/chat/session-view'
 import { useTourMarker } from '@/app/chat/tour-marker'
@@ -47,13 +47,10 @@ const PILL = cn(
 export function ModelPill({
   compact = false,
   disabled,
-  effort,
   model
 }: {
   compact?: boolean
   disabled: boolean
-  /** Hermes Studio's merged pill: the reasoning effort after the model name. */
-  effort?: { label: ReactNode; title: string }
   model: ChatBarState['model']
 }) {
   const copy = useI18n().t.shell.statusbar
@@ -151,7 +148,6 @@ export function ModelPill({
       ) : (
         <GlyphSpinner className="opacity-50" spinner="braille" />
       )}
-      {effort && <span className="composer-model-effort shrink-0">· {effort.label}</span>}
       {pinnedOverride && (
         <span
           aria-label={copy.modelPinned}
@@ -177,9 +173,7 @@ export function ModelPill({
     ? copy.modelTitle(providerDisplayName(currentProvider), currentModel || copy.modelNone)
     : copy.switchModel
 
-  const title = [pinnedOverride ? `${baseTitle} — ${copy.modelPinned}` : baseTitle, effort?.title]
-    .filter(Boolean)
-    .join(' · ')
+  const title = pinnedOverride ? `${baseTitle} — ${copy.modelPinned}` : baseTitle
 
   if (!model.modelMenuContent) {
     return (
@@ -229,7 +223,7 @@ export function ModelPill({
       </Tip>
       <DropdownMenuContent
         align="end"
-        className={cn('p-0', effort ? 'w-[22.5rem]' : 'w-72')}
+        className="w-72 p-0"
         onCloseAutoFocus={event => {
           if (restoreSelection.current) {
             event.preventDefault()

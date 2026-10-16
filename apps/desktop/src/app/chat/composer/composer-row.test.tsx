@@ -142,7 +142,7 @@ describe('the mic', () => {
 })
 
 describe('the row', () => {
-  const controls = () =>
+  const controls = (overrides: Partial<ComponentProps<typeof StudioComposerControls>> = {}) =>
     wrap(
       <StudioComposerControls
         autoSpeak={false}
@@ -167,8 +167,28 @@ describe('the row', () => {
         requestGateway={vi.fn()}
         state={state}
         voiceStatus="idle"
+        {...overrides}
       />
     )
+
+  const reasoningModel: ChatBarState = {
+    ...state,
+    model: { canSwitch: true, model: 'gpt-6', provider: 'openai', reasoningMenuContent: <div>effort rows</div> }
+  }
+
+  it('gives the reasoning effort its own pill and menu beside the model', () => {
+    controls({ state: reasoningModel })
+    const pill = screen.getByTestId('reasoning-pill')
+
+    expect(pill.textContent).toBe('Medium')
+    fireEvent.keyDown(pill, { key: 'Enter' })
+    expect(screen.getByText('effort rows')).toBeTruthy()
+  })
+
+  it('folds the effort into the model menu when the composer is compact', () => {
+    controls({ compactModelPill: true, state: reasoningModel })
+    expect(screen.queryByTestId('reasoning-pill')).toBeNull()
+  })
 
   it('keeps the HUD bar on upstream controls (folded voice menu)', () => {
     $hudMode.set(true)

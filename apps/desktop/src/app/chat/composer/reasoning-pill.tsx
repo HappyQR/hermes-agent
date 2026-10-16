@@ -55,6 +55,8 @@ export function useReasoningSummary(model: ChatBarState['model']) {
   return { clamp, effort, label, pending, title }
 }
 
+export type ReasoningSummary = NonNullable<ReturnType<typeof useReasoningSummary>>
+
 /**
  * Composer reasoning selector: the active model's effort level as its own
  * pill next to the model pill, opening the same Thinking / Fast / Effort rows
@@ -64,7 +66,16 @@ export function useReasoningSummary(model: ChatBarState['model']) {
  *
  * Reads THIS surface's SessionView (primary or tile), like the model pill.
  */
-export function ReasoningPill({ disabled, model }: { disabled: boolean; model: ChatBarState['model'] }) {
+export function ReasoningPill({
+  disabled,
+  formatLabel,
+  model
+}: {
+  disabled: boolean
+  /** The pill's text for a level (default: the catalog's short label). */
+  formatLabel?: (summary: ReasoningSummary) => string
+  model: ChatBarState['model']
+}) {
   const summary = useReasoningSummary(model)
   const [open, setOpen] = useState(false)
 
@@ -97,7 +108,11 @@ export function ReasoningPill({ disabled, model }: { disabled: boolean; model: C
             type="button"
             variant="ghost"
           >
-            {pending ? <GlyphSpinner className="opacity-50" spinner="braille" /> : <span>{label}</span>}
+            {pending ? (
+              <GlyphSpinner className="opacity-50" spinner="braille" />
+            ) : (
+              <span>{formatLabel ? formatLabel(summary) : label}</span>
+            )}
             <ChevronDown className="size-2.5 shrink-0 opacity-50" />
           </Button>
         </DropdownMenuTrigger>
