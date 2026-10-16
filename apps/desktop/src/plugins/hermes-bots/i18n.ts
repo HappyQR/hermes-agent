@@ -260,6 +260,8 @@ type BotsMessages = {
   /** Group chats: the room, its composer, threads and activity feed. */
   group: {
     newTitle: string
+    newDesc: (max: number) => string
+    createGroup: (count: number) => string
     manageDesc: string
     manageTitle: string
     settingsTitle: string
@@ -709,6 +711,9 @@ const en: BotsMessages = {
   },
   group: {
     newTitle: 'New group chat',
+    newDesc: max =>
+      `Pick 2–${max} bots. Local memberships sync through each Bot profile; cross-machine members stay scoped to this room.`,
+    createGroup: count => `Create Group${count ? ` (${count})` : ''}`,
     manageDesc: 'A bot can join multiple group chats. Memberships sync to every machine.',
     manageTitle: 'Manage groups',
     settingsTitle: 'Group settings',
@@ -1154,6 +1159,9 @@ const ja: BotsMessages = {
   },
   group: {
     newTitle: '新しいグループチャット',
+    newDesc: max =>
+      `2〜${max} 体のボットを選んでください。このデバイスのメンバーは各ボットのプロファイルに同期され、他のデバイスのメンバーはこのルームだけに属します。`,
+    createGroup: count => `グループを作成${count ? `（${count}）` : ''}`,
     manageDesc: 'ボットは複数のグループチャットに参加できます。メンバーシップはすべてのマシンに同期されます。',
     manageTitle: 'グループを管理',
     settingsTitle: 'グループ設定',
@@ -1592,6 +1600,9 @@ const zh: BotsMessages = {
   },
   group: {
     newTitle: '新建群聊',
+    newDesc: max =>
+      `选择 2–${max} 个机器人。本机的成员关系会同步到各机器人的配置档案；其他设备上的成员只属于这个群聊。`,
+    createGroup: count => `创建群聊${count ? `（${count}）` : ''}`,
     manageDesc: '一个机器人可以加入多个群聊。成员关系会同步到每台设备。',
     manageTitle: '管理群组',
     settingsTitle: '群组设置',
@@ -2023,6 +2034,8 @@ const zhHant: BotsMessages = {
   },
   group: {
     newTitle: '新增群組聊天',
+    newDesc: max => `選擇 2–${max} 個機器人。本機的成員關係會同步到各機器人的設定檔；其他裝置上的成員只屬於這個群組。`,
+    createGroup: count => `建立群組${count ? `（${count}）` : ''}`,
     manageDesc: '一個機器人可以加入多個群組聊天。成員關係會同步到每台裝置。',
     manageTitle: '管理群組',
     settingsTitle: '群組設定',
@@ -2256,19 +2269,39 @@ export const BOTS_LOCALES: PluginLocaleBundles = {
   zh,
   'zh-hant': zhHant,
   ar: {
-    sidebar: { openWorkspace: 'فتح مساحة عمل الروبوتات', more: 'إجراءات أخرى للروبوتات', activityToasts: 'إشعارات النشاط' }
+    sidebar: {
+      openWorkspace: 'فتح مساحة عمل الروبوتات',
+      more: 'إجراءات أخرى للروبوتات',
+      activityToasts: 'إشعارات النشاط'
+    }
   },
   ru: {
-    sidebar: { openWorkspace: 'Открыть рабочее пространство ботов', more: 'Другие действия с ботами', activityToasts: 'Уведомления об активности' }
+    sidebar: {
+      openWorkspace: 'Открыть рабочее пространство ботов',
+      more: 'Другие действия с ботами',
+      activityToasts: 'Уведомления об активности'
+    }
   },
   fr: {
-    sidebar: { openWorkspace: 'Ouvrir l’espace Bots', more: 'Autres actions des bots', activityToasts: 'Notifications d’activité' }
+    sidebar: {
+      openWorkspace: 'Ouvrir l’espace Bots',
+      more: 'Autres actions des bots',
+      activityToasts: 'Notifications d’activité'
+    }
   },
   de: {
-    sidebar: { openWorkspace: 'Bots-Arbeitsbereich öffnen', more: 'Weitere Bot-Aktionen', activityToasts: 'Aktivitätsbenachrichtigungen' }
+    sidebar: {
+      openWorkspace: 'Bots-Arbeitsbereich öffnen',
+      more: 'Weitere Bot-Aktionen',
+      activityToasts: 'Aktivitätsbenachrichtigungen'
+    }
   },
   es: {
-    sidebar: { openWorkspace: 'Abrir el espacio de bots', more: 'Más acciones de bots', activityToasts: 'Avisos de actividad' }
+    sidebar: {
+      openWorkspace: 'Abrir el espacio de bots',
+      more: 'Más acciones de bots',
+      activityToasts: 'Avisos de actividad'
+    }
   }
 }
 

@@ -32,7 +32,9 @@ vi.mock('./roster-actions', async importOriginal => ({
   openRosterBot
 }))
 
-const { BotsSidebarSection, botsSidebarSectionContribution, sidebarBots } = await import('./sidebar-section')
+const { BotsSidebarSection, BotsSidebarTools, botsSidebarSectionContribution, sidebarBots } =
+  await import('./sidebar-section')
+
 const { SIDEBAR_SECTIONS_AREA } = await import('@hermes/plugin-sdk')
 
 const alpha: RosterRow = { connectionId: 'local', name: 'alpha' }
@@ -73,6 +75,33 @@ describe('BotsSidebarSection', () => {
     render(<BotsSidebarSection />)
 
     expect(screen.getByText('No bots yet')).toBeTruthy()
+  })
+})
+
+describe('BotsSidebarTools', () => {
+  it('offers a group chat from the live roster, with the Bots pane never opened', async () => {
+    roster.profiles = [alpha, beta]
+    render(<BotsSidebarTools />)
+
+    const trigger = screen.getByRole('button', { name: 'New bot or group chat' })
+    fireEvent.pointerDown(trigger, { button: 0, ctrlKey: false, pointerType: 'mouse' })
+
+    const item = await screen.findByRole('menuitem', { name: 'New group chat' })
+    expect(item.getAttribute('aria-disabled')).not.toBe('true')
+  })
+
+  it('keeps a group chat out of reach with a single bot', async () => {
+    roster.profiles = [alpha]
+    render(<BotsSidebarTools />)
+
+    fireEvent.pointerDown(screen.getByRole('button', { name: 'New bot or group chat' }), {
+      button: 0,
+      ctrlKey: false,
+      pointerType: 'mouse'
+    })
+
+    const item = await screen.findByRole('menuitem', { name: 'New group chat' })
+    expect(item.getAttribute('aria-disabled')).toBe('true')
   })
 })
 

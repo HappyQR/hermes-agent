@@ -424,7 +424,10 @@ export function createCanonicalChat(
         : {}),
       profile: name,
       intent: 'main',
-      keepAllProfilesScope: route ? true : false,
+      // Navigation, like every other bot open: a just-created bot's chat must
+      // not make its profile the window's home. Switching it there made the
+      // new bot the account, the Settings target and the UI language's source.
+      keepAllProfilesScope: true,
       workspaceMode: 'bots',
       workspaceOwnerKey: botWorkspaceOwnerKey(bot),
       tabTitle: CANONICAL_CHAT_TITLE

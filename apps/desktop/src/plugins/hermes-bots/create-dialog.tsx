@@ -1238,7 +1238,7 @@ export function CreateGroupChatDialog({ open, roster, onClose, onCreated }: Crea
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>{b.group.newTitle}</DialogTitle>
-          <DialogDescription>{`Pick 2–${GROUP_CHAT_MAX_MEMBERS} bots. Local memberships sync through each Bot profile; cross-machine members stay scoped to this room.`}</DialogDescription>
+          <DialogDescription>{b.group.newDesc(GROUP_CHAT_MAX_MEMBERS)}</DialogDescription>
         </DialogHeader>
         {/* TODO(bot-mode-types): this search box never takes focus when the dialog
             opens — SearchField accepts no `autoFocus` prop and forwards no extra
@@ -1359,10 +1359,9 @@ export function CreateGroupChatDialog({ open, roster, onClose, onCreated }: Crea
           <Button onClick={onClose} variant="secondary">
             {t.common.cancel}
           </Button>
-          <Button
-            disabled={!canCreate}
-            onClick={create}
-          >{`Create Group${selected.length ? ` (${selected.length})` : ''}`}</Button>
+          <Button disabled={!canCreate} onClick={create}>
+            {b.group.createGroup(selected.length)}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

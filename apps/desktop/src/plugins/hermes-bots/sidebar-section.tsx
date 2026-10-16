@@ -37,7 +37,16 @@ import { avatarColor, botAppearance, BotFace } from './avatar'
 import { isBackfilledFacePng } from './avatar-image'
 import { BotRowMenu } from './bot-row-menu'
 import { $focusedBotOwner, $openBotChat, $pendingBotOpen, focusedRosterOwner } from './bot-state'
-import { $botAttention, $botMeta, $lastRoster, botRosterKey, botSelectionKey, botSourceStatus, ROSTER_KEY, useRoster } from './data'
+import {
+  $botAttention,
+  $botMeta,
+  $lastRoster,
+  botRosterKey,
+  botSelectionKey,
+  botSourceStatus,
+  ROSTER_KEY,
+  useRoster
+} from './data'
 import { $activeGroupMemberKeys } from './group-presence'
 import { $showHiddenBots, isBotHidden } from './hidden-bots'
 import { useBots } from './i18n'
@@ -121,11 +130,22 @@ function SectionDialogs({ roster }: { roster: RosterRow[] }) {
 
 const TOOL = 'size-5.5 rounded-[6px] text-(--ui-text-tertiary) hover:text-foreground data-[state=open]:bg-(--ui-press)'
 
+/** The bots the header verbs act on: the section's live roster (the query its
+ *  rows read), else the Bots pane's last snapshot. That snapshot is published
+ *  only while the pane is mounted, so on its own it left "New group chat"
+ *  disabled — and its dialog empty — for anyone who never opened the pane. */
+function useSectionRoster(): RosterRow[] {
+  const { data } = useRoster()
+  const lastRoster = useValue($lastRoster)
+
+  return Array.isArray(data?.profiles) ? data.profiles : lastRoster
+}
+
 /** "+" (new bot, new group chat, new section) and "⋯" (the Bots workspace,
  *  hidden bots, activity toasts) — the Bots pane toolbar's verbs. */
 export function BotsSidebarTools() {
   const b = useBots()
-  const roster = useValue($lastRoster)
+  const roster = useSectionRoster()
   const showHidden = useValue($showHiddenBots)
   const activityToasts = useValue($activityToasts)
   const live = roster.filter(bot => !bot?.ghost)
@@ -235,7 +255,9 @@ function CompactBotRow({ bot }: { bot: RosterRow }) {
           onClick={() => void openRosterBot(bot)}
           onPointerEnter={() => warmRosterBot(bot)}
         >
-          <span className={cn('grid size-4.5 shrink-0 place-items-center', !status.available && 'opacity-60 grayscale')}>
+          <span
+            className={cn('grid size-4.5 shrink-0 place-items-center', !status.available && 'opacity-60 grayscale')}
+          >
             <BotFace
               color={avatarColor(color, bot.name)}
               image={image && !isBackfilledFacePng(image) ? image : null}
@@ -247,7 +269,11 @@ function CompactBotRow({ bot }: { bot: RosterRow }) {
           </span>
           <span className="min-w-0 flex-1 truncate">{name}</span>
           {attention ? (
-            <span aria-label={b.roster.needsAttention} className="grid shrink-0 place-items-center text-(--ui-orange)" role="img">
+            <span
+              aria-label={b.roster.needsAttention}
+              className="grid shrink-0 place-items-center text-(--ui-orange)"
+              role="img"
+            >
               <StudioIcon name="warn" size={13} />
             </span>
           ) : null}
