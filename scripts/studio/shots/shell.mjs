@@ -42,6 +42,15 @@ export default {
     await shot(page, 'layout-menu')
     await escape(page, sleep)
   },
+  // Utility: close the inspector if a previous scene left it open.
+  'inspector-off': async (page, { sleep }) => {
+    const close = page.locator('[data-slot="inspector-header"]').last().locator('button').last()
+
+    if (await close.isVisible().catch(() => false)) {
+      await close.click()
+      await sleep(700)
+    }
+  },
   // Prototype scene "分屏": the focused session and another side by side.
   split: async (page, { shot, sleep }) => {
     const layoutMenu = () => page.locator('[data-slot="toolbar-capsule"] button').first()
