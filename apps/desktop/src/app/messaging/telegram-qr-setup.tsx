@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 
+import { Callout } from '@/components/studio/pages/surfaces'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { ErrorBanner } from '@/components/ui/error-state'
-import { Input } from '@/components/ui/input'
+import { StudioIcon } from '@/components/ui/studio-icon'
 import {
   applyTelegramOnboarding,
   cancelTelegramOnboarding,
@@ -14,12 +14,8 @@ import {
   type TelegramOnboardingStartResponse
 } from '@/hermes'
 import { useI18n } from '@/i18n'
-import { openExternalLink } from '@/lib/external-link'
-import { Check, ExternalLink, QrCode, Save, X } from '@/lib/icons'
-import { isSubmitEnter } from '@/lib/ime'
-import { cn } from '@/lib/utils'
 
-import { CREDENTIAL_CONTROL_CLASS } from '../settings/credential-key-ui'
+import { TelegramQrSheet } from './studio/telegram-qr-sheet'
 
 const TELEGRAM_USER_ID_RE = /^\d{3,20}$/
 
@@ -247,144 +243,53 @@ export function TelegramQrSetup({ onApplied, platform, scopeProfile }: TelegramQ
     }
   }
 
+  const s = t.studio.pages.messaging
+
+  // 扫码快速设置 (prototype pages.js:150-154): one card on the page; the code
+  // itself and the allowlist review live in the QR sheet.
   return (
-    <div className="rounded-xl border border-(--ui-stroke-secondary) bg-(--ui-surface-secondary,transparent) p-3">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-[length:var(--conversation-text-font-size)] font-medium">{q.quickSetup}</span>
-            <Badge variant="success">{q.recommended}</Badge>
-          </div>
-          <p className="mt-1 text-[length:var(--conversation-caption-font-size)] leading-(--conversation-caption-line-height) text-(--ui-text-tertiary)">
-            {q.quickHelp}
-          </p>
+    <>
+      <div
+        className="flex items-center gap-3 rounded-[11px] bg-(--pg-card) px-3.5 py-3 shadow-(--pg-card-ring)"
+        data-slot="telegram-quick-setup"
+      >
+        <StudioIcon className="shrink-0 text-primary" name="viewfinder" size={22} />
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <b className="text-[0.8125rem] font-semibold text-(--ui-text-primary)">{s.quickSetupTitle}</b>
+          <span className="text-xs leading-normal text-(--ui-text-tertiary)">
+            {platform.configured && !connectedBot ? s.quickSetupBody : q.quickHelp}
+          </span>
+          {phase === 'idle' && connectedBot && (
+            <span className="mt-1 flex flex-wrap items-center gap-2">
+              <Badge variant="success">{t.messaging.states.connected}</Badge>
+              <span className="font-mono text-xs text-(--ui-text-tertiary)">@{connectedBot}</span>
+            </span>
+          )}
         </div>
-        {phase === 'idle' && (
-          <Button onClick={() => void start()} size="sm">
-            <QrCode />
-            {q.createWithQr}
-          </Button>
-        )}
-        {phase === 'starting' && (
-          <Button disabled size="sm">
-            {q.starting}
-          </Button>
-        )}
+        <Button disabled={phase === 'starting'} onClick={() => void start()} variant="outline">
+          {phase === 'starting' ? q.starting : s.showQr}
+        </Button>
       </div>
 
-      {phase === 'idle' && connectedBot && (
-        <div className="mt-2 flex flex-wrap items-center gap-2">
-          <Badge variant="success">{t.messaging.states.connected}</Badge>
-          <span className="font-mono text-xs text-muted-foreground">@{connectedBot}</span>
-        </div>
-      )}
+      {error && !setup && <Callout tone="warn">{error}</Callout>}
 
-      {platform.configured && phase === 'idle' && !connectedBot && (
-        <p className="mt-2 text-[length:var(--conversation-caption-font-size)] leading-(--conversation-caption-line-height) text-muted-foreground">
-          {q.replaceWarning}
-        </p>
-      )}
-
-      {error && <ErrorBanner className="mt-3">{error}</ErrorBanner>}
-
-      {setup && qrDataUrl && (
-        <div className="mt-3 grid gap-4 border-t border-(--ui-stroke-secondary) pt-3 lg:grid-cols-[minmax(0,1fr)_240px]">
-          <div className="grid content-start gap-3">
-            {phase === 'waiting' && (
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="warn">{q.waiting}</Badge>
-                <span className="text-xs text-muted-foreground">{q.scanHint}</span>
-              </div>
-            )}
-
-            {(phase === 'ready' || phase === 'applying') && (
-              <>
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge variant="success">{q.ready}</Badge>
-                  {botUsername && <span className="font-mono text-xs text-muted-foreground">@{botUsername}</span>}
-                </div>
-
-                <div className="grid gap-2">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                      {q.allowedUsers}
-                    </span>
-                    {detectedOwnerId && allowedIds.includes(detectedOwnerId) && (
-                      <Badge variant="success">{q.ownerDetected}</Badge>
-                    )}
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {allowedIds.map(id => (
-                      <button
-                        aria-label={`${t.common.remove} ${id}`}
-                        className={cn(
-                          'inline-flex items-center gap-1 rounded-md border border-(--ui-stroke-secondary) px-2 py-1 font-mono text-xs',
-                          'hover:border-destructive/50 hover:text-destructive'
-                        )}
-                        key={id}
-                        onClick={() => setAllowedIds(ids => ids.filter(existing => existing !== id))}
-                        type="button"
-                      >
-                        {id}
-                        <X className="size-3" />
-                      </button>
-                    ))}
-                    {allowedIds.length === 0 && (
-                      <span className="text-xs text-muted-foreground">{q.addAtLeastOne}</span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      className={CREDENTIAL_CONTROL_CLASS}
-                      onChange={event => setNewAllowedId(event.target.value)}
-                      onKeyDown={event => {
-                        if (isSubmitEnter(event)) {
-                          event.preventDefault()
-                          addAllowedId()
-                        }
-                      }}
-                      placeholder={q.userIdPlaceholder}
-                      value={newAllowedId}
-                    />
-                    <Button onClick={addAllowedId} size="sm" variant="secondary">
-                      <Check />
-                      {q.add}
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap gap-2">
-                  <Button disabled={phase === 'applying'} onClick={() => void apply()} size="sm">
-                    <Save />
-                    {phase === 'applying' ? q.applying : q.saveAndRestart}
-                  </Button>
-                  <Button disabled={phase === 'applying'} onClick={() => void cancel()} size="sm" variant="ghost">
-                    {t.common.cancel}
-                  </Button>
-                </div>
-              </>
-            )}
-          </div>
-
-          <div className="flex flex-col items-center gap-2">
-            <img alt="Telegram setup QR code" className="size-56 rounded-md bg-white p-2" src={qrDataUrl} />
-            <Badge variant={expiresIn ? 'outline' : 'destructive'}>
-              {expiresIn ? q.expiresIn(expiresIn) : q.expired}
-            </Badge>
-            <div className="flex flex-wrap justify-center gap-2">
-              <Button onClick={() => openExternalLink(setup.deep_link)} size="sm" variant="secondary">
-                <ExternalLink />
-                {q.openTelegram}
-              </Button>
-              {phase === 'waiting' && (
-                <Button onClick={() => void cancel()} size="sm" variant="ghost">
-                  {t.common.cancel}
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+      <TelegramQrSheet
+        allowedIds={allowedIds}
+        botUsername={botUsername}
+        deepLink={setup?.deep_link ?? ''}
+        detectedOwnerId={detectedOwnerId}
+        error={setup ? error : ''}
+        expiresIn={expiresIn}
+        newAllowedId={newAllowedId}
+        onAddAllowedId={addAllowedId}
+        onApply={() => void apply()}
+        onCancel={() => void cancel()}
+        onNewAllowedIdChange={setNewAllowedId}
+        onRemoveAllowedId={id => setAllowedIds(ids => ids.filter(existing => existing !== id))}
+        open={Boolean(setup && qrDataUrl)}
+        phase={phase}
+        qrDataUrl={qrDataUrl}
+      />
+    </>
   )
 }

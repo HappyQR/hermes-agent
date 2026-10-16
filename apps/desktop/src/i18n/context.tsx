@@ -106,6 +106,15 @@ export function I18nProvider({
   const [isSavingLocale, setIsSavingLocale] = useState(false)
   const [configLoadError, setConfigLoadError] = useState<Error | null>(null)
   const [saveError, setSaveError] = useState<Error | null>(null)
+
+  // The runtime locale moves WITH the state, not an effect later: module-level
+  // copy (translateNow) read while rendering must see the new language on the
+  // render that switches it, or it stays stale until something else re-renders.
+  const commitLocale = useCallback((next: Locale) => {
+    setRuntimeI18nLocale(next)
+    setLocaleState(next)
+  }, [])
+
   const localeRef = useRef(locale)
   // An explicit pick beats a late read in its own scope, not in other profiles.
   const userLocaleRef = useRef(false)
@@ -139,9 +148,9 @@ export function I18nProvider({
     const next = normalizeLocale(requested)
 
     if (next !== localeRef.current) {
-      setLocaleState(next)
+      commitLocale(next)
     }
-  }, [registryVersion])
+  }, [commitLocale, registryVersion])
 
   // eslint-disable-next-line no-restricted-syntax -- scope-local request generation and user intent, not an atom mirror
   useEffect(() => {
@@ -188,7 +197,7 @@ export function I18nProvider({
 
           // A saved choice needs no machine probe and always takes precedence.
           if (isSupportedLocaleValue(saved)) {
-            setLocaleState(normalizeLocale(saved))
+            commitLocale(normalizeLocale(saved))
 
             return
           }
@@ -198,7 +207,7 @@ export function I18nProvider({
           const machineProfile = await window.hermesDesktop?.getMachineProfile?.().catch(() => null)
 
           if (!cancelled && !userLocaleRef.current) {
-            setLocaleState(resolveInitialLocale(undefined, machineProfile?.locale))
+            commitLocale(resolveInitialLocale(undefined, machineProfile?.locale))
           }
         })
         .catch(error => {
@@ -207,7 +216,7 @@ export function I18nProvider({
           }
 
           setConfigLoadError(toError(error))
-          setLocaleState(DEFAULT_LOCALE)
+          commitLocale(DEFAULT_LOCALE)
 
           if (retryCount < MAX_LOCALE_RETRIES) {
             retryCount += 1
@@ -233,7 +242,7 @@ export function I18nProvider({
         clearTimeout(retryTimer)
       }
     }
-  }, [configClient, initialLocale, scopeKey])
+  }, [commitLocale, configClient, initialLocale, scopeKey])
 
   const setLocale = useCallback(
     async (next: Locale) => {
@@ -242,7 +251,7 @@ export function I18nProvider({
 
       userLocaleRef.current = true
       setSaveError(null)
-      setLocaleState(next)
+      commitLocale(next)
       requestedRef.current = next
       $requestedLocale.set(next)
 
@@ -265,7 +274,7 @@ export function I18nProvider({
         // The write still belongs to the GET's captured origin, but its late
         // outcome must not roll another profile's chrome back to this one.
         if (generation === scopeGenerationRef.current) {
-          setLocaleState(previousLocale)
+          commitLocale(previousLocale)
           setSaveError(nextError)
         }
 
@@ -276,7 +285,7 @@ export function I18nProvider({
         }
       }
     },
-    [configClient]
+    [commitLocale, configClient]
   )
 
   const value = useMemo<I18nContextValue>(

@@ -194,6 +194,9 @@ it.each(['advanced', 'simple'] as const)(
     const restoredTree = reloaded.tree.$layoutTree.get()
     const expectedTree = normalize(legacyTree)
     assert(restoredTree && expectedTree)
-    expect(reloaded.model.allPaneIds(restoredTree)).toEqual(reloaded.model.allPaneIds(expectedTree))
+    // Hermes Studio's Agents pane postdates every legacy tree; its dock adopts
+    // it (hidden) into the file tree's zone, which is not a re-inheritance.
+    const restoredIds = reloaded.model.allPaneIds(restoredTree).filter(id => id !== 'agents')
+    expect(restoredIds).toEqual(reloaded.model.allPaneIds(expectedTree))
   }
 )

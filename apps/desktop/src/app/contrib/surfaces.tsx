@@ -39,6 +39,8 @@ import type { SidebarActions, WiringActions } from './types'
 const ArtifactsView = lazy(async () => ({ default: (await import('../artifacts')).ArtifactsView }))
 const MessagingView = lazy(async () => ({ default: (await import('../messaging')).MessagingView }))
 const CapabilitiesView = lazy(async () => ({ default: (await import('../capabilities')).CapabilitiesView }))
+const AutomationsView = lazy(async () => ({ default: (await import('../automations')).AutomationsView }))
+const MemoryView = lazy(async () => ({ default: (await import('../memory')).MemoryView }))
 
 export function LegacySessionRedirect() {
   const { sessionId } = useParams()
@@ -175,6 +177,8 @@ export const ChatRoutesSurface = memo(function ChatRoutesSurface({
   // on the contribution, not a DOM marker — the `data-zone-no-header` attribute
   // that used to ride this wrapper gated a body double-click toggle that no
   // longer exists, and nothing has read it since.
+  const automationsProps = { onOpenSession: actions.onResumeSession, setStatusbarItemGroup }
+
   const page = (view: ReactNode) => (
     <div className="contents">
       <Suspense fallback={null}>{view}</Suspense>
@@ -188,13 +192,17 @@ export const ChatRoutesSurface = memo(function ChatRoutesSurface({
       <Route element={page(<CapabilitiesView setStatusbarItemGroup={setStatusbarItemGroup} />)} path="capabilities" />
       <Route element={page(<MessagingView setStatusbarItemGroup={setStatusbarItemGroup} />)} path="messaging" />
       <Route element={page(<ArtifactsView setStatusbarItemGroup={setStatusbarItemGroup} />)} path="artifacts" />
+      {/* Automations: `/cron` and `/webhooks` open the same page on their tab. */}
+      <Route element={page(<AutomationsView {...automationsProps} />)} path="automations" />
+      <Route element={page(<AutomationsView {...automationsProps} />)} path="cron" />
+      <Route element={page(<AutomationsView {...automationsProps} defaultTab="webhook" />)} path="webhooks" />
       <Route element={null} path="agents" />
       <Route element={null} path="command-center" />
-      <Route element={null} path="cron" />
       <Route element={null} path="profiles" />
       <Route element={null} path="settings" />
-      <Route element={null} path="starmap" />
-      <Route element={null} path="webhooks" />
+      {/* Memory: `/starmap` (and `/journey`) open the same page. */}
+      <Route element={page(<MemoryView setStatusbarItemGroup={setStatusbarItemGroup} />)} path="memory" />
+      <Route element={page(<MemoryView setStatusbarItemGroup={setStatusbarItemGroup} />)} path="starmap" />
       {/* Registry-contributed pages (core features + plugins) render in the
           workspace pane like any built-in view — behind the same blast wall
           as every other contribution mount. */}

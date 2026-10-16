@@ -1,12 +1,11 @@
 import { useStore } from '@nanostores/react'
 import { type ReactNode, useEffect, useMemo } from 'react'
-import { useNavigate } from 'react-router'
 
 import { blurComposerInput } from '@/app/chat/composer/focus'
 import { useComposerSurfaceId } from '@/app/chat/composer/scope'
 import { useSessionView } from '@/app/chat/session-view'
-import { AGENTS_ROUTE } from '@/app/routes'
 import type { SubmitTextOptions } from '@/app/session/hooks/use-prompt-actions/utils'
+import { showAgentsPane } from '@/app/shell/inspector/inspector-state'
 import { BillingBanner } from '@/components/billing-banner'
 import { composerDockCard } from '@/components/chat/composer-dock'
 import { StatusSection } from '@/components/chat/status-section'
@@ -120,7 +119,6 @@ interface ComposerStatusStackProps {
  */
 export function ComposerStatusStack({ layout, onSubmit, queue, sessionId }: ComposerStatusStackProps) {
   const { t } = useI18n()
-  const navigate = useNavigate()
   const storedSessionId = useStore(useSessionView().$storedId)
   const interfaceMode = useStore($interfaceMode)
   const shown = useMemo(() => shownInMode(interfaceMode), [interfaceMode])
@@ -138,7 +136,6 @@ export function ComposerStatusStack({ layout, onSubmit, queue, sessionId }: Comp
   const busy = useStore(useSessionView().$busy)
   const previews = useSessionSlice($previewStatusBySession, sessionId)
   const controlEntry = useSessionValue($sessionControlBySession, sessionId)
-
 
   const billing = useStore($billingBlock)
   const freeTierStatus = useStore($freeTierStatus)
@@ -205,7 +202,7 @@ export function ComposerStatusStack({ layout, onSubmit, queue, sessionId }: Comp
     return () => clearInterval(timer)
   }, [hasRunningBackground, sessionId, paneVisible])
 
-  const openAgents = () => navigate(AGENTS_ROUTE)
+  const openAgents = showAgentsPane
 
   const openSubagent = (item: ComposerStatusItem) =>
     item.sessionId
@@ -366,7 +363,13 @@ export function ComposerStatusStack({ layout, onSubmit, queue, sessionId }: Comp
   return sections.length > 0 ? <StatusStackCard sections={sections} sessionId={sessionId} /> : null
 }
 
-function StatusStackCard({ sections, sessionId }: { sections: readonly StatusStackSection[]; sessionId: null | string }) {
+function StatusStackCard({
+  sections,
+  sessionId
+}: {
+  sections: readonly StatusStackSection[]
+  sessionId: null | string
+}) {
   const surfaceId = useComposerSurfaceId()
   const scrollSessionId = sessionId ?? surfaceId
 

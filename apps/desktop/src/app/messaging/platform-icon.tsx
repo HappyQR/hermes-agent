@@ -72,6 +72,12 @@ const PLATFORM_ICONS: Record<string, PlatformIconSpec> = {
   yuanbao: { Icon: SiBilibili, color: '#FB7299', kind: 'brand' }
 }
 
+/** A platform's brand mark (glyph or monogram + colour) for surfaces that paint
+ *  their own tile (Studio master rows, delivery targets). */
+export function platformBrand(platformId: string): PlatformIconSpec | undefined {
+  return PLATFORM_ICONS[platformId]
+}
+
 interface PlatformAvatarProps extends Omit<ComponentPropsWithoutRef<'span'>, 'children'> {
   platformId: string
   platformName: string

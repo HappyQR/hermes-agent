@@ -99,6 +99,7 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
           ? 'border-r shadow-[inset_-0.0625rem_0_0_color-mix(in_srgb,white_18%,transparent)]'
           : 'border-l shadow-[inset_0.0625rem_0_0_color-mix(in_srgb,white_18%,transparent)]'
       )}
+      data-slot="files-pane"
     >
       <FilesystemTab
         canCollapse={canCollapse}
@@ -184,7 +185,7 @@ function FilesystemTab({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <RightSidebarSectionHeader>
+      <RightSidebarSectionHeader data-slot="files-head">
         <div className="flex min-w-0 flex-1">
           <SidebarPanelLabel>{cwdName}</SidebarPanelLabel>
         </div>

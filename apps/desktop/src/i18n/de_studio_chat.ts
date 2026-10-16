@@ -1,6 +1,17 @@
 // Hermes Studio copy (chat) — fork-owned so upstream locale merges stay clean.
 import type { StudioChatTranslations } from './types_studio_chat'
 
+// Zusammenfassung eines Tool-Laufs: „3 Dateien untersucht“, „Führe npm test aus“.
+const deRun = (participle: string, doing: (object: string) => string, present: string, one: string, many: string) => ({
+  present,
+  named: (target: string, live: boolean) => (live ? doing(target) : `${target} ${participle}`),
+  counted: (count: number, live: boolean) => {
+    const things = `${count} ${count === 1 ? one : many}`
+
+    return live ? doing(things) : `${things} ${participle}`
+  }
+})
+
 export const deStudioChat: StudioChatTranslations = {
   contextUsage: 'Kontextnutzung',
   composer: {
@@ -67,11 +78,37 @@ export const deStudioChat: StudioChatTranslations = {
     },
     continueFrom: 'Aus Claude Code oder Codex fortsetzen'
   },
+  toolRun: {
+    categories: {
+      analyze: deRun('analysiert', object => `Analysiere ${object}`, 'Analysiere', 'Bild', 'Bilder'),
+      browse: deRun('geöffnet', object => `Öffne ${object}`, 'Öffne', 'Seite', 'Seiten'),
+      delegate: deRun('delegiert', object => `Delegiere ${object}`, 'Delegiere', 'Aufgabe', 'Aufgaben'),
+      edit: deRun('bearbeitet', object => `Bearbeite ${object}`, 'Bearbeite', 'Datei', 'Dateien'),
+      explore: deRun('untersucht', object => `Untersuche ${object}`, 'Untersuche', 'Datei', 'Dateien'),
+      interact: deRun('ausgeführt', object => `Führe ${object} aus`, 'Führe aus', 'Browseraktion', 'Browseraktionen'),
+      other: deRun('verwendet', object => `Verwende ${object}`, 'Verwende', 'Tool', 'Tools'),
+      read: deRun('gelesen', object => `Lese ${object}`, 'Lese', 'Seite', 'Seiten'),
+      run: deRun('ausgeführt', object => `Führe ${object} aus`, 'Führe aus', 'Befehl', 'Befehle'),
+      search: {
+        present: 'Suche',
+        named: (target, live) => (live ? `Suche ${target}` : `${target} gesucht`),
+        counted: (count, live) => {
+          const things = `${count} ${count === 1 ? 'Suchanfrage' : 'Suchanfragen'}`
+
+          return live ? `Führe ${things} aus` : `${things} ausgeführt`
+        }
+      }
+    },
+    // German nouns keep their capital mid-line, so clauses stand apart rather
+    // than being lower-cased into one sentence.
+    join: clauses => clauses.join(' · '),
+    moreCommands: (first, more) => `${first} + ${more} ${more === 1 ? 'Befehl' : 'Befehle'}`
+  },
   transcript: {
     delegateSpawned: count => `${count} Subagent${count === 1 ? '' : 'en'} gestartet`,
     delegateRunning: count => `${count} laufen`,
     delegateAllDone: 'Alle fertig',
-    openAgents: 'In Agenten ansehen',
+    openAgents: 'Im Inspektor ansehen',
     approvalTitle: 'Darf Hermes diesen Befehl ausführen?',
     approvalTitleAction: 'Darf Hermes diese Aktion ausführen?',
     approvalMode: 'Freigabemodus…',

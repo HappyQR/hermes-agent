@@ -602,6 +602,7 @@ export const en: Translations = {
       'view.toggleProfileRail': 'Toggle profile rail',
       'view.toggleSimpleMode': 'Toggle Simple mode',
       'view.showFiles': 'Show file browser',
+      'view.showAgents': 'Show agents',
       'view.showBrowser': 'Toggle browser',
       'view.toggleHud': 'Toggle HUD mode',
       'hud.snapToPointer': 'Move HUD to pointer (global, while HUD is open)',

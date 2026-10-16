@@ -606,6 +606,7 @@ export const frOverrides = {
       'view.toggleProfileRail': 'Afficher ou masquer la barre des profils',
       'view.toggleSimpleMode': 'Activer ou désactiver le mode simple',
       'view.showFiles': "Afficher l'explorateur de fichiers",
+      'view.showAgents': 'Afficher les agents',
       'view.showBrowser': 'Basculer le navigateur',
       'view.toggleHud': 'Basculer le mode HUD',
       'hud.snapToPointer': 'Déplacer le HUD vers le pointeur (global, lorsque le HUD est ouvert)',

@@ -389,6 +389,7 @@ export const zhOverrides = {
       'view.toggleProfileRail': '切换配置档案栏',
       'view.toggleSimpleMode': '切换简洁模式',
       'view.showFiles': '显示文件浏览器',
+      'view.showAgents': '显示代理',
       'view.showBrowser': '切换浏览器',
       'view.showTerminal': '显示终端',
       'view.selectionToComposer': '将选区发送到输入框',
@@ -4422,6 +4423,7 @@ export const zhOverrides = {
         endpoint: 'Hermes 无法连接到你的自定义模型服务器。请确认它正在运行，然后重新发送消息。',
         streaming: '回复完成前连接已断开。请重试以重新发送。'
       },
+      errorDetails: '详情',
       errorCodes: {
         provider_policy_blocked: {
           title: '账户设置阻止了此模型',

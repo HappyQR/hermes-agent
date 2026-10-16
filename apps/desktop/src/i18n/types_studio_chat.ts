@@ -3,6 +3,7 @@ export interface StudioChatTranslations {
   contextUsage: string
   composer: StudioChatComposerTranslations
   empty: StudioChatEmptyTranslations
+  toolRun: StudioChatToolRunTranslations
   transcript: StudioChatTranscriptTranslations
   tray: StudioChatTrayTranslations
 }
@@ -127,4 +128,31 @@ export interface StudioChatEmptyTranslations {
     }
   >
   continueFrom: string
+}
+
+/** What a tool-run summary groups calls by (run-summary.ts routes tools here). */
+export type ToolRunCategory =
+  'analyze' | 'browse' | 'delegate' | 'edit' | 'explore' | 'interact' | 'other' | 'read' | 'run' | 'search'
+
+/** One category's words. The locale owns word order, tense and plurals. */
+export interface StudioChatToolRunCategory {
+  /** The verb alone while it happens ("Editing") — also the status line
+   *  before a tool starts. */
+  present: string
+  /** A clause naming the one thing acted on: "Edited wiring.tsx" /
+   *  "Editing wiring.tsx". */
+  named: (target: string, live: boolean) => string
+  /** A clause counting what was acted on: "Explored 3 files" /
+   *  "Exploring 3 files". */
+  counted: (count: number, live: boolean) => string
+}
+
+/** The grey line standing in for a run of tool calls. */
+export interface StudioChatToolRunTranslations {
+  categories: Record<ToolRunCategory, StudioChatToolRunCategory>
+  /** One run's clauses as one line — English: "Explored 3 files, ran 5 commands". */
+  join: (clauses: readonly string[]) => string
+  /** A compound shell command: its first real segment and how many follow
+   *  ("npm test + 2 commands"). */
+  moreCommands: (first: string, more: number) => string
 }

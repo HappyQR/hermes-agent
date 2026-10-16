@@ -1,6 +1,15 @@
 // Hermes Studio copy (chat) — fork-owned so upstream locale merges stay clean.
 import type { StudioChatTranslations } from './types_studio_chat'
 
+// Resumen de una serie de herramientas: «Exploré 3 archivos», «Ejecutando npm test».
+const esRun = (past: string, present: string, one: string, many: string) => ({
+  present,
+  named: (target: string, live: boolean) => `${live ? present : past} ${target}`,
+  counted: (count: number, live: boolean) => `${live ? present : past} ${count} ${count === 1 ? one : many}`
+})
+
+const lowerFirst = (text: string) => text.charAt(0).toLowerCase() + text.slice(1)
+
 export const esStudioChat: StudioChatTranslations = {
   contextUsage: 'Uso del contexto',
   composer: {
@@ -67,11 +76,31 @@ export const esStudioChat: StudioChatTranslations = {
     },
     continueFrom: 'Continuar desde Claude Code o Codex'
   },
+  toolRun: {
+    categories: {
+      analyze: esRun('Analicé', 'Analizando', 'imagen', 'imágenes'),
+      browse: esRun('Abrí', 'Abriendo', 'página', 'páginas'),
+      delegate: esRun('Delegué', 'Delegando', 'tarea', 'tareas'),
+      edit: esRun('Edité', 'Editando', 'archivo', 'archivos'),
+      explore: esRun('Exploré', 'Explorando', 'archivo', 'archivos'),
+      interact: esRun('Realicé', 'Realizando', 'acción del navegador', 'acciones del navegador'),
+      other: esRun('Usé', 'Usando', 'herramienta', 'herramientas'),
+      read: esRun('Leí', 'Leyendo', 'página', 'páginas'),
+      run: esRun('Ejecuté', 'Ejecutando', 'comando', 'comandos'),
+      search: {
+        present: 'Buscando',
+        named: (target, live) => `${live ? 'Buscando' : 'Busqué'} ${target}`,
+        counted: (count, live) => `${live ? 'Haciendo' : 'Hice'} ${count} ${count === 1 ? 'búsqueda' : 'búsquedas'}`
+      }
+    },
+    join: clauses => clauses.map((clause, index) => (index === 0 ? clause : lowerFirst(clause))).join(', '),
+    moreCommands: (first, more) => `${first} + ${more} ${more === 1 ? 'comando' : 'comandos'}`
+  },
   transcript: {
     delegateSpawned: count => `${count} subagente${count === 1 ? '' : 's'} lanzado${count === 1 ? '' : 's'}`,
     delegateRunning: count => `${count} en curso`,
     delegateAllDone: 'Todo listo',
-    openAgents: 'Ver en Agentes',
+    openAgents: 'Ver en el inspector',
     approvalTitle: '¿Permitir que Hermes ejecute este comando?',
     approvalTitleAction: '¿Permitir que Hermes realice esta acción?',
     approvalMode: 'Modo de aprobación…',

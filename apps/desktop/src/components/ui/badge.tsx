@@ -24,6 +24,8 @@ const badgeVariants = cva(
       },
       size: {
         default: 'h-5 px-[7px] text-[0.71875rem] [&_svg]:size-3',
+        // Detail-head status tags (the prototype's .tag.lg).
+        lg: 'h-6 px-[9px] text-xs [&_svg]:size-3.5',
         xs: 'h-4 rounded-[5px] px-1.5 text-[0.65rem] [&_svg]:size-2.5',
         // The macOS count badge: a small accent pill over an icon corner.
         overlay:

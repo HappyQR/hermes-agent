@@ -797,6 +797,7 @@
   "keybinds.actions.view.prevTerminal": ["ar","ja","zh","zh-hant"],
   "keybinds.actions.view.reopenTab": ["ja","zh-hant"],
   "keybinds.actions.view.selectionToComposer": ["ja","zh-hant"],
+  "keybinds.actions.view.showAgents": ["ja","zh-hant"],
   "keybinds.actions.view.showBrowser": ["ja","zh-hant"],
   "keybinds.actions.view.showFiles": ["ja","zh-hant"],
   "keybinds.actions.view.showTerminal": ["ja","zh-hant"],

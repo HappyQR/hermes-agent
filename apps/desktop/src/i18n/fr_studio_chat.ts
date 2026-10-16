@@ -1,6 +1,19 @@
 // Hermes Studio copy (chat) — fork-owned so upstream locale merges stay clean.
 import type { StudioChatTranslations } from './types_studio_chat'
 
+// Résumé d’une série d’outils : « J’ai exploré 3 fichiers », « Exécution de npm test ».
+const frRun = (past: string, present: string, one: string, many: string) => ({
+  present,
+  named: (target: string, live: boolean) => (live ? `${present} de ${target}` : `J’ai ${past} ${target}`),
+  counted: (count: number, live: boolean) => {
+    const things = `${count} ${count <= 1 ? one : many}`
+
+    return live ? `${present} de ${things}` : `J’ai ${past} ${things}`
+  }
+})
+
+const lowerFirst = (text: string) => text.charAt(0).toLowerCase() + text.slice(1)
+
 export const frStudioChat: StudioChatTranslations = {
   contextUsage: 'Utilisation du contexte',
   composer: {
@@ -67,11 +80,35 @@ export const frStudioChat: StudioChatTranslations = {
     },
     continueFrom: 'Reprendre depuis Claude Code ou Codex'
   },
+  toolRun: {
+    categories: {
+      analyze: frRun('analysé', 'Analyse', 'image', 'images'),
+      browse: frRun('ouvert', 'Ouverture', 'page', 'pages'),
+      delegate: frRun('délégué', 'Délégation', 'tâche', 'tâches'),
+      edit: frRun('modifié', 'Modification', 'fichier', 'fichiers'),
+      explore: frRun('exploré', 'Exploration', 'fichier', 'fichiers'),
+      interact: frRun('effectué', 'Exécution', 'action de navigateur', 'actions de navigateur'),
+      other: frRun('utilisé', 'Utilisation', 'outil', 'outils'),
+      read: frRun('lu', 'Lecture', 'page', 'pages'),
+      run: frRun('exécuté', 'Exécution', 'commande', 'commandes'),
+      search: {
+        present: 'Recherche',
+        named: (target, live) => (live ? `Recherche de ${target}` : `J’ai recherché ${target}`),
+        counted: (count, live) => {
+          const things = `${count} ${count <= 1 ? 'recherche' : 'recherches'}`
+
+          return live ? `${things} en cours` : `J’ai lancé ${things}`
+        }
+      }
+    },
+    join: clauses => clauses.map((clause, index) => (index === 0 ? clause : lowerFirst(clause))).join(', '),
+    moreCommands: (first, more) => `${first} + ${more} ${more <= 1 ? 'commande' : 'commandes'}`
+  },
   transcript: {
     delegateSpawned: count => `${count} sous-agent${count > 1 ? 's' : ''} lancé${count > 1 ? 's' : ''}`,
     delegateRunning: count => `${count} en cours`,
     delegateAllDone: 'Tout est terminé',
-    openAgents: 'Voir dans Agents',
+    openAgents: 'Voir dans l’inspecteur',
     approvalTitle: 'Autoriser Hermes à exécuter cette commande ?',
     approvalTitleAction: 'Autoriser Hermes à effectuer cette action ?',
     approvalMode: 'Mode d’approbation…',

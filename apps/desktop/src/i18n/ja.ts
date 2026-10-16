@@ -3386,6 +3386,7 @@ export const jaOverrides = {
           'カスタムモデルサーバーに接続できません。サーバーが起動しているか確認し、メッセージを再送してください。',
         streaming: '返信が完了する前に接続が切れました。再試行してもう一度送信してください。'
       },
+      errorDetails: '詳細',
       errorCodes: {
         provider_policy_blocked: {
           title: 'アカウント設定によりこのモデルはブロックされています',

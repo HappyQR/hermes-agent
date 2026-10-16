@@ -1,1 +1,348 @@
-/* Hermes Studio — pages styles (fork-owned; loaded after foundation.css). */
+/* Hermes Studio — pages styles (fork-owned; loaded after foundation.css).
+
+   Workspace pages (技能与工具 · 消息平台 · 自动化 · 产物 · 记忆 · 看板), their
+   sheets, and the inspector pane bodies. Components live in
+   src/components/studio/pages/; this file holds what Tailwind classes cannot
+   express on their own: page tokens, sibling hairlines, line clamps, the
+   master/detail responsive rules and plugin-chrome overrides. Rules here are
+   unlayered, so they win over Tailwind utilities on the same element. */
+
+/* ── Tokens ──────────────────────────────────────────────────────────────── */
+
+:root {
+  /* Raised card / grouped-form surface (prototype --card). */
+  --pg-card: var(--ui-bg-editor);
+  /* Recessed column (prototype --bg-2): kanban lanes, agent stream wells. */
+  --pg-recessed: var(--ui-bg-inspector, var(--ui-bg-tertiary));
+  --pg-card-ring: 0 0 0 0.5px var(--ui-line-2, var(--ui-stroke-secondary));
+  --pg-card-shadow: var(--pg-card-ring), 0 1px 2px rgb(0 0 0 / 0.04);
+  --pg-card-lift: var(--pg-card-ring), 0 12px 28px -16px rgb(0 0 0 / 0.3);
+
+  /* Icon tiles: macOS system colours, like app icons — not the accent. */
+  --pg-tile-blue: #0a7aff;
+  --pg-tile-indigo: #5856d6;
+  --pg-tile-purple: #9b51e0;
+  --pg-tile-pink: #e8457f;
+  --pg-tile-red: #e5483c;
+  --pg-tile-orange: #f08a00;
+  --pg-tile-yellow: #d9a400;
+  --pg-tile-green: #2f9e47;
+  --pg-tile-mint: #18a999;
+  --pg-tile-teal: #20a4bd;
+  --pg-tile-cyan: #18a0e0;
+  --pg-tile-brown: #a2845e;
+  --pg-tile-gray: #636366;
+  --pg-tile-graphite: #1d1d1f;
+  --pg-tile-accent: var(--dt-primary, var(--theme-primary));
+
+  /* Status dots (prototype --*-dot) with fallbacks for non-Studio themes. */
+  --pg-dot-green: var(--ui-dot-green, #30c25a);
+  --pg-dot-orange: var(--ui-dot-orange, #ff9500);
+  --pg-dot-red: var(--ui-dot-red, #ff3b30);
+  --pg-dot-purple: var(--ui-dot-purple, #af52de);
+  --pg-dot-teal: var(--ui-dot-teal, #30b0c7);
+  --pg-dot-gray: var(--ui-text-quaternary);
+
+  /* Memory map: the night-sky card keeps its palette in both appearances. */
+  --pg-space-bg: radial-gradient(120% 90% at 50% 40%, #1a2140 0%, #0b0e1c 60%, #06070f 100%);
+  --pg-space-fg: #e9ecff;
+}
+
+.dark {
+  --pg-card-shadow: var(--pg-card-ring), 0 1px 2px rgb(0 0 0 / 0.3);
+  --pg-card-lift: var(--pg-card-ring), 0 14px 30px -16px rgb(0 0 0 / 0.6);
+  --pg-tile-blue: #0a84ff;
+  --pg-tile-indigo: #5e5ce6;
+  --pg-tile-purple: #a560e8;
+  --pg-tile-pink: #f0508a;
+  --pg-tile-red: #ef5245;
+  --pg-tile-orange: #f59a0a;
+  --pg-tile-green: #34a853;
+  --pg-tile-graphite: #3a3a3e;
+  --pg-tile-gray: #6e6e73;
+}
+
+/* ── Page frame ──────────────────────────────────────────────────────────── */
+
+[data-slot='studio-page-scroll'] {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--ui-text-primary) 22%, transparent) transparent;
+}
+
+/* Master/detail pages: the head stays put; list and detail scroll on their own
+   (System Settings). Narrow windows fall back to one scrolling column. */
+@media (max-width: 860px) {
+  [data-slot='studio-page'][data-layout='split'] [data-slot='studio-page-scroll'] {
+    overflow-y: auto;
+  }
+
+  [data-slot='studio-page'][data-layout='split'] [data-slot='studio-page-inner'] {
+    height: auto;
+    padding-bottom: 2.5rem;
+  }
+
+  [data-slot='studio-master'] {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+  }
+
+  [data-slot='studio-page'][data-layout='split'] :is([data-slot='studio-master-items'], [data-slot='studio-detail']) {
+    overflow: visible;
+    margin-right: 0;
+  }
+}
+
+/* ── Rows that share one hairline ────────────────────────────────────────── */
+
+/* Rows inside an inset list group separate with a single 0.5px hairline;
+   wrappers (conditional rows, context-menu triggers) keep the rule intact.
+   Form rows draw their own (app/overlays/studio/form-group). */
+[data-slot='studio-list-row'] + [data-slot='studio-list-row'] {
+  box-shadow: inset 0 0.5px 0 var(--ui-line, var(--ui-stroke-tertiary));
+}
+
+/* ── Cards ───────────────────────────────────────────────────────────────── */
+
+[data-slot='studio-grid-card'] {
+  /* Card grids of 100+ skills: skip layout and paint for off-screen cards. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 9.5rem;
+}
+
+.pg-clamp-2 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+.pg-clamp-3 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+}
+
+/* ── Motion ──────────────────────────────────────────────────────────────── */
+
+@keyframes pg-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes pg-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+[data-slot='studio-detail-body'] {
+  animation: pg-fade-in 160ms var(--studio-ease, ease-out) both;
+}
+
+[data-slot='studio-fade-up'] {
+  animation: pg-fade-up 300ms var(--studio-ease, ease-out) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-slot='studio-detail-body'],
+  [data-slot='studio-fade-up'] {
+    animation: none;
+  }
+
+  [data-slot='studio-grid-card'],
+  [data-slot='studio-gallery-thumb'] {
+    transition: none;
+  }
+}
+
+/* Inline busy spinner in the current text colour (prototype .spin) — for
+   buttons whose label stays in place while they work. */
+.pg-spin {
+  display: inline-block;
+  box-sizing: border-box;
+  flex: none;
+  width: 11px;
+  height: 11px;
+  border: 1.6px solid color-mix(in srgb, currentColor 22%, transparent);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: studio-rot 0.8s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pg-spin {
+    animation-duration: 2.4s;
+  }
+}
+
+/* ── Memory map: the night-sky card ─────────────────────────────────────────
+   The star map builds its palette from the canvas ink (`color`), the theme
+   primary and the background (app/starmap/color.ts); scoping those here gives
+   the prototype's dark "space" in both appearances without touching the
+   renderer. */
+
+[data-slot='memory-space'] {
+  --dt-foreground: var(--pg-space-fg);
+  --dt-muted-foreground: rgb(233 236 255 / 0.7);
+  --dt-background: #0b0e1c;
+  --background: #0b0e1c;
+  --theme-primary: #8fb4ff;
+  --theme-secondary: #c79bff;
+
+  background: var(--pg-space-bg);
+  color: var(--pg-space-fg);
+}
+
+/* ── Kanban (plugin) ─────────────────────────────────────────────────────── */
+
+/* Prototype .kanban / .k-col / .k-card on the plugin's own markup (tagged with
+   data-slot in plugins/kanban/board.tsx). Unlayered, so these win over the
+   plugin's Tailwind utilities. The page head grows to the workspace-page title
+   only when the board has a page's width; a split tile keeps the compact row. */
+[data-slot='kanban-board'] {
+  container: kanban-board / inline-size;
+  background: var(--ui-chat-surface-background);
+}
+
+@container kanban-board (min-width: 48rem) {
+  [data-slot='kanban-head'] {
+    padding: 0.5rem 2rem 0.75rem;
+    row-gap: 0.875rem;
+  }
+
+  [data-slot='kanban-title'] {
+    flex-basis: 100%;
+    gap: 0.25rem;
+  }
+
+  [data-slot='kanban-title'] h1 {
+    color: var(--ui-text-primary);
+    font-size: 1.625rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+
+  [data-slot='kanban-subtitle'] {
+    display: block;
+    color: var(--ui-text-tertiary);
+    font-size: 0.84375rem;
+    line-height: 1.5;
+  }
+
+  [data-slot='kanban-lanes'] {
+    gap: 0.75rem;
+    padding-inline: 2rem;
+  }
+}
+
+[data-slot='kanban-column'],
+[data-slot='kanban-rail'] {
+  border-radius: 14px;
+  background: var(--pg-recessed);
+  box-shadow: inset 0 0 0 0.5px var(--ui-line, var(--ui-stroke-tertiary));
+}
+
+[data-slot='kanban-column'] {
+  width: 15rem;
+  padding: 10px;
+}
+
+[data-slot='kanban-column'][data-over='true'] {
+  background: color-mix(in srgb, var(--pg-recessed), var(--ui-text-primary) 5%);
+}
+
+[data-slot='kanban-column-label'] {
+  color: var(--ui-text-primary);
+  font-size: 0.78125rem;
+  font-weight: 650;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+[data-slot='kanban-column-count'] {
+  color: var(--ui-text-tertiary);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+[data-slot='kanban-card'] {
+  border-width: 0;
+  border-radius: 10px;
+  background: var(--pg-card);
+  box-shadow: var(--pg-card-shadow);
+  padding: 10px;
+}
+
+[data-slot='kanban-card']:hover {
+  background: var(--pg-card);
+  box-shadow: var(--pg-card-ring), 0 4px 12px -6px rgb(0 0 0 / 0.18);
+}
+
+[data-slot='kanban-card'][data-selected='true'] {
+  box-shadow:
+    0 0 0 2px var(--dt-composer-ring),
+    var(--pg-card-shadow);
+}
+
+/* ── Inspector pane bodies ───────────────────────────────────────────────── */
+
+/* Inside the inspector zone (the group whose band is the inspector header)
+   the panes paint on the inspector surface, lose the side-panel edge, and
+   step back where the band already speaks for them. */
+[data-tree-group]:has([data-slot='inspector-header']) {
+  --ui-sidebar-surface-background: var(--ui-bg-inspector);
+}
+
+[data-tree-group]:has([data-slot='inspector-header']) :is([data-slot='files-pane'], [data-slot='review-pane']) {
+  border-width: 0;
+  box-shadow: none;
+}
+
+/* The folder root is the files pane's content header: a plain name with its
+   actions always in reach (prototype .ins-bar), not a caps section label. */
+[data-tree-group]:has([data-slot='inspector-header']) [data-slot='files-head'] {
+  height: 2.25rem;
+  gap: 2px;
+  padding-inline: 0.75rem 0.5rem;
+}
+
+[data-tree-group]:has([data-slot='inspector-header']) [data-slot='files-head'] > div > span {
+  padding-left: 0;
+  color: var(--ui-text-secondary);
+  font-size: 0.78125rem;
+  font-weight: 600;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+[data-tree-group]:has([data-slot='inspector-header']) [data-slot='files-head'] > div > span > span[aria-hidden='true'] {
+  display: none;
+}
+
+[data-tree-group]:has([data-slot='inspector-header']) [data-slot='files-head'] button:not(:disabled) {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* The browser's address bar sits right under the inspector chips (prototype
+   .ins-bar): on the inspector surface, no rule, the address as a filled pill. */
+[data-tree-group]:has([data-slot='inspector-header']) [data-slot='preview-browser-bar'] {
+  min-height: 2.25rem;
+  padding: 0 0.5rem 0.375rem;
+  border-bottom-width: 0;
+  background: var(--ui-bg-inspector);
+}
+
+[data-tree-group]:has([data-slot='inspector-header']) [data-slot='preview-browser-bar'] input {
+  height: 1.75rem;
+  border-color: transparent;
+  border-radius: 999px;
+  background: var(--ui-fill-2);
+  box-shadow: none;
+}

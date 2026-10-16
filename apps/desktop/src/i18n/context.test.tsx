@@ -6,7 +6,7 @@ import type { HermesConfigRecord } from '@/hermes'
 import { TRANSLATIONS } from './catalog'
 import { type I18nConfigClient, I18nProvider, useI18n } from './context'
 import { registerAppLocale } from './registry'
-import { $requestedLocale } from './runtime'
+import { $requestedLocale, setRuntimeI18nLocale, translateNow } from './runtime'
 import type { Locale } from './types'
 
 function LanguageProbe({ target = 'zh' }: { target?: Locale }) {
@@ -27,6 +27,14 @@ function LanguageProbe({ target = 'zh' }: { target?: Locale }) {
   )
 }
 
+// Module-level copy (translateNow) read while rendering a switch. `locale` is
+// passed only so the React Compiler recomputes the call on that render.
+function RuntimeProbe() {
+  const { locale } = useI18n()
+
+  return <p data-testid="runtime">{translateNow('language.label', locale)}</p>
+}
+
 describe('I18nProvider', () => {
   afterEach(() => {
     cleanup()
@@ -42,6 +50,23 @@ describe('I18nProvider', () => {
 
     expect(screen.getByTestId('locale').textContent).toBe('en')
     expect(screen.getByTestId('label').textContent).toBe('Language')
+  })
+
+  it('moves the runtime locale before children render a switch', async () => {
+    setRuntimeI18nLocale('en')
+    render(
+      <I18nProvider configClient={null} initialLocale="en">
+        <LanguageProbe target="zh" />
+        <RuntimeProbe />
+      </I18nProvider>
+    )
+
+    expect(screen.getByTestId('runtime').textContent).toBe('Language')
+
+    fireEvent.click(screen.getByRole('button', { name: 'switch' }))
+
+    await waitFor(() => expect(screen.getByTestId('locale').textContent).toBe('zh'))
+    expect(screen.getByTestId('runtime').textContent).toBe('语言')
   })
 
   it('normalizes an initial locale alias and switches translations', async () => {

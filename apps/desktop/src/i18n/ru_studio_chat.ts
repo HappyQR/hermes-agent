@@ -1,6 +1,26 @@
 // Hermes Studio copy (chat) — fork-owned so upstream locale merges stay clean.
 import type { StudioChatTranslations } from './types_studio_chat'
 
+type RuForms = readonly [one: string, few: string, many: string]
+
+// Русские формы числа: 1 файл, 2 файла, 5 файлов, 11 файлов, 21 файл.
+const ruCount = (count: number, [one, few, many]: RuForms) => {
+  const tens = count % 100
+  const units = count % 10
+  const form = tens >= 11 && tens <= 14 ? many : units === 1 ? one : units >= 2 && units <= 4 ? few : many
+
+  return `${count} ${form}`
+}
+
+// Сводка вызовов инструментов: «Изучил 3 файла», «Выполняет npm test».
+const ruRun = (past: string, present: string, forms: RuForms) => ({
+  present,
+  named: (target: string, live: boolean) => `${live ? present : past} ${target}`,
+  counted: (count: number, live: boolean) => `${live ? present : past} ${ruCount(count, forms)}`
+})
+
+const lowerFirst = (text: string) => text.charAt(0).toLowerCase() + text.slice(1)
+
 export const ruStudioChat: StudioChatTranslations = {
   contextUsage: 'Использование контекста',
   composer: {
@@ -67,11 +87,32 @@ export const ruStudioChat: StudioChatTranslations = {
     },
     continueFrom: 'Продолжить из Claude Code или Codex'
   },
+  toolRun: {
+    categories: {
+      analyze: ruRun('Проанализировал', 'Анализирует', ['изображение', 'изображения', 'изображений']),
+      browse: ruRun('Открыл', 'Открывает', ['страницу', 'страницы', 'страниц']),
+      delegate: ruRun('Поручил', 'Поручает', ['задачу', 'задачи', 'задач']),
+      edit: ruRun('Изменил', 'Изменяет', ['файл', 'файла', 'файлов']),
+      explore: ruRun('Изучил', 'Изучает', ['файл', 'файла', 'файлов']),
+      interact: ruRun('Выполнил', 'Выполняет', ['действие в браузере', 'действия в браузере', 'действий в браузере']),
+      other: ruRun('Использовал', 'Использует', ['инструмент', 'инструмента', 'инструментов']),
+      read: ruRun('Прочитал', 'Читает', ['страницу', 'страницы', 'страниц']),
+      run: ruRun('Выполнил', 'Выполняет', ['команду', 'команды', 'команд']),
+      search: {
+        present: 'Ищет',
+        named: (target, live) => `${live ? 'Ищет' : 'Искал'} ${target}`,
+        counted: (count, live) =>
+          `${live ? 'Выполняет' : 'Выполнил'} ${ruCount(count, ['поисковый запрос', 'поисковых запроса', 'поисковых запросов'])}`
+      }
+    },
+    join: clauses => clauses.map((clause, index) => (index === 0 ? clause : lowerFirst(clause))).join(', '),
+    moreCommands: (first, more) => `${first} и ещё ${ruCount(more, ['команда', 'команды', 'команд'])}`
+  },
   transcript: {
     delegateSpawned: count => `Запущено субагентов: ${count}`,
     delegateRunning: count => `выполняется: ${count}`,
     delegateAllDone: 'Все готово',
-    openAgents: 'Открыть в агентах',
+    openAgents: 'Открыть в инспекторе',
     approvalTitle: 'Разрешить Hermes выполнить эту команду?',
     approvalTitleAction: 'Разрешить Hermes выполнить это действие?',
     approvalMode: 'Режим одобрения…',

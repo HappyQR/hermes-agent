@@ -66,7 +66,7 @@ function renderView() {
 
   return render(
     <QueryClientProvider client={client}>
-      <CronView onClose={() => {}} />
+      <CronView section="blueprints" />
     </QueryClientProvider>
   )
 }
@@ -88,21 +88,21 @@ afterEach(() => {
 })
 
 describe('plugin-registered automation blueprints', () => {
-  it('lists the plugin blueprint with its plugin label and instantiates it into the scoped profile', async () => {
+  it('shows the plugin blueprint card with its plugin label and instantiates it into the scoped profile', async () => {
     renderView()
 
     const title = await screen.findByText('Team standup digest')
-    const row = title.closest('button') as HTMLElement
-    // PanelListRow renders `meta` (the plugin name) beside the row's button.
-    expect(within(row.parentElement as HTMLElement).getByText('teamtools')).toBeTruthy()
-    const builtinRow = screen.getByText('Morning briefing').closest('button') as HTMLElement
-    expect(within(builtinRow.parentElement as HTMLElement).queryByText('teamtools')).toBeNull()
+    const card = title.closest('[data-blueprint]') as HTMLElement
+    // The card subtitle names the registering plugin; built-ins have none.
+    expect(within(card).getByText(/teamtools/)).toBeTruthy()
+    const builtinCard = screen.getByText('Morning briefing').closest('[data-blueprint]') as HTMLElement
+    expect(within(builtinCard).queryByText(/teamtools/)).toBeNull()
     // The catalog is per profile (plugins load per profile): fetched for the job's target profile.
     expect(hermes.getAutomationBlueprints).toHaveBeenCalledWith('work')
 
-    fireEvent.click(row)
-    // The dialog's "Start from" select names the plugin next to the title.
-    expect(await screen.findByText('· teamtools')).toBeTruthy()
+    fireEvent.click(within(card).getByRole('button', { name: 'Use Team standup digest' }))
+    // "Use" opens the job sheet on that blueprint's typed slots.
+    expect(await screen.findByText('Use blueprint: Team standup digest')).toBeTruthy()
 
     fireEvent.click(screen.getByRole('button', { name: 'Schedule it' }))
 

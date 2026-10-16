@@ -20,6 +20,10 @@ const paths = vi.hoisted(() => [
 
 const getSessionMessages = vi.hoisted(() => vi.fn())
 
+// Quick Look previews files through the Inspector's preview; this test is about
+// opening/downloading, so the preview body is out of the way.
+vi.mock('@/app/chat/right-rail/preview-file', () => ({ LocalFilePreview: () => null }))
+
 vi.mock('@/hermes', async () => ({
   ...(await vi.importActual('@/hermes')),
   listAllProfileSessions: async () => ({
@@ -27,6 +31,14 @@ vi.mock('@/hermes', async () => ({
   }),
   getSessionMessages
 }))
+
+/** Radix menus open on the full pointer gesture. */
+function press(element: HTMLElement) {
+  fireEvent.pointerDown(element, { button: 0, pointerType: 'mouse' })
+  fireEvent.pointerUp(element, { button: 0, pointerType: 'mouse' })
+  fireEvent.click(element)
+}
+
 afterEach(() => {
   cleanup()
   $connection.set(null)
@@ -60,12 +72,15 @@ it('keeps discovered file paths and originating session scope intact through rem
     token: '',
     wsUrl: ''
   })
-  render(
+
+  const { container } = render(
     <MemoryRouter>
       <ArtifactsView />
     </MemoryRouter>
   )
 
+  // Each tile opens Quick Look; in remote mode its ⋯ menu downloads the file
+  // through the gateway, scoped to the session that produced it.
   for (const name of [
     'USER.md',
     'report.md',
@@ -78,6 +93,11 @@ it('keeps discovered file paths and originating session scope intact through rem
     'absolute.txt'
   ]) {
     fireEvent.click(await screen.findByRole('button', { name }))
+    const more = await screen.findByRole('button', { name: 'More actions' })
+    press(more)
+    press(await screen.findByRole('menuitem', { name: 'Download' }))
+    fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Escape' })
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
   }
 
   await waitFor(() => expect(saveGatewayFile).toHaveBeenCalledTimes(paths.length))
@@ -90,7 +110,9 @@ it('keeps discovered file paths and originating session scope intact through rem
       suggestedName: path.split(/[\\/]/).pop()
     }))
   )
-  expect(screen.getByRole('link').getAttribute('href')).toBe('https://example.com/report.txt')
+  // A link opens in Quick Look as a real link to its URL; nothing is opened behind the user's back.
+  fireEvent.click(container.querySelector<HTMLElement>('[data-artifact-kind="link"]')!)
+  expect((await screen.findByRole('link')).getAttribute('href')).toBe('https://example.com/report.txt')
   expect(openExternal).not.toHaveBeenCalled()
   expect(getSessionMessages).toHaveBeenCalledWith('artifact-session', 'origin-profile', {
     includeCompacted: true,

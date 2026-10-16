@@ -1,9 +1,9 @@
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { atom } from 'nanostores'
-import { MemoryRouter } from 'react-router'
 import { afterEach, describe, expect, it } from 'vitest'
 
 import { type SessionView, SessionViewProvider } from '@/app/chat/session-view'
+import { $agentsPaneOpen } from '@/app/shell/inspector/inspector-state'
 import { I18nProvider } from '@/i18n/context'
 import type { ChatMessage } from '@/lib/chat-messages'
 import { $activeSessionId } from '@/store/session'
@@ -53,6 +53,7 @@ afterEach(() => {
   clearSessionSubagents(SESSION)
   $subagentsBySession.set({})
   $activeSessionId.set(null)
+  $agentsPaneOpen.set(false)
 })
 
 describe('delegate card fade', () => {
@@ -101,26 +102,24 @@ describe('delegate card fade', () => {
 })
 
 describe('delegate card head', () => {
-  it('counts the children and links to the Agents view only inside a router', () => {
+  it('counts the children and opens the inspector on its Agents segment', () => {
     const { unmount } = renderCard()
 
     expect(screen.getByText('Spawned 1 subagent')).toBeTruthy()
     // A call with no result yet dispatched its child: it is running.
     expect(screen.getByText(/running|All done/)).toBeTruthy()
-    expect(screen.queryByRole('button', { name: 'View in Agents' })).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'View in Inspector' }))
+    expect($agentsPaneOpen.get()).toBe(true)
     unmount()
 
     render(
-      <MemoryRouter>
-        <I18nProvider configClient={null} initialLocale="en">
-          <SessionViewProvider value={view()}>
-            <DelegateTool args={{ tasks: [{ goal: 'One' }, { goal: 'Two' }] }} result={undefined} toolCallId="call-2" />
-          </SessionViewProvider>
-        </I18nProvider>
-      </MemoryRouter>
+      <I18nProvider configClient={null} initialLocale="en">
+        <SessionViewProvider value={view()}>
+          <DelegateTool args={{ tasks: [{ goal: 'One' }, { goal: 'Two' }] }} result={undefined} toolCallId="call-2" />
+        </SessionViewProvider>
+      </I18nProvider>
     )
 
     expect(screen.getByText('Spawned 2 subagents')).toBeTruthy()
-    expect(screen.getByRole('button', { name: 'View in Agents' })).toBeTruthy()
   })
 })

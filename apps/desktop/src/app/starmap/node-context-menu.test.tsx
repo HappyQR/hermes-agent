@@ -1,6 +1,8 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
+import type * as HermesApi from '@/hermes'
+
 import { NodeContextMenu, type NodeMenuTarget } from './node-context-menu'
 
 vi.mock('@/app/learning/archive-skill-confirm-dialog', () => ({
@@ -8,7 +10,10 @@ vi.mock('@/app/learning/archive-skill-confirm-dialog', () => ({
   fireOptimistic: vi.fn()
 }))
 vi.mock('@/components/chat/code-editor', () => ({ CodeEditor: () => null }))
-vi.mock('@/hermes', () => ({
+// Partial: the confirm alert's app mark pulls in the profile store, which
+// wires the API client at import time.
+vi.mock('@/hermes', async importOriginal => ({
+  ...(await importOriginal<typeof HermesApi>()),
   deleteLearningNode: vi.fn(),
   editLearningNode: vi.fn(),
   getLearningNode: vi.fn()

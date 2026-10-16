@@ -11,15 +11,21 @@ import { lazy, type ReactNode, Suspense } from 'react'
 
 import { ContribBoundary, ContribRender } from '@/contrib/react/boundary'
 import { useContributions } from '@/contrib/react/use-contributions'
+import { LocalizedTabTitle, runtimeTranslations, type Translations } from '@/i18n'
 import { $routeTiles, closeRouteTile, type RouteTile } from '@/store/route-tiles'
 
 import {
   $routesVersion,
   ARTIFACTS_ROUTE,
+  AUTOMATIONS_ROUTE,
   CAPABILITIES_ROUTE,
   contributedRoutes,
+  CRON_ROUTE,
+  MEMORY_ROUTE,
   MESSAGING_ROUTE,
-  ROUTES_AREA
+  ROUTES_AREA,
+  STARMAP_ROUTE,
+  WEBHOOKS_ROUTE
 } from '../routes'
 
 import { paneMirror } from './pane-mirror'
@@ -27,12 +33,22 @@ import { paneMirror } from './pane-mirror'
 const CapabilitiesView = lazy(async () => ({ default: (await import('../capabilities')).CapabilitiesView }))
 const MessagingView = lazy(async () => ({ default: (await import('../messaging')).MessagingView }))
 const ArtifactsView = lazy(async () => ({ default: (await import('../artifacts')).ArtifactsView }))
+const AutomationsView = lazy(async () => ({ default: (await import('../automations')).AutomationsView }))
+const MemoryView = lazy(async () => ({ default: (await import('../memory')).MemoryView }))
 
-// Built-in page views + their pane titles, keyed by route.
-const BUILTIN_PAGES: Record<string, { render: () => ReactNode; title: string }> = {
-  [ARTIFACTS_ROUTE]: { render: () => <ArtifactsView />, title: 'Artifacts' },
-  [MESSAGING_ROUTE]: { render: () => <MessagingView />, title: 'Messaging' },
-  [CAPABILITIES_ROUTE]: { render: () => <CapabilitiesView />, title: 'Capabilities' }
+const automationsTitle = (t: Translations) => t.studio.pages.automations.title
+const memoryTitle = (t: Translations) => t.studio.pages.memory.title
+
+// Built-in page views + their pane titles (each page's own heading), keyed by route.
+const BUILTIN_PAGES: Record<string, { render: () => ReactNode; title: (t: Translations) => string }> = {
+  [ARTIFACTS_ROUTE]: { render: () => <ArtifactsView />, title: t => t.studio.pages.artifacts.title },
+  [MESSAGING_ROUTE]: { render: () => <MessagingView />, title: t => t.studio.pages.messaging.title },
+  [CAPABILITIES_ROUTE]: { render: () => <CapabilitiesView />, title: t => t.studio.pages.capabilities.title },
+  [AUTOMATIONS_ROUTE]: { render: () => <AutomationsView />, title: automationsTitle },
+  [CRON_ROUTE]: { render: () => <AutomationsView />, title: automationsTitle },
+  [WEBHOOKS_ROUTE]: { render: () => <AutomationsView defaultTab="webhook" />, title: automationsTitle },
+  [MEMORY_ROUTE]: { render: () => <MemoryView />, title: memoryTitle },
+  [STARMAP_ROUTE]: { render: () => <MemoryView />, title: memoryTitle }
 }
 
 /** Humanize a route path into a tab title: `/my-atlas` → `My Atlas`. */
@@ -47,8 +63,10 @@ const humanizePath = (path: string): string =>
 /** Title for a route tile: the built-in name, the contribution's own `title`,
  *  else a humanized path — never the internal `${source}:${id}` key. */
 function routeTitle(path: string): string {
-  if (BUILTIN_PAGES[path]) {
-    return BUILTIN_PAGES[path].title
+  const builtin = BUILTIN_PAGES[path]
+
+  if (builtin) {
+    return builtin.title(runtimeTranslations())
   }
 
   return contributedRoutes().find(r => r.path === path)?.title ?? humanizePath(path)
@@ -103,6 +121,13 @@ export const watchRouteTiles = paneMirror<RouteTile>({
   dir: t => t.dir,
   minWidth: '22rem',
   title: routeTitle,
+  // The string above is sampled at sync time; a built-in page's tab follows
+  // the live locale (it may load, or switch, after the tile registered).
+  tabTitle: path => {
+    const builtin = BUILTIN_PAGES[path]
+
+    return builtin ? <LocalizedTabTitle select={builtin.title} /> : routeTitle(path)
+  },
   render: path => <RouteTilePane path={path} />,
   close: closeRouteTile
 })

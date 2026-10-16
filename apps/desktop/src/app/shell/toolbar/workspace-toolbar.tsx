@@ -8,6 +8,7 @@ import type { StatusbarItem } from '@/app/shell/statusbar-controls'
 import { Slot } from '@/contrib/react/slot'
 
 import { useStatusbarItems } from '../hooks/use-statusbar-items'
+import { showAgentsPane } from '../inspector/inspector-state'
 import { useSharedStatus } from '../status-snapshot-host'
 
 import { ToolbarCapsule } from './toolbar-capsule'
@@ -121,13 +122,14 @@ export const ToolbarSurface = memo(function ToolbarSurface({
     toggleCommandCenter: actions.toggleCommandCenter
   })
 
-  const find = (id: string) => leftStatusbarItems.find(item => item.id === id) ?? statusbarItems.find(item => item.id === id)
+  const find = (id: string) =>
+    leftStatusbarItems.find(item => item.id === id) ?? statusbarItems.find(item => item.id === id)
 
   return (
     <WorkspaceToolbar
       cwd={currentCwd}
       cwdItem={find('workspace-cwd')}
-      onOpenAgents={actions.openAgents}
+      onOpenAgents={showAgentsPane}
       timer={find('running-timer')}
     />
   )

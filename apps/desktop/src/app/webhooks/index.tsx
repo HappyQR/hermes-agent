@@ -3,85 +3,68 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { PageLoader } from '@/components/page-loader'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { StudioMasterDetail } from '@/components/studio/pages/master-detail'
+import { STUDIO_SHEET_BODY, STUDIO_SHEET_CONTENT } from '@/components/studio/pages/sheet'
 import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
-import { CopyButton } from '@/components/ui/copy-button'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle
-} from '@/components/ui/dialog'
-import { Field } from '@/components/ui/field'
-import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Switch } from '@/components/ui/switch'
-import { Textarea } from '@/components/ui/textarea'
+import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { SearchField } from '@/components/ui/search-field'
 import {
   createWebhook,
   deleteWebhook,
   enableWebhooks,
   getWebhooks,
   setWebhookEnabled,
-  type WebhookRoute,
   type WebhooksResponse
 } from '@/hermes'
 import { useI18n } from '@/i18n'
-import { AlertTriangle, Globe, Plus, RefreshCw } from '@/lib/icons'
-import { cn } from '@/lib/utils'
+import { Plus } from '@/lib/icons'
 import { notify, notifyError } from '@/store/notifications'
 import { $activeGatewayProfile, normalizeProfileKey } from '@/store/profile'
 import { runGatewayRestart } from '@/store/system-actions'
 
-import { useRefreshHotkey } from '../hooks/use-refresh-hotkey'
+import { $automationCreateRequest, takeAutomationCreateRequest } from '../automations/requests'
 import {
-  Panel,
-  PanelAddButton,
-  PanelBlock,
-  PanelBody,
-  PanelDetail,
-  PanelEmpty,
-  PanelHeader,
-  PanelList,
-  PanelListRow,
-  PanelMeta,
-  PanelPill,
-  PanelSectionLabel
-} from '../overlays/panel'
-import { ListRow } from '../settings/primitives'
+  WebhookBanners,
+  WebhookCreatedBody,
+  WebhookCreateForm,
+  WebhookDetailView,
+  type WebhookDraft,
+  WebhookItem,
+  WebhookSheetHeader
+} from '../automations/webhooks-ui'
+import { useRefreshHotkey } from '../hooks/use-refresh-hotkey'
+import { PanelEmpty } from '../overlays/panel'
 
 const DELIVER_OPTIONS: readonly string[] = ['log', 'telegram', 'discord', 'slack', 'email', 'github_comment']
+
+const EMPTY_DRAFT: WebhookDraft = {
+  deliver: 'log',
+  deliverOnly: false,
+  description: '',
+  events: '',
+  name: '',
+  prompt: '',
+  skills: ''
+}
 
 interface CreatedWebhook {
   secret: string
   url: string
 }
 
-// One affordance for "value + CopyButton": flat, token-backed (no border, no
-// raw literals). DESIGN.md Principle 1 (flat, not boxed) + 4 (tokens, not
-// literals). Reused by the detail URL row and the create-result URL/secret so
-// there is a single copyable-value chrome in this file.
-function CopyValueRow({ copyLabel, mono = true, value }: { copyLabel: string; mono?: boolean; value: string }) {
-  return (
-    <div className="flex items-center gap-1 rounded bg-foreground/5 px-2.5 py-1.5 text-[0.7rem]">
-      <span className={cn('min-w-0 flex-1 truncate text-foreground/80', mono && 'font-mono')}>{value}</span>
-      <CopyButton appearance="icon" buttonSize="icon-sm" label={copyLabel} text={value} />
-    </div>
-  )
-}
-
 interface WebhooksViewProps {
-  onClose: () => void
+  /** Legacy overlay close; the Automations page hosts the view in place. */
+  onClose?: () => void
+  /** Messaging › Webhook holds the receiver's port and global secret. */
+  onOpenReceiverSettings?: () => void
 }
 
 interface ProfileOwnedWebhooksViewProps extends WebhooksViewProps {
   backendProfile: string
 }
 
-export function WebhooksView({ onClose }: WebhooksViewProps) {
+export function WebhooksView({ onOpenReceiverSettings }: WebhooksViewProps) {
   const backendProfile = normalizeProfileKey(useStore($activeGatewayProfile))
 
   // Profile-owned draft/dialog/secret state must disappear at the same
@@ -89,10 +72,16 @@ export function WebhooksView({ onClose }: WebhooksViewProps) {
   // synchronously on switch, including while the profile rail stays in All
   // profiles mode (#71352). AGENTS.md: a live profile swap is a re-home —
   // the previous context must not leak into the next one.
-  return <ProfileOwnedWebhooksView backendProfile={backendProfile} key={backendProfile} onClose={onClose} />
+  return (
+    <ProfileOwnedWebhooksView
+      backendProfile={backendProfile}
+      key={backendProfile}
+      onOpenReceiverSettings={onOpenReceiverSettings}
+    />
+  )
 }
 
-function ProfileOwnedWebhooksView({ backendProfile, onClose }: ProfileOwnedWebhooksViewProps) {
+function ProfileOwnedWebhooksView({ backendProfile, onOpenReceiverSettings }: ProfileOwnedWebhooksViewProps) {
   const { t } = useI18n()
   const w = t.webhooks
   const queryClient = useQueryClient()
@@ -121,13 +110,8 @@ function ProfileOwnedWebhooksView({ backendProfile, onClose }: ProfileOwnedWebho
   const [selectedName, setSelectedName] = useState<null | string>(null)
 
   const [createOpen, setCreateOpen] = useState(false)
-  const [name, setName] = useState('')
-  const [description, setDescription] = useState('')
-  const [events, setEvents] = useState('')
-  const [deliver, setDeliver] = useState('log')
-  const [deliverOnly, setDeliverOnly] = useState(false)
-  const [prompt, setPrompt] = useState('')
-  const [skills, setSkills] = useState('')
+  const [draft, setDraft] = useState<WebhookDraft>(EMPTY_DRAFT)
+  const [moreOpen, setMoreOpen] = useState(false)
   const [creating, setCreating] = useState(false)
   const [created, setCreated] = useState<CreatedWebhook | null>(null)
 
@@ -237,13 +221,8 @@ function ProfileOwnedWebhooksView({ backendProfile, onClose }: ProfileOwnedWebho
   }, [backendProfile, reload, w])
 
   const resetForm = useCallback(() => {
-    setName('')
-    setDescription('')
-    setEvents('')
-    setDeliver('log')
-    setDeliverOnly(false)
-    setPrompt('')
-    setSkills('')
+    setDraft(EMPTY_DRAFT)
+    setMoreOpen(false)
   }, [])
 
   const closeCreate = useCallback(() => {
@@ -256,7 +235,7 @@ function ProfileOwnedWebhooksView({ backendProfile, onClose }: ProfileOwnedWebho
   }, [creating])
 
   const handleCreate = useCallback(async () => {
-    if (!name.trim()) {
+    if (!draft.name.trim()) {
       notify({ kind: 'error', message: w.nameRequired })
 
       return
@@ -265,24 +244,24 @@ function ProfileOwnedWebhooksView({ backendProfile, onClose }: ProfileOwnedWebho
     setCreating(true)
 
     try {
-      const eventsList = events
+      const eventsList = draft.events
         .split(',')
         .map(e => e.trim())
         .filter(Boolean)
 
-      const skillsList = skills
+      const skillsList = draft.skills
         .split(',')
         .map(s => s.trim())
         .filter(Boolean)
 
       const res = await createWebhook(
         {
-          deliver,
-          deliver_only: deliverOnly,
-          description: description.trim() || undefined,
+          deliver: draft.deliver,
+          deliver_only: draft.deliverOnly,
+          description: draft.description.trim() || undefined,
           events: eventsList.length ? eventsList : undefined,
-          name: name.trim(),
-          prompt: prompt.trim() || undefined,
+          name: draft.name.trim(),
+          prompt: draft.prompt.trim() || undefined,
           skills: skillsList.length ? skillsList : undefined
         },
         backendProfile
@@ -305,7 +284,7 @@ function ProfileOwnedWebhooksView({ backendProfile, onClose }: ProfileOwnedWebho
         setCreating(false)
       }
     }
-  }, [backendProfile, deliver, deliverOnly, description, events, name, prompt, reload, resetForm, skills, w])
+  }, [backendProfile, draft, reload, resetForm, w])
 
   const handleToggle = useCallback(
     async (subName: string, nextEnabled: boolean) => {
@@ -386,45 +365,35 @@ function ProfileOwnedWebhooksView({ backendProfile, onClose }: ProfileOwnedWebho
     [visible, selectedName]
   )
 
-  const banners = (
-    <>
-      {!enabled && (
-        <Alert className="mb-4" variant="warning">
-          <Globe />
-          <AlertTitle>{w.disabledTitle}</AlertTitle>
-          <AlertDescription>
-            <p>{w.disabledBody}</p>
-            <Button className="mt-1" disabled={enabling} onClick={() => void handleEnable()} size="sm">
-              <Globe />
-              {enabling ? w.enabling : w.enable}
-            </Button>
-          </AlertDescription>
-        </Alert>
-      )}
+  // The page head's "New webhook…" (it may be picked before this tab mounted).
+  const createRequest = useStore($automationCreateRequest)
 
-      {restartNeeded && (
-        <Alert className="mb-4" variant="warning">
-          <AlertTriangle />
-          <AlertDescription>
-            <p>{restartError ?? w.restartNeeded}</p>
-            <Button
-              className="mt-1"
-              disabled={restarting}
-              onClick={() => void restartGatewayNow()}
-              size="sm"
-              variant="secondary"
-            >
-              <RefreshCw />
-              {restarting ? w.restartingGateway : w.restartGateway}
-            </Button>
-          </AlertDescription>
-        </Alert>
-      )}
-    </>
+  const openCreate = useCallback(() => {
+    setCreated(null)
+    setCreateOpen(true)
+  }, [])
+
+  useEffect(() => {
+    if (createRequest === 'webhook' && takeAutomationCreateRequest('webhook')) {
+      openCreate()
+    }
+  }, [createRequest, openCreate])
+
+  const banners = (
+    <WebhookBanners
+      enabled={enabled}
+      enabling={enabling}
+      onEnable={() => void handleEnable()}
+      onOpenReceiverSettings={onOpenReceiverSettings}
+      onRestart={() => void restartGatewayNow()}
+      restartError={restartError}
+      restarting={restarting}
+      restartNeeded={restartNeeded}
+    />
   )
 
   return (
-    <Panel onClose={onClose}>
+    <>
       {loading ? (
         <PageLoader label={w.loading} />
       ) : subscriptions.length === 0 ? (
@@ -432,14 +401,7 @@ function ProfileOwnedWebhooksView({ backendProfile, onClose }: ProfileOwnedWebho
           {banners}
           <PanelEmpty
             action={
-              <Button
-                disabled={!enabled || enabling}
-                onClick={() => {
-                  setCreated(null)
-                  setCreateOpen(true)
-                }}
-                size="sm"
-              >
+              <Button disabled={!enabled || enabling} onClick={openCreate} size="sm">
                 <Plus />
                 {w.newSubscription}
               </Button>
@@ -450,149 +412,88 @@ function ProfileOwnedWebhooksView({ backendProfile, onClose }: ProfileOwnedWebho
         </>
       ) : (
         <>
-          <PanelHeader subtitle={w.hint} title={w.subscriptions(subscriptions.length)} />
           {banners}
-          <PanelBody>
-            <PanelList
-              onSearchChange={setQuery}
-              searchLabel={w.search}
-              searchPlaceholder={w.search}
-              searchValue={query}
-            >
-              {visible.map(sub => (
-                <PanelListRow
-                  active={selectedSub?.name === sub.name}
-                  dotClassName={sub.enabled ? 'bg-emerald-500' : 'bg-muted-foreground/50'}
-                  key={sub.name}
-                  menuItems={[
-                    {
-                      icon: sub.enabled ? 'circle-slash' : 'check',
-                      label: sub.enabled ? w.disableRow : w.enableRow,
-                      onSelect: () => void handleToggle(sub.name, !sub.enabled)
-                    },
-                    { icon: 'trash', label: w.delete, onSelect: () => setPendingDelete(sub.name), tone: 'danger' }
-                  ]}
-                  onSelect={() => setSelectedName(sub.name)}
-                  title={sub.name}
+          <StudioMasterDetail
+            detail={
+              selectedSub ? (
+                <WebhookDetailView
+                  onDelete={() => setPendingDelete(selectedSub.name)}
+                  onToggle={next => void handleToggle(selectedSub.name, next)}
+                  sub={selectedSub}
                 />
-              ))}
-              {visible.length === 0 && <p className="px-2 py-4 text-center text-xs text-muted-foreground">{w.empty}</p>}
-              <PanelAddButton
-                label={w.newSubscription}
-                onClick={() => {
-                  setCreated(null)
-                  setCreateOpen(true)
-                }}
+              ) : (
+                <PanelEmpty description={w.empty} icon="search" />
+              )
+            }
+            list={
+              visible.length === 0 ? (
+                <p className="px-2 py-4 text-center text-xs text-(--ui-text-tertiary)">{w.empty}</p>
+              ) : (
+                visible.map(sub => (
+                  <WebhookItem
+                    active={selectedSub?.name === sub.name}
+                    key={sub.name}
+                    menuItems={[
+                      {
+                        icon: sub.enabled ? 'x-circle' : 'check-circle',
+                        key: 'toggle',
+                        label: sub.enabled ? w.disableRow : w.enableRow,
+                        onSelect: () => void handleToggle(sub.name, !sub.enabled)
+                      },
+                      {
+                        danger: true,
+                        icon: 'trash',
+                        key: 'delete',
+                        label: t.studio.pages.common.deleteEllipsis,
+                        onSelect: () => setPendingDelete(sub.name),
+                        separatorBefore: true
+                      }
+                    ]}
+                    menuLabel={t.studio.pages.common.moreActions}
+                    onSelect={() => setSelectedName(sub.name)}
+                    sub={sub}
+                  />
+                ))
+              )
+            }
+            listHeader={
+              <SearchField
+                aria-label={w.search}
+                containerClassName="w-full"
+                onChange={setQuery}
+                placeholder={w.search}
+                value={query}
+                variant="filled"
               />
-            </PanelList>
-
-            {selectedSub ? <WebhookDetail sub={selectedSub} /> : <PanelEmpty description={w.empty} icon="search" />}
-          </PanelBody>
+            }
+            listLabel={t.studio.pages.webhooks.listLabel}
+          />
         </>
       )}
 
-      {/* Create subscription dialog */}
+      {/* New webhook sheet; after a create it shows the one-time secret. */}
       <Dialog onOpenChange={open => !open && closeCreate()} open={createOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>{created ? w.createdTitle : w.newSubscription}</DialogTitle>
-            {created && <DialogDescription>{w.createdSecretHint}</DialogDescription>}
-          </DialogHeader>
-
+        <DialogContent bodyClassName={STUDIO_SHEET_BODY} className={STUDIO_SHEET_CONTENT.md} showCloseButton={false}>
+          <WebhookSheetHeader created={created !== null} />
           {created ? (
-            <div className="grid gap-2">
-              <ListRow action={<CopyValueRow copyLabel={w.copy} value={created.url} />} title={w.webhookUrl} wide />
-              <ListRow action={<CopyValueRow copyLabel={w.copy} value={created.secret} />} title={w.secretOnce} wide />
-              <DialogFooter>
-                <Button onClick={closeCreate} size="sm">
-                  {w.done}
-                </Button>
-              </DialogFooter>
-            </div>
+            <WebhookCreatedBody onDone={closeCreate} secret={created.secret} url={created.url} />
           ) : (
             <form
-              className="grid gap-4"
+              className="contents"
               onSubmit={e => {
                 e.preventDefault()
                 void handleCreate()
               }}
             >
-              <div className="grid items-start gap-4 sm:grid-cols-2">
-                <Field htmlFor="webhook-name" label={w.fieldName}>
-                  <Input
-                    autoFocus
-                    id="webhook-name"
-                    onChange={e => setName(e.target.value)}
-                    placeholder={w.fieldNamePlaceholder}
-                    value={name}
-                  />
-                </Field>
-                <Field htmlFor="webhook-description" label={w.fieldDescription}>
-                  <Input
-                    id="webhook-description"
-                    onChange={e => setDescription(e.target.value)}
-                    placeholder={w.fieldDescriptionPlaceholder}
-                    value={description}
-                  />
-                </Field>
-              </div>
-
-              <Field htmlFor="webhook-prompt" label={w.fieldPrompt}>
-                <Textarea
-                  className="min-h-24"
-                  id="webhook-prompt"
-                  onChange={e => setPrompt(e.target.value)}
-                  placeholder={w.fieldPromptPlaceholder}
-                  value={prompt}
-                />
-              </Field>
-
-              <div className="grid items-start gap-4 sm:grid-cols-2">
-                <Field htmlFor="webhook-events" label={w.fieldEvents}>
-                  <Input
-                    id="webhook-events"
-                    onChange={e => setEvents(e.target.value)}
-                    placeholder={w.fieldEventsPlaceholder}
-                    value={events}
-                  />
-                </Field>
-                <Field htmlFor="webhook-skills" label={w.fieldSkills}>
-                  <Input
-                    id="webhook-skills"
-                    onChange={e => setSkills(e.target.value)}
-                    placeholder={w.fieldSkillsPlaceholder}
-                    value={skills}
-                  />
-                </Field>
-              </div>
-
-              <div className="grid items-start gap-4 sm:grid-cols-2">
-                <Field htmlFor="webhook-deliver" label={w.fieldDeliver}>
-                  <Select onValueChange={setDeliver} value={deliver}>
-                    <SelectTrigger className="h-9 rounded-md" id="webhook-deliver">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {DELIVER_OPTIONS.map(opt => (
-                        <SelectItem key={opt} value={opt}>
-                          {w.deliverOptions[opt] ?? opt}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </Field>
-                <Field htmlFor="webhook-deliver-only" label={w.fieldDeliverOnly}>
-                  <div className="flex h-9 items-center">
-                    <Switch checked={deliverOnly} id="webhook-deliver-only" onCheckedChange={setDeliverOnly} />
-                  </div>
-                </Field>
-              </div>
-
-              <DialogFooter>
-                <Button disabled={creating} size="sm" type="submit">
-                  {creating ? w.creating : w.create}
-                </Button>
-              </DialogFooter>
+              <WebhookCreateForm
+                creating={creating}
+                deliverOptions={DELIVER_OPTIONS}
+                draft={draft}
+                moreOpen={moreOpen}
+                onCancel={closeCreate}
+                onChange={patch => setDraft(current => ({ ...current, ...patch }))}
+                onMoreOpenChange={setMoreOpen}
+              />
             </form>
           )}
         </DialogContent>
@@ -617,71 +518,6 @@ function ProfileOwnedWebhooksView({ backendProfile, onClose }: ProfileOwnedWebho
         open={pendingDelete !== null}
         title={w.deleteTitle}
       />
-    </Panel>
-  )
-}
-
-function WebhookDetail({ sub }: { sub: WebhookRoute }) {
-  const { t } = useI18n()
-  const w = t.webhooks
-
-  return (
-    <PanelDetail>
-      <header className="space-y-3">
-        <div className="flex min-w-0 flex-wrap items-center gap-2">
-          <h3 className="text-[0.95rem] font-semibold tracking-tight text-foreground">{sub.name}</h3>
-          {sub.deliver_only && <PanelPill tone="warn">{w.deliverOnly}</PanelPill>}
-        </div>
-
-        <PanelMeta
-          rows={[
-            { label: w.fieldDeliver, value: w.deliverOptions[sub.deliver] ?? sub.deliver },
-            {
-              label: w.fieldEvents,
-              value:
-                sub.events.length === 0 ? (
-                  w.all
-                ) : (
-                  <span className="flex flex-wrap gap-1">
-                    {sub.events.map(evt => (
-                      <PanelPill key={evt}>{evt}</PanelPill>
-                    ))}
-                  </span>
-                )
-            },
-            ...(sub.skills.length > 0
-              ? [
-                  {
-                    label: w.fieldSkills,
-                    value: (
-                      <span className="flex flex-wrap gap-1">
-                        {sub.skills.map(skill => (
-                          <PanelPill key={skill}>{skill}</PanelPill>
-                        ))}
-                      </span>
-                    )
-                  }
-                ]
-              : [])
-          ]}
-        />
-
-        <CopyValueRow copyLabel={w.copy} value={sub.url} />
-      </header>
-
-      {sub.description ? (
-        <div className="space-y-1.5">
-          <PanelSectionLabel>{w.fieldDescription}</PanelSectionLabel>
-          <p className="text-xs leading-relaxed text-foreground/80">{sub.description}</p>
-        </div>
-      ) : null}
-
-      {sub.prompt ? (
-        <div className="space-y-1.5">
-          <PanelSectionLabel>{w.fieldPrompt}</PanelSectionLabel>
-          <PanelBlock>{sub.prompt}</PanelBlock>
-        </div>
-      ) : null}
-    </PanelDetail>
+    </>
   )
 }

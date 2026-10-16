@@ -1,6 +1,14 @@
 // Hermes Studio copy (chat) — fork-owned so upstream locale merges stay clean.
 import type { StudioChatTranslations } from './types_studio_chat'
 
+// 工具运行摘要：动词 + 数量 + 量词（"探索了 3 个文件"、"正在运行 npm test"）。
+const zhRun = (verb: string, measure: string) => ({
+  present: `正在${verb}`,
+  named: (target: string, live: boolean) => (live ? `正在${verb} ${target}` : `${verb}了 ${target}`),
+  counted: (count: number, live: boolean) =>
+    live ? `正在${verb} ${count} ${measure}` : `${verb}了 ${count} ${measure}`
+})
+
 export const zhStudioChat: StudioChatTranslations = {
   contextUsage: '上下文用量',
   composer: {
@@ -63,11 +71,27 @@ export const zhStudioChat: StudioChatTranslations = {
     },
     continueFrom: '从 Claude Code 或 Codex 继续'
   },
+  toolRun: {
+    categories: {
+      analyze: zhRun('分析', '张图片'),
+      browse: zhRun('打开', '个页面'),
+      delegate: zhRun('委派', '个任务'),
+      edit: zhRun('编辑', '个文件'),
+      explore: zhRun('探索', '个文件'),
+      interact: zhRun('执行', '个浏览器操作'),
+      other: zhRun('使用', '个工具'),
+      read: zhRun('读取', '个页面'),
+      run: zhRun('运行', '条命令'),
+      search: zhRun('搜索', '个关键词')
+    },
+    join: clauses => clauses.join('，'),
+    moreCommands: (first, more) => `${first} 及另外 ${more} 条命令`
+  },
   transcript: {
     delegateSpawned: count => `派生了 ${count} 个子代理`,
     delegateRunning: count => `${count} 个运行中`,
     delegateAllDone: '全部完成',
-    openAgents: '在代理中查看',
+    openAgents: '在检查器中查看',
     approvalTitle: '允许 Hermes 运行这条命令？',
     approvalTitleAction: '允许 Hermes 执行这项操作？',
     approvalMode: '审批模式…',

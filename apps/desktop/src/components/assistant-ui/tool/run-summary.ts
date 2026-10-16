@@ -1,4 +1,5 @@
-import { translateNow } from '@/i18n'
+import { runtimeTranslations, translateNow } from '@/i18n'
+import type { StudioChatToolRunTranslations, ToolRunCategory } from '@/i18n/types_studio_chat'
 import { summarizeShellCommand } from '@/lib/summarize-command'
 import { firstStringField } from '@/lib/text'
 
@@ -31,8 +32,12 @@ export function isToolCallPart<T extends { type: string }>(part: T): part is Ext
   return part.type === 'tool-call'
 }
 
-type RunCategory =
-  'analyze' | 'browse' | 'delegate' | 'edit' | 'explore' | 'interact' | 'other' | 'read' | 'run' | 'search'
+type RunCategory = ToolRunCategory
+
+// The UI language's run copy (Hermes Studio: t.studio.chat.toolRun). Read at
+// call time — summaries are computed in store selectors, outside React — so
+// the line follows `display.language` like every other module-level string.
+const runCopy = (): StudioChatToolRunTranslations => runtimeTranslations().studio.chat.toolRun
 
 // Clause order is fixed so the same run always reads the same way, whichever
 // category happens to be live.
@@ -48,19 +53,6 @@ const CATEGORY_ORDER: readonly RunCategory[] = [
   'delegate',
   'other'
 ]
-
-const CATEGORY_COPY: Record<RunCategory, { noun: [string, string]; past: string; present: string }> = {
-  analyze: { noun: ['image', 'images'], past: 'Analyzed', present: 'Analyzing' },
-  browse: { noun: ['page', 'pages'], past: 'Opened', present: 'Opening' },
-  delegate: { noun: ['task', 'tasks'], past: 'Delegated', present: 'Delegating' },
-  edit: { noun: ['file', 'files'], past: 'Edited', present: 'Editing' },
-  explore: { noun: ['file', 'files'], past: 'Explored', present: 'Exploring' },
-  interact: { noun: ['browser action', 'browser actions'], past: 'Performed', present: 'Performing' },
-  other: { noun: ['tool', 'tools'], past: 'Used', present: 'Using' },
-  read: { noun: ['page', 'pages'], past: 'Read', present: 'Reading' },
-  run: { noun: ['command', 'commands'], past: 'Ran', present: 'Running' },
-  search: { noun: ['query', 'queries'], past: 'Searched', present: 'Searching' }
-}
 
 // Routed by name so a web search never counts as an explored file (#123085).
 // Browser tools other than navigation are interaction, not page loads: a
@@ -116,7 +108,7 @@ export function toolPresentVerb(toolName: string): string {
     return translateNow('assistant.tool.skillActivity.loading')
   }
 
-  return CATEGORY_COPY[toolCategory(toolName)].present
+  return runCopy().categories[toolCategory(toolName)].present
 }
 
 /** The thing a tool acted on, as the header should name it. */
@@ -125,7 +117,7 @@ function toolTarget(tool: ToolCallLike): string {
   const category = toolCategory(tool.toolName)
 
   if (category === 'run') {
-    return summarizeShellCommand(firstStringField(args, ['command', 'code']))
+    return summarizeShellCommand(firstStringField(args, ['command', 'code']), runCopy().moreCommands)
   }
 
   // A lone search names what its own row names — the quoted query for
@@ -158,20 +150,15 @@ function toolTarget(tool: ToolCallLike): string {
  * command line only earns its space while it's the thing you're waiting on.
  */
 function clause(category: RunCategory, tools: ToolCallLike[], live: boolean): string {
-  const copy = CATEGORY_COPY[category]
-  const verb = live ? copy.present : copy.past
+  const copy = runCopy().categories[category]
   const count = tools.reduce((sum, tool) => sum + unitCount(tool), 0)
   const target = count === 1 && category !== 'interact' ? toolTarget(tools[0]) : ''
 
   if (target && (live || category !== 'run')) {
-    return `${verb} ${target}`
+    return copy.named(target, live)
   }
 
-  return `${verb} ${count} ${copy.noun[count === 1 ? 0 : 1]}`
-}
-
-function lowerFirst(text: string): string {
-  return text.charAt(0).toLowerCase() + text.slice(1)
+  return copy.counted(count, live)
 }
 
 /**
@@ -231,5 +218,6 @@ export function summarizeToolRun(tools: readonly ToolCallLike[], live: boolean):
     clauses.push(translateNow('assistant.tool.failedCalls', failed))
   }
 
-  return [...skillClauses, ...clauses].map((text, index) => (index === 0 ? text : lowerFirst(text))).join(', ')
+  // The locale joins (English: "Explored 3 files, ran 5 commands").
+  return runCopy().join([...skillClauses, ...clauses])
 }

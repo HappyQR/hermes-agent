@@ -285,6 +285,7 @@ export const ruOverrides = {
       'view.toggleProfileRail': 'Показать / скрыть панель профилей',
       'view.toggleSimpleMode': 'Переключить простой режим',
       'view.showFiles': 'Показать браузер файлов',
+      'view.showAgents': 'Показать агентов',
       'view.showBrowser': 'Переключить браузер',
       'view.toggleHud': 'Включить / выключить режим HUD',
       'hud.snapToPointer': 'Переместить HUD под курсор (глобально, пока HUD открыт)',
@@ -3634,6 +3635,7 @@ export const ruOverrides = {
   },
   assistant: {
     thread: {
+      errorDetails: 'Подробности',
       loadingSession: 'Загрузка сеанса',
       showEarlier: 'Показать ранние сообщения',
       loadingResponse: 'Hermes загружает ответ',
