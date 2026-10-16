@@ -343,7 +343,8 @@ export const enStudioPages: StudioPagesTranslations = {
     filterLabel: 'Show',
     pairingRequest: ' wants to pair with Hermes',
     quickSetupTitle: 'Quick setup with a QR code',
-    quickSetupBody: 'Scan with Telegram on your phone: Hermes creates the bot and recognizes your account. This replaces the current bot.',
+    quickSetupBody:
+      'Scan with Telegram on your phone: Hermes creates the bot and recognizes your account. This replaces the current bot.',
     showQr: 'Create with QR',
     qrSheetTitle: 'Set up Telegram with a QR code',
     homeChannel: 'Home channel',
@@ -351,7 +352,21 @@ export const enStudioPages: StudioPagesTranslations = {
     homeChannelNone: 'Not set',
     pairedUsersHint: 'Approved through pairing. Revoking takes effect right away.',
     updateCredentials: 'Update credentials',
-    saveHint: 'Saving applies to the running gateway.'
+    saveHint: 'Saving applies to the running gateway.',
+    platformNames: {
+      email: 'Email',
+      sms: 'SMS (Twilio)',
+      dingtalk: 'DingTalk',
+      feishu: 'Feishu / Lark',
+      wecom: 'WeCom (group bot)',
+      wecom_callback: 'WeCom (app)',
+      weixin: 'Weixin / WeChat (Personal)',
+      qqbot: 'QQ Bot',
+      yuanbao: 'Yuanbao (元宝)',
+      api_server: 'API server',
+      webhook: 'Webhooks',
+      relay: 'Relay (experimental)'
+    }
   },
   artifacts: {
     title: 'Artifacts',

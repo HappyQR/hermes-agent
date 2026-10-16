@@ -357,19 +357,36 @@ export const esStudioPages: StudioPagesTranslations = {
     filterLabel: 'Mostrar',
     pairingRequest: ' quiere vincularse con Hermes',
     quickSetupTitle: 'Configuración rápida con código QR',
-    quickSetupBody: 'Escanea con Telegram en tu móvil: Hermes crea el bot y reconoce tu cuenta. Sustituye al bot actual.',
+    quickSetupBody:
+      'Escanea con Telegram en tu móvil: Hermes crea el bot y reconoce tu cuenta. Sustituye al bot actual.',
     showQr: 'Mostrar código QR',
     qrSheetTitle: 'Configurar Telegram con código QR',
     homeChannel: 'Canal principal',
-    homeChannelHint: 'Las tareas programadas y los traspasos llegan aquí por defecto. Envía /sethome en un chat para cambiarlo.',
+    homeChannelHint:
+      'Las tareas programadas y los traspasos llegan aquí por defecto. Envía /sethome en un chat para cambiarlo.',
     homeChannelNone: 'Sin definir',
     pairedUsersHint: 'Aprobados mediante vinculación. Revocar tiene efecto de inmediato.',
     updateCredentials: 'Actualizar credenciales',
-    saveHint: 'Al guardar se aplica de inmediato a la pasarela en marcha'
+    saveHint: 'Al guardar se aplica de inmediato a la pasarela en marcha',
+    platformNames: {
+      email: 'Correo',
+      sms: 'SMS (Twilio)',
+      dingtalk: 'DingTalk',
+      feishu: 'Feishu / Lark',
+      wecom: 'WeCom (bot de grupo)',
+      wecom_callback: 'WeCom (aplicación)',
+      weixin: 'WeChat (personal)',
+      qqbot: 'Bot de QQ',
+      yuanbao: 'Yuanbao',
+      api_server: 'Servidor API',
+      webhook: 'Webhooks',
+      relay: 'Relé (experimental)'
+    }
   },
   artifacts: {
     title: 'Resultados',
-    subtitle: 'Páginas web, imágenes, archivos y enlaces creados en tus últimas 30 sesiones. Pulsa Espacio para la vista rápida.',
+    subtitle:
+      'Páginas web, imágenes, archivos y enlaces creados en tus últimas 30 sesiones. Pulsa Espacio para la vista rápida.',
     search: 'Buscar nombres o sesiones',
     typeLabel: 'Tipo',
     tabs: { all: 'Todo', web: 'Páginas web', image: 'Imágenes', file: 'Archivos', link: 'Enlaces' },

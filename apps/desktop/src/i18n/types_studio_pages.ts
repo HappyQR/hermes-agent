@@ -367,6 +367,9 @@ export interface StudioMessagingTranslations {
   updateCredentials: string
   /** Under the save button when the change will apply without a restart. */
   saveHint: string
+  /** Platform names that translate (邮件, 钉钉, 企业微信…), keyed by platform id.
+   *  Brand names (Telegram, Slack…) keep the backend's label, so it is partial. */
+  platformNames: Partial<Record<string, string>>
 }
 
 export interface StudioArtifactsTranslations {

@@ -354,15 +354,31 @@ export const ruStudioPages: StudioPagesTranslations = {
     filterLabel: 'Показать',
     pairingRequest: ' просит связаться с Hermes',
     quickSetupTitle: 'Быстрая настройка по QR-коду',
-    quickSetupBody: 'Отсканируйте код в Telegram на телефоне: Hermes создаст бота и узнает ваш аккаунт. Текущий бот будет заменён.',
+    quickSetupBody:
+      'Отсканируйте код в Telegram на телефоне: Hermes создаст бота и узнает ваш аккаунт. Текущий бот будет заменён.',
     showQr: 'Показать QR-код',
     qrSheetTitle: 'Настройка Telegram по QR-коду',
     homeChannel: 'Основной канал',
-    homeChannelHint: 'Сюда по умолчанию приходят задания по расписанию и передачи. Чтобы изменить, отправьте /sethome в чате.',
+    homeChannelHint:
+      'Сюда по умолчанию приходят задания по расписанию и передачи. Чтобы изменить, отправьте /sethome в чате.',
     homeChannelNone: 'Не задан',
     pairedUsersHint: 'Одобрены через привязку. Отзыв действует сразу.',
     updateCredentials: 'Обновить учётные данные',
-    saveHint: 'Сохранение сразу применится к работающему шлюзу'
+    saveHint: 'Сохранение сразу применится к работающему шлюзу',
+    platformNames: {
+      email: 'Почта',
+      sms: 'SMS (Twilio)',
+      dingtalk: 'DingTalk',
+      feishu: 'Feishu / Lark',
+      wecom: 'WeCom (групповой бот)',
+      wecom_callback: 'WeCom (приложение)',
+      weixin: 'WeChat (личный)',
+      qqbot: 'QQ-бот',
+      yuanbao: 'Yuanbao',
+      api_server: 'API-сервер',
+      webhook: 'Вебхуки',
+      relay: 'Ретранслятор (экспериментально)'
+    }
   },
   artifacts: {
     title: 'Результаты',

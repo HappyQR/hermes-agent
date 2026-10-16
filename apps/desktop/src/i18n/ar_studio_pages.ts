@@ -340,7 +340,8 @@ export const arStudioPages: StudioPagesTranslations = {
     filterLabel: 'عرض',
     pairingRequest: ' يطلب الاقتران مع Hermes',
     quickSetupTitle: 'إعداد سريع برمز QR',
-    quickSetupBody: 'امسح الرمز بتطبيق Telegram على هاتفك: ينشئ Hermes الروبوت ويتعرّف على حسابك. سيحل هذا محل الروبوت الحالي.',
+    quickSetupBody:
+      'امسح الرمز بتطبيق Telegram على هاتفك: ينشئ Hermes الروبوت ويتعرّف على حسابك. سيحل هذا محل الروبوت الحالي.',
     showQr: 'عرض رمز QR',
     qrSheetTitle: 'إعداد Telegram برمز QR',
     homeChannel: 'القناة الرئيسية',
@@ -348,7 +349,21 @@ export const arStudioPages: StudioPagesTranslations = {
     homeChannelNone: 'غير معيّنة',
     pairedUsersHint: 'تمت الموافقة عليهم عبر الاقتران. يسري الإلغاء فورًا.',
     updateCredentials: 'تحديث بيانات الاعتماد',
-    saveHint: 'يُطبّق الحفظ على البوابة قيد التشغيل فورًا'
+    saveHint: 'يُطبّق الحفظ على البوابة قيد التشغيل فورًا',
+    platformNames: {
+      email: 'البريد الإلكتروني',
+      sms: 'رسائل SMS (Twilio)',
+      dingtalk: 'DingTalk',
+      feishu: 'Feishu / Lark',
+      wecom: 'WeCom (روبوت مجموعة)',
+      wecom_callback: 'WeCom (تطبيق)',
+      weixin: 'WeChat (شخصي)',
+      qqbot: 'روبوت QQ',
+      yuanbao: 'Yuanbao',
+      api_server: 'خادم API',
+      webhook: 'Webhooks',
+      relay: 'الترحيل (تجريبي)'
+    }
   },
   artifacts: {
     title: 'المخرجات',

@@ -340,7 +340,8 @@ export const jaStudioPages: StudioPagesTranslations = {
     filterLabel: '表示',
     pairingRequest: 'が Hermes とのペアリングを求めています',
     quickSetupTitle: 'QR コードでかんたん設定',
-    quickSetupBody: 'スマートフォンの Telegram でスキャンすると、Hermes がボットを作成してあなたのアカウントを認識します。現在のボットは置き換えられます。',
+    quickSetupBody:
+      'スマートフォンの Telegram でスキャンすると、Hermes がボットを作成してあなたのアカウントを認識します。現在のボットは置き換えられます。',
     showQr: 'QR コードを表示',
     qrSheetTitle: 'QR コードで Telegram を設定',
     homeChannel: 'ホームチャンネル',
@@ -348,7 +349,21 @@ export const jaStudioPages: StudioPagesTranslations = {
     homeChannelNone: '未設定',
     pairedUsersHint: 'ペアリングで承認されたユーザーです。取り消しはすぐに反映されます。',
     updateCredentials: '認証情報を更新',
-    saveHint: '保存すると実行中のゲートウェイにすぐ反映されます'
+    saveHint: '保存すると実行中のゲートウェイにすぐ反映されます',
+    platformNames: {
+      email: 'メール',
+      sms: 'SMS（Twilio）',
+      dingtalk: 'DingTalk',
+      feishu: 'Feishu / Lark',
+      wecom: 'WeCom（グループボット）',
+      wecom_callback: 'WeCom（アプリ）',
+      weixin: 'WeChat（個人）',
+      qqbot: 'QQ ボット',
+      yuanbao: 'Yuanbao',
+      api_server: 'API サーバー',
+      webhook: 'Webhook',
+      relay: 'リレー（実験的）'
+    }
   },
   artifacts: {
     title: '成果物',
@@ -367,7 +382,8 @@ export const jaStudioPages: StudioPagesTranslations = {
     previous: '前へ',
     next: '次へ',
     previewUnavailable: 'このファイルはここではプレビューできません。',
-    partialSkipped: (skipped, total) => `成果物の索引作成中に、最近の ${total} 件のセッションのうち ${skipped} 件をスキップしました。`,
+    partialSkipped: (skipped, total) =>
+      `成果物の索引作成中に、最近の ${total} 件のセッションのうち ${skipped} 件をスキップしました。`,
     partialSafeLimit: count => `${count} 件が安全な読み込み上限を超えました。`,
     partialUnreadable: count => `${count} 件を読み込めませんでした。`
   }

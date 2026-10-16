@@ -345,19 +345,36 @@ export const frStudioPages: StudioPagesTranslations = {
     filterLabel: 'Afficher',
     pairingRequest: ' demande à s’associer à Hermes',
     quickSetupTitle: 'Configuration rapide par QR code',
-    quickSetupBody: 'Scannez avec Telegram sur votre téléphone : Hermes crée le bot et reconnaît votre compte. Cela remplace le bot actuel.',
+    quickSetupBody:
+      'Scannez avec Telegram sur votre téléphone : Hermes crée le bot et reconnaît votre compte. Cela remplace le bot actuel.',
     showQr: 'Afficher le QR code',
     qrSheetTitle: 'Configurer Telegram par QR code',
     homeChannel: 'Canal principal',
-    homeChannelHint: 'Les tâches planifiées et les transferts arrivent ici par défaut. Envoyez /sethome dans une discussion pour le changer.',
+    homeChannelHint:
+      'Les tâches planifiées et les transferts arrivent ici par défaut. Envoyez /sethome dans une discussion pour le changer.',
     homeChannelNone: 'Non défini',
     pairedUsersHint: 'Approuvés par association. La révocation prend effet immédiatement.',
     updateCredentials: 'Mettre à jour les identifiants',
-    saveHint: 'L’enregistrement s’applique tout de suite à la passerelle en cours'
+    saveHint: 'L’enregistrement s’applique tout de suite à la passerelle en cours',
+    platformNames: {
+      email: 'E-mail',
+      sms: 'SMS (Twilio)',
+      dingtalk: 'DingTalk',
+      feishu: 'Feishu / Lark',
+      wecom: 'WeCom (bot de groupe)',
+      wecom_callback: 'WeCom (application)',
+      weixin: 'WeChat (personnel)',
+      qqbot: 'Bot QQ',
+      yuanbao: 'Yuanbao',
+      api_server: 'Serveur API',
+      webhook: 'Webhooks',
+      relay: 'Relais (expérimental)'
+    }
   },
   artifacts: {
     title: 'Productions',
-    subtitle: 'Pages web, images, fichiers et liens créés dans vos 30 dernières sessions. Appuyez sur Espace pour un aperçu.',
+    subtitle:
+      'Pages web, images, fichiers et liens créés dans vos 30 dernières sessions. Appuyez sur Espace pour un aperçu.',
     search: 'Rechercher un nom ou une session',
     typeLabel: 'Type',
     tabs: { all: 'Tout', web: 'Pages web', image: 'Images', file: 'Fichiers', link: 'Liens' },
@@ -372,7 +389,8 @@ export const frStudioPages: StudioPagesTranslations = {
     previous: 'Précédent',
     next: 'Suivant',
     previewUnavailable: 'Ce fichier ne peut pas être prévisualisé ici.',
-    partialSkipped: (skipped, total) => `${skipped} sessions sur les ${total} dernières ont été ignorées pendant l’indexation.`,
+    partialSkipped: (skipped, total) =>
+      `${skipped} sessions sur les ${total} dernières ont été ignorées pendant l’indexation.`,
     partialSafeLimit: count => `${count} dépassaient la limite de chargement sûre.`,
     partialUnreadable: count => `${count} n’ont pas pu être lues.`
   }

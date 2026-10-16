@@ -44,6 +44,7 @@ import type { SetStatusbarItemGroup } from '../shell/statusbar-controls'
 import { AllowlistField } from './allowlist-field'
 import { PlatformTile } from './platform-tile'
 import { MessagingPage } from './studio/messaging-page'
+import { platformName } from './studio/platform-name'
 import { TelegramQrSetup } from './telegram-qr-setup'
 
 interface MessagingViewProps extends React.ComponentProps<'section'> {
@@ -58,13 +59,18 @@ const stateLabel = (state: null | string | undefined, m: Translations['messaging
 // Filter order: what needs you first, then what's fine, then what's off.
 const STATUS_FILTER_ORDER: StatusTone[] = ['bad', 'warn', 'good', 'muted']
 
-function platformMatches(platform: MessagingPlatformInfo, tone: 'all' | StatusTone, query: string): boolean {
+function platformMatches(
+  platform: MessagingPlatformInfo,
+  tone: 'all' | StatusTone,
+  query: string,
+  shownName = platform.name
+): boolean {
   const q = normalize(query)
 
   return (
     (tone === 'all' || platformStatusTone(platform) === tone) &&
     (!q ||
-      [platform.id, platform.name, platform.description, platform.state]
+      [platform.id, platform.name, shownName, platform.description, platform.state]
         .filter(Boolean)
         .some(value => String(value).toLowerCase().includes(q)))
   )
@@ -343,7 +349,9 @@ export function MessagingView({ setStatusbarItemGroup: _setStatusbarItemGroup, .
   const activeStatusFilter = statusFilter !== 'all' && presentTones.includes(statusFilter) ? statusFilter : 'all'
 
   const visiblePlatforms = useMemo(
-    () => platforms?.filter(platform => platformMatches(platform, activeStatusFilter, query)) ?? [],
+    () =>
+      platforms?.filter(platform => platformMatches(platform, activeStatusFilter, query, platformName(platform, t))) ??
+      [],
     [activeStatusFilter, platforms, query]
   )
 
@@ -352,8 +360,8 @@ export function MessagingView({ setStatusbarItemGroup: _setStatusbarItemGroup, .
   function handleStatusFilter(next: 'all' | StatusTone) {
     setStatusFilter(next)
 
-    if (selected && !platformMatches(selected, next, query)) {
-      const first = platforms?.find(platform => platformMatches(platform, next, query))
+    if (selected && !platformMatches(selected, next, query, platformName(selected, t))) {
+      const first = platforms?.find(platform => platformMatches(platform, next, query, platformName(platform, t)))
 
       if (first) {
         setSelectedId(first.id)
@@ -381,11 +389,11 @@ export function MessagingView({ setStatusbarItemGroup: _setStatusbarItemGroup, .
       settleAfterUpdate(result.hot_served)
       notify({
         kind: 'success',
-        title: enabled ? m.platformEnabled(platform.name) : m.platformDisabled(platform.name),
+        title: enabled ? m.platformEnabled(platformName(platform, t)) : m.platformDisabled(platformName(platform, t)),
         message: result.hot_served ? m.appliedLive : m.restartToApply
       })
     } catch (err) {
-      notifyError(err, m.failedUpdate(platform.name))
+      notifyError(err, m.failedUpdate(platformName(platform, t)))
     } finally {
       setSaving(null)
     }
@@ -408,11 +416,11 @@ export function MessagingView({ setStatusbarItemGroup: _setStatusbarItemGroup, .
       settleAfterUpdate(result.hot_served)
       notify({
         kind: 'success',
-        title: m.setupSaved(platform.name),
+        title: m.setupSaved(platformName(platform, t)),
         message: result.hot_served ? m.connectingLive : m.restartToReconnect
       })
     } catch (err) {
-      notifyError(err, m.failedSave(platform.name))
+      notifyError(err, m.failedSave(platformName(platform, t)))
     } finally {
       setSaving(null)
     }
@@ -432,7 +440,7 @@ export function MessagingView({ setStatusbarItemGroup: _setStatusbarItemGroup, .
       }))
       await refreshPlatforms()
       settleAfterUpdate(result.hot_served)
-      notify({ kind: 'success', title: m.keyCleared(key), message: m.setupUpdated(platform.name) })
+      notify({ kind: 'success', title: m.keyCleared(key), message: m.setupUpdated(platformName(platform, t)) })
     } catch (err) {
       notifyError(err, m.failedClear(key))
     } finally {
@@ -718,7 +726,7 @@ function PlatformHead({ onToggle, platform, saving }: PlatformDetailProps) {
       <DetailHead
         lead={<PlatformTile platformId={platform.id} platformName={platform.name} size={44} />}
         subtitle={platform.description}
-        title={platform.name}
+        title={platformName(platform, t)}
         trailing={
           <>
             <Badge size="lg" variant={STATE_BADGE[platformStatusTone(platform)]}>
@@ -727,7 +735,9 @@ function PlatformHead({ onToggle, platform, saving }: PlatformDetailProps) {
             {/* The visible state is the tag; the label names the switch for tests and AT. */}
             <label className="flex cursor-pointer items-center">
               <Switch
-                aria-label={platform.enabled ? m.disableAria(platform.name) : m.enableAria(platform.name)}
+                aria-label={
+                  platform.enabled ? m.disableAria(platformName(platform, t)) : m.enableAria(platformName(platform, t))
+                }
                 checked={platform.enabled}
                 disabled={saving === `enabled:${platform.id}`}
                 onCheckedChange={onToggle}

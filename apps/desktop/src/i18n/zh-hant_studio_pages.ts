@@ -336,7 +336,21 @@ export const zhHantStudioPages: StudioPagesTranslations = {
     homeChannelNone: '未設定',
     pairedUsersHint: '透過配對核准的使用者，撤銷立即生效。',
     updateCredentials: '更新憑證',
-    saveHint: '儲存後立即套用到執行中的閘道'
+    saveHint: '儲存後立即套用到執行中的閘道',
+    platformNames: {
+      email: '郵件',
+      sms: '簡訊（Twilio）',
+      dingtalk: '釘釘',
+      feishu: '飛書 / Lark',
+      wecom: '企業微信（群組機器人）',
+      wecom_callback: '企業微信（應用程式）',
+      weixin: '微信（個人帳號）',
+      qqbot: 'QQ 機器人',
+      yuanbao: '元寶',
+      api_server: 'API 伺服器',
+      webhook: 'Webhook',
+      relay: '中繼（實驗性）'
+    }
   },
   artifacts: {
     title: '產出',

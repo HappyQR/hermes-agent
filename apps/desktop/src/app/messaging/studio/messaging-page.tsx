@@ -15,6 +15,8 @@ import type { MessagingPlatformInfo } from '@/types/hermes'
 
 import { PlatformTile } from '../platform-tile'
 
+import { platformName } from './platform-name'
+
 // Messaging (prototype pages.js:111-193): System Settings master/detail — the
 // platform list (search, status filter, tile · name · state, a pending-pairing
 // count or a status dot) beside the selected platform's detail. Data, writes
@@ -100,7 +102,7 @@ export function MessagingPage({
                       lead={<PlatformTile platformId={platform.id} platformName={platform.name} size={28} />}
                       onClick={() => onSelect(platform.id)}
                       subtitle={stateLabel(platform)}
-                      title={platform.name}
+                      title={platformName(platform, t)}
                       trailing={
                         pending > 0 ? (
                           // Someone is waiting to be let in — the only sign of it before the platform is open.

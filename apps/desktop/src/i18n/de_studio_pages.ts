@@ -350,15 +350,31 @@ export const deStudioPages: StudioPagesTranslations = {
     filterLabel: 'Anzeigen',
     pairingRequest: ' möchte sich mit Hermes koppeln',
     quickSetupTitle: 'Schnelleinrichtung per QR-Code',
-    quickSetupBody: 'Scanne mit Telegram auf deinem Handy: Hermes erstellt den Bot und erkennt dein Konto. Der aktuelle Bot wird ersetzt.',
+    quickSetupBody:
+      'Scanne mit Telegram auf deinem Handy: Hermes erstellt den Bot und erkennt dein Konto. Der aktuelle Bot wird ersetzt.',
     showQr: 'QR-Code anzeigen',
     qrSheetTitle: 'Telegram per QR-Code einrichten',
     homeChannel: 'Hauptkanal',
-    homeChannelHint: 'Geplante Aufgaben und Übergaben landen standardmäßig hier. Sende /sethome in einem Chat, um ihn zu ändern.',
+    homeChannelHint:
+      'Geplante Aufgaben und Übergaben landen standardmäßig hier. Sende /sethome in einem Chat, um ihn zu ändern.',
     homeChannelNone: 'Nicht festgelegt',
     pairedUsersHint: 'Über Kopplung freigegeben. Ein Widerruf wirkt sofort.',
     updateCredentials: 'Zugangsdaten aktualisieren',
-    saveHint: 'Speichern wirkt sofort auf das laufende Gateway'
+    saveHint: 'Speichern wirkt sofort auf das laufende Gateway',
+    platformNames: {
+      email: 'E-Mail',
+      sms: 'SMS (Twilio)',
+      dingtalk: 'DingTalk',
+      feishu: 'Feishu / Lark',
+      wecom: 'WeCom (Gruppen-Bot)',
+      wecom_callback: 'WeCom (App)',
+      weixin: 'WeChat (privat)',
+      qqbot: 'QQ-Bot',
+      yuanbao: 'Yuanbao',
+      api_server: 'API-Server',
+      webhook: 'Webhooks',
+      relay: 'Relay (experimentell)'
+    }
   },
   artifacts: {
     title: 'Ergebnisse',
@@ -377,7 +393,8 @@ export const deStudioPages: StudioPagesTranslations = {
     previous: 'Zurück',
     next: 'Weiter',
     previewUnavailable: 'Diese Datei kann hier nicht angezeigt werden.',
-    partialSkipped: (skipped, total) => `${skipped} von ${total} letzten Sitzungen wurden beim Indizieren übersprungen.`,
+    partialSkipped: (skipped, total) =>
+      `${skipped} von ${total} letzten Sitzungen wurden beim Indizieren übersprungen.`,
     partialSafeLimit: count => `${count} überschritten das sichere Ladelimit.`,
     partialUnreadable: count => `${count} konnten nicht gelesen werden.`
   }

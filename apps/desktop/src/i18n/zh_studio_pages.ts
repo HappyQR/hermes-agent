@@ -336,7 +336,21 @@ export const zhStudioPages: StudioPagesTranslations = {
     homeChannelNone: '未设置',
     pairedUsersHint: '通过配对批准的用户，撤销立即生效。',
     updateCredentials: '更新凭据',
-    saveHint: '保存后立即应用到运行中的网关'
+    saveHint: '保存后立即应用到运行中的网关',
+    platformNames: {
+      email: '邮件',
+      sms: '短信（Twilio）',
+      dingtalk: '钉钉',
+      feishu: '飞书 / Lark',
+      wecom: '企业微信（群机器人）',
+      wecom_callback: '企业微信（应用）',
+      weixin: '微信（个人号）',
+      qqbot: 'QQ 机器人',
+      yuanbao: '元宝',
+      api_server: 'API 服务器',
+      webhook: 'Webhook',
+      relay: '中继（实验性）'
+    }
   },
   artifacts: {
     title: '产物',
