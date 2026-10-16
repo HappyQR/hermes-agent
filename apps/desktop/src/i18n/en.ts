@@ -1934,6 +1934,7 @@ export const en: Translations = {
       connectAccount: 'Connect an account',
       haveApiKey: 'Have an API key instead?',
       accountsLoadFailed: 'Could not load accounts.',
+      signInAgain: 'Sign In Again',
       intro:
         'Sign in with a subscription — no API key to copy. Hermes runs the browser sign-in for you, right here in the app.',
       connected: 'Connected',

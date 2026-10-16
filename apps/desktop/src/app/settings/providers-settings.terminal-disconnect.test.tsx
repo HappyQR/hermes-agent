@@ -84,7 +84,7 @@ describe('connected external provider row', () => {
   it('runs the terminal control as disconnect instead of starting sign-in', async () => {
     await renderAccounts()
 
-    fireEvent.click(await screen.findByRole('button', { name: /Disconnect External CLI in terminal/ }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Disconnect External CLI' }))
     fireEvent.click(await screen.findByRole('button', { name: 'Disconnect' }))
 
     await waitFor(() => expect(runInTerminal).toHaveBeenCalledWith(COMMAND))

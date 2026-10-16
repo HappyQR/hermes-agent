@@ -2,6 +2,7 @@ import type { ModelOptionProvider } from '@hermes/shared'
 import { useStore } from '@nanostores/react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
+import { TITLEBAR_HEIGHT } from '@/app/shell/titlebar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Codicon } from '@/components/ui/codicon'
@@ -427,7 +428,9 @@ export function DesktopOnboardingOverlay({
   return (
     <div
       className={cn(
-        'fixed inset-0 z-(--z-onboarding) flex justify-center overflow-y-auto bg-(--ui-chat-surface-background) p-6 transition-opacity duration-[520ms] ease-out',
+        // no-drag: the shell's titlebar band below is a window drag region, and
+        // a drag region swallows clicks through anything stacked above it.
+        'fixed inset-0 z-(--z-onboarding) flex justify-center overflow-y-auto bg-(--ui-chat-surface-background) p-6 transition-opacity duration-[520ms] ease-out [-webkit-app-region:no-drag]',
         // On the bare confirm screen, hold the surface (text-out + hold) so the
         // per-element exit plays before it dissolves.
         bare && leaving ? '[transition-delay:660ms]' : '',
@@ -439,10 +442,16 @@ export function DesktopOnboardingOverlay({
       data-glass-opaque=""
       data-slot="onboarding-overlay"
     >
+      {/* The window still drags by its titlebar band, everywhere but the close button. */}
+      <div
+        aria-hidden
+        className="fixed inset-x-0 top-0 [-webkit-app-region:drag]"
+        style={{ height: TITLEBAR_HEIGHT }}
+      />
       {onboarding.manual ? (
         <Button
           aria-label={t.common.close}
-          className="absolute right-4 top-4 z-10 text-(--ui-text-tertiary) hover:bg-(--chrome-action-hover) hover:text-foreground"
+          className="absolute right-4 top-4 z-10 text-(--ui-text-tertiary) [-webkit-app-region:no-drag] hover:bg-(--chrome-action-hover) hover:text-foreground"
           onClick={() => closeManualOnboarding()}
           size="icon-sm"
           variant="ghost"
@@ -519,6 +528,7 @@ function onboardingLayout(
 ): { step: null | number; widthClass: string } {
   // No dots for the free-tier welcome, while Hermes is still starting, or on the way out.
   const stepsShown = ready && !freeTierIntro && !leaving
+
   const keyForm =
     onboarding.localEndpoint ||
     onboarding.mode === 'apikey' ||

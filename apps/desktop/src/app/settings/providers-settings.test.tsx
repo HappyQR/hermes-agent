@@ -154,6 +154,16 @@ describe('ProvidersSettings', () => {
     }
   })
 
+  it('leaves a connected account alone on click; Sign In Again starts a fresh sign-in', async () => {
+    await renderProvidersSettings()
+
+    fireEvent.click(await screen.findByText('Nous Portal'))
+    expect(startManualProviderOAuth).not.toHaveBeenCalled()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Sign In Again' }))
+    expect(startManualProviderOAuth.mock.calls.map(call => call[0])).toEqual(['nous'])
+  })
+
   it('uses the settings target for account reads, removal and sign-in', async () => {
     $settingsScopeOverride.set('beta')
 
@@ -161,7 +171,7 @@ describe('ProvidersSettings', () => {
       await renderProvidersSettings()
       expect(getEnvVars).toHaveBeenCalledWith('beta')
       expect(listOAuthProviders).toHaveBeenCalledWith('beta')
-      fireEvent.click(await screen.findByText('Nous Portal'))
+      fireEvent.click(await screen.findByRole('button', { name: 'Sign In Again' }))
       expect(startManualProviderOAuth).toHaveBeenCalledWith('nous', 'beta')
       fireEvent.click(await screen.findByRole('button', { name: 'Remove Nous Portal' }))
       fireEvent.click(await screen.findByRole('button', { name: 'Disconnect' }))

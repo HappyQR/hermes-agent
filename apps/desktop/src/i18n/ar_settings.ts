@@ -811,6 +811,7 @@ export const arSettings = {
       connectAccount: 'ربط حساب',
       haveApiKey: 'لديك مفتاح API بدلاً من ذلك؟',
       accountsLoadFailed: 'تعذّر تحميل الحسابات.',
+      signInAgain: 'تسجيل الدخول مجددًا',
       intro: 'سجل الدخول باشتراكك دون نسخ مفتاح API. يشغّل Hermes تسجيل الدخول من المتصفح لك داخل التطبيق.',
       connected: 'متصل',
       collapse: 'طي',

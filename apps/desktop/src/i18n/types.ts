@@ -1731,6 +1731,7 @@ export interface Translations extends NoticeTranslations {
       connectAccount: string
       haveApiKey: string
       accountsLoadFailed: string
+      signInAgain: string
       intro: string
       connected: string
       collapse: string

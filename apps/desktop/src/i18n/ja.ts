@@ -1287,6 +1287,7 @@ export const jaOverrides = {
       connectAccount: 'アカウントを接続',
       haveApiKey: 'API キーをお持ちですか？',
       accountsLoadFailed: 'アカウントを読み込めませんでした。',
+      signInAgain: '再ログイン',
       intro:
         'サブスクリプションでサインインします。API キーのコピーは不要です。Hermes がアプリ内でブラウザーサインインを代行します。',
       connected: '接続済み',

@@ -20,7 +20,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Tip } from '@/components/ui/tooltip'
 import { disconnectOAuthProvider, listOAuthProviders } from '@/hermes'
 import { useI18n } from '@/i18n'
-import { Check, ChevronDown, ChevronRight, KeyRound, Loader2, Terminal, Trash2 } from '@/lib/icons'
+import { Check, ChevronDown, ChevronRight, KeyRound, Loader2, Trash2 } from '@/lib/icons'
 import { normalize } from '@/lib/text'
 import { cn } from '@/lib/utils'
 import { withTimeout } from '@/lib/with-timeout'
@@ -305,7 +305,6 @@ function ConnectedProviderRow({
   const { t } = useI18n()
   const copy = t.settings.providers
   const title = providerTitle(provider)
-  const Trail = provider.flow === 'external' ? Terminal : ChevronRight
   // Hermes can clear this provider's creds via the API.
   const canDisconnect = provider.disconnectable ?? provider.flow !== 'external'
   // External (CLI-managed) provider Hermes can't clear via the API, but ships a
@@ -313,13 +312,15 @@ function ConnectedProviderRow({
   const terminalDisconnect = !canDisconnect && Boolean(provider.disconnect_command) && canRunInTerminal()
   // Only fall back to a static "remove it elsewhere" hint when we offer no button.
   const showHint = !canDisconnect && !terminalDisconnect
+  // Hermes runs this sign-in itself; an external provider signs in through its own CLI.
+  const canSignInAgain = provider.flow !== 'external'
 
+  // A connected account is a status, not a button: a click on it used to start
+  // a fresh sign-in (or, for a CLI-managed one, offer to remove it). Its verbs
+  // sit at the end of the row instead.
   return (
-    <div className="group grid grid-cols-[minmax(0,1fr)_auto] items-center gap-1 rounded-[6px] transition-colors hover:bg-(--ui-control-hover-background)">
-      <RowButton
-        className="min-w-0 px-3 py-2.5 text-left"
-        onClick={() => (terminalDisconnect ? onTerminalDisconnect(provider) : onSelect(provider))}
-      >
+    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-1" data-slot="connected-account">
+      <div className="min-w-0 px-3 py-2.5">
         <div className="flex min-w-0 items-center gap-2">
           <span className="truncate text-[length:var(--conversation-text-font-size)] font-semibold">{title}</span>
           <span className="inline-flex shrink-0 items-center gap-1 bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
@@ -333,20 +334,12 @@ function ConnectedProviderRow({
             {provider.flow === 'external' ? copy.removeExternalGeneric(title) : copy.removeKeyManaged(title)}
           </p>
         )}
-      </RowButton>
+      </div>
       <div className="flex items-center gap-1 pr-2">
-        {terminalDisconnect ? (
-          <Button
-            aria-label={`${copy.disconnect} ${title} in terminal`}
-            onClick={() => onTerminalDisconnect(provider)}
-            size="icon-xs"
-            type="button"
-            variant="ghost"
-          >
-            <Terminal className="size-4" />
+        {canSignInAgain && (
+          <Button onClick={() => onSelect(provider)} size="xs" type="button" variant="ghost">
+            {copy.signInAgain}
           </Button>
-        ) : (
-          <Trail className="size-4 text-muted-foreground transition group-hover:text-foreground" />
         )}
         {canDisconnect && (
           <Button

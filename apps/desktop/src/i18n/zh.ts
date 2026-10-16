@@ -1921,6 +1921,7 @@ export const zhOverrides = {
       connectAccount: '连接账号',
       haveApiKey: '改用 API 密钥？',
       accountsLoadFailed: '无法载入账户。',
+      signInAgain: '重新登录',
       intro: '使用订阅登录，无需复制 API 密钥。Hermes 会在应用中为你完成浏览器登录。',
       connected: '已连接',
       collapse: '收起',

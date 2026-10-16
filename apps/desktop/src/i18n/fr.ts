@@ -2310,6 +2310,7 @@ export const frOverrides = {
       connectAccount: 'Connecter un compte',
       haveApiKey: 'Vous avez une clé API ?',
       accountsLoadFailed: 'Impossible de charger les comptes.',
+      signInAgain: 'Se reconnecter',
       intro:
         "Connectez-vous avec un abonnement — pas de clé API à copier. Hermes lance la connexion navigateur pour vous, directement dans l'application.",
       connected: 'Connecté',
