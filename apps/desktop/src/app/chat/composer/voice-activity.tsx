@@ -173,7 +173,7 @@ export function VoiceActivity({ compact = false, state }: { compact?: boolean; s
   const recording = state.status === 'recording'
   const title = recording ? t.composer.dictating : t.composer.transcribing
 
-  // Hermes Studio: a pill in the composer row (prototype "正在听写…") — the
+  // Hermes Studio: a pill in the composer row (prototype "Listening…") — the
   // streaming partial text is announced, not painted, so the row never grows.
   if (compact) {
     return (
