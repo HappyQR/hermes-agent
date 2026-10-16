@@ -139,7 +139,7 @@ export const zhStudioChat: StudioChatTranslations = {
     titles: {
       background: '后台进程',
       preview: '预览链接',
-      previousTodo: '以往任务',
+      previousTodo: '以往待办',
       queue: '队列',
       subagent: '子代理',
       todo: '待办'

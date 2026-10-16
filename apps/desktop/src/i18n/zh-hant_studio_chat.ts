@@ -143,7 +143,7 @@ export const zhHantStudioChat: StudioChatTranslations = {
     titles: {
       background: '背景程序',
       preview: '預覽連結',
-      previousTodo: '先前的任務',
+      previousTodo: '先前的待辦',
       queue: '佇列',
       subagent: '子代理',
       todo: '待辦'
