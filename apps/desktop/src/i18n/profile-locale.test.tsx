@@ -36,12 +36,13 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
-// Regression for #113980: exercise the real provider, API origin binding and
-// profile routing, including an explicit pick before leaving and a fresh mount.
-it('reads and persists the owning profile through A → B → A and restart', async () => {
+// The UI language is a device setting: one value, kept in the root profile's
+// config, whichever profile the window is on. Following the active profile, a
+// Bot profile with no language of its own dropped the window to English.
+it('keeps one language across profiles, read from and saved to the root profile', async () => {
   const configs: Record<string, HermesConfigRecord> = {
-    default: { display: { language: 'en' } },
-    coder: { display: { language: 'zh', skin: 'mono' } }
+    default: { display: { language: 'zh' } },
+    coder: { display: { skin: 'mono' } }
   }
 
   const api = vi.fn(async (request: HermesApiRequest) => {
@@ -64,16 +65,15 @@ it('reads and persists the owning profile through A → B → A and restart', as
     </I18nProvider>
   )
 
-  await waitFor(() => expect(api).toHaveBeenCalled())
-  act(() => route('coder'))
   await waitFor(() => expect(screen.getByTestId('locale').textContent).toBe('zh'))
-  fireEvent.click(screen.getByText('Japanese'))
-  await waitFor(() => expect(configs.coder.display).toEqual({ language: 'ja', skin: 'mono' }))
-  act(() => route('default'))
-  await waitFor(() => expect(screen.getByTestId('locale').textContent).toBe('en'))
   act(() => route('coder'))
+  await waitFor(() => expect(api.mock.calls.length).toBeGreaterThan(1))
+  expect(screen.getByTestId('locale').textContent).toBe('zh')
+  fireEvent.click(screen.getByText('Japanese'))
+  await waitFor(() => expect(configs.default.display).toEqual({ language: 'ja' }))
+  expect(configs.coder.display).toEqual({ skin: 'mono' })
+  act(() => route('default'))
   await waitFor(() => expect(screen.getByTestId('locale').textContent).toBe('ja'))
-  expect(configs.default.display).toEqual({ language: 'en' })
   view.unmount()
   render(
     <I18nProvider>
@@ -81,6 +81,7 @@ it('reads and persists the owning profile through A → B → A and restart', as
     </I18nProvider>
   )
   await waitFor(() => expect(screen.getByTestId('locale').textContent).toBe('ja'))
+  expect(api.mock.calls.every(([request]) => request.profile === 'default')).toBe(true)
 })
 
 it('isolates stale reads and failed saves when the same profile moves between connections', async () => {

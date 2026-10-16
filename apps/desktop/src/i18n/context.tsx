@@ -23,6 +23,12 @@ export interface I18nConfigClient {
   saveConfig: (config: HermesConfigRecord) => Promise<{ ok: boolean }>
 }
 
+// The UI language is a device setting: it lives in the root profile's config
+// and does not follow the active profile. Following it, a Bot profile with no
+// language of its own (made the active one by Bot Mode) dropped the window to
+// the OS language, and the next launch on the root profile brought it back.
+const LANGUAGE_PROFILE = 'default'
+
 const defaultConfigClient: I18nConfigClient = {
   getConfig: () => {
     if (typeof window === 'undefined' || !window.hermesDesktop?.api) {
@@ -31,7 +37,7 @@ const defaultConfigClient: I18nConfigClient = {
 
     // Merged defaults make an unset language indistinguishable from saved English.
     // Older backends ignore the option and keep returning English as before.
-    return getHermesConfigRecord(undefined, { includeDefaults: false })
+    return getHermesConfigRecord(LANGUAGE_PROFILE, { includeDefaults: false })
   },
   saveConfig: config => {
     if (typeof window === 'undefined' || !window.hermesDesktop?.api) {
@@ -194,7 +200,6 @@ export function I18nProvider({
 
     const loadLocale = () => {
       setIsLoadingConfig(true)
-      setConfigLoadError(null)
 
       return configClient
         .getConfig()
@@ -202,6 +207,10 @@ export function I18nProvider({
           if (cancelled || userLocaleRef.current) {
             return
           }
+
+          // Cleared on success only: clearing it ahead of a retry let the
+          // English fallback below be remembered as the settled language.
+          setConfigLoadError(null)
 
           const saved = getConfigDisplayLanguage(config)
 
@@ -231,7 +240,12 @@ export function I18nProvider({
           }
 
           setConfigLoadError(toError(error))
-          commitLocale(DEFAULT_LOCALE)
+
+          // The app window already speaks its last settled language; a read
+          // that failed (the backend still starting) is no reason to drop it.
+          if (!persistLocale) {
+            commitLocale(DEFAULT_LOCALE)
+          }
 
           if (retryCount < MAX_LOCALE_RETRIES) {
             retryCount += 1
@@ -257,7 +271,7 @@ export function I18nProvider({
         clearTimeout(retryTimer)
       }
     }
-  }, [commitLocale, configClient, initialLocale, scopeKey])
+  }, [commitLocale, configClient, initialLocale, persistLocale, scopeKey])
 
   const setLocale = useCallback(
     async (next: Locale) => {
