@@ -10,6 +10,10 @@ export interface StudioChatTranslations {
 
 /** Messages, their actions, cards and decisions in the transcript. */
 export interface StudioChatTranscriptTranslations {
+  /** The web search row's detail label. */
+  searchResults: string
+  /** A delegated child's title when its call carried no goal. */
+  delegatedTask: string
   delegateSpawned: (count: number) => string
   delegateRunning: (count: number) => string
   delegateAllDone: string

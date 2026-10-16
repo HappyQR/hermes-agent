@@ -75,6 +75,8 @@ export const PendingApprovalStack: FC = () => {
 
 function ApprovalActivity({ floating, visible }: { floating: boolean; visible: boolean }) {
   const { t } = useI18n()
+  // From the provider, so a language switch is a new selector: re-worded now.
+  const copy = t.studio.chat.toolRun
   const reduced = useReducedMotion()
   const showToolActivity = useStore($showToolActivity)
 
@@ -93,7 +95,8 @@ function ApprovalActivity({ floating, visible }: { floating: boolean; visible: b
     return tools.length
       ? summarizeToolRun(
           tools,
-          tools.some(tool => tool.result === undefined)
+          tools.some(tool => tool.result === undefined),
+          copy
         )
       : ''
   })

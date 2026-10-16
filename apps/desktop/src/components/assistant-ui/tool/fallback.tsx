@@ -43,6 +43,7 @@ import { GlyphSpinner } from '@/components/ui/glyph-spinner'
 import { StudioIcon } from '@/components/ui/studio-icon'
 import { ToolIcon } from '@/components/ui/tool-icon'
 import { useI18n } from '@/i18n'
+import type { StudioChatToolRunTranslations } from '@/i18n/types_studio_chat'
 import { connectorCalls, mcpTargets } from '@/lib/connector-tools'
 import { PrettyLink, LinkifiedText as SharedLinkifiedText, urlSlugTitleLabel } from '@/lib/external-link'
 import { AlertCircle, CheckCircle2 } from '@/lib/icons'
@@ -422,8 +423,8 @@ function ToolEntry({ part }: ToolEntryProps) {
     const p =
       !isPending && result === undefined ? { ...stablePart, completedAt: stablePart.completedAt ?? 0 } : stablePart
 
-    return buildToolView(p, inlineDiff)
-  }, [inlineDiff, isPending, result, stablePart])
+    return buildToolView(p, inlineDiff, t.studio.chat.toolRun)
+  }, [inlineDiff, isPending, result, stablePart, t])
 
   // Keep counts and saved disclosure intent, but never mount code while hidden.
   // Failed edits still expose their explanation.
@@ -503,7 +504,7 @@ function ToolEntry({ part }: ToolEntryProps) {
     (part.toolName === 'terminal' || part.toolName === 'execute_code' || part.toolName === 'read_file')
 
   const hasSearchHits = Boolean(view.searchHits?.length)
-  const searchResultsLabel = part.toolName === 'web_search' ? 'Search results' : view.detailLabel
+  const searchResultsLabel = part.toolName === 'web_search' ? t.studio.chat.transcript.searchResults : view.detailLabel
 
   const hasExpandableContent =
     !summaryOnly &&
@@ -900,8 +901,17 @@ interface ToolRunState {
 // re-render the group on every text delta in the turn. The run only changes
 // when a call arrives or one finishes; cache on exactly that.
 function useToolRun(startIndex: number, endIndex: number): ToolRunState {
-  const { locale } = useI18n()
-  const cache = useRef<null | { signature: string; tools: readonly ToolPart[]; value: ToolRunState }>(null)
+  const { locale, t } = useI18n()
+  // The run's words come from the provider, and are part of the cache key: a
+  // language switch re-words a settled run without the thread changing.
+  const copy = t.studio.chat.toolRun
+
+  const cache = useRef<null | {
+    copy: StudioChatToolRunTranslations
+    signature: string
+    tools: readonly ToolPart[]
+    value: ToolRunState
+  }>(null)
 
   return useAuiState(state => {
     const parts = state.message.parts
@@ -941,8 +951,9 @@ function useToolRun(startIndex: number, endIndex: number): ToolRunState {
         )
       })
 
-    if (cache.current?.signature !== signature || !sameInputs) {
+    if (cache.current?.signature !== signature || cache.current.copy !== copy || !sameInputs) {
       cache.current = {
+        copy,
         signature,
         tools: timelineTools,
         value: {
@@ -969,7 +980,7 @@ function useToolRun(startIndex: number, endIndex: number): ToolRunState {
                   : Math.min(earliest, tool.timestamp),
             undefined
           ),
-          summary: summarizeToolRun(tools, live)
+          summary: summarizeToolRun(tools, live, copy)
         }
       }
     }

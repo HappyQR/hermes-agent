@@ -1,3 +1,4 @@
+import { translateNow } from '@/i18n'
 import { firstStringField, normalize } from '@/lib/text'
 import type { SubagentProgress, SubagentStatus } from '@/store/subagents'
 
@@ -78,11 +79,18 @@ function dispatchedGoals(result: unknown): string[] {
  * A call with no result yet is still being placed, so its rows read as
  * running; the moment a background dispatch answers, they drop to parked.
  */
-export function delegateRowsFromCall(args: unknown, result: unknown, toolCallId = ''): DelegateRow[] {
+/** `untitled` names a child whose call carried no goal — React callers pass
+ *  the provider's copy; others get the runtime locale's. */
+export function delegateRowsFromCall(
+  args: unknown,
+  result: unknown,
+  toolCallId = '',
+  untitled = translateNow('studio.chat.transcript.delegatedTask')
+): DelegateRow[] {
   const goals = delegateGoals(args)
   const finished = resultRows(result)
   const dispatched = dispatchedGoals(result)
-  const titles = goals.length > 0 ? goals : dispatched.length > 0 ? dispatched : finished.map(() => 'Delegated task')
+  const titles = goals.length > 0 ? goals : dispatched.length > 0 ? dispatched : finished.map(() => untitled)
   const idle: DelegateRowStatus = result === undefined ? 'running' : 'dispatched'
 
   return titles.map((goal, index) => {

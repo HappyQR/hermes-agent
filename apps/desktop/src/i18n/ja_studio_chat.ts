@@ -93,6 +93,8 @@ export const jaStudioChat: StudioChatTranslations = {
     moreCommands: (first, more) => `${first} ほか ${more} 件のコマンド`
   },
   transcript: {
+    searchResults: '検索結果',
+    delegatedTask: '委任したタスク',
     delegateSpawned: count => `${count} 個のサブエージェントを起動`,
     delegateRunning: count => `${count} 件実行中`,
     delegateAllDone: 'すべて完了',

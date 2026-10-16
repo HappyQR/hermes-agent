@@ -88,6 +88,8 @@ export const zhStudioChat: StudioChatTranslations = {
     moreCommands: (first, more) => `${first} 及另外 ${more} 条命令`
   },
   transcript: {
+    searchResults: '搜索结果',
+    delegatedTask: '委派的任务',
     delegateSpawned: count => `派生了 ${count} 个子代理`,
     delegateRunning: count => `${count} 个运行中`,
     delegateAllDone: '全部完成',

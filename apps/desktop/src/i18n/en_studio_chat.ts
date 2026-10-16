@@ -93,6 +93,8 @@ export const enStudioChat: StudioChatTranslations = {
     moreCommands: (first, more) => `${first} + ${more} ${more === 1 ? 'command' : 'commands'}`
   },
   transcript: {
+    searchResults: 'Search results',
+    delegatedTask: 'Delegated task',
     delegateSpawned: count => `Spawned ${count} subagent${count === 1 ? '' : 's'}`,
     delegateRunning: count => `${count} running`,
     delegateAllDone: 'All done',
