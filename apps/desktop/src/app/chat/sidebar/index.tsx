@@ -451,16 +451,16 @@ export function ChatSidebar({
     [isPinnedSession, filtersNarrow, sessionMatchesFilters]
   )
 
-  // The Sessions list is ONE pool (Studio): local chats, messaging threads and
-  // scheduled runs side by side (each with its source chip), archived rows
-  // inline when shown, narrowed by the filters and the project scope, by
-  // activity (last_active || started_at). Ordering by status doesn't sort here
-  // — it re-slots rows *inside* whatever dividers are on, via sortOrderIds.
+  // The Sessions list is ONE pool (Studio): local chats and messaging threads
+  // side by side (each with its source chip), archived rows inline when shown,
+  // narrowed by the filters and the project scope, by activity (last_active ||
+  // started_at). Scheduled runs live on the Automations page. Ordering by
+  // status doesn't sort here — it re-slots rows *inside* whatever dividers are
+  // on, via sortOrderIds.
   const unpinnedAgentSessions = useMemo(
     () =>
       mergeSessionPool({
         archived: archivedScoped,
-        cron: visibleCronSessions,
         isPinned: isPinnedSession,
         local: scopedSessions,
         matches: session =>
@@ -477,18 +477,14 @@ export function ChatSidebar({
       projects,
       scopedSessions,
       sessionMatchesFilters,
-      visibleCronSessions,
       visibleMessagingSessions
     ]
   )
 
   // Source buckets present in the list — View options' source chips.
   const poolSources = useMemo(
-    () =>
-      [
-        ...new Set([...scopedSessions, ...visibleMessagingSessions, ...visibleCronSessions].map(sessionSourceBucket))
-      ].sort(compareSourceBuckets),
-    [scopedSessions, visibleCronSessions, visibleMessagingSessions]
+    () => [...new Set([...scopedSessions, ...visibleMessagingSessions].map(sessionSourceBucket))].sort(compareSourceBuckets),
+    [scopedSessions, visibleMessagingSessions]
   )
 
   useEffect(() => {

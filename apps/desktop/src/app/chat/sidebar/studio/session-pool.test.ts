@@ -9,7 +9,6 @@ const row = (id: string, last_active: number, extra: Parameters<typeof makeSessi
 
 const base = {
   archived: [],
-  cron: [],
   isPinned: () => false,
   local: [],
   matches: () => true,
@@ -17,15 +16,24 @@ const base = {
 }
 
 describe('mergeSessionPool', () => {
-  it('lists local, messaging and scheduled rows together, newest first', () => {
+  it('lists local and messaging rows together, newest first', () => {
     const pool = mergeSessionPool({
       ...base,
-      cron: [row('cron-run', 30, { source: 'cron' })],
       local: [row('desk', 10)],
       messaging: [row('tg', 20, { source: 'telegram' })]
     })
 
-    expect(pool.map(session => session.id)).toEqual(['cron-run', 'tg', 'desk'])
+    expect(pool.map(session => session.id)).toEqual(['tg', 'desk'])
+  })
+
+  it('keeps scheduled runs out, archived ones included', () => {
+    const pool = mergeSessionPool({
+      ...base,
+      archived: [row('old-run', 30, { archived: true, source: 'cron' })],
+      local: [row('desk', 10)]
+    })
+
+    expect(pool.map(session => session.id)).toEqual(['desk'])
   })
 
   it('keeps one row per profile and id, the live copy winning over a stale archived one', () => {
