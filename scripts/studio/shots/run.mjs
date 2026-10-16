@@ -13,7 +13,8 @@
 // --installs-from <hermes-home> (reuse that home's prepared PM environment).
 // Options: --sandbox <dir> (default $TMPDIR/hermes-studio-shots), --out <dir>,
 // --scheme light|dark, --size 1440x900, --hermes <launcher> (backend command,
-// default this checkout's .hermes/bin/hermes from `source ./activate`), --hold <seconds>.
+// default this checkout's .hermes/bin/hermes from `source ./activate`), --hold <seconds>,
+// --native (macOS: capture the real window — glass, traffic lights — not the renderer).
 // Needs `npm run build` in apps/desktop first. Never touches ~/.hermes: the
 // backend runs with HOME and HERMES_HOME inside the sandbox.
 
@@ -195,10 +196,29 @@ async function openSession(page, title) {
   await sleep(1200)
 }
 
+// --native: capture the real macOS window (vibrancy, traffic lights, corners)
+// instead of the renderer — Electron's media source id carries the CGWindowID.
+let nativeApp = null
+
+async function nativeWindowId(page) {
+  return nativeApp.evaluate(({ BrowserWindow }, url) => {
+    const win = BrowserWindow.getAllWindows().find(w => !w.isDestroyed() && w.webContents.getURL() === url)
+    if (!win?.isVisible()) return null
+    win.focus()
+    return win.getMediaSourceId().split(':')[1] ?? null
+  }, page.url())
+}
+
 async function shot(page, name) {
   fs.mkdirSync(outDir, { recursive: true })
   const file = path.join(outDir, `${name}.png`)
-  await page.screenshot({ path: file })
+  const windowId = nativeApp && process.platform === 'darwin' ? await nativeWindowId(page) : null
+  if (windowId) {
+    await sleep(250)
+    spawnSync('screencapture', ['-x', '-o', `-l${windowId}`, file])
+  } else {
+    await page.screenshot({ path: file })
+  }
   console.log(`  ✓ ${name} → ${file}`)
 }
 
@@ -321,6 +341,7 @@ async function main() {
     cwd: DESKTOP,
     colorScheme: scheme
   })
+  if (flag('native')) nativeApp = app
   const logFile = fs.createWriteStream(path.join(sandbox, 'app.log'), { flags: 'a' })
   app.process().stdout?.on('data', data => logFile.write(data))
   app.process().stderr?.on('data', data => logFile.write(data))
