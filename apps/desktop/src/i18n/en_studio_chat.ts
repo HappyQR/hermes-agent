@@ -36,8 +36,6 @@ export const enStudioChat: StudioChatTranslations = {
     usageDetails: 'Usage details',
     effortOff: 'Off',
     moreSendOptions: 'More send options',
-    steerHint: 'after the next tool call',
-    redirectHint: 'stops, then sends',
     voiceOptionsHint: 'Right-click for voice options',
     voiceEngineHint: 'Right-click to choose the engine',
     placeholderBusy: combo => `Add context, or ${combo} to queue for the next turn`,

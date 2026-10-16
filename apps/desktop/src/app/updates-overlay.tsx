@@ -29,9 +29,8 @@ import type {
 } from '@/global'
 import { useI18n } from '@/i18n'
 import { buildCommitChangelog, type CommitGroup, formatFullChangelogText } from '@/lib/commit-changelog'
-import { AlertCircle, Check, Copy, ExternalLink, Terminal } from '@/lib/icons'
+import { AlertCircle, Check, Copy, Terminal } from '@/lib/icons'
 import { resolveUpdateCopy, rollbackRelease, type UpdateTarget } from '@/lib/update-copy'
-import { fetchUpdateNoteItems, updateNotesSource, updateNotesUrl, updateReleaseTag } from '@/lib/update-notes'
 import { cn } from '@/lib/utils'
 import {
   $backendUpdateApply,
@@ -60,63 +59,13 @@ function totalItems(groups: readonly CommitGroup[]) {
   return groups.reduce((sum, g) => sum + g.items.length, 0)
 }
 
-/** Release notes (stable) or the latest merged PRs (main); undefined while loading. */
-function useUpdateNotes(status: DesktopUpdateStatus | null, updateAvailable: boolean) {
-  const enabled = Boolean(status?.supported && !status.error && updateAvailable)
-  const source = status && enabled ? updateNotesSource(status) : null
-  const [items, setItems] = useState<{ for: DesktopUpdateStatus; items: string[] } | null>(null)
-
-  useEffect(() => {
-    const notesSource = status && enabled ? updateNotesSource(status) : null
-
-    if (!status || !notesSource) {
-      return
-    }
-
-    let live = true
-
-    void fetchUpdateNoteItems(notesSource, status).then(next => live && setItems({ for: status, items: next }))
-
-    return () => {
-      live = false
-    }
-  }, [enabled, status])
-
-  return {
-    items: items?.for === status ? items.items : undefined,
-    kind: source?.kind,
-    url: source && status ? updateNotesUrl(source, status) : null
-  }
-}
-
-type UpdateNotesView = ReturnType<typeof useUpdateNotes>
-
-/** The dialog's change list: fetched notes when they exist, else the commit changelog; plus the onward link. */
-function UpdateChangeList({
-  commitGroups,
-  notes: fetched,
-  rollback
-}: {
-  commitGroups: readonly CommitGroup[]
-  notes: UpdateNotesView
-  rollback: boolean
-}) {
-  const { t } = useI18n()
-  const u = t.updates
+/** The dialog's change list: the commit changelog, grouped. */
+function UpdateChangeList({ commitGroups, rollback }: { commitGroups: readonly CommitGroup[]; rollback: boolean }) {
   // A rollback brings no new changes; the "improvements" fallback would claim some.
-  const notes = rollback ? null : fetched
-  const pending = Boolean(notes?.url) && notes?.items === undefined
-
-  const shown: readonly CommitGroup[] =
-    rollback || pending
-      ? []
-      : notes?.items?.length
-        ? [{ id: 'new', items: notes.items, label: u.changeLogNew }]
-        : commitGroups
+  const shown: readonly CommitGroup[] = rollback ? [] : commitGroups
 
   return (
     <div className="grid gap-3">
-      {pending && <Loader className="mx-auto size-5" label={u.checking} type="lemniscate-bloom" />}
       {shown.map(group => (
         <div key={group.id}>
           <p className="text-[0.8125rem] font-semibold text-(--ui-text-primary)">{group.label}</p>
@@ -132,21 +81,6 @@ function UpdateChangeList({
           </ul>
         </div>
       ))}
-      {notes?.url && (
-        <a
-          className="inline-flex items-center gap-1 text-xs text-primary underline-offset-2 hover:underline"
-          href={notes.url}
-          onClick={event => {
-            event.preventDefault()
-            void window.hermesDesktop?.openExternal?.(event.currentTarget.href)
-          }}
-          rel="noreferrer"
-          target="_blank"
-        >
-          <ExternalLink className="size-3" />
-          {notes.kind === 'release' ? u.releaseNotes : t.settings.about.channel.allChanges}
-        </a>
-      )}
     </div>
   )
 }
@@ -293,7 +227,6 @@ function IdleView({
 }) {
   const { t } = useI18n()
   const u = t.updates
-  const notes = useUpdateNotes(status, updateAvailable)
 
   if (!status && checking) {
     return (
@@ -387,7 +320,6 @@ function IdleView({
     <UpdateAvailableView
       behind={behind}
       commits={commits}
-      notes={notes}
       onInstall={onInstall}
       onLater={onLater}
       status={status}
@@ -401,7 +333,6 @@ function IdleView({
 function UpdateAvailableView({
   behind,
   commits,
-  notes,
   onInstall,
   onLater,
   status,
@@ -410,7 +341,6 @@ function UpdateAvailableView({
 }: {
   behind: number
   commits: readonly DesktopUpdateCommit[]
-  notes: UpdateNotesView
   onInstall: () => void
   onLater: () => void
   status: DesktopUpdateStatus
@@ -431,9 +361,8 @@ function UpdateAvailableView({
     fallback: { label: u.changeLogFallbackLabel, item: u.changeLogFallbackItem }
   })
 
-  // Notes are their own summary and link onward, so the commit count tail would mismatch them.
   const shownItems = totalItems(groups)
-  const remaining = notes.items?.length ? 0 : Math.max(0, behind - shownItems)
+  const remaining = Math.max(0, behind - shownItems)
 
   // Name what's being updated. In remote mode the overlay acts on the connected
   // backend, not the local client — say so. When there are no commit rows to
@@ -450,7 +379,7 @@ function UpdateAvailableView({
         target,
         shownItems,
         channel: status?.channel === 'stable' ? 'stable' : 'main',
-        latestTag: updateReleaseTag(status),
+        latestTag: status?.latestTag ?? null,
         mechanism: status?.mechanism,
         copy: u
       })
@@ -475,7 +404,7 @@ function UpdateAvailableView({
       </div>
 
       <div className="max-h-64 overflow-y-auto rounded-[0.75rem] bg-(--ui-bg-editor) px-3.5 py-3 shadow-[0_0_0_0.5px_var(--ui-line-2)]">
-        <UpdateChangeList commitGroups={groups} notes={notes} rollback={Boolean(rollbackTag)} />
+        <UpdateChangeList commitGroups={groups} rollback={Boolean(rollbackTag)} />
       </div>
 
       {remaining > 0 && <p className="text-center text-xs text-(--ui-text-tertiary)">{u.moreChanges(remaining)}</p>}

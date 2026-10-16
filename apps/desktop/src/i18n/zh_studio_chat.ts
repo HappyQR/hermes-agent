@@ -35,8 +35,6 @@ export const zhStudioChat: StudioChatTranslations = {
     usageDetails: '用量详情',
     effortOff: '关闭',
     moreSendOptions: '更多发送方式',
-    steerHint: '下一次工具调用后',
-    redirectHint: '停止并发送',
     voiceOptionsHint: '右键查看语音选项',
     voiceEngineHint: '右键选择引擎',
     placeholderBusy: combo => `补充上下文，或按 ${combo} 排队到下一回合`,

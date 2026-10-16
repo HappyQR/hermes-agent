@@ -13,10 +13,10 @@ import {
 import { useTourMarker } from '@/app/chat/tour-marker'
 import type { GatewayRequester } from '@/app/contrib/types'
 import { useHudComposerDrag } from '@/app/hud/composer-drag'
-import { useBusyInputMode } from '@/app/session/hooks/use-busy-input-mode'
 import { composerFloatingStrip, composerInputBacking } from '@/components/chat/composer-dock'
 import { useSetupChatView } from '@/components/onboarding/first-run/assembly'
 import { OnboardingSkip } from '@/components/onboarding/skip-setup'
+import { Button } from '@/components/ui/button'
 import { Slot as ContribSlot } from '@/contrib/react/slot'
 import { useI18n } from '@/i18n'
 import { chatMessageText } from '@/lib/chat-messages'
@@ -27,10 +27,9 @@ import { isMacPlatform } from '@/lib/platform'
 import { useStoreSelector, useStoresSelector } from '@/lib/use-session-slice'
 import { cn } from '@/lib/utils'
 import { sessionCompacting } from '@/store/compaction'
-import { draftRetry } from '@/store/composer-draft-retry'
 import { browseBackward, browseForward, deriveUserHistory, isBrowsingHistory } from '@/store/composer-input-history'
 import { POPOUT_WIDTH_REM } from '@/store/composer-popout'
-import { parkQueuedPrompts } from '@/store/composer-queue'
+import { parkQueuedPrompts, removeQueuedPrompt, unparkQueuedPrompts } from '@/store/composer-queue'
 import { $hudMode } from '@/store/hud'
 import { $showsAdvancedChrome } from '@/store/interface-mode'
 import { $chatOnboardingSolo } from '@/store/onboarding-intro'
@@ -45,8 +44,6 @@ import { useTheme } from '@/themes'
 
 import { ActivityTray } from './activity-tray'
 import { AttachmentList } from './attachments'
-import { deriveBusySubmitState } from './busy-submit-state'
-import { ComposerDockGlow, QueuedEditBanner } from './chat-bar-parts'
 import { ComposerLeading, StudioComposerControls } from './composer-row'
 import {
   acceptsTriggerCompletion,
@@ -87,8 +84,7 @@ import { useSessionStatusPresence } from './hooks/use-status-presence'
 import { shouldConvertPasteToAttachment } from './large-paste'
 import { ActionBadges } from './micro-actions'
 import { chipTypedPathOnSpace, pathifyRefs } from './path-refs'
-import { PreparedImageRecovery } from './prepared-image-recovery'
-import { renderComposerQueueSlot } from './queue-slot'
+import { QueuePanel } from './queue-panel'
 import { RestoredDraftNotice } from './restored-draft-notice'
 import {
   beginComposerComposition,
@@ -176,21 +172,16 @@ export function ChatBar({
   const blockingPrompt = useStore(useMemo(() => sessionBlockingPrompt(sessionId ?? null), [sessionId]))
   const activeQueueSessionKey = queueSessionKey || sessionId || freshDraftKey || null
 
-  const requestBusyConfig = useCallback<GatewayRequester>(
-    (method, params) => (gateway ? gateway.request(method, params) : Promise.reject(new Error('Gateway unavailable'))),
-    [gateway]
-  )
-
-  const busyInputMode = useBusyInputMode({
-    sessionId: sessionId ?? null,
-    storedSessionId: queueSessionKey ?? null,
-    requestGateway: requestBusyConfig
-  })
-
   // Status items (subagents, background processes) are keyed by the RUNTIME
   // session id — gateway events and process.list both speak that id. Only the
   // queue uses the stored-session fallback key (prompts can queue pre-resume).
   const statusSessionId = sessionId ?? null
+
+  // The context gauge's gateway reads (usage breakdown, compress).
+  const requestGateway = useCallback<GatewayRequester>(
+    (method, params) => (gateway ? gateway.request(method, params) : Promise.reject(new Error('Gateway unavailable'))),
+    [gateway]
+  )
 
   // The guide's conversational steps have no use for the model pill and git
   // controls. Solo covers startup before the guide's session ids are known.
@@ -283,13 +274,11 @@ export function ChatBar({
     isHelpHint,
     isSteerableText,
     loadIntoComposer,
-    rememberDraftRetry,
     requestMainFocus,
     sessionIdRef,
     setComposerText,
     stashAt,
-    syncDraftFromEditor,
-    takeDraftRetry
+    syncDraftFromEditor
   } = useComposerDraft({ activeQueueSessionKey, focusKey, inputDisabled, queueEditRef, sessionId })
 
   useComposerScreenshot({ sessionKey: activeQueueSessionKey, focusKey, onAttachImageBlob })
@@ -392,23 +381,26 @@ export function ChatBar({
   })
 
   const hasComposerPayload = hasText || attachments.length > 0
-  const { cardWaiting } = useCardWaitingSubmit(sessionId ?? null, busy, hasComposerPayload)
+  const { canSubmit, cardWaiting } = useCardWaitingSubmit(sessionId ?? null, busy, hasComposerPayload)
 
-  const { busyAction, canSteer, canSubmit } = deriveBusySubmitState({
-    attachmentCount: attachments.length,
-    blockingPrompt,
-    busy,
-    busyInputMode,
-    compacting,
-    hasComposerPayload,
-    hasSteerHandler: !!onSteer,
-    isSteerableText
-  })
+  // Steer only makes sense mid-turn, text-only (the gateway can't carry images
+  // into a tool result) and never for a slash command (those execute inline).
+  // A blocking prompt (approval/sudo/secret) also rules it out: the tool batch
+  // is parked on the user, so a steer can't reach the model — text queues.
+  // Compaction does not: the gateway holds the correction until it finishes.
+  const canSteer = busy && !blockingPrompt && !!onSteer && attachments.length === 0 && isSteerableText
+
+  // While busy: text redirects the live turn (Cursor-style stop-and-correct),
+  // attachments queue for the next turn, an empty composer stops.
+  const busyAction: 'steer' | 'queue' | 'stop' = canSteer
+    ? 'steer'
+    : compacting || hasComposerPayload
+      ? 'queue'
+      : 'stop'
 
   // The submit engine — the orchestration seam where draft + queue meet. Owns
   // the submit decision tree, the send-with-restore primitive, and steer.
   const { queueDraft, steerDraft, submitDraft } = useComposerSubmit({
-    busyInputMode,
     activeQueueSessionKey,
     activeQueueSessionKeyRef,
     attachments,
@@ -434,9 +426,7 @@ export function ChatBar({
     queuedPrompts,
     sessionId,
     setComposerText,
-    stashAt,
-    rememberDraftRetry,
-    takeDraftRetry
+    stashAt
   })
 
   // Resting / reconnecting / starting placeholder text, re-rolled only on a real
@@ -1140,10 +1130,8 @@ export function ChatBar({
       onCompress={() => void Promise.resolve(onSubmit('/compress'))}
       onDictate={dictate}
       onQueue={queueDraft}
-      onRedirect={canSteer ? () => steerDraft('interrupt') : undefined}
-      onSteer={canSteer ? () => steerDraft('steer') : undefined}
       onToggleAutoSpeak={handleToggleAutoSpeak}
-      requestGateway={requestBusyConfig}
+      requestGateway={requestGateway}
       state={state}
       voiceStatus={voiceStatus}
     />
@@ -1258,7 +1246,26 @@ export function ChatBar({
 
   return (
     <>
-      {dragging && poppedOut && <ComposerDockGlow dockProximity={dockProximity} />}
+      {dragging && poppedOut && (
+        <div
+          aria-hidden
+          // `absolute`, not `fixed`: anchor to the chat-column root (the same
+          // `relative isolate` container the docked composer centers in) so the
+          // glow spans the thread area only — never the full viewport / under the
+          // sidebar. The dock target IS the docked position, so they must share
+          // a containing block.
+          className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-32"
+          style={{
+            // A bottom-centered radial glow — soft on every side by construction,
+            // so it reads as the dock target without any hard band edges. Its
+            // intensity tracks how close the composer is to the dock (1 = peak).
+            background:
+              'radial-gradient(64% 130% at 50% 100%, color-mix(in srgb, var(--color-primary) 26%, transparent) 0%, transparent 70%)',
+            // Scaled by --dock-glow-scale (lower in light mode — see styles.css).
+            opacity: `calc(${0.1 + dockProximity * 0.57} * var(--dock-glow-scale, 1))`
+          }}
+        />
+      )}
       <ComposerPrimitive.Unstable_TriggerPopoverRoot>
         {/* Dock column: owns the composer's POSITION and stacks, bottom-up,
             [micro actions] · [status stack] · [composer] · [underside].
@@ -1298,15 +1305,6 @@ export function ChatBar({
           <div className={cn(composerFloatingStrip, 'px-[5px] pb-1.5 empty:hidden')}>
             <ActionBadges sessionId={statusSessionId} />
             <SuggestionPills sessionId={statusSessionId} />
-            <PreparedImageRecovery
-              occupied={hasText || attachments.length > 0 || busy || disabled}
-              onRestore={(text, restored, id) => {
-                loadIntoComposer(text, restored)
-                rememberDraftRetry(activeQueueSessionKey, draftRetry(id, text, restored))
-              }}
-              request={requestBusyConfig}
-              sessionKey={activeQueueSessionKey}
-            />
             <OnboardingSkip sessionId={statusSessionId} />
           </div>
           {/* Session-scoped status (todos, subagents, background tasks, queue),
@@ -1336,21 +1334,33 @@ export function ChatBar({
               />
             )}
             onSubmit={onSubmit}
-            queue={renderComposerQueueSlot({
-              activeQueueSessionKey,
-              beginQueuedEdit,
-              busy,
-              drainNextQueued,
-              exitQueuedEdit,
-              gateway,
-              queueEdit,
-              queueParked,
-              queuedPrompts,
-              sendQueuedNow,
-              sessionId,
-              steerQueuedNow,
-              t
-            })}
+            queue={
+              activeQueueSessionKey && queuedPrompts.length > 0 ? (
+                <QueuePanel
+                  busy={busy}
+                  editingId={queueEdit?.entryId ?? null}
+                  entries={queuedPrompts}
+                  onDelete={id => {
+                    if (removeQueuedPrompt(activeQueueSessionKey, id) && queueEdit?.entryId === id) {
+                      exitQueuedEdit('cancel')
+                    }
+                  }}
+                  onEdit={beginQueuedEdit}
+                  onResume={() => {
+                    unparkQueuedPrompts(activeQueueSessionKey)
+
+                    // Idle → kick the head immediately; busy → the settle drain
+                    // takes over now that the park is lifted.
+                    if (!busy) {
+                      void drainNextQueued()
+                    }
+                  }}
+                  onSendNow={id => void sendQueuedNow(id)}
+                  onSteerNow={id => void steerQueuedNow(id)}
+                  parked={queueParked}
+                />
+              ) : null
+            }
             sessionId={statusSessionId}
           />
           <ComposerPrimitive.Root
@@ -1482,7 +1492,30 @@ export function ChatBar({
                     onUndone={clearDraft}
                     readLiveText={syncDraftFromEditor}
                   />
-                  {queueEdit && editingQueuedPrompt && <QueuedEditBanner onExit={exitQueuedEdit} />}
+                  {queueEdit && editingQueuedPrompt && (
+                    <div className="flex items-center justify-between gap-2 rounded-lg border border-[color-mix(in_srgb,var(--dt-composer-ring)_32%,transparent)] bg-accent/18 px-2 py-1">
+                      <div className="min-w-0 text-[0.7rem] text-muted-foreground/88">
+                        {t.composer.editingQueuedInComposer}
+                      </div>
+                      <div className="flex shrink-0 items-center gap-1">
+                        <Button
+                          className="h-6 rounded-md px-2 text-[0.68rem]"
+                          onClick={() => exitQueuedEdit('cancel')}
+                          type="button"
+                          variant="ghost"
+                        >
+                          {t.common.cancel}
+                        </Button>
+                        <Button
+                          className="h-6 rounded-md px-2 text-[0.68rem]"
+                          onClick={() => exitQueuedEdit('save')}
+                          type="button"
+                        >
+                          {t.common.save}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                   {attachments.length > 0 && <AttachmentList attachments={attachments} onRemove={onRemoveAttachment} />}
                   <div
                     className={cn(

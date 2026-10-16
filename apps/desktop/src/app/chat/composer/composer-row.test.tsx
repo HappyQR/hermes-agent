@@ -72,25 +72,26 @@ describe('the primary button', () => {
     expect(screen.queryByRole('button', { name: 'More send options' })).toBeNull()
   })
 
-  it('follows the busy mode mid-turn and offers the other modes behind the chevron', () => {
+  it('steers a draft mid-turn and offers queueing behind the chevron', () => {
     const onQueue = vi.fn()
-    const onSteer = vi.fn()
-    send({ busy: true, busyAction: 'interrupt', hasComposerPayload: true, onQueue, onRedirect: vi.fn(), onSteer })
+    send({ busy: true, busyAction: 'steer', hasComposerPayload: true, onQueue })
 
-    expect(document.querySelector('button[type="submit"]')?.getAttribute('aria-label')).toBe('Redirect the current run')
+    expect(document.querySelector('button[type="submit"]')?.getAttribute('aria-label')).toBe('Steer the current run')
     fireEvent.keyDown(screen.getByRole('button', { name: 'More send options' }), { key: 'Enter' })
 
-    const menu = screen.getByRole('menu')
-    expect(within(menu).getByRole('menuitem', { name: /Queue message/ })).toBeTruthy()
-    expect(within(menu).queryByRole('menuitem', { name: /Redirect/ })).toBeNull()
+    fireEvent.click(within(screen.getByRole('menu')).getByRole('menuitem', { name: /Queue message/ }))
+    expect(onQueue).toHaveBeenCalledOnce()
+  })
 
-    fireEvent.click(within(menu).getByRole('menuitem', { name: /Steer the current run/ }))
-    expect(onSteer).toHaveBeenCalledOnce()
-    expect(onQueue).not.toHaveBeenCalled()
+  it('queues a draft it cannot steer, with nothing behind the chevron', () => {
+    send({ busy: true, busyAction: 'queue', hasComposerPayload: true })
+
+    expect(document.querySelector('button[type="submit"]')?.getAttribute('aria-label')).toBe('Queue message')
+    expect(screen.queryByRole('button', { name: 'More send options' })).toBeNull()
   })
 
   it('answers a waiting card through Send, without other modes', () => {
-    send({ busy: true, busyAction: 'queue', cardWaiting: true, hasComposerPayload: true, onSteer: vi.fn() })
+    send({ busy: true, busyAction: 'queue', cardWaiting: true, hasComposerPayload: true })
 
     expect(screen.getByRole('button', { name: 'Send' })).toBeTruthy()
     expect(screen.queryByRole('button', { name: 'More send options' })).toBeNull()

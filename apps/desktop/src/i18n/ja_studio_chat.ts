@@ -36,8 +36,6 @@ export const jaStudioChat: StudioChatTranslations = {
     usageDetails: '使用量の詳細',
     effortOff: 'オフ',
     moreSendOptions: 'その他の送信方法',
-    steerHint: '次のツール呼び出しの後',
-    redirectHint: '停止してから送信',
     voiceOptionsHint: '右クリックで音声オプション',
     voiceEngineHint: '右クリックでエンジンを選択',
     placeholderBusy: combo => `コンテキストを追加するか、${combo} で次のターンに予約`,

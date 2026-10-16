@@ -36,8 +36,6 @@ export const esStudioChat: StudioChatTranslations = {
     usageDetails: 'Detalles de uso',
     effortOff: 'Desactivado',
     moreSendOptions: 'Más opciones de envío',
-    steerHint: 'tras la próxima llamada a herramienta',
-    redirectHint: 'detiene y envía',
     voiceOptionsHint: 'Clic derecho para opciones de voz',
     voiceEngineHint: 'Clic derecho para elegir el motor',
     placeholderBusy: combo => `Añade contexto o pulsa ${combo} para enviarlo en el próximo turno`,

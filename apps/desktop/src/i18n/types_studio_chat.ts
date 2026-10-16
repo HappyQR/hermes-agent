@@ -78,8 +78,6 @@ export interface StudioChatComposerTranslations {
   /** The pill's effort when thinking is off. */
   effortOff: string
   moreSendOptions: string
-  steerHint: string
-  redirectHint: string
   voiceOptionsHint: string
   voiceEngineHint: string
   /** Placeholder while a turn runs; `combo` is the live queue shortcut. */

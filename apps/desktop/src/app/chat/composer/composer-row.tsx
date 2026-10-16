@@ -55,7 +55,6 @@ type UpstreamControlsProps = ComponentProps<typeof ComposerControls>
 export interface StudioComposerControlsProps extends UpstreamControlsProps {
   /** `/compress` through the composer's own submit (the context panel's Compress). */
   onCompress?: () => void
-  onRedirect?: () => void
   requestGateway: Requester
 }
 
@@ -65,7 +64,7 @@ export interface StudioComposerControlsProps extends UpstreamControlsProps {
  * into the voice capsule; the HUD's Spotlight bar keeps upstream's controls.
  */
 export function StudioComposerControls(props: StudioComposerControlsProps) {
-  const { onCompress, onRedirect, requestGateway, ...upstream } = props
+  const { onCompress, requestGateway, ...upstream } = props
   const { t } = useI18n()
   const hudMode = useStore($hudMode)
   const reasoning = useReasoningSummary(upstream.state.model)
@@ -148,9 +147,7 @@ export function StudioComposerControls(props: StudioComposerControlsProps) {
         disabled={disabled}
         hasComposerPayload={upstream.hasComposerPayload}
         onQueue={upstream.onQueue}
-        onRedirect={onRedirect}
         onStartVoice={upstream.conversation.onStart}
-        onSteer={upstream.onSteer}
       />
     </div>
   )

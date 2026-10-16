@@ -47,8 +47,6 @@ export const ruStudioChat: StudioChatTranslations = {
     usageDetails: 'Подробности использования',
     effortOff: 'Выкл.',
     moreSendOptions: 'Другие способы отправки',
-    steerHint: 'после следующего вызова инструмента',
-    redirectHint: 'останавливает и отправляет',
     voiceOptionsHint: 'Правый щелчок — параметры голоса',
     voiceEngineHint: 'Правый щелчок — выбор движка',
     placeholderBusy: combo => `Добавьте контекст или нажмите ${combo}, чтобы отправить в следующем ходе`,

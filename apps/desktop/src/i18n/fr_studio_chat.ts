@@ -40,8 +40,6 @@ export const frStudioChat: StudioChatTranslations = {
     usageDetails: 'Détails d’utilisation',
     effortOff: 'Désactivé',
     moreSendOptions: 'Autres options d’envoi',
-    steerHint: 'après le prochain appel d’outil',
-    redirectHint: 'arrête, puis envoie',
     voiceOptionsHint: 'Clic droit pour les options vocales',
     voiceEngineHint: 'Clic droit pour choisir le moteur',
     placeholderBusy: combo => `Ajoutez du contexte, ou ${combo} pour l’envoyer au prochain tour`,

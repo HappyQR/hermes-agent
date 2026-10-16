@@ -58,8 +58,6 @@ export const arStudioChat: StudioChatTranslations = {
     usageDetails: 'تفاصيل الاستخدام',
     effortOff: 'متوقف',
     moreSendOptions: 'خيارات إرسال أخرى',
-    steerHint: 'بعد استدعاء الأداة التالي',
-    redirectHint: 'يتوقف ثم يرسل',
     voiceOptionsHint: 'انقر بزر الفأرة الأيمن لخيارات الصوت',
     voiceEngineHint: 'انقر بزر الفأرة الأيمن لاختيار المحرك',
     placeholderBusy: combo => `أضف سياقًا، أو اضغط ${combo} لإرساله في الجولة التالية`,

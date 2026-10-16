@@ -38,8 +38,6 @@ export const deStudioChat: StudioChatTranslations = {
     usageDetails: 'Nutzungsdetails',
     effortOff: 'Aus',
     moreSendOptions: 'Weitere Sendeoptionen',
-    steerHint: 'nach dem nächsten Tool-Aufruf',
-    redirectHint: 'stoppt, dann senden',
     voiceOptionsHint: 'Rechtsklick für Sprachoptionen',
     voiceEngineHint: 'Rechtsklick, um die Engine zu wählen',
     placeholderBusy: combo => `Kontext ergänzen oder ${combo}, um es für den nächsten Zug einzureihen`,
