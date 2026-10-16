@@ -122,6 +122,21 @@ export default {
     }
   },
 
+  // A turn watched live: its reply footer carries the turn time (the meta the
+  // prototype reads as "model · tokens · 48 秒"; only the time exists per reply,
+  // and only until the transcript re-hydrates, so the shot is taken at once).
+  async 'reply-meta'(page, { composer, shot, sleep }) {
+    await sleep(3000)
+    await page.keyboard.press('Meta+N')
+    await sleep(1500)
+    const editor = await composer(page)
+    await editor.click()
+    await editor.pressSequentially('ping', { delay: 30 })
+    await editor.press('Enter')
+    await page.locator('[data-slot="aui_turn-duration"]').last().waitFor({ state: 'visible', timeout: 45_000 }).catch(() => {})
+    await shot(page, 'reply-meta')
+  },
+
   // The empty state (greeting, hero composer, starters), then a starter drafted.
   async empty(page, { newChat, shot, sleep }) {
     await newChat(page)

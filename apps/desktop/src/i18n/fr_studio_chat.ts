@@ -109,6 +109,12 @@ export const frStudioChat: StudioChatTranslations = {
     doneSpeaking: 'J’ai fini'
   },
   transcript: {
+    replyDuration: seconds => {
+      const m = Math.floor(seconds / 60)
+      const s = seconds % 60
+
+      return m === 0 ? `${s} s` : s === 0 ? `${m} min` : `${m} min ${s} s`
+    },
     searchResults: 'Résultats de recherche',
     delegatedTask: 'Tâche déléguée',
     delegateSpawned: count => `${count} sous-agent${count > 1 ? 's' : ''} lancé${count > 1 ? 's' : ''}`,

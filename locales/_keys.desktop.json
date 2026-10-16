@@ -4914,6 +4914,7 @@
     "studio.chat.transcript.previousVersion",
     "studio.chat.transcript.questions",
     "studio.chat.transcript.recommended",
+    "studio.chat.transcript.replyDuration",
     "studio.chat.transcript.searchResults",
     "studio.chat.transcript.timelineLabel",
     "studio.chat.tray.approval",

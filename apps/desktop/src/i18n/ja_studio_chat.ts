@@ -97,6 +97,12 @@ export const jaStudioChat: StudioChatTranslations = {
     doneSpeaking: '話し終えた'
   },
   transcript: {
+    replyDuration: seconds => {
+      const m = Math.floor(seconds / 60)
+      const s = seconds % 60
+
+      return m === 0 ? `${s} 秒` : s === 0 ? `${m} 分` : `${m} 分 ${s} 秒`
+    },
     searchResults: '検索結果',
     delegatedTask: '委任したタスク',
     delegateSpawned: count => `${count} 個のサブエージェントを起動`,

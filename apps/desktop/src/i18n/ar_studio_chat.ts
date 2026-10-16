@@ -126,6 +126,12 @@ export const arStudioChat: StudioChatTranslations = {
     doneSpeaking: 'انتهيت من الكلام'
   },
   transcript: {
+    replyDuration: seconds => {
+      const m = Math.floor(seconds / 60)
+      const s = seconds % 60
+
+      return m === 0 ? `${s} ث` : s === 0 ? `${m} د` : `${m} د ${s} ث`
+    },
     searchResults: 'نتائج البحث',
     delegatedTask: 'مهمة مفوَّضة',
     delegateSpawned: count => `أنشأ ${count} من الوكلاء الفرعيين`,

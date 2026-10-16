@@ -96,6 +96,12 @@ export const zhHantStudioChat: StudioChatTranslations = {
     doneSpeaking: '說完了'
   },
   transcript: {
+    replyDuration: seconds => {
+      const m = Math.floor(seconds / 60)
+      const s = seconds % 60
+
+      return m === 0 ? `${s} 秒` : s === 0 ? `${m} 分鐘` : `${m} 分 ${s} 秒`
+    },
     searchResults: '搜尋結果',
     delegatedTask: '委派的任務',
     delegateSpawned: count => `衍生了 ${count} 個子代理`,

@@ -11,6 +11,8 @@ export interface StudioChatTranslations {
 
 /** Messages, their actions, cards and decisions in the transcript. */
 export interface StudioChatTranscriptTranslations {
+  /** A reply's turn time in the footer meta (prototype "48 秒"). */
+  replyDuration: (seconds: number) => string
   /** The web search row's detail label. */
   searchResults: string
   /** A delegated child's title when its call carried no goal. */

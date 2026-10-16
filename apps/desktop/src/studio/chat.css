@@ -404,6 +404,12 @@
   font-size: 0.71875rem;
 }
 
+/* The meta reads as one line (prototype "model · tokens · 48 秒"). */
+.studio-msg-meta + .studio-msg-meta::before {
+  content: '·';
+  margin-inline-end: 0.375rem;
+}
+
 /* ── Composer (prototype .composer / .cmp-*) ───────────────────────────
    Scoped to the docked / floating composer; the HUD's Spotlight bar keeps its
    own geometry (its rules live under [data-hud-shell] in styles.css). */

@@ -97,6 +97,9 @@ export const enStudioChat: StudioChatTranslations = {
     doneSpeaking: 'Done speaking'
   },
   transcript: {
+    // Same as the classic footer's timer text (48s, 1:05).
+    replyDuration: seconds =>
+      seconds < 60 ? `${seconds}s` : `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`,
     searchResults: 'Search results',
     delegatedTask: 'Delegated task',
     delegateSpawned: count => `Spawned ${count} subagent${count === 1 ? '' : 's'}`,

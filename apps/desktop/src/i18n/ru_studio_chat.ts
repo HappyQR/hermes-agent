@@ -113,6 +113,12 @@ export const ruStudioChat: StudioChatTranslations = {
     doneSpeaking: 'Я закончил'
   },
   transcript: {
+    replyDuration: seconds => {
+      const m = Math.floor(seconds / 60)
+      const s = seconds % 60
+
+      return m === 0 ? `${s} с` : s === 0 ? `${m} мин` : `${m} мин ${s} с`
+    },
     searchResults: 'Результаты поиска',
     delegatedTask: 'Поручённая задача',
     delegateSpawned: count => `Запущено субагентов: ${count}`,
