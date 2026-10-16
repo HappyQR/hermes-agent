@@ -19,7 +19,17 @@ afterEach(() => {
 function mountRail(right: number) {
   const rail = document.createElement('div')
   rail.setAttribute('data-slot', 'sidebar')
-  rail.getBoundingClientRect = () => ({ bottom: 0, height: 0, left: 0, right, top: 0, width: right, x: 0, y: 0, toJSON: () => ({}) })
+  rail.getBoundingClientRect = () => ({
+    bottom: 0,
+    height: 0,
+    left: 0,
+    right,
+    top: 0,
+    width: right,
+    x: 0,
+    y: 0,
+    toJSON: () => ({})
+  })
   document.body.append(rail)
 
   return rail
