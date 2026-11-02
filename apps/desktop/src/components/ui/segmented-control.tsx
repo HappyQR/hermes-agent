@@ -24,6 +24,9 @@ interface SegmentedControlProps<T extends string> {
   size?: 'default' | 'sm'
   /** Names the group for assistive tech (the visible options are its members). */
   'aria-label'?: string
+  /** `equal` (default) gives every option the widest option's width; `content`
+   *  sizes each option to its own label, for filters with uneven labels/counts. */
+  sizing?: 'equal' | 'content'
 }
 
 interface ThumbBox {
@@ -89,6 +92,7 @@ export function SegmentedControl<T extends string>({
   onChange,
   options,
   size = 'default',
+  sizing = 'equal',
   value,
   'aria-label': ariaLabel
 }: SegmentedControlProps<T>) {
@@ -98,7 +102,8 @@ export function SegmentedControl<T extends string>({
     <div
       aria-label={ariaLabel}
       className={cn(
-        'relative inline-grid w-fit auto-cols-fr grid-flow-col rounded-[8px] bg-(--ui-fill) p-0.5',
+        'relative inline-grid w-fit grid-flow-col rounded-[8px] bg-(--ui-fill) p-0.5',
+        sizing === 'equal' ? 'auto-cols-fr' : 'auto-cols-max',
         disabled && 'opacity-50',
         className
       )}
@@ -138,7 +143,9 @@ export function SegmentedControl<T extends string>({
             {/* A squeezed track ellipsizes a label inside its own cell; it never
                 wraps or paints across the neighbouring option. */}
             <span className="min-w-0 truncate">{label}</span>
-            {meta !== undefined ? <span className="shrink-0 tabular-nums text-(--ui-text-tertiary)">{meta}</span> : null}
+            {meta !== undefined ? (
+              <span className="shrink-0 tabular-nums text-(--ui-text-tertiary)">{meta}</span>
+            ) : null}
           </button>
         )
       })}

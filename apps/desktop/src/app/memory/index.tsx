@@ -11,7 +11,7 @@ import { SegmentedControl } from '@/components/ui/segmented-control'
 import { StudioIcon } from '@/components/ui/studio-icon'
 import { Tip } from '@/components/ui/tooltip'
 import { useI18n } from '@/i18n'
-import { $starmapError, $starmapGraph, $starmapLoading, loadStarmapGraph } from '@/store/starmap'
+import { $starmapError, $starmapGraph, $starmapLoading, loadStarmapGraph, watchStarmapGraph } from '@/store/starmap'
 import type { StarmapGraph } from '@/types/hermes'
 
 import { useRefreshHotkey } from '../hooks/use-refresh-hotkey'
@@ -53,12 +53,9 @@ export function MemoryView({ setStatusbarItemGroup: _setStatusbarItemGroup, ...p
   const [imported, setImported] = useState<StarmapGraph | null>(null)
   const actions = useNodeActions()
 
-  // Load on mount and whenever the cache is dropped (a profile switch resets it).
-  useEffect(() => {
-    if (!graph && !error) {
-      void loadStarmapGraph()
-    }
-  }, [error, graph])
+  // Loads on open and reloads after a profile/gateway switch while the page stays open
+  // (once requests route to the new scope, not the moment the cache is dropped).
+  useEffect(() => watchStarmapGraph(), [])
 
   useEffect(() => {
     setImported(null)

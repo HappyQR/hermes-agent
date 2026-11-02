@@ -1,5 +1,7 @@
+import './ui/page.css'
+
 import type * as React from 'react'
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { PageLoader } from '@/components/page-loader'
 import { StudioPage, StudioToolbar, ToolbarSpacer } from '@/components/studio/pages/page'
@@ -19,6 +21,8 @@ import { useRouteEnumParam } from '../hooks/use-route-enum-param'
 import { PanelEmpty } from '../overlays/panel'
 import type { SetStatusbarItemGroup } from '../shell/statusbar-controls'
 
+import { syncCatalogArcs } from './catalog/catalog-arc'
+import { prefetchCatalogWhenIdle } from './catalog/catalog-data'
 import { ConnectorsTab } from './connectors/connectors-tab'
 import { PluginsTab } from './plugins/plugins-tab'
 import { useCapabilityScope } from './scope-selector'
@@ -31,7 +35,8 @@ import { TOOLSETS_QUERY_KEY, useToolsetsQuery } from './toolsets/toolsets-data'
 import { ToolsetsTab } from './toolsets/toolsets-tab'
 
 // Skills Hub browsing lives inside the Skills tab. Legacy `?tab=hub`
-// links fall back to 'skills' via useRouteEnumParam.
+// links fall back to 'skills' via useRouteEnumParam. The order is the page
+// switch's (prototype pages.js:24): Skills, Tools, Connectors, Plugins.
 const CAPABILITY_MODES = ['skills', 'toolsets', 'connectors', 'plugins'] as const
 
 type CapabilityMode = (typeof CAPABILITY_MODES)[number]
@@ -103,9 +108,19 @@ export function CapabilitiesView({
 
   useRefreshHotkey(refreshCapabilities)
 
-  // MCP and Plugins load independently of the installed Skills/Tools lists.
-  const gated = mode === 'toolsets' || mode === 'skills'
+  // Plugins is small enough to warm from any tab (its own tab included: the
+  // catalog waits behind a sheet there). Skills (~100k rows) only loads when
+  // the hub opens: an idle parse of it would still block the page.
+  useEffect(() => prefetchCatalogWhenIdle('plugins'), [])
+  useEffect(syncCatalogArcs, [])
+
+  // MCP and Plugins load independently of the installed Skills/Tools lists;
+  // Skills shows its own pending/failed state so the hub stays reachable.
+  const gated = mode === 'toolsets'
   const pending = gated && !(skills && toolsets)
+  // Skills and Tools search from the page toolbar; Connectors and Plugins
+  // bring their own field into the same spot.
+  const pageSearch = mode === 'skills' || mode === 'toolsets'
 
   const loadGate = !pending ? null : skillsFailed || toolsetsFailed ? (
     <PanelEmpty
@@ -136,9 +151,13 @@ export function CapabilitiesView({
     // Agent plugins for the scoped profile (the toolbar's scope pop-up governs
     // the Agent column), app-level desktop plugins, and the catalog sheet.
     plugins: () => <PluginsTab key={`plugins-${scope.key}`} profile={scope.profile} scopeLabel={scope.label} />,
+    // The installed list loads beside the tab, not in front of it: the Skills
+    // Hub sheet stays browsable while it is pending or failed.
     skills: () => (
       <SkillsTab
         embedded={embedded}
+        installedError={skillsError}
+        installedPending={!skills || skillsFailed}
         key={`skills-${scope.key}`}
         onRefresh={() => void refreshCapabilities()}
         profile={scope.profile}
@@ -162,11 +181,9 @@ export function CapabilitiesView({
     </div>
   )
 
-  // Skills and Tools search here; Connectors and Plugins bring their own
-  // field into the same spot.
   const toolbar = (
     <StudioToolbar>
-      {gated ? (
+      {pageSearch ? (
         <SearchField
           aria-label={c.searchLabel}
           containerClassName="w-[16.25rem] max-w-full"

@@ -243,7 +243,7 @@ export const frStudioPages: StudioPagesTranslations = {
       officialSource: category => `Officielle · ${category}`,
       browseHub: 'Parcourir le hub de compétences',
       hubTitle: 'Hub de compétences',
-      hubHint: 'Choisissez « + Add to this Agent » sur une compétence pour l’installer dans le profil sélectionné.',
+      hubHint: 'Choisissez « + » sur une compétence pour l’installer dans le profil sélectionné.',
       archiveEllipsis: 'Archiver…',
       editSkillMd: 'Modifier SKILL.md',
       done: 'Terminé',
@@ -341,7 +341,7 @@ export const frStudioPages: StudioPagesTranslations = {
       browseCatalog: 'Parcourir le catalogue de plugins',
       catalogTitle: 'Catalogue de plugins',
       catalogHint:
-        'Choisissez « + Add to this Agent » sur un plugin. Les entrées vérifiées s’installent à leur commit épinglé dans le profil sélectionné.',
+        'Choisissez « + » sur un plugin. Les entrées vérifiées s’installent à leur commit épinglé dans le profil sélectionné.',
       settingsTip: 'Réglages du plugin',
       noMatch: query => `Aucun plugin ne correspond à « ${query} ».`
     }

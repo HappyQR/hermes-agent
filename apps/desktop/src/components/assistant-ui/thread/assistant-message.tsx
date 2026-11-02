@@ -9,13 +9,14 @@ import {
   useThreadRuntime
 } from '@assistant-ui/react'
 import { useStore } from '@nanostores/react'
-import { type FC, type ReactElement, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { type FC, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { useInRouterContext, useNavigate } from 'react-router'
 
 import { requestModelMenuToggle } from '@/app/chat/composer/focus'
 import { useComposerScope } from '@/app/chat/composer/scope'
 import { useSessionView } from '@/app/chat/session-view'
 import { SETTINGS_ROUTE } from '@/app/routes'
+import { useBillingApi } from '@/app/settings/billing/api'
 import { dispatchedTo } from '@/components/assistant-ui/thread/agent-delivery'
 import { StudioAssistantFooter } from '@/components/assistant-ui/thread/assistant-footer-studio'
 import { ChangedFilesCard } from '@/components/assistant-ui/thread/changed-files-card'
@@ -51,7 +52,8 @@ import {
   formatLimitReset,
   formatResetClock,
   isOAuthReauthSurface,
-  scheduledRetryDelayMs
+  scheduledRetryDelayMs,
+  type UsageLimitSuggestion
 } from '@/lib/error-surface'
 import { errorCardText } from '@/lib/error-surface-copy'
 import { triggerHaptic } from '@/lib/haptics'
@@ -71,6 +73,7 @@ import { markAssistantIdSpoken } from '@/lib/spoken-reply'
 import { useEnterAnimation } from '@/lib/use-enter-animation'
 import { cn } from '@/lib/utils'
 import { playSpeechText, stopVoicePlayback } from '@/lib/voice-playback'
+import { requestBillingSettings } from '@/store/billing-block'
 import { DESKTOP_BUTTON_ACTIONS, recordAction } from '@/store/desktop-metrics'
 import { openFreeTierSignIn } from '@/store/free-tier-sign-in'
 import { notifyError } from '@/store/notifications'
@@ -594,6 +597,16 @@ const useErrorText = () =>
     return status?.type === 'incomplete' && typeof status.error === 'string' ? status.error : ''
   })
 
+// When the failure was recorded: the settled bubble's completion (the terminal frame's time), else the
+// row's own timestamp for a hydrated card. Never `createdAt`, whose fallback is render time.
+const useErrorFailedAt = () =>
+  useAuiState(s => {
+    const custom = s.message.metadata?.custom as { timelineCompletedAt?: unknown; timelineTimestamp?: unknown }
+    const at = custom?.timelineCompletedAt ?? custom?.timelineTimestamp
+
+    return typeof at === 'number' && Number.isFinite(at) && at > 0 ? at : undefined
+  })
+
 const ErrorCardHeadline: FC = () => {
   const { t } = useI18n()
   const surface = useErrorSurface()
@@ -745,6 +758,95 @@ const CompressConversationAction: FC<{ label: string }> = ({ label }) => {
   )
 }
 
+// usage_window: "Switch to Model A" — the plan's recommended model that
+// still works past the limit (agent/plan_limits.py picked it). Switches THIS
+// session (session.info repaints the composer), then re-runs the refused turn
+// only once the switch applied: a guarded target waits for the user's answer,
+// and keeping the current model re-runs nothing. Session-only on purpose: the
+// user's default stays put.
+const SwitchToModelAction: FC<{ suggestion: UsageLimitSuggestion }> = ({ suggestion }) => {
+  const { t } = useI18n()
+  const copy = t.assistant.thread
+  const aui = useAui()
+  const view = useSessionView()
+  const sessionId = useStore(view.$runtimeId)
+  const [busy, setBusy] = useState(false)
+
+  const switchAndRetry = useCallback(async () => {
+    const switchSessionModel = sessionTileDelegate()?.switchSessionModel
+
+    if (!sessionId || !switchSessionModel) {
+      notifyError(new Error('session delegate unavailable'), copy.errorSwitchModelFailed)
+
+      return
+    }
+
+    triggerHaptic('submit')
+    setBusy(true)
+
+    try {
+      if (await switchSessionModel(sessionId, suggestion.model, suggestion.provider)) {
+        aui.message().reload()
+      }
+    } catch (error) {
+      notifyError(error, copy.errorSwitchModelFailed)
+    } finally {
+      setBusy(false)
+    }
+  }, [aui, copy.errorSwitchModelFailed, sessionId, suggestion.model, suggestion.provider])
+
+  return (
+    <button className="aui-error-action" disabled={busy} onClick={() => void switchAndRetry()} type="button">
+      {busy && <Loader2Icon className="size-3 animate-spin" />}
+      {copy.errorSwitchToModel(suggestion.label, suggestion.note)}
+    </button>
+  )
+}
+
+// usage_window, Keep going off with a balance: "Use credits" turns the account
+// setting on (the same call as Settings → Billing's switch), then re-runs the
+// turn. A refusal (remote spending not allowed yet, step-up) opens Billing, which
+// explains and fixes it.
+const UseCreditsAction: FC = () => {
+  const { t } = useI18n()
+  const copy = t.assistant.thread
+  const aui = useAui()
+  const api = useBillingApi()
+  const [busy, setBusy] = useState(false)
+
+  const turnOnCredits = useCallback(async () => {
+    triggerHaptic('submit')
+    setBusy(true)
+
+    try {
+      const result = await api.updateKeepGoingOnCredits(true)
+
+      if (result.ok) {
+        aui.message().reload()
+      } else {
+        requestBillingSettings()
+      }
+    } catch (error) {
+      notifyError(error, copy.errorUseCreditsFailed)
+    } finally {
+      setBusy(false)
+    }
+  }, [api, aui, copy.errorUseCreditsFailed])
+
+  return (
+    <button className="aui-error-action" disabled={busy} onClick={() => void turnOnCredits()} type="button">
+      {busy && <Loader2Icon className="size-3 animate-spin" />}
+      {copy.errorUseCredits}
+    </button>
+  )
+}
+
+// A plan limit names the fix as choosing another model; every other failure keeps "switch provider".
+const switchProviderLabel = (
+  copy: { errorChooseModel: string; errorSwitchProvider: string },
+  surface?: ErrorSurface
+) => (surface?.code === 'usage_window' ? copy.errorChooseModel : copy.errorSwitchProvider)
+
 // One client-side retry of THIS turn at the provider's own reset moment (#98852,
 // option B): arm → visible countdown + Cancel → fires `message().reload()` — the
 // exact call behind the Retry button — exactly once. Nothing persists: closing
@@ -826,11 +928,13 @@ const ScheduledRetryAction: FC<{ resetsAt: number }> = ({ resetsAt }) => {
   )
 }
 
+// health: allow CC -- usage-window limit card: an Open Billing button, and diagnostics hidden for plan limits; this action bar was over target on main
 const ErrorRecoveryActions: FC = () => {
   const { t } = useI18n()
   const copy = t.assistant.thread
   const surface = useErrorSurface()
   const errorText = useErrorText()
+  const failedAt = useErrorFailedAt()
 
   // useNavigate() would throw here when no Router is above us; the deep-link
   // children mount only when one is (see SettingsLinkAction).
@@ -916,10 +1020,11 @@ const ErrorRecoveryActions: FC = () => {
     () =>
       formatErrorDiagnostics({
         errorText,
+        failedAt,
         model: model || undefined,
         surface
       }),
-    [errorText, model, surface]
+    [errorText, failedAt, model, surface]
   )
 
   const startNewSession = useCallback(() => {
@@ -939,9 +1044,29 @@ const ErrorRecoveryActions: FC = () => {
 
   const reauthLabel = isOAuthReauthSurface(surface) ? surface.providerLabel || surface.provider : ''
 
+  const limitSuggestion = surface?.usageLimit?.suggestions[0]
+
+  // A window plan's limit has two ways on, one click each: switch to the
+  // plan's suggested model, and use credits (Open billing adds them). Both
+  // stay on the card — the first as the primary — ahead of every other fix.
+  const limitFixes: [boolean, ReactNode][] = [
+    [
+      plan.switchToModel && limitSuggestion !== undefined,
+      limitSuggestion && <SwitchToModelAction key="switch-model" suggestion={limitSuggestion} />
+    ],
+    [plan.useCredits, <UseCreditsAction key="use-credits" />],
+    [
+      plan.openBilling,
+      <button className="aui-error-action" key="billing" onClick={() => requestBillingSettings()} type="button">
+        {copy.errorOpenBillingSettings}
+      </button>
+    ]
+  ]
+
   // Hermes Studio: the card leads with ONE fix — the first that applies, in
   // this order — and lists the rest under "More recovery options".
-  const recoveries: [boolean, ReactElement][] = [
+  const recoveries: [boolean, ReactNode][] = [
+    ...limitFixes,
     [
       plan.signInAgain && isOAuthReauthSurface(surface),
       <button className="aui-error-action" key="sign-in" onClick={signInAgain} type="button">
@@ -1001,15 +1126,16 @@ const ErrorRecoveryActions: FC = () => {
         </button>
       </ActionBarPrimitive.Reload>
     ],
-    [plan.switchProvider && inRouter, <SwitchProviderAction key="switch" label={copy.errorSwitchProvider} />],
+    [plan.switchProvider && inRouter, <SwitchProviderAction key="switch" label={switchProviderLabel(copy, surface)} />],
+    // Logs and diagnostics stay off for a plan limit: it is not a fault.
     [
-      localFolders,
+      plan.diagnostics && localFolders,
       <button className="aui-error-action" key="logs" onClick={() => void openLogs()} type="button">
         {remoteConnection ? copy.errorOpenDesktopLogs : copy.errorOpenLogs}
       </button>
     ],
     [
-      true,
+      plan.diagnostics,
       <button
         className="aui-error-action"
         key="diagnostics"
@@ -1022,11 +1148,15 @@ const ErrorRecoveryActions: FC = () => {
     ]
   ]
 
-  const [primary, ...more] = recoveries.filter(([on]) => on).map(([, node]) => node)
+  const offered = recoveries.filter(([on]) => on).map(([, node]) => node)
+  const inline = Math.max(1, limitFixes.filter(([on]) => on).length)
+  const [primary, ...companions] = offered.slice(0, inline)
+  const more = offered.slice(inline)
 
   return (
     <div className="studio-err-actions">
-      <span className="studio-err-primary">{primary}</span>
+      {primary && <span className="studio-err-primary">{primary}</span>}
+      {companions}
       {plan.retry && limitReset && (
         <span className="px-1 text-xs text-muted-foreground" data-testid="error-limit-reset">
           {copy.errorLimitResets(limitReset)}
@@ -1035,12 +1165,14 @@ const ErrorRecoveryActions: FC = () => {
       {plan.retry && surface?.resetsAt !== undefined && <ScheduledRetryAction resetsAt={surface.resetsAt} />}
       {more.length > 0 && <RecoveryMore label={t.studio.chat.transcript.moreRecovery}>{more}</RecoveryMore>}
       <span className="flex-1" />
-      <CopyButton
-        appearance="inline"
-        className="aui-error-action"
-        label={copy.errorCopyDiagnostics}
-        text={diagnosticsText}
-      />
+      {plan.diagnostics && (
+        <CopyButton
+          appearance="inline"
+          className="aui-error-action"
+          label={copy.errorCopyDiagnostics}
+          text={diagnosticsText}
+        />
+      )}
     </div>
   )
 }

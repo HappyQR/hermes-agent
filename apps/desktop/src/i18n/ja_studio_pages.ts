@@ -234,7 +234,7 @@ export const jaStudioPages: StudioPagesTranslations = {
       officialSource: category => `公式 · ${category}`,
       browseHub: 'スキルハブを見る',
       hubTitle: 'スキルハブ',
-      hubHint: 'スキルの「+ Add to this Agent」を押すと、選択中のプロファイルにインストールされます。',
+      hubHint: 'スキルの「+」を押すと、選択中のプロファイルにインストールされます。',
       archiveEllipsis: 'アーカイブ…',
       editSkillMd: 'SKILL.md を編集',
       done: '完了',
@@ -331,7 +331,7 @@ export const jaStudioPages: StudioPagesTranslations = {
       browseCatalog: 'プラグインカタログを見る',
       catalogTitle: 'プラグインカタログ',
       catalogHint:
-        'プラグインの「+ Add to this Agent」を押してください。審査済みの項目は固定コミットで選択中のプロファイルにインストールされます。',
+        'プラグインの「+」を押してください。審査済みの項目は固定コミットで選択中のプロファイルにインストールされます。',
       settingsTip: 'プラグイン設定',
       noMatch: query => `「${query}」に一致するプラグインはありません。`
     }

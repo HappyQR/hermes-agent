@@ -122,7 +122,7 @@ hermes-studio build && hermes-studio install   # 只重新构建和安装
 **原版已知问题，没有改动。**
 
 - 切回一个在后台运行、正在等待审批的会话时，这一回合已经出现的回复会显示两遍。原版 v0.22.1 用同样的步骤也会出现，问题在会话恢复逻辑里，不属于界面改版。
-- 用 `hermes auth add anthropic` 登录的 Anthropic 账户存在凭据池里，但「账户」里的「Anthropic Account」只看 `~/.hermes/.anthropic_oauth.json`，所以登录后仍显示未连接（v0.22.2 后端的问题，Studio 用的是官方后端，改不了）。账户本身可以正常使用。
+- 用 `hermes auth add anthropic` 登录的 Anthropic 账户存在凭据池里，但「账户」里的「Anthropic Account」只看 `~/.hermes/.anthropic_oauth.json`，所以登录后仍显示未连接（官方后端的问题，v0.22.5 仍未修复；Studio 用的是官方后端，改不了）。账户本身可以正常使用。
 
 ## 截图核对
 

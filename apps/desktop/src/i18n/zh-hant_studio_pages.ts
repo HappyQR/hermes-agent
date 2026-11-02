@@ -225,7 +225,7 @@ export const zhHantStudioPages: StudioPagesTranslations = {
       officialSource: category => `官方 · ${category}`,
       browseHub: '瀏覽技能中心',
       hubTitle: '技能中心',
-      hubHint: '在任一技能上按「+ Add to this Agent」，即可安裝到所選設定檔。',
+      hubHint: '在任一技能上按「+」，即可安裝到所選設定檔。',
       archiveEllipsis: '封存…',
       editSkillMd: '編輯 SKILL.md',
       done: '完成',
@@ -320,7 +320,7 @@ export const zhHantStudioPages: StudioPagesTranslations = {
       uninstallEllipsis: '解除安裝…',
       browseCatalog: '瀏覽外掛目錄',
       catalogTitle: '外掛目錄',
-      catalogHint: '在任一外掛上按「+ Add to this Agent」。經過審核的項目會以固定的提交安裝到所選設定檔。',
+      catalogHint: '在任一外掛上按「+」。經過審核的項目會以固定的提交安裝到所選設定檔。',
       settingsTip: '外掛設定',
       noMatch: query => `沒有與「${query}」相符的外掛。`
     }

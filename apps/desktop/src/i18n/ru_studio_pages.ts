@@ -257,7 +257,7 @@ export const ruStudioPages: StudioPagesTranslations = {
       officialSource: category => `Официальный · ${category}`,
       browseHub: 'Открыть хаб навыков',
       hubTitle: 'Хаб навыков',
-      hubHint: 'Нажмите «+ Add to this Agent» на любом навыке, чтобы установить его в выбранный профиль.',
+      hubHint: 'Нажмите «+» на любом навыке, чтобы установить его в выбранный профиль.',
       archiveEllipsis: 'Архивировать…',
       editSkillMd: 'Изменить SKILL.md',
       done: 'Готово',
@@ -360,7 +360,7 @@ export const ruStudioPages: StudioPagesTranslations = {
       browseCatalog: 'Открыть каталог плагинов',
       catalogTitle: 'Каталог плагинов',
       catalogHint:
-        'Нажмите «+ Add to this Agent» на любом плагине. Проверенные записи устанавливаются в выбранный профиль на закреплённом коммите.',
+        'Нажмите «+» на любом плагине. Проверенные записи устанавливаются в выбранный профиль на закреплённом коммите.',
       settingsTip: 'Настройки плагина',
       noMatch: query => `Нет плагинов, совпадающих с «${query}».`
     }

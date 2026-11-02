@@ -551,7 +551,7 @@ export function SidebarSessionsSection({
   const resolvedContentClassName = cn(contentClassName, flatVirtualized && 'overflow-visible')
 
   return (
-    <SidebarGroup className={rootClassName}>
+    <SidebarGroup className={cn(rootClassName, DROP_TARGET_RING)} {...sessionDropTargetProps(pinned)}>
       {header ?? (
         <SidebarSectionHeader
           action={headerAction}
@@ -806,6 +806,15 @@ function renderSectionInner(ctx: SectionInnerContext): React.ReactNode {
 
   return visibleRows.map(row => renderListRow(row, false, dividerAction))
 }
+
+// Painted imperatively by session-drag.ts while a session hovers a pin
+// (Pinned) or unpin (any other list) target — the same accent wash and ring
+// as a Studio project row drop target (studio/project-row.tsx).
+const DROP_TARGET_RING =
+  'rounded-[7px] data-[session-drop-hover=true]:bg-(--ui-accent-softer) data-[session-drop-hover=true]:shadow-[inset_0_0_0_1.5px_var(--ui-accent)]'
+
+const sessionDropTargetProps = (pinned: boolean) =>
+  pinned ? { 'data-session-pin-drop': '' } : { 'data-session-unpin-drop': '' }
 
 interface SortableSessionRowProps {
   session: SessionInfo

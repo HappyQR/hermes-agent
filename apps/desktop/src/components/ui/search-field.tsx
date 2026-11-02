@@ -24,13 +24,18 @@ interface SearchFieldProps {
   onKeyDown?: KeyboardEventHandler<HTMLInputElement>
   inputRef?: RefObject<HTMLInputElement | null>
   trailingAction?: ReactNode
+  /** Optional scope badge between the search glyph and input. */
+  leadingContent?: ReactNode
   'aria-label'?: string
   /**
-   * `bare` (default): borderless, recedes until used — inline toolbars.
+   * `bare` (default; upstream's `underline`): borderless, recedes until used —
+   * inline toolbars.
    * `filled`: the macOS search field (fill, 8px corners, focus halo) — sidebar,
    * settings and inspector filters.
+   * `box`: the filled field stretched across its row, for when search IS the
+   * page's primary affordance, e.g. above a catalog grid.
    */
-  variant?: 'bare' | 'filled'
+  variant?: 'bare' | 'underline' | 'filled' | 'box'
 }
 
 /**
@@ -51,11 +56,15 @@ export function SearchField({
   onKeyDown,
   inputRef,
   trailingAction,
+  leadingContent,
   'aria-label': ariaLabel,
   variant = 'bare'
 }: SearchFieldProps) {
   const { t } = useI18n()
   const clear = onClear ?? (() => onChange(''))
+  const boxed = variant === 'box'
+  const filled = variant === 'filled' || boxed
+  const bare = !filled
 
   // One hint per mount, picked at random — fresh nudge every visit, no
   // mid-page carousel.
@@ -70,15 +79,18 @@ export function SearchField({
         // container's flex min-width and the field bulldozes its siblings
         // instead of shrinking to fit its context.
         'inline-flex min-w-0 max-w-full items-center gap-1.5 border-b border-transparent px-0.5 transition-[color,border-color,opacity]',
-        variant === 'filled' &&
+        filled &&
           'h-7 rounded-[8px] border-b-0 bg-(--ui-fill-2) px-2 transition-[background-color,box-shadow] duration-[120ms] focus-within:bg-(--ui-bg-editor) focus-within:shadow-[0_0_0_0.5px_color-mix(in_srgb,var(--dt-primary)_60%,transparent),0_0_0_3px_color-mix(in_srgb,var(--dt-primary)_25%,transparent)]',
+        // Boxed: a roomier filled field that spans its row.
+        boxed && 'h-8 w-full gap-2 rounded-[9px] px-2.5',
         // Recede until the user reaches for it (bare only — a filled field is
         // already quiet).
-        !value && variant === 'bare' && 'opacity-30 focus-within:opacity-100',
+        !value && bare && 'opacity-30 focus-within:opacity-100',
         containerClassName
       )}
     >
-      <Search className="pointer-events-none size-3.5 shrink-0 text-muted-foreground/70" />
+      <Search className={cn('pointer-events-none shrink-0 text-muted-foreground/70', boxed ? 'size-4' : 'size-3.5')} />
+      {leadingContent}
       <input
         aria-label={ariaLabel ?? placeholder}
         className={cn(
@@ -90,7 +102,10 @@ export function SearchField({
           // text (#119204). Long queries scroll inside the field.
           // text-xs matches the form controls (Input/Select via controlVariants).
           'h-7 min-w-0 max-w-full flex-1 bg-transparent text-xs text-foreground [field-sizing:content] placeholder:text-muted-foreground focus:outline-none',
-          variant === 'filled' && 'h-6 text-[0.8125rem] placeholder:text-(--ui-text-tertiary)',
+          filled && 'h-6 text-[0.8125rem] placeholder:text-(--ui-text-tertiary)',
+          // Boxed: the wrapper owns the chrome, the input fills it (same as an
+          // adorned Input).
+          boxed && 'h-auto w-full [field-sizing:initial]',
           inputClassName
         )}
         onChange={event => onChange(event.target.value)}

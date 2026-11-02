@@ -3,7 +3,6 @@ import { useI18n } from '@/i18n'
 import { AppearanceSettings } from '../../appearance-settings'
 import { DisableF12Setting, ExternalLinksSetting, KeepAwakeSetting } from '../../config-settings'
 import { OnboardingSettings } from '../../onboarding-settings'
-import { PoolLimitsSetting } from '../../pool-limits-setting'
 import { SettingsScopeBadge } from '../scope'
 import { SettingsWindowSection } from '../section'
 
@@ -33,7 +32,6 @@ export function GeneralPage() {
         <KeepAwakeSetting />
         <ExternalLinksSetting />
         <DisableF12Setting />
-        <PoolLimitsSetting />
       </SettingsWindowSection>
     </>
   )

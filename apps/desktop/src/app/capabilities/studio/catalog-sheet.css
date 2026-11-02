@@ -1,0 +1,53 @@
+/* The capabilities catalog inside a Studio sheet (Skills Hub, plugin
+   catalog): sheet-sized insets, section titles and rhythm in place of the
+   full-page store layout. Cards, filters and the detail keep the catalog's
+   own look. */
+[data-slot='studio-catalog-sheet'] {
+  --capabilities-gap-controls: 12px;
+  --capabilities-gap-lead: 14px;
+  --capabilities-gap-section: 28px;
+  --capabilities-gap-heading: 10px;
+  --capabilities-inset: 2px;
+}
+
+[data-slot='studio-catalog-sheet']
+  :is(.catalog-search-header, .catalog-filter-bar, .catalog-filtered-results, .catalog-discovery) {
+  padding-inline: 18px;
+}
+
+[data-slot='studio-catalog-sheet'] .catalog-search-header {
+  padding-top: 4px;
+}
+
+/* Section titles read like the page's (SectionTitle in surfaces.tsx). */
+[data-slot='studio-catalog-sheet'] .catalog-section-heading h2 {
+  font-size: 0.8125rem;
+  font-weight: 650;
+  letter-spacing: 0;
+  color: var(--ui-text-primary);
+}
+
+[data-slot='studio-catalog-sheet'] .catalog-section-heading p {
+  margin-top: 2px;
+  font-size: 0.75rem;
+}
+
+[data-slot='studio-catalog-sheet'] .catalog-developer {
+  aspect-ratio: auto;
+  min-height: 0;
+  padding: 20px;
+  border-radius: 11px;
+}
+
+[data-slot='studio-catalog-sheet'] .catalog-developer-content {
+  min-height: 0;
+  gap: 10px;
+}
+
+[data-slot='studio-catalog-sheet'] .catalog-developer h3 {
+  font-size: 1.125rem;
+}
+
+[data-slot='studio-catalog-sheet'] .catalog-developer-ctas {
+  padding-top: 12px;
+}

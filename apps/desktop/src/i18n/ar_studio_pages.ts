@@ -247,7 +247,7 @@ export const arStudioPages: StudioPagesTranslations = {
       officialSource: category => `رسمية · ${category}`,
       browseHub: 'تصفح مركز المهارات',
       hubTitle: 'مركز المهارات',
-      hubHint: 'اختر «+ Add to this Agent» على أي مهارة لتثبيتها في ملف التعريف المحدد.',
+      hubHint: 'اختر «+» على أي مهارة لتثبيتها في ملف التعريف المحدد.',
       archiveEllipsis: 'أرشفة…',
       editSkillMd: 'تحرير SKILL.md',
       done: 'تم',
@@ -344,7 +344,7 @@ export const arStudioPages: StudioPagesTranslations = {
       browseCatalog: 'تصفح كتالوج الإضافات',
       catalogTitle: 'كتالوج الإضافات',
       catalogHint:
-        'اختر «+ Add to this Agent» على أي إضافة. تُثبَّت العناصر المراجَعة عند الالتزام المثبّت لها في ملف التعريف المحدد.',
+        'اختر «+» على أي إضافة. تُثبَّت العناصر المراجَعة عند الالتزام المثبّت لها في ملف التعريف المحدد.',
       settingsTip: 'إعدادات الإضافة',
       noMatch: query => `لا توجد إضافة تطابق «${query}».`
     }

@@ -1,72 +1,36 @@
-import { useEffect } from 'react'
+import { type ReactNode, useState } from 'react'
 
 import { useI18n } from '@/i18n'
-import { CATALOG_ORIGIN, CATALOG_PICKER_URL } from '@/lib/plugin-catalog'
 import { openCatalogPluginInstall } from '@/store/plugin-catalog-install'
+
+import { CatalogBrowser } from '../catalog/catalog-browser'
+import type { CatalogEntry } from '../catalog/catalog-data'
 
 import { CatalogSheetFrame } from './hub-sheet'
 
-// Browse plugin catalog: the live Plugin Catalog page (docs site) in an extra-wide sheet.
-// `?embed=picker` adds "+ Add to this Agent" per card, which posts
-//   { type: 'hermes-plugin-pick', name, repo, sha, subdir, tier, installCmd }
-// to this window; a pick opens the shared dual-target install modal (agent half
-// → catalog-pinned install into the page's profile; desktop half → this app).
-// The frame and its listener exist only while the sheet is open.
-
-interface PluginPickMessage {
-  installCmd?: string
-  name?: string
-  repo?: string
-  sha?: string
-  subdir?: string
-  tier?: string
-  type?: string
-}
+// Browse plugin catalog: the in-app plugin catalog in an extra-wide sheet.
+// "+" opens the shared dual-target install modal (agent half → catalog-pinned
+// install into the page's profile; desktop half → this app). Installed
+// packages are managed in the Plugins table; here they only show as installed,
+// with the package's on/off switch. The catalog exists only while the sheet
+// is open.
 
 interface PluginCatalogSheetProps {
+  /** The installed list is still loading: "+" waits until it can tell. */
+  installedPending: boolean
+  /** A catalog row the page already has installed (matched by catalog name). */
+  isInstalled: (entry: CatalogEntry) => boolean
   onOpenChange: (open: boolean) => void
   open: boolean
+  /** The whole-package switch for an installed row; null for the rest. */
+  renderInstalledAction: (entry: CatalogEntry) => ReactNode
   /** The bare profile name installs target (null = the active profile). */
   scope: null | string
 }
 
-export function PluginCatalogSheet({ onOpenChange, open, scope }: PluginCatalogSheetProps) {
+export function PluginCatalogSheet({ onOpenChange, open, ...catalog }: PluginCatalogSheetProps) {
   const { t } = useI18n()
   const c = t.studio.pages.capabilities.plugins
-
-  useEffect(() => {
-    if (!open) {
-      return undefined
-    }
-
-    const onMessage = (event: MessageEvent) => {
-      if (event.origin !== CATALOG_ORIGIN) {
-        return
-      }
-
-      const data = event.data as null | PluginPickMessage
-
-      if (!data || data.type !== 'hermes-plugin-pick' || !data.name || !data.repo) {
-        return
-      }
-
-      // Already-installed short-circuit + the dialog itself live in the shared
-      // helper so a catalog deep link behaves identically to this pick.
-      openCatalogPluginInstall(
-        {
-          name: String(data.name),
-          repo: String(data.repo),
-          sha: data.sha ? String(data.sha) : undefined,
-          subdir: data.subdir ? String(data.subdir) : undefined
-        },
-        scope
-      )
-    }
-
-    window.addEventListener('message', onMessage)
-
-    return () => window.removeEventListener('message', onMessage)
-  }, [open, scope])
 
   return (
     <CatalogSheetFrame
@@ -76,14 +40,31 @@ export function PluginCatalogSheet({ onOpenChange, open, scope }: PluginCatalogS
       open={open}
       title={c.catalogTitle}
     >
-      <div className="relative min-h-0 flex-1 overflow-hidden" data-slot="plugin-catalog-frame">
-        <iframe
-          className="absolute top-0 left-0 h-[133.34%] w-[133.34%] origin-top-left scale-75 border-0 bg-transparent"
-          sandbox="allow-scripts allow-same-origin"
-          src={CATALOG_PICKER_URL}
-          title={c.catalogTitle}
-        />
-      </div>
+      <PluginCatalog {...catalog} />
     </CatalogSheetFrame>
+  )
+}
+
+/** Mounted with the sheet's content, so every visit starts with an empty search. */
+function PluginCatalog({
+  installedPending,
+  isInstalled,
+  renderInstalledAction,
+  scope
+}: Omit<PluginCatalogSheetProps, 'onOpenChange' | 'open'>) {
+  const [query, setQuery] = useState('')
+
+  return (
+    <CatalogBrowser
+      installedPending={installedPending}
+      isInstalled={isInstalled}
+      kind="plugins"
+      // A plugin row's `source` IS its catalog tier (catalog-data.ts::catalogEntry);
+      // CatalogEntry has no `tier` field, so don't "fix" this to entry.tier.
+      onInstall={entry => openCatalogPluginInstall(entry, scope, { tier: entry.source })}
+      onQueryChange={setQuery}
+      query={query}
+      renderInstalledAction={renderInstalledAction}
+    />
   )
 }

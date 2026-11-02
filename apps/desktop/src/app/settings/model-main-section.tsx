@@ -134,6 +134,7 @@ function ModelOrSetup({ hideCleanApply = false, ...props }: ModelMainSectionProp
   return (
     <>
       <ModelSelect
+        aria-label={m.model}
         className={hideCleanApply ? 'w-52' : 'min-w-60'}
         models={props.selectedProviderModels}
         onValueChange={props.onModelChange}
@@ -242,8 +243,10 @@ function SpeedSegments({ fastSupported, onWriteDefault, speedValue, ultrafastSup
   )
 }
 
-/** The Settings window: one row per choice (prototype Models › Main model). */
-function WindowModelMainSection(props: ModelMainSectionProps) {
+/** One row per choice (prototype Models › Main model). The Settings window
+ *  shows Apply only once the pick changed and the speed as segments; the
+ *  classic page keeps its standing Apply and its speed select/switch. */
+function ModelMainRows({ windowed, ...props }: ModelMainSectionProps & { windowed: boolean }) {
   const { t } = useI18n()
   const m = t.settings.model
 
@@ -253,7 +256,7 @@ function WindowModelMainSection(props: ModelMainSectionProps) {
       <ListRow
         action={
           <div className="flex items-center justify-end gap-2">
-            <ModelOrSetup {...props} hideCleanApply />
+            <ModelOrSetup {...props} hideCleanApply={windowed} />
           </div>
         }
         description={<SetupHint {...props} />}
@@ -263,7 +266,10 @@ function WindowModelMainSection(props: ModelMainSectionProps) {
         <ListRow action={<EffortSelect {...props} />} title={m.reasoning} />
       )}
       {props.showDefaults && (props.fastSupported || props.ultrafastSupported) && (
-        <ListRow action={<SpeedSegments {...props} />} title={m.speed} />
+        <ListRow
+          action={windowed ? <SpeedSegments {...props} /> : <SpeedControl {...props} />}
+          title={props.ultrafastSupported || windowed ? m.speed : t.shell.modelOptions.fast}
+        />
       )}
       {props.errorNotice ? <div className="px-3.5 pb-2">{props.errorNotice}</div> : null}
       {props.staleAuxWarning ? <div className="px-3.5 py-2">{props.staleAuxWarning}</div> : null}
@@ -271,54 +277,22 @@ function WindowModelMainSection(props: ModelMainSectionProps) {
   )
 }
 
-/** Main model: provider + model + Apply (or provider setup), then the reasoning/speed defaults. */
+/** Main model: provider + model + Apply (or provider setup), then the reasoning/speed defaults —
+ *  labelled rows in the Settings window and on the classic page alike. */
 export function ModelMainSection(props: ModelMainSectionProps) {
   const { t } = useI18n()
-  const m = t.settings.model
   const windowed = useSettingsWindow()
 
   if (windowed) {
-    return <WindowModelMainSection {...props} />
+    return <ModelMainRows {...props} windowed />
   }
 
   return (
     <section>
-      <p className="mb-3 text-xs text-muted-foreground">{m.appliesDesc}</p>
-      <div className="flex flex-wrap items-center gap-2">
-        <ProviderSelect {...props} />
-        <ModelOrSetup {...props} />
+      <p className="mb-3 text-xs text-muted-foreground">{t.settings.model.appliesDesc}</p>
+      <div className="grid gap-1">
+        <ModelMainRows {...props} windowed={false} />
       </div>
-      {props.needsSetup && !props.setupIsApiKey && props.selectedProviderRow && (
-        <p className="mt-2 text-xs text-muted-foreground">
-          <SetupHint {...props} />
-        </p>
-      )}
-      {props.showDefaults && (props.reasoningSupported || props.fastSupported || props.ultrafastSupported) && (
-        <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-3">
-          <span className="text-xs text-muted-foreground">{m.defaultsLabel}</span>
-          {props.reasoningSupported && (
-            <div className="flex items-center gap-2 text-xs">
-              <span className="shrink-0 whitespace-nowrap">{m.reasoning}</span>
-              <EffortSelect {...props} />
-            </div>
-          )}
-          {props.ultrafastSupported ? (
-            <div className="flex items-center gap-2 text-xs">
-              <span className="shrink-0 whitespace-nowrap">{m.speed}</span>
-              <SpeedControl {...props} />
-            </div>
-          ) : (
-            props.fastSupported && (
-              <label className="flex items-center gap-2 text-xs">
-                {t.shell.modelOptions.fast}
-                <SpeedControl {...props} />
-              </label>
-            )
-          )}
-        </div>
-      )}
-      {props.errorNotice}
-      {props.staleAuxWarning ? <div className="mt-2">{props.staleAuxWarning}</div> : null}
     </section>
   )
 }

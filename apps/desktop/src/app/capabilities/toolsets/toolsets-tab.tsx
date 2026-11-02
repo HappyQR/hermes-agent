@@ -1,7 +1,8 @@
 import { useStore } from '@nanostores/react'
-import { useCallback, useMemo, useState } from 'react'
+import { Fragment, useCallback, useMemo, useState } from 'react'
 
 import { PopupSelect } from '@/components/studio/pages/controls'
+import { SectionTitle } from '@/components/studio/pages/surfaces'
 import { type ProfileScope, setToolsetEnabled } from '@/hermes'
 import { useI18n } from '@/i18n'
 import { isDesktopToolsetVisible } from '@/lib/desktop-toolsets'
@@ -19,7 +20,18 @@ import { CapToolbarSlot } from '../studio/toolbar-slots'
 import { ToolsList } from '../studio/tools-list'
 
 import { useToolCalls } from './tool-calls'
-import { filteredToolsets, TOOLSETS_QUERY_KEY, toolsetsQueryKey } from './toolsets-data'
+import {
+  filteredToolsets,
+  TOOLSET_ESSENTIALS,
+  TOOLSET_FEATURE_COUNT,
+  TOOLSET_FEATURE_MIN,
+  TOOLSET_MORE_THEME,
+  TOOLSET_THEMES,
+  toolsetCalls,
+  TOOLSETS_QUERY_KEY,
+  toolsetsQueryKey,
+  toolsetTheme
+} from './toolsets-data'
 
 // Sort direction for the Tools list — persisted so the tab remembers
 // most/least-used across navigations and restarts.
@@ -33,11 +45,20 @@ interface ToolsetsTabProps {
   query: string
 }
 
-/** THE Tools tab: the toolset list with its usage, and the tool sheet that
- *  mounts each toolset's settings panels. */
+interface ToolSection {
+  id: string
+  label: string
+  blurb: string
+  toolsets: ToolsetInfo[]
+}
+
+/** THE Tools tab: the toolsets grouped by what they let Hermes do (a feature
+ *  group first on a long list), and the tool sheet that mounts each toolset's
+ *  settings panels. */
 export function ToolsetsTab({ profile, query, toolsets }: ToolsetsTabProps) {
   const { t } = useI18n()
   const c = t.studio.pages.capabilities
+  const ts = t.catalog.toolsets
   const toolsetsSortDesc = useStore($toolsetsSortDesc)
   const toolCalls = useToolCalls(profile)
   const [bulkBusy, setBulkBusy] = useState(false)
@@ -60,6 +81,44 @@ export function ToolsetsTab({ profile, query, toolsets }: ToolsetsTabProps) {
     () => filteredToolsets(toolsets, query, toolCalls ?? {}, toolsetsSortDesc),
     [query, toolCalls, toolsets, toolsetsSortDesc]
   )
+
+  // The feature group is the four most-used toolsets once there is real usage
+  // to rank by; before that it's the essentials. It shows only while browsing
+  // a long, unsearched list. Everything else sits under what it does, in the
+  // chosen order.
+  const sections = useMemo((): ToolSection[] => {
+    const byUse = filteredToolsets(toolsets, '', toolCalls ?? {}, true)
+    const used = byUse.slice(0, TOOLSET_FEATURE_COUNT)
+
+    const ranked =
+      !!toolCalls &&
+      used.length === TOOLSET_FEATURE_COUNT &&
+      used.every(toolset => toolsetCalls(toolset, toolCalls) > 0)
+
+    const featured =
+      query.trim() || visibleToolsets.length <= TOOLSET_FEATURE_MIN
+        ? []
+        : ranked
+          ? used
+          : byUse.filter(toolset => TOOLSET_ESSENTIALS.includes(toolset.name))
+
+    const rest = visibleToolsets.filter(toolset => !featured.includes(toolset))
+
+    return [
+      {
+        id: 'featured',
+        label: ranked ? ts.mostUsed : ts.essentials,
+        blurb: ranked ? ts.mostUsedBlurb : ts.essentialsBlurb,
+        toolsets: featured
+      },
+      ...[...TOOLSET_THEMES, TOOLSET_MORE_THEME].map(theme => ({
+        id: theme.id,
+        label: ts.themes[theme.id].label,
+        blurb: ts.themes[theme.id].blurb,
+        toolsets: rest.filter(toolset => toolsetTheme(toolset.name).id === theme.id)
+      }))
+    ].filter(section => section.toolsets.length > 0)
+  }, [query, toolCalls, toolsets, ts, visibleToolsets])
 
   // Bulk actions and the master-switch state target the WHOLE tab, never the
   // search-filtered view — a tab-wide control that silently scoped to the
@@ -151,13 +210,26 @@ export function ToolsetsTab({ profile, query, toolsets }: ToolsetsTabProps) {
       {visibleToolsets.length === 0 ? (
         <CapabilityPageEmpty none={c.tools.emptyNone} query={query} />
       ) : (
-        <ToolsList
-          busy={bulkBusy}
-          onOpen={toolset => setSelectedToolset(toolset.name)}
-          onToggle={(toolset, enabled) => void handleToggleToolset(toolset, enabled)}
-          toolCalls={toolCalls}
-          toolsets={visibleToolsets}
-        />
+        <>
+          {sections.map(section => (
+            <Fragment key={section.id}>
+              <div className="-mb-1 mt-1.5 flex flex-col gap-0.5" data-toolset-section={section.id}>
+                <SectionTitle className="m-0" count={section.toolsets.length}>
+                  {section.label}
+                </SectionTitle>
+                <p className="m-0 text-xs text-(--ui-text-tertiary)">{section.blurb}</p>
+              </div>
+              <ToolsList
+                busy={bulkBusy}
+                onOpen={toolset => setSelectedToolset(toolset.name)}
+                onToggle={(toolset, enabled) => void handleToggleToolset(toolset, enabled)}
+                toolCalls={toolCalls}
+                toolsets={section.toolsets}
+              />
+            </Fragment>
+          ))}
+          <p className="m-0 text-xs text-(--ui-text-tertiary)">{c.tools.footnote}</p>
+        </>
       )}
       <ToolSheet
         onConfiguredChange={refreshToolsets}

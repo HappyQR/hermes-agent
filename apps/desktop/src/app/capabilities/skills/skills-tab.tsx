@@ -1,12 +1,14 @@
 import { useStore } from '@nanostores/react'
 import { useQuery } from '@tanstack/react-query'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 
 import { ArchiveSkillConfirmDialog } from '@/app/learning/archive-skill-confirm-dialog'
+import { PageLoader } from '@/components/page-loader'
 import { PopupSelect } from '@/components/studio/pages/controls'
 import { Button } from '@/components/ui/button'
 import { StudioIcon } from '@/components/ui/studio-icon'
+import { Switch } from '@/components/ui/switch'
 import { getOfficialSkills, type ProfileScope, profileScopeKey, setSkillEnabled } from '@/hermes'
 import { useI18n } from '@/i18n'
 import { queryClient } from '@/lib/query-client'
@@ -16,6 +18,7 @@ import { $hubActions, installHubSkill, notifyHubActionFailed, OFFICIAL_SKILLS_KE
 import { notify, notifyError } from '@/store/notifications'
 import type { OfficialSkillInfo, SkillInfo } from '@/types/hermes'
 
+import { PanelEmpty } from '../../overlays/panel'
 import { MEMORY_ROUTE, navigateToWorkspacePage } from '../../routes'
 import { CapBulkMenu, type CapBulkToggle } from '../studio/bulk-menu'
 import { CapabilityPageEmpty } from '../studio/empty'
@@ -35,20 +38,48 @@ interface SkillsTabProps {
   /** The (connection, profile) scope every read and write routes to. */
   profile: ProfileScope
   query: string
+  /** The installed list has not loaded yet (or failed): writes wait for it. */
+  installedPending?: boolean
+  installedError?: unknown
   /** Page-level refresh: a saved skill edit reloads the same way the refresh
    *  hotkey does, counts and slash completions included. */
   onRefresh: () => void
 }
 
-/** The Skills tab: installed skills, official optional skills, and learned-skill editing. */
-export function SkillsTab({ embedded = false, onRefresh, profile, query, skills }: SkillsTabProps) {
+/** The Skills tab: installed skills, official optional skills, the Skills Hub
+ *  sheet and learned-skill editing. Remounted on scope changes so an old
+ *  profile's sheet, confirmation or pending write cannot enter another. */
+export function SkillsTab(props: SkillsTabProps) {
+  return <ScopedSkillsTab key={profileScopeKey(props.profile)} {...props} />
+}
+
+function ScopedSkillsTab({
+  embedded = false,
+  installedError,
+  installedPending = false,
+  onRefresh,
+  profile,
+  query,
+  skills
+}: SkillsTabProps) {
   const { t } = useI18n()
   const c = t.studio.pages.capabilities
   const navigate = useNavigate()
   const sort = useStore($skillsSort)
-  const [bulkBusy, setBulkBusy] = useState(false)
+  const mounted = useRef(true)
+  const mutationBusy = useRef(false)
+  const [busy, setBusy] = useState(false)
   const [selectedSkill, setSelectedSkill] = useState<string | null>(null)
   const [selectedOfficial, setSelectedOfficial] = useState<string | null>(null)
+
+  // eslint-disable-next-line no-restricted-syntax -- lifecycle guard drops stale async completions; it does not mirror an atom
+  useEffect(() => {
+    mounted.current = true
+
+    return () => {
+      mounted.current = false
+    }
+  }, [])
 
   const { data: officialData } = useQuery({
     queryKey: [...OFFICIAL_SKILLS_KEY, profileScopeKey(profile)],
@@ -107,78 +138,123 @@ export function SkillsTab({ embedded = false, onRefresh, profile, query, skills 
 
   function handleInstallOfficial(skill: OfficialSkillInfo) {
     notify({ kind: 'success', title: t.skills.hub.installStarted(skill.name), message: t.skills.hub.actionLog })
-    void installHubSkill(skill.identifier, profile).catch(err =>
-      notifyHubActionFailed(err, t.skills.hub.actionFailed, skill.name, profile)
-    )
+    void installHubSkill(skill.identifier, profile).catch(err => {
+      if (mounted.current) {
+        notifyHubActionFailed(err, t.skills.hub.actionFailed, skill.name, profile)
+      }
+    })
   }
 
-  async function handleToggleSkill(skill: SkillInfo, enabled: boolean) {
-    setSkills(current => current?.map(row => (row.name === skill.name ? { ...row, enabled } : row)) ?? current)
-
-    try {
-      await setSkillEnabled(skill.name, enabled, profile)
-      // A disabled skill loses its `/name` command, so the composer's cached
-      // `/` list has to be dropped along with the row repaint.
-      invalidateSlashCompletions()
-    } catch (err) {
-      setSkills(
-        current => current?.map(row => (row.name === skill.name ? { ...row, enabled: !enabled } : row)) ?? current
-      )
-      notifyError(err, t.skills.failedToUpdate(skill.name))
-    }
-  }
-
-  // Sequential on purpose: each toggle is a config read-modify-write on the
-  // backend; parallel calls would race the disabled-list save.
-  async function bulkApply(targets: SkillInfo[], enabled: boolean) {
-    if (bulkBusy || targets.length === 0) {
+  // The backend saves one disabled-list config value: serialize individual and
+  // bulk changes together, not merely the members of a bulk action.
+  async function applyEnabled(targets: SkillInfo[], enabled: boolean, bulk = false) {
+    if (mutationBusy.current || installedPending || installedError || targets.length === 0) {
       return
     }
 
-    setBulkBusy(true)
-
+    mutationBusy.current = true
+    setBusy(true)
     let done = 0
 
     try {
+      await queryClient.cancelQueries({ queryKey: skillsQueryKey(profile), exact: true })
+
       for (const row of targets) {
-        await setSkillEnabled(row.name, enabled, profile)
-        setSkills(cur => cur?.map(r => (r.name === row.name ? { ...r, enabled } : r)) ?? cur)
-        done += 1
+        if (!mounted.current) {
+          break
+        }
+
+        const previous =
+          queryClient.getQueryData<SkillInfo[]>(skillsQueryKey(profile))?.find(skill => skill.name === row.name) ?? row
+
+        setSkills(current => current?.map(skill => (skill.name === row.name ? { ...skill, enabled } : skill)))
+
+        try {
+          await setSkillEnabled(row.name, enabled, profile)
+          done += 1
+        } catch (err) {
+          if (mounted.current) {
+            setSkills(current =>
+              current?.map(skill =>
+                skill.name === row.name && skill.enabled === enabled ? { ...skill, enabled: previous.enabled } : skill
+              )
+            )
+          }
+
+          throw err
+        }
       }
 
-      notify({ kind: 'success', title: t.skills.bulkUpdated(done), message: '' })
+      if (bulk && mounted.current) {
+        notify({ kind: 'success', title: t.skills.bulkUpdated(done), message: '' })
+      }
     } catch (err) {
-      notifyError(err, t.skills.failedToUpdate(t.skills.tabSkills))
+      if (mounted.current) {
+        notifyError(err, t.skills.failedToUpdate(bulk ? t.skills.tabSkills : targets[0].name))
+      }
     } finally {
+      // A disabled skill loses its `/name` command, so the composer's cached
+      // `/` list has to be dropped along with the repaint.
       invalidateSlashCompletions()
-      setBulkBusy(false)
+      void queryClient.invalidateQueries({ queryKey: skillsQueryKey(profile), exact: true })
+      mutationBusy.current = false
+
+      if (mounted.current) {
+        setBusy(false)
+      }
     }
   }
+
+  const controlsDisabled = busy || installedPending || Boolean(installedError)
 
   // Bulk actions ("All" master switch, "Disable unused") and the master-switch
   // state target the WHOLE tab, never the search-filtered view — a tab-wide
   // control that silently scoped to the current query would be a lie.
-  const allEnabled = skills.length > 0 && skills.every(s => s.enabled)
-
-  // One switch line covering enable-all/disable-all.
   const bulkSwitch: CapBulkToggle = {
-    checked: allEnabled,
-    disabled: bulkBusy,
+    checked: skills.length > 0 && skills.every(skill => skill.enabled),
+    disabled: controlsDisabled || skills.length === 0,
     label: t.skills.all,
     onToggle: checked =>
-      void bulkApply(
-        skills.filter(row => row.enabled !== checked),
-        checked
+      void applyEnabled(
+        skills.filter(skill => skill.enabled !== checked),
+        checked,
+        true
       )
   }
 
   // "Never used" = zero recorded activity. The pruning move for a 100+ skill
   // install: keep the workhorses, shed the noise.
-  const disableUnused = () =>
-    bulkApply(
-      skills.filter(skill => skill.enabled && usageOf(skill) === 0),
-      false
-    )
+  const unused = skills.filter(skill => skill.enabled && usageOf(skill) === 0)
+
+  // A pending or failed installed list stands in for the grid; the toolbar
+  // (and the hub sheet behind it) stays usable.
+  const body = installedError ? (
+    <PanelEmpty
+      action={
+        <Button onClick={onRefresh} size="sm">
+          {t.skills.refresh}
+        </Button>
+      }
+      description={installedError instanceof Error ? installedError.message : undefined}
+      icon="error"
+      title={t.skills.skillsLoadFailed}
+    />
+  ) : installedPending ? (
+    <PageLoader className="min-h-80" label={t.skills.loading} />
+  ) : visibleSkills.length === 0 && visibleOfficial.length === 0 ? (
+    <CapabilityPageEmpty none={c.skills.emptyNone} query={query} />
+  ) : (
+    <SkillsGrid
+      busy={controlsDisabled}
+      installing={runningInstalls}
+      official={visibleOfficial}
+      onInstallOfficial={handleInstallOfficial}
+      onOpenOfficial={skill => setSelectedOfficial(skill.identifier)}
+      onOpenSkill={skill => setSelectedSkill(skill.name)}
+      onToggleSkill={(skill, enabled) => void applyEnabled([skill], enabled)}
+      skills={visibleSkills}
+    />
+  )
 
   return (
     <>
@@ -196,7 +272,13 @@ export function SkillsTab({ embedded = false, onRefresh, profile, query, skills 
           </Button>
         )}
         <CapBulkMenu
-          items={[{ disabled: bulkBusy, label: c.disableUnused, onSelect: () => void disableUnused() }]}
+          items={[
+            {
+              disabled: controlsDisabled || unused.length === 0,
+              label: c.disableUnused,
+              onSelect: () => void applyEnabled(unused, false, true)
+            }
+          ]}
           label={c.bulkMenu}
           toggle={{ ...bulkSwitch, label: c.bulkAllSkills }}
         />
@@ -207,20 +289,7 @@ export function SkillsTab({ embedded = false, onRefresh, profile, query, skills 
           {c.skills.browseHub}
         </Button>
       </CapToolbarSlot>
-      {visibleSkills.length === 0 && visibleOfficial.length === 0 ? (
-        <CapabilityPageEmpty none={c.skills.emptyNone} query={query} />
-      ) : (
-        <SkillsGrid
-          busy={bulkBusy}
-          installing={runningInstalls}
-          official={visibleOfficial}
-          onInstallOfficial={handleInstallOfficial}
-          onOpenOfficial={skill => setSelectedOfficial(skill.identifier)}
-          onOpenSkill={skill => setSelectedSkill(skill.name)}
-          onToggleSkill={(skill, enabled) => void handleToggleSkill(skill, enabled)}
-          skills={visibleSkills}
-        />
-      )}
+      {body}
       <SkillSheet
         embedded={embedded}
         onArchive={setArchiveTarget}
@@ -244,24 +313,80 @@ export function SkillsTab({ embedded = false, onRefresh, profile, query, skills 
         profile={profile}
         skill={activeOfficial}
       />
-      <HubSheet installedNames={installedSkillNames} onOpenChange={setHubOpen} open={hubOpen} profile={profile} />
+      <HubSheet
+        installedPending={installedPending || Boolean(installedError)}
+        onOpenChange={setHubOpen}
+        open={hubOpen}
+        profile={profile}
+        renderInstalledAction={skill => (
+          <Switch
+            aria-label={skill.name}
+            checked={skill.enabled}
+            disabled={controlsDisabled}
+            onCheckedChange={enabled => void applyEnabled([skill], enabled)}
+            size="xs"
+          />
+        )}
+        // An installed skill is managed in its own sheet (SKILL.md, Edit,
+        // Archive, Use in chat), which opens over the hub.
+        renderInstalledDetail={skill => (
+          <div className="flex items-center gap-3 border-t border-(--ui-stroke-tertiary) pt-4">
+            <span className="min-w-0 flex-1 text-xs text-(--ui-text-tertiary)">
+              {c.usedTimes(usageOf(skill))} · {t.skills.changesApplyNewSessions}
+            </span>
+            <Button
+              aria-label={c.skills.detailsAria(skill.name)}
+              onClick={() => setSelectedSkill(skill.name)}
+              size="sm"
+              variant="outline"
+            >
+              {c.skills.details}
+            </Button>
+          </div>
+        )}
+        skills={skills}
+      />
       {archiveTarget && (
         <ArchiveSkillConfirmDialog
           onApply={() => {
             const name = archiveTarget
-            const snapshot = skills
 
-            setSkills(current => current?.filter(skill => skill.name !== name) ?? current)
+            const snapshot =
+              queryClient.getQueryData<SkillInfo[]>(skillsQueryKey(profile))?.find(skill => skill.name === name) ??
+              skills.find(skill => skill.name === name)
+
+            void queryClient.cancelQueries({ queryKey: skillsQueryKey(profile), exact: true })
+            setSkills(current => current?.filter(skill => skill.name !== name))
             invalidateSlashCompletions()
 
             if (selectedSkill === name) {
               setSelectedSkill(null)
             }
 
-            return () => setSkills(() => snapshot)
+            // Restore only this row; never clobber intervening toggles or installs.
+            return () => {
+              if (mounted.current) {
+                setSkills(current =>
+                  snapshot && current && !current.some(skill => skill.name === name) ? [...current, snapshot] : current
+                )
+              }
+
+              void queryClient.invalidateQueries({ queryKey: skillsQueryKey(profile), exact: true })
+            }
           }}
           onClose={() => setArchiveTarget(null)}
-          onFailure={(err, name) => notifyError(err, name)}
+          onFailure={(err, name) => {
+            if (mounted.current) {
+              notifyError(err, name)
+            }
+          }}
+          onSuccess={() => {
+            void queryClient.invalidateQueries({ queryKey: skillsQueryKey(profile), exact: true })
+
+            if (mounted.current) {
+              onRefresh()
+            }
+          }}
           open
           profile={profile}
           skillId={archiveTarget}

@@ -94,7 +94,7 @@ import {
   validateCronEditor
 } from './cron-job-model'
 import { jobState, jobTitle, nextRunOverdueMs, truncateText } from './job-state'
-import { isResumableCronRun, openCronRun, reconcileCronRunVerdicts } from './open-cron-run'
+import { isCronRunRow, isResumableCronRun, openCronRun, reconcileCronRunVerdicts } from './open-cron-run'
 
 const DEFAULT_DELIVER = 'local'
 
@@ -895,13 +895,6 @@ function CronJobDetail({
   )
 }
 
-// Script-only (no_agent) jobs have no agent sessions; the runs endpoint
-// surfaces their per-fire output docs as rows with source='cron_output'
-// (see _list_cron_output_runs in hermes_cli/web_routers/cron.py).
-function isSyntheticCronOutputRun(run: SessionInfo): boolean {
-  return run.source === 'cron_output'
-}
-
 // Runs are produced by the background scheduler tick. cron.changed /
 // sessions.changed broadcasts re-load immediately on event-capable backends
 // (the tick dep below), so the poll drops to a slow backstop there; older
@@ -1023,7 +1016,7 @@ function CronJobRuns({
   // view-only (see `openCronRun`, #88443). Output-doc rows (script-only jobs)
   // have no backing session, so they are not clickable.
   const rows = (runs ?? []).map(run =>
-    isSyntheticCronOutputRun(run)
+    !isCronRunRow(run)
       ? runRowModel(run, { live: false, outputOnly: true, viewOnly: false })
       : runRowModel(run, {
           live: run.ended_at == null && isResumableCronRun(run),

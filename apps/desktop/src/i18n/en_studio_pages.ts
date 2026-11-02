@@ -239,7 +239,7 @@ export const enStudioPages: StudioPagesTranslations = {
       officialSource: category => `Official · ${category}`,
       browseHub: 'Browse Skills Hub',
       hubTitle: 'Skills Hub',
-      hubHint: 'Choose “+ Add to this Agent” on any skill to install it into the selected profile.',
+      hubHint: 'Choose “+” on any skill to install it into the selected profile.',
       archiveEllipsis: 'Archive…',
       editSkillMd: 'Edit SKILL.md',
       done: 'Done',
@@ -335,7 +335,7 @@ export const enStudioPages: StudioPagesTranslations = {
       browseCatalog: 'Browse plugin catalog',
       catalogTitle: 'Plugin catalog',
       catalogHint:
-        'Choose “+ Add to this Agent” on any plugin. Reviewed entries install at their pinned commit into the selected profile.',
+        'Choose “+” on any plugin. Reviewed entries install at their pinned commit into the selected profile.',
       settingsTip: 'Plugin settings',
       noMatch: query => `No plugin matches “${query}”.`
     }

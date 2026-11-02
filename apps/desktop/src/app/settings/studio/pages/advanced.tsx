@@ -1,6 +1,9 @@
+import { Fragment } from 'react'
+
 import { useI18n } from '@/i18n'
 
 import type { ConfigSettingsLayoutApi } from '../../config-settings'
+import { DelegationRoutingSection } from '../../delegation/routing-section'
 import { ConfigPage, type ConfigPageProps, ConfigRows, placedFields } from '../config-layout'
 import { SettingsScopeBadge } from '../scope'
 import { SettingsWindowSection } from '../section'
@@ -20,15 +23,19 @@ function AdvancedSections({ api }: { api: ConfigSettingsLayoutApi }) {
   return (
     <>
       {SECTIONS.map(([id, skeleton], index) => (
-        <SettingsWindowSection
-          aside={index === 0 ? <SettingsScopeBadge page="advanced" /> : undefined}
-          id={id}
-          key={id}
-          page="advanced"
-          title={s[id]}
-        >
-          <ConfigRows api={api} keys={placedFields(api, 'advanced', id)} skeleton={skeleton} />
-        </SettingsWindowSection>
+        <Fragment key={id}>
+          {/* How each subagent gets its model; the subagent model row below is the
+              Default strategy's route and goes inert while another strategy decides. */}
+          {id === 'subagents' && api.ready && <DelegationRoutingSection scope={api.writeScope ?? api.scopeProfile} />}
+          <SettingsWindowSection
+            aside={index === 0 ? <SettingsScopeBadge page="advanced" /> : undefined}
+            id={id}
+            page="advanced"
+            title={s[id]}
+          >
+            <ConfigRows api={api} keys={placedFields(api, 'advanced', id)} skeleton={skeleton} />
+          </SettingsWindowSection>
+        </Fragment>
       ))}
     </>
   )

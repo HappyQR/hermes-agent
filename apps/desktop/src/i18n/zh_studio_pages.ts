@@ -225,7 +225,7 @@ export const zhStudioPages: StudioPagesTranslations = {
       officialSource: category => `官方 · ${category}`,
       browseHub: '浏览技能中心',
       hubTitle: '技能中心',
-      hubHint: '在任意技能上点“+ Add to this Agent”，即可安装到所选配置档案。',
+      hubHint: '在任意技能上点“+”，即可安装到所选配置档案。',
       archiveEllipsis: '归档…',
       editSkillMd: '编辑 SKILL.md',
       done: '完成',
@@ -320,7 +320,7 @@ export const zhStudioPages: StudioPagesTranslations = {
       uninstallEllipsis: '卸载…',
       browseCatalog: '浏览插件目录',
       catalogTitle: '插件目录',
-      catalogHint: '在任意插件上点“+ Add to this Agent”。经过审核的条目会以固定的提交安装到所选配置档案。',
+      catalogHint: '在任意插件上点“+”。经过审核的条目会以固定的提交安装到所选配置档案。',
       settingsTip: '插件设置',
       noMatch: query => `没有与“${query}”匹配的插件。`
     }

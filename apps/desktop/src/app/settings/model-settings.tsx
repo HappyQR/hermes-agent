@@ -34,6 +34,7 @@ import { AlertTriangle, Cpu, Loader2 } from '@/lib/icons'
 import { catalogProviderMatches, findCatalogProvider } from '@/lib/model-options'
 import { composerServiceTier } from '@/lib/model-status-label'
 import { cn } from '@/lib/utils'
+import { showLargeModelNotice } from '@/store/agent-notices'
 import { $customModels, withCustomModels } from '@/store/custom-models'
 import { setMainModelAssignment } from '@/store/model-assignment'
 import { notify, notifyError, readableError } from '@/store/notifications'
@@ -67,15 +68,17 @@ export function ModelSettingsSkeleton({ subpage }: Pick<ModelSettingsProps, 'sub
       {(subpage === undefined || subpage === 'main') && (
         <section>
           <Skeleton className="mb-3 h-3 w-72 max-w-full" />
-          <div className="flex flex-wrap items-center gap-2">
-            <Skeleton className="h-8 w-40" />
-            <Skeleton className="h-8 w-60 max-w-full" />
+          <div className="grid gap-1">
+            <ListRowSkeleton />
+            <ListRowSkeleton />
+          </div>
+          <div className="flex justify-end pt-1">
             <Skeleton className="h-8 w-16" />
           </div>
-          <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-3">
-            <Skeleton className="h-3 w-16" />
-            <Skeleton className="h-8 w-28" />
-            <Skeleton className="h-6 w-20" />
+          <div className="mt-6 grid gap-1">
+            <Skeleton className="mb-1 h-3 w-16" />
+            <ListRowSkeleton />
+            <ListRowSkeleton />
           </div>
         </section>
       )}
@@ -823,6 +826,11 @@ export function ModelSettings({ onMainModelChanged, scopeProfile, subpage }: Mod
       const provider = result.provider || selectedProvider
       const model = result.model || selectedModel
       setMainModel({ provider, model })
+
+      if (result.notice) {
+        showLargeModelNotice(result.notice)
+      }
+
       setSwitchStaleAux(result.stale_aux ?? [])
       notify({ kind: 'success', title: m.mainAppliedTitle, message: m.mainAppliedMessage(model) })
 

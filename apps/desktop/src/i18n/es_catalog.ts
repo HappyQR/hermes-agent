@@ -1,0 +1,110 @@
+import type { CatalogTranslations } from './types_catalog'
+
+export const esCatalog: CatalogTranslations = {
+  add: 'Añadir',
+  added: 'Añadido',
+  discover: 'Descubrir',
+  featured: 'Destacados',
+  explorePlugins: 'Explorar plugins',
+  exploreSkills: 'Explorar habilidades',
+  mostStarred: 'Más estrellas',
+  newest: 'Más recientes',
+  recentlyUpdated: 'Actualizados recientemente',
+  alphabetical: 'Nombre',
+  sortBy: 'Ordenar por',
+  seeAll: 'Ver todo',
+  related: 'Similares',
+  tags: 'Etiquetas',
+  screenshots: 'Capturas de pantalla',
+  listView: 'Vista de lista',
+  cardView: 'Vista de tarjetas',
+  installTitle: (name: string) => `¿Instalar «${name}»?`,
+  installDescription: 'Esta habilidad estará disponible en las sesiones nuevas. Instala solo de fuentes de confianza.',
+  installTo: 'Instalar en',
+  thisComputer: 'Este equipo',
+  installing: 'Instalando…',
+  installComplete: (name: string) => `«${name}» instalado`,
+  destinationChanged: 'El destino cambió. Cierra este cuadro de diálogo y vuelve a abrir el enlace de instalación.',
+  install: 'Instalar',
+  installed: 'Instalado',
+  searchSkills: 'Buscar habilidades',
+  searchPlugins: 'Buscar plugins',
+  allSources: 'Todas las fuentes',
+  allCategories: 'Todas las categorías',
+  about: 'Acerca de',
+  author: 'Autor',
+  source: 'Fuente',
+  category: 'Categoría',
+  version: 'Versión',
+  platforms: 'Plataformas',
+  requires: 'Requisitos',
+  tools: 'Herramientas',
+  hooks: 'Hooks',
+  middleware: 'Middleware',
+  commands: 'Comandos',
+  license: 'Licencia',
+  addedDate: 'Añadido',
+  updatedDate: 'Actualizado',
+  repository: 'Repositorio',
+  documentation: 'Documentación',
+  noResults: 'Sin resultados',
+  tryAnother: 'Prueba otra búsqueda o borra los filtros.',
+  clearFilters: 'Borrar filtros',
+  filters: 'Filtros',
+  loadFailed: 'No se pudo cargar el catálogo',
+  retry: 'Reintentar',
+  more: 'Mostrar más',
+  pinned: 'Commit revisado',
+  snapshotHint: 'Del catálogo de Hermes. Al explorar nunca se contacta con los repositorios de origen.',
+  installHint: 'Revisa la fuente antes de instalar. Los cambios se aplican a las sesiones nuevas.',
+  results: (count: number) => `${count.toLocaleString('es')} resultado${count === 1 ? '' : 's'}`,
+  back: 'Volver a los resultados',
+  tier: 'Nivel',
+  previousSlide: 'Destacado anterior',
+  nextSlide: 'Destacado siguiente',
+  slideOf: (index: number, count: number) => `${index} de ${count}`,
+  tierLabels: { official: 'Oficial', verified: 'Verificado', community: 'Comunidad' },
+  tiers: {
+    official: { title: 'Plugins oficiales', blurb: 'Creados y mantenidos por Nous Research.' },
+    verified: { title: 'Plugins verificados', blurb: 'De la empresa detrás de la integración, verificados por Nous.' }
+  },
+  moreToExplore: 'Más por explorar',
+  moreToExploreBlurb: 'Los rincones más pequeños del catálogo, en un solo lugar.',
+  skillsFor: (category: string) => `Habilidades de ${category.toLowerCase()}.`,
+  discoverKind: (kind: string) => `Descubrir: ${kind}`,
+  developer: {
+    heading: 'Modo desarrollador',
+    title: 'Crea para Hermes',
+    pitch: '¿Has creado una herramienta, un conector, un plugin o un Mod?',
+    pitchFollowUp: '¿Te gustaría, pero no sabes cómo?',
+    submit: 'Enviar un Mod',
+    docs: 'Documentación para desarrolladores'
+  },
+  toolsets: {
+    mostUsed: 'Más usadas',
+    mostUsedBlurb: 'Las herramientas que Hermes usa más en este perfil.',
+    essentials: 'Esenciales',
+    essentialsBlurb: 'Aquello en lo que se basa la mayor parte del trabajo de Hermes.',
+    toolCount: (count: number) => `${count} ${count === 1 ? 'herramienta' : 'herramientas'}`,
+    callCount: (count: string, calls: number) => `${count} ${calls === 1 ? 'llamada' : 'llamadas'}`,
+    themes: {
+      work: {
+        label: 'Navegar, trabajar y automatizar',
+        blurb: 'Controlar el navegador y el escritorio, editar archivos, ejecutar código y programar tareas.'
+      },
+      create: {
+        label: 'Ver, oír y crear',
+        blurb: 'Analizar imágenes y vídeos, transcribir la voz y generar contenido.'
+      },
+      recall: {
+        label: 'Memoria y conocimiento',
+        blurb: 'Lo que Hermes recuerda, y las habilidades y el historial que puede consultar.'
+      },
+      connect: {
+        label: 'Conectar y comunicarse',
+        blurb: 'Cuentas, otros agentes, el hogar inteligente y búsquedas más allá de la web.'
+      },
+      more: { label: 'Más herramientas', blurb: 'Todo lo demás que este perfil puede activar.' }
+    }
+  }
+}

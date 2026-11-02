@@ -14,7 +14,8 @@ import { toolsetTile } from './tiles'
 
 // Tools (prototype pages.js:70-77): one inset row per toolset — tile, name,
 // what it does · how many tools · how often they ran, a "Needs keys" tag, the
-// on/off switch and a chevron into the tool sheet.
+// on/off switch and a chevron into the tool sheet. The tab renders one group
+// per browsing section (toolsets-tab.tsx).
 
 interface ToolsListProps {
   busy: boolean
@@ -30,60 +31,57 @@ export function ToolsList({ busy, onOpen, onToggle, toolCalls, toolsets }: Tools
   const c = t.studio.pages.capabilities
 
   return (
-    <>
-      <ListGroup>
-        {toolsets.map(toolset => {
-          const label = toolsetDisplayLabel(toolset)
-          const tile = toolsetTile(toolset.name)
-          const calls = toolCalls ? toolsetCalls(toolset, toolCalls) : 0
+    <ListGroup>
+      {toolsets.map(toolset => {
+        const label = toolsetDisplayLabel(toolset)
+        const tile = toolsetTile(toolset.name)
+        const calls = toolCalls ? toolsetCalls(toolset, toolCalls) : 0
 
-          const subtitle = [
-            asText(toolset.description),
-            c.tools.toolCount(toolNames(toolset).length),
-            calls > 0 ? c.usedTimes(calls) : ''
-          ]
-            .filter(Boolean)
-            .join(' · ')
+        const subtitle = [
+          asText(toolset.description),
+          c.tools.toolCount(toolNames(toolset).length),
+          calls > 0 ? c.usedTimes(calls) : ''
+        ]
+          .filter(Boolean)
+          .join(' · ')
 
-          return (
-            <ListGroupRow
-              data-toolset={toolset.name}
-              key={toolset.name}
-              lead={<IconTile icon={tile.icon} size={30} tone={tile.tone} />}
-              onOpen={() => onOpen(toolset)}
-              subtitle={<span className="pg-clamp-2">{subtitle}</span>}
-              title={label}
-              trailing={
-                <>
-                  {toolset.configured ? null : (
-                    <Badge asChild size="lg" variant="warn">
-                      <button className="cursor-pointer" onClick={() => onOpen(toolset)} type="button">
-                        {t.skills.needsKeys}
-                      </button>
-                    </Badge>
-                  )}
-                  <Switch
-                    aria-label={t.skills.toggleToolset(label, !toolset.enabled)}
-                    checked={toolset.enabled}
-                    disabled={busy}
-                    onCheckedChange={enabled => onToggle(toolset, enabled)}
-                  />
-                  <Button
-                    aria-label={t.skills.configureToolset(label)}
-                    className="text-(--ui-text-tertiary)"
-                    onClick={() => onOpen(toolset)}
-                    size="icon-xs"
-                    variant="ghost"
-                  >
-                    <StudioIcon name="chev-r" size={13} />
-                  </Button>
-                </>
-              }
-            />
-          )
-        })}
-      </ListGroup>
-      <p className="m-0 text-xs text-(--ui-text-tertiary)">{c.tools.footnote}</p>
-    </>
+        return (
+          <ListGroupRow
+            data-toolset={toolset.name}
+            key={toolset.name}
+            lead={<IconTile icon={tile.icon} size={30} tone={tile.tone} />}
+            onOpen={() => onOpen(toolset)}
+            subtitle={<span className="pg-clamp-2">{subtitle}</span>}
+            title={label}
+            trailing={
+              <>
+                {toolset.configured ? null : (
+                  <Badge asChild size="lg" variant="warn">
+                    <button className="cursor-pointer" onClick={() => onOpen(toolset)} type="button">
+                      {t.skills.needsKeys}
+                    </button>
+                  </Badge>
+                )}
+                <Switch
+                  aria-label={t.skills.toggleToolset(label, !toolset.enabled)}
+                  checked={toolset.enabled}
+                  disabled={busy}
+                  onCheckedChange={enabled => onToggle(toolset, enabled)}
+                />
+                <Button
+                  aria-label={t.skills.configureToolset(label)}
+                  className="text-(--ui-text-tertiary)"
+                  onClick={() => onOpen(toolset)}
+                  size="icon-xs"
+                  variant="ghost"
+                >
+                  <StudioIcon name="chev-r" size={13} />
+                </Button>
+              </>
+            }
+          />
+        )
+      })}
+    </ListGroup>
   )
 }

@@ -14,12 +14,9 @@ import { useI18n } from '@/i18n'
 import { useKeybindHint } from '@/lib/keybinds/use-keybind-hint'
 import { recordAction } from '@/store/desktop-metrics'
 
+import type { ComposerBusyAction } from './busy-submit-state'
 import { PRIMARY_ICON_BTN } from './control-classes'
 import { TalkButton } from './mic-button'
-
-/** What Send does mid-turn: steer the live run with text, queue for the next
- *  turn (attachments, compaction), or stop when there is nothing to send. */
-export type ComposerBusyAction = 'queue' | 'steer' | 'stop'
 
 export interface SendClusterProps {
   busy: boolean
@@ -31,6 +28,8 @@ export interface SendClusterProps {
   hasComposerPayload: boolean
   onQueue: () => void
   onStartVoice: () => void
+  /** Steer the live run with the draft; absent when the text can't steer. */
+  onSteer?: () => void
 }
 
 interface SendMode {
@@ -42,25 +41,38 @@ interface SendMode {
 }
 
 /** The busy-turn modes the primary does NOT already perform: while Send
- *  steers the live run, the draft can still wait for the next turn. */
-function useOtherSendModes({ busyAction, onQueue }: SendClusterProps): SendMode[] {
+ *  redirects (or steers) the live run, the draft can still steer it or wait
+ *  for the next turn. */
+function useOtherSendModes({ busyAction, onQueue, onSteer }: SendClusterProps): SendMode[] {
   const { t } = useI18n()
   const queueCombo = useKeybindHint('composer.queue')
+  const modes: SendMode[] = []
 
-  return busyAction === 'steer'
-    ? [{ action: onQueue, hint: queueCombo, icon: 'tray', key: 'queue', label: t.composer.queueMessage }]
-    : []
+  if (busyAction !== 'steer' && onSteer) {
+    modes.push({ action: onSteer, hint: null, icon: 'arrow-ur', key: 'steer', label: t.composer.steer })
+  }
+
+  if (busyAction !== 'queue') {
+    modes.push({ action: onQueue, hint: queueCombo, icon: 'tray', key: 'queue', label: t.composer.queueMessage })
+  }
+
+  return modes
 }
 
-function sendLabel(busy: boolean, busyAction: ComposerBusyAction, c: { queueMessage: string; send: string; steer: string; stop: string }) {
-  return busy ? { queue: c.queueMessage, steer: c.steer, stop: c.stop }[busyAction] : c.send
+function sendLabel(
+  busy: boolean,
+  busyAction: ComposerBusyAction,
+  c: { queueMessage: string; redirect: string; send: string; steer: string; stop: string }
+) {
+  return busy ? { interrupt: c.redirect, queue: c.queueMessage, steer: c.steer, stop: c.stop }[busyAction] : c.send
 }
 
 /**
  * The composer's primary button and its morphs (prototype `.send`): talk while
  * empty and idle → send → stop while a turn runs with nothing typed. With a
- * draft mid-turn the primary steers the run (text) or queues (attachments,
- * compaction), and while it steers a chevron offers queueing instead. The
+ * draft mid-turn the primary follows the busy-input policy (redirect or steer
+ * the run with text) or queues (attachments, compaction), and a chevron offers
+ * the other modes. The
  * submit button keeps its "Send" / "Stop" names — e2e and assistive tech read
  * them.
  */

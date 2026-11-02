@@ -7,11 +7,12 @@ import { useSearchParams } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { SegmentedControl } from '@/components/ui/segmented-control'
-import { getElevenLabsVoices, getHermesConfigSchema, saveHermesConfig } from '@/hermes'
+import { getElevenLabsVoices, getHermesConfigSchema, type ProfileScope, saveHermesConfig } from '@/hermes'
 import { useI18n } from '@/i18n'
 import { triggerHaptic } from '@/lib/haptics'
 import { isSubmitEnter } from '@/lib/ime'
 import { confirm } from '@/store/confirm'
+import { $activeConnectionId } from '@/store/connections'
 import {
   $dataUrlReadMaxMb,
   clampDataUrlReadMaxMb,
@@ -37,22 +38,25 @@ import { PanelEmpty } from '../overlays/panel'
 
 import { ConfigField } from './config-field'
 import { configSubpageForField } from './config-subpages'
+import { DELEGATION_ROUTE_COMPANION_KEY, DelegationRouteRow } from './delegation-route-row'
+import { DelegationRoutingSlot } from './delegation/routing-section'
+import { SubagentModelGate } from './delegation/subagent-model-gate'
 import {
   clearsEnabledToolsets,
+  configFieldValue,
   diffConfig,
   enumOptionsFor,
   getNested,
   inferFieldSchema,
   isExternalMemoryProvider,
   sectionFieldEntries,
-  setNested,
+  setConfigField,
   voiceFieldVisible
 } from './helpers'
 import { MemoryConnect } from './memory/connect'
 import { ProviderConfigPanel } from './memory/provider-config-panel'
 import { ModelSettings, ModelSettingsSkeleton } from './model-settings'
 import { OnboardingSettings } from './onboarding-settings'
-import { PoolLimitsSetting } from './pool-limits-setting'
 import { EmptyState, ListRow, SettingsContent, SettingsSkeleton, ToggleRow } from './primitives'
 import { SettingsProfileScope } from './profile-scope'
 import { QuickEntrySettings } from './quick-entry-settings'
@@ -77,6 +81,8 @@ export interface ConfigSettingsLayoutApi {
   retry: () => void
   scopeProfile: string | undefined
   updateConfig: (next: HermesConfigRecord) => void
+  /** Where this config saves (its read origin once loaded), for sections the page draws itself. */
+  writeScope: ProfileScope | undefined
 }
 
 export function ConfigSettings({
@@ -92,12 +98,13 @@ export function ConfigSettings({
   // when the target profile changes — the same guarantee useOnProfileSwitch
   // provides for app-wide switches, without hand-clearing each piece.
   const scopeProfile = useStore($settingsRequestProfile)
+  const connectionId = useStore($activeConnectionId)
 
   return (
     <ConfigSettingsInner
       activeSectionId={activeSectionId}
       importInputRef={importInputRef}
-      key={scopeProfile ?? '__active__'}
+      key={JSON.stringify([connectionId, scopeProfile ?? '__active__'])}
       layout={layout}
       onConfigSaved={onConfigSaved}
       onMainModelChanged={onMainModelChanged}
@@ -350,7 +357,9 @@ function ConfigSettingsInner({
       return
     }
 
-    const element = document.getElementById(`setting-field-${targetField}`)
+    const element = document.getElementById(
+      `setting-field-${targetField === DELEGATION_ROUTE_COMPANION_KEY ? 'delegation.model' : targetField}`
+    )
 
     if (!element) {
       return
@@ -402,34 +411,42 @@ function ConfigSettingsInner({
     e.target.value = ''
   }
 
-  const renderField = (key: string, field: ConfigFieldSchema, draft: HermesConfigRecord) => (
-    <div className="scroll-mt-6 rounded-lg" id={`setting-field-${key}`} key={key}>
-      <ConfigField
-        descriptionExtra={
-          key === 'memory.provider' && isExternalMemoryProvider(getNested(draft, key)) ? (
-            <MemoryConnect profile={scopeProfile} provider={String(getNested(draft, key))} />
-          ) : undefined
-        }
-        enumOptions={
-          key === 'tts.elevenlabs.voice_id'
-            ? enumOptionsFor(key, getNested(draft, key), draft, elevenLabsVoiceOptions ?? undefined)
-            : enumOptionsFor(key, getNested(draft, key), draft)
-        }
-        onChange={value => updateConfig(setNested(draft, key, value))}
-        optionLabels={key === 'tts.elevenlabs.voice_id' ? elevenLabsVoiceLabels : undefined}
-        schema={field}
-        schemaKey={key}
-        value={getNested(draft, key)}
-      />
-      {key === 'memory.provider' && isExternalMemoryProvider(getNested(draft, key)) ? (
-        <ProviderConfigPanel
-          key={String(getNested(draft, key))}
-          profile={scopeProfile}
-          provider={String(getNested(draft, key))}
-        />
-      ) : null}
-    </div>
-  )
+  const renderField = (key: string, field: ConfigFieldSchema, draft: HermesConfigRecord) =>
+    // The companion key is the delegation route row's own (it edits both).
+    key === DELEGATION_ROUTE_COMPANION_KEY ? null : (
+      <div className="scroll-mt-6 rounded-lg" id={`setting-field-${key}`} key={key}>
+        {key === 'delegation.model' ? (
+          <SubagentModelGate scope={writeScope ?? scopeProfile}>
+            <DelegationRouteRow config={draft} onConfigChange={updateConfig} scope={writeScope ?? scopeProfile} />
+          </SubagentModelGate>
+        ) : (
+          <ConfigField
+            descriptionExtra={
+              key === 'memory.provider' && isExternalMemoryProvider(getNested(draft, key)) ? (
+                <MemoryConnect profile={scopeProfile} provider={String(getNested(draft, key))} />
+              ) : undefined
+            }
+            enumOptions={
+              key === 'tts.elevenlabs.voice_id'
+                ? enumOptionsFor(key, getNested(draft, key), draft, elevenLabsVoiceOptions ?? undefined)
+                : enumOptionsFor(key, getNested(draft, key), draft)
+            }
+            onChange={value => updateConfig(setConfigField(draft, key, value))}
+            optionLabels={key === 'tts.elevenlabs.voice_id' ? elevenLabsVoiceLabels : undefined}
+            schema={field}
+            schemaKey={key}
+            value={configFieldValue(draft, key)}
+          />
+        )}
+        {key === 'memory.provider' && isExternalMemoryProvider(getNested(draft, key)) ? (
+          <ProviderConfigPanel
+            key={String(getNested(draft, key))}
+            profile={scopeProfile}
+            provider={String(getNested(draft, key))}
+          />
+        ) : null}
+      </div>
+    )
 
   const importInput = (
     <input
@@ -452,7 +469,8 @@ function ConfigSettingsInner({
           renderField: key => layoutField(key, sectionFields, schema, config, renderField),
           retry: retryLoad,
           scopeProfile,
-          updateConfig
+          updateConfig,
+          writeScope
         })}
         {importInput}
       </>
@@ -508,7 +526,9 @@ function ConfigSettingsInner({
     return <SettingsSkeleton sections={[{ rows: 6 }]} />
   }
 
-  const visibleFields = activeSectionId === 'voice' ? fields.filter(([key]) => voiceFieldVisible(key, config)) : fields
+  const visibleFields = (
+    activeSectionId === 'voice' ? fields.filter(([key]) => voiceFieldVisible(key, config)) : fields
+  ).filter(([key]) => key !== DELEGATION_ROUTE_COMPANION_KEY)
 
   const showEmptyState = emptyStateVisible(visibleFields.length, activeSectionId, subpage, [
     showModelSettings,
@@ -527,7 +547,6 @@ function ConfigSettingsInner({
           <KeepAwakeSetting />
           <DisableF12Setting />
           <ExternalLinksSetting />
-          <PoolLimitsSetting />
           <QuickEntrySettings />
           <OnboardingSettings />
         </>
@@ -539,6 +558,14 @@ function ConfigSettingsInner({
       {/* Shared metrics are two coupled opt-ins with a consent side effect, so they
           go through their own RPC rather than the generic field autosave. */}
       {showSharedMetrics ? <SharedMetricsSettings /> : null}
+      {/* Routing picks the strategy and owns its routes; the subagent model row below is the
+          Default strategy's route and goes inert while another strategy decides. */}
+      <DelegationRoutingSlot
+        readScope={scopeProfile}
+        sectionId={activeSectionId}
+        subpage={subpage}
+        writeScope={writeScope}
+      />
       {activeSectionId === 'voice' ? (
         <ListRow description={c.voiceShortcutHintDesc} title={c.voiceShortcutHintTitle} />
       ) : null}

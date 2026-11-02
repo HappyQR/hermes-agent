@@ -26,9 +26,12 @@ const buttonVariants = cva(
         outline:
           'bg-(--ui-bg-editor) text-(--ui-text-primary) shadow-[0_0_0_0.5px_var(--ui-line-2),0_1px_1.5px_rgb(0_0_0/0.06)] hover:bg-[color-mix(in_srgb,var(--ui-bg-editor),var(--ui-text-primary)_4%)]',
         // Soft-fill action (the default "non-primary button" look).
-        secondary: 'bg-(--ui-fill) text-(--ui-text-primary) hover:bg-(--ui-bg-secondary) hover:text-(--ui-text-primary)',
-        ghost:
-          'text-(--ui-text-secondary) hover:bg-(--ui-hover) hover:text-(--ui-text-primary) active:bg-(--ui-press)',
+        secondary:
+          'bg-(--ui-fill) text-(--ui-text-primary) hover:bg-(--ui-bg-secondary) hover:text-(--ui-text-primary)',
+        // Clickable tag/filter chip — the soft fill plus a hairline inset ring on
+        // hover (shadow, not border, so nothing reflows).
+        chip: 'bg-(--ui-fill) text-(--ui-text-primary) hover:bg-(--ui-bg-secondary) hover:shadow-[inset_0_0_0_0.5px_var(--ui-line-2)]',
+        ghost: 'text-(--ui-text-secondary) hover:bg-(--ui-hover) hover:text-(--ui-text-primary) active:bg-(--ui-press)',
         grip: 'bg-transparent text-(--ui-text-tertiary) transition-colors hover:text-(--ui-text-secondary) focus-visible:text-(--ui-text-primary)',
         // A control floating free of any surface (fan-menu discs, detached
         // chips): the menu/popover treatment — opaque popover fill + the

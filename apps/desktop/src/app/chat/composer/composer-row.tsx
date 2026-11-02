@@ -139,6 +139,7 @@ export function StudioComposerControls(props: StudioComposerControlsProps) {
         hasComposerPayload={upstream.hasComposerPayload}
         onQueue={upstream.onQueue}
         onStartVoice={upstream.conversation.onStart}
+        onSteer={upstream.onSteer}
       />
     </div>
   )

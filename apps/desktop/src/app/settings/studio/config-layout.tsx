@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { useI18n } from '@/i18n'
 
 import { ConfigSettings, type ConfigSettingsLayoutApi } from '../config-settings'
+import { DELEGATION_ROUTE_COMPANION_KEY } from '../delegation-route-row'
 import { voiceFieldVisible } from '../helpers'
 import { ListRowSkeleton } from '../primitives'
 import type { SettingsPageProps } from '../types'
@@ -29,7 +30,13 @@ export function placedFields(
     for (const [key] of entries) {
       const location = configFieldLocation(key, legacySection)
 
-      if (location.page === page && location.section === section && !exclude.includes(key)) {
+      // The companion key rides in the delegation route row (`delegation.model`).
+      if (
+        location.page === page &&
+        location.section === section &&
+        !exclude.includes(key) &&
+        key !== DELEGATION_ROUTE_COMPANION_KEY
+      ) {
         keys.push(key)
       }
     }

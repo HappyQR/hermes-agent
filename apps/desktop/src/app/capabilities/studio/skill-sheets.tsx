@@ -183,7 +183,13 @@ function SkillSheetContent({ embedded, onArchive, onClose, onSaved, profile, ski
     setSaving(true)
 
     try {
-      await editLearningNode(skill.name, editor.draft, profile)
+      const result = await editLearningNode(skill.name, editor.draft, profile)
+
+      // A refused write answers 200 with ok: false; the editor stays open.
+      if (!result.ok) {
+        throw new Error(result.message)
+      }
+
       notify({ kind: 'success', message: t.skills.appliesToNewSessions(skill.name), title: t.skills.skillUpdated })
       setEditor(null)
       void queryClient.invalidateQueries({ queryKey: ['skill-content', skill.name] })
