@@ -177,7 +177,13 @@ export function VoiceActivity({ compact = false, state }: { compact?: boolean; s
   // streaming partial text is announced, not painted, so the row never grows.
   if (compact) {
     return (
-      <span aria-live="polite" className="composer-pill" data-slot="composer-dictation" data-tone="accent" role="status">
+      <span
+        aria-live="polite"
+        className="composer-pill"
+        data-slot="composer-dictation"
+        data-tone="accent"
+        role="status"
+      >
         {recording ? (
           <VoiceLevelBars active level={state.level} />
         ) : (

@@ -82,7 +82,11 @@ export function InspectorBand({ activeId, groupId, panes, shown }: ZoneBandConte
           const selected = kind === activeKind
 
           return (
-            <Tip key={kind} label={<TipKeybindLabel actionId={INSPECTOR_KIND_ACTION[kind]} text={copy[kind]} />} side="bottom">
+            <Tip
+              key={kind}
+              label={<TipKeybindLabel actionId={INSPECTOR_KIND_ACTION[kind]} text={copy[kind]} />}
+              side="bottom"
+            >
               <button
                 aria-label={copy[kind]}
                 aria-selected={selected}

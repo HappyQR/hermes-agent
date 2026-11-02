@@ -24,7 +24,13 @@ import { $sidebarPreviewLine } from '@/store/sidebar-studio'
 
 import { SessionStatusDot } from '../session-status-dot'
 
-import { SIDEBAR_TRUNCATED_LEADING, SidebarRowGrab, SidebarRowLabel, SidebarRowLead, SidebarRowLeadGlyph } from './chrome'
+import {
+  SIDEBAR_TRUNCATED_LEADING,
+  SidebarRowGrab,
+  SidebarRowLabel,
+  SidebarRowLead,
+  SidebarRowLeadGlyph
+} from './chrome'
 import { sessionRowDetails } from './session-row-details'
 import { sessionSourceBucket, sourceBucketLabel } from './studio/session-source'
 import { SessionSourceBadge } from './studio/session-source-badge'
@@ -198,7 +204,10 @@ export function SessionRowLead({ session, reorderable, dragging, dragHandleProps
 /** A branch hangs off its parent: one stem glyph after the lead (prototype .stem). */
 export function SessionRowStem() {
   return (
-    <span aria-hidden="true" className="-mx-0.5 shrink-0 font-mono text-[0.6875rem] leading-none text-(--ui-text-quaternary)">
+    <span
+      aria-hidden="true"
+      className="-mx-0.5 shrink-0 font-mono text-[0.6875rem] leading-none text-(--ui-text-quaternary)"
+    >
       └
     </span>
   )
@@ -235,7 +244,12 @@ export function SessionRowBadges({ session }: { session: SessionInfo }) {
  * title — the row's real button (#38072) — then the detailed density's
  * project · branch · model line and the Preview option's first-message line.
  */
-export function SessionRowTitle({ detailed, session, title, unread }: {
+export function SessionRowTitle({
+  detailed,
+  session,
+  title,
+  unread
+}: {
   detailed: boolean
   session: SessionInfo
   title: string
@@ -245,7 +259,9 @@ export function SessionRowTitle({ detailed, session, title, unread }: {
   const previewLine = useStore($sidebarPreviewLine)
   // Selectors, not useStore($projects): the projects atom refreshes on the tree
   // poll with fresh identity; a row only repaints when its own label changes.
-  const projectLabel = useStoreSelector($projects, projects => (detailed ? sessionProjectLabel(session, projects) : null))
+  const projectLabel = useStoreSelector($projects, projects =>
+    detailed ? sessionProjectLabel(session, projects) : null
+  )
   const sourceLabel = detailed ? sourceBucketLabel(sessionSourceBucket(session), t.studio.sidebar) : null
   const details = detailed || previewLine ? sessionRowDetails(session, { projectLabel, sourceLabel }) : null
 

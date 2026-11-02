@@ -36,19 +36,13 @@ export function BootMark({ className }: { className?: string }) {
 }
 
 /** Brand mark, 28px display title and lead line. */
-export function BootHero({
-  className,
-  lead,
-  title
-}: {
-  className?: string
-  lead?: ReactNode
-  title: ReactNode
-}) {
+export function BootHero({ className, lead, title }: { className?: string; lead?: ReactNode; title: ReactNode }) {
   return (
     <div className={cn('flex flex-col items-center gap-[1.125rem]', className)}>
       <BootMark />
-      <h1 className="m-0 text-[1.75rem] leading-tight font-bold tracking-[-0.02em] text-(--ui-text-primary)">{title}</h1>
+      <h1 className="m-0 text-[1.75rem] leading-tight font-bold tracking-[-0.02em] text-(--ui-text-primary)">
+        {title}
+      </h1>
       {lead ? <p className="m-0 max-w-[44ch] text-sm leading-[1.55] text-(--ui-text-tertiary)">{lead}</p> : null}
     </div>
   )

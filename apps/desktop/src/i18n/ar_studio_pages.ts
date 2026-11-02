@@ -343,8 +343,7 @@ export const arStudioPages: StudioPagesTranslations = {
       uninstallEllipsis: 'إلغاء التثبيت…',
       browseCatalog: 'تصفح كتالوج الإضافات',
       catalogTitle: 'كتالوج الإضافات',
-      catalogHint:
-        'اختر «+» على أي إضافة. تُثبَّت العناصر المراجَعة عند الالتزام المثبّت لها في ملف التعريف المحدد.',
+      catalogHint: 'اختر «+» على أي إضافة. تُثبَّت العناصر المراجَعة عند الالتزام المثبّت لها في ملف التعريف المحدد.',
       settingsTip: 'إعدادات الإضافة',
       noMatch: query => `لا توجد إضافة تطابق «${query}».`
     }

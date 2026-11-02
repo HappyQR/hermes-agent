@@ -81,11 +81,7 @@ export function TreeThumbnail({ node, resting }: { node: LayoutNode; resting: Re
 
 /** Small-caps section heading — the app's SidebarPanelLabel voice. */
 function PickerSectionLabel({ children }: { children: ReactNode }) {
-  return (
-    <span className="text-[0.6875rem] font-semibold text-(--ui-text-tertiary)">
-      {children}
-    </span>
-  )
+  return <span className="text-[0.6875rem] font-semibold text-(--ui-text-tertiary)">{children}</span>
 }
 
 function PresetCard({ preset }: { preset: Contribution }) {

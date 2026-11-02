@@ -293,7 +293,15 @@ function MoveToProjectItems({ kit, sessionId, profile }: { kit: MenuKit; session
 }
 
 /** Move to project ▸ every project (current one checked) + New project…. */
-export function MoveToProjectSubmenu({ kit, profile, sessionId }: { kit: MenuKit; profile?: string; sessionId: string }) {
+export function MoveToProjectSubmenu({
+  kit,
+  profile,
+  sessionId
+}: {
+  kit: MenuKit
+  profile?: string
+  sessionId: string
+}) {
   const { t } = useI18n()
 
   return (

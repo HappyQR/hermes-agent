@@ -217,7 +217,11 @@ export function QuickEntryApp() {
                 </option>
               ))}
             </select>
-            <StudioIcon className="pointer-events-none absolute right-1.5 text-(--ui-text-tertiary)" name="chev-ud" size={12} />
+            <StudioIcon
+              className="pointer-events-none absolute right-1.5 text-(--ui-text-tertiary)"
+              name="chev-ud"
+              size={12}
+            />
           </span>
           <span className="min-w-0 flex-1 truncate text-right">{hint.join(' · ')}</span>
         </div>

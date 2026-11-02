@@ -114,12 +114,15 @@ describe('syncWorkspaceRoute', () => {
     expect(fronted()).toBe(true)
   })
 
-  it.each([AUTOMATIONS_ROUTE, CRON_ROUTE, WEBHOOKS_ROUTE, MEMORY_ROUTE, STARMAP_ROUTE])('fronts on the Studio page at %s', route => {
-    syncWorkspaceRoute(route)
+  it.each([AUTOMATIONS_ROUTE, CRON_ROUTE, WEBHOOKS_ROUTE, MEMORY_ROUTE, STARMAP_ROUTE])(
+    'fronts on the Studio page at %s',
+    route => {
+      syncWorkspaceRoute(route)
 
-    expect($workspaceIsPage.get()).toBe(true)
-    expect(fronted()).toBe(true)
-  })
+      expect($workspaceIsPage.get()).toBe(true)
+      expect(fronted()).toBe(true)
+    }
+  )
 
   it('fronts on a page route reached with a query', () => {
     syncWorkspaceRoute(`${CAPABILITIES_ROUTE}?tab=connectors`)

@@ -477,7 +477,9 @@ export function BootFailureOverlay() {
   if (view === 'connect') {
     return (
       <BootFailureModal onDismiss={dismiss} title={copy.gatewaySettings}>
-        <div className={cn('relative flex max-h-[86vh] w-full max-w-[46rem] flex-col overflow-hidden', BOOT_CARD_CLASS)}>
+        <div
+          className={cn('relative flex max-h-[86vh] w-full max-w-[46rem] flex-col overflow-hidden', BOOT_CARD_CLASS)}
+        >
           <DialogCloseButton />
           {/* Subtle back affordance (projects/overlay idiom): muted → foreground
               on hover, no divider. */}

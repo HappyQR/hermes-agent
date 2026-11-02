@@ -104,7 +104,11 @@ export function StudioComposerControls(props: StudioComposerControlsProps) {
             <ModelPill compact={compactModelPill} disabled={disabled} model={upstream.state.model} />
           </ModelMenuExtras.Provider>
           {!compactModelPill && (
-            <ReasoningPill disabled={disabled} formatLabel={summary => effortName(summary, t)} model={upstream.state.model} />
+            <ReasoningPill
+              disabled={disabled}
+              formatLabel={summary => effortName(summary, t)}
+              model={upstream.state.model}
+            />
           )}
         </>
       )}

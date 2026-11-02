@@ -83,5 +83,7 @@ export function resolveAccentPick(value: string, dark: boolean): ResolvedAccent 
 
 /** The name a settled card shows for a reported accent id. */
 export function accentName(id: string): string {
-  return [...SWATCHES, ...RETIRED_SWATCHES].find(swatch => swatch.id === id)?.name ?? id.replace(CUSTOM_ACCENT_PREFIX, '')
+  return (
+    [...SWATCHES, ...RETIRED_SWATCHES].find(swatch => swatch.id === id)?.name ?? id.replace(CUSTOM_ACCENT_PREFIX, '')
+  )
 }

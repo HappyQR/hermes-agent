@@ -149,7 +149,12 @@ export function ProfilesView({ onClose }: ProfilesViewProps) {
                         [{ icon: 'edit', label: p.renameMenu, onSelect: () => setPendingRename(profile) }]
                       : [
                           { icon: 'edit', label: p.renameMenu, onSelect: () => setPendingRename(profile) },
-                          { icon: 'trash', label: t.common.delete, onSelect: () => setPendingDelete(profile), tone: 'danger' }
+                          {
+                            icon: 'trash',
+                            label: t.common.delete,
+                            onSelect: () => setPendingDelete(profile),
+                            tone: 'danger'
+                          }
                         ]
                   }
                   onSelect={() => setSelectedName(profile.name)}

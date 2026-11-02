@@ -46,27 +46,9 @@ export const frStudioOverlaysAux: StudioOverlaysAuxTranslations = {
         'je manigance…',
         'hmm…'
       ],
-      failed: [
-        'un accroc',
-        'zut',
-        'ça a cassé',
-        'aïe',
-        'bloqué'
-      ],
-      waiting: [
-        'à toi',
-        'tout à toi',
-        'à toi de jouer',
-        'la balle est dans ton camp',
-        'j’attends tes ordres'
-      ],
-      idle: [
-        'coucou',
-        'besoin de quelque chose ?',
-        'tout est calme',
-        'en attente',
-        'une petite pause ?'
-      ]
+      failed: ['un accroc', 'zut', 'ça a cassé', 'aïe', 'bloqué'],
+      waiting: ['à toi', 'tout à toi', 'à toi de jouer', 'la balle est dans ton camp', 'j’attends tes ordres'],
+      idle: ['coucou', 'besoin de quelque chose ?', 'tout est calme', 'en attente', 'une petite pause ?']
     }
   },
   boot: {

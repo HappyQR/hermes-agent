@@ -25,44 +25,42 @@ import { SidebarSessionRow } from './session-row'
 afterEach(cleanup)
 
 vi.mock('@/i18n', async () => {
-  const { enStudioSidebar } = await vi.importActual<typeof StudioSidebarCopy>(
-    '@/i18n/en_studio_sidebar'
-  )
+  const { enStudioSidebar } = await vi.importActual<typeof StudioSidebarCopy>('@/i18n/en_studio_sidebar')
 
   return {
-  useI18n: () => ({
-    locale: 'en',
-    t: {
-      studio: { sidebar: enStudioSidebar },
-      sidebar: {
-        messageCount: (count: number) => `${count} messages`,
-        toolCallCount: (count: number) => `${count} tool calls`,
-        projects: {
-          home: 'Home'
-        },
-        row: {
-          ageMin: 'm',
-          ageNow: 'now',
-          backgroundRunning: 'Running in background',
-          finishedUnread: 'Finished',
-          handoffOrigin: (platform: string) => `Started on ${platform}`,
-          continuationOrigin: 'Automatic continuation — this conversation was compressed and continued',
+    useI18n: () => ({
+      locale: 'en',
+      t: {
+        studio: { sidebar: enStudioSidebar },
+        sidebar: {
           messageCount: (count: number) => `${count} messages`,
-          needsInput: 'Needs input',
-          sessionActions: 'Session actions',
-          sessionRunning: 'Running',
-          todoProgress: 'Tasks completed',
-          waitingForAnswer: 'Waiting for answer'
-        }
-      },
-      assistant: {
-        thread: {
-          today: (time: string) => `Today at ${time}`,
-          yesterday: (time: string) => `Yesterday at ${time}`
+          toolCallCount: (count: number) => `${count} tool calls`,
+          projects: {
+            home: 'Home'
+          },
+          row: {
+            ageMin: 'm',
+            ageNow: 'now',
+            backgroundRunning: 'Running in background',
+            finishedUnread: 'Finished',
+            handoffOrigin: (platform: string) => `Started on ${platform}`,
+            continuationOrigin: 'Automatic continuation — this conversation was compressed and continued',
+            messageCount: (count: number) => `${count} messages`,
+            needsInput: 'Needs input',
+            sessionActions: 'Session actions',
+            sessionRunning: 'Running',
+            todoProgress: 'Tasks completed',
+            waitingForAnswer: 'Waiting for answer'
+          }
+        },
+        assistant: {
+          thread: {
+            today: (time: string) => `Today at ${time}`,
+            yesterday: (time: string) => `Yesterday at ${time}`
+          }
         }
       }
-    }
-  })
+    })
   }
 })
 

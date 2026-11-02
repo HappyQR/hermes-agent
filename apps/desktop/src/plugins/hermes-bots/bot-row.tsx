@@ -32,13 +32,7 @@ import {
 import { avatarColor, botAppearance, BotFace } from './avatar'
 import { isBackfilledFacePng } from './avatar-image'
 import { BotRowMenu } from './bot-row-menu'
-import {
-  $botChatFocused,
-  $focusedBotOwner,
-  $pendingBotOpen,
-  $selectedRosterKey,
-  focusedRosterOwner
-} from './bot-state'
+import { $botChatFocused, $focusedBotOwner, $pendingBotOpen, $selectedRosterKey, focusedRosterOwner } from './bot-state'
 import {
   $botAttention,
   $botMeta,

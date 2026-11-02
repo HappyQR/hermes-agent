@@ -46,27 +46,9 @@ export const enStudioOverlaysAux: StudioOverlaysAuxTranslations = {
         'scheming…',
         'hmm…'
       ],
-      failed: [
-        'hit a snag',
-        'welp',
-        'that broke',
-        'oof',
-        'snagged'
-      ],
-      waiting: [
-        'your turn',
-        'all yours',
-        'over to you',
-        'ball’s in your court',
-        'awaiting orders'
-      ],
-      idle: [
-        'hi there',
-        'need anything?',
-        'all quiet',
-        'standing by',
-        'time for a break?'
-      ]
+      failed: ['hit a snag', 'welp', 'that broke', 'oof', 'snagged'],
+      waiting: ['your turn', 'all yours', 'over to you', 'ball’s in your court', 'awaiting orders'],
+      idle: ['hi there', 'need anything?', 'all quiet', 'standing by', 'time for a break?']
     }
   },
   boot: {

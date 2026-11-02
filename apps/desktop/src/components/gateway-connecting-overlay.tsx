@@ -94,9 +94,7 @@ function ConnectingStatus({ active, leaving }: { active: boolean; leaving: boole
       <BootMark />
       <div className="flex items-center gap-2 text-[0.8125rem] text-(--ui-text-tertiary)">
         {/* Reduced motion keeps the static mark and the label (DESIGN "Guide startup"). */}
-        {active && !prefersReducedMotion() ? (
-          <Loader aria-hidden className="size-4" type="lemniscate-bloom" />
-        ) : null}
+        {active && !prefersReducedMotion() ? <Loader aria-hidden className="size-4" type="lemniscate-bloom" /> : null}
         <span>{label}</span>
       </div>
     </div>

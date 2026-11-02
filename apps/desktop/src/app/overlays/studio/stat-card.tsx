@@ -12,7 +12,15 @@ const DOT_TONE: Record<StatusDotTone, string> = {
 }
 
 /** A 7px status dot (prototype .dot). */
-export function StatusDot({ className, pulse = false, tone }: { className?: string; pulse?: boolean; tone: StatusDotTone }) {
+export function StatusDot({
+  className,
+  pulse = false,
+  tone
+}: {
+  className?: string
+  pulse?: boolean
+  tone: StatusDotTone
+}) {
   return (
     <span
       aria-hidden

@@ -917,7 +917,13 @@ export function SessionTabMenu({
 
 /** Studio: the toolbar title's dropdown — a tab's session verbs (pin, branch,
  *  rename, archive, delete, …) for the focused chat, opened by a click. */
-export function SessionTitleMenu({ children, storedSessionId }: { children: React.ReactNode; storedSessionId: string }) {
+export function SessionTitleMenu({
+  children,
+  storedSessionId
+}: {
+  children: React.ReactNode
+  storedSessionId: string
+}) {
   const { pinId, profile, renameable, title } = useTileMenuRow(storedSessionId)
   const pinned = useStore($pinnedSessionIds).includes(pinId)
 

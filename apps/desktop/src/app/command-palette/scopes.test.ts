@@ -1,6 +1,13 @@
 import { afterEach, describe, expect, it } from 'vitest'
 
-import { $paletteSources, cycleScope, groupsForScope, hasPaletteSource, type ScopedGroup, setPaletteSource } from './scopes'
+import {
+  $paletteSources,
+  cycleScope,
+  groupsForScope,
+  hasPaletteSource,
+  type ScopedGroup,
+  setPaletteSource
+} from './scopes'
 
 const group = (heading: string, scope: ScopedGroup['scope'], count = 2, typedOnly = false): ScopedGroup => ({
   heading,

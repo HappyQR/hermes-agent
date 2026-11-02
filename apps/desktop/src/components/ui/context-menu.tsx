@@ -98,7 +98,10 @@ function ContextMenuLabel({
 }) {
   return (
     <ContextMenuPrimitive.Label
-      className={cn('px-2 pt-1.5 pb-1 text-[0.71875rem] font-semibold text-(--ui-text-tertiary) data-[inset]:pl-7', className)}
+      className={cn(
+        'px-2 pt-1.5 pb-1 text-[0.71875rem] font-semibold text-(--ui-text-tertiary) data-[inset]:pl-7',
+        className
+      )}
       data-inset={inset}
       data-slot="context-menu-label"
       {...props}

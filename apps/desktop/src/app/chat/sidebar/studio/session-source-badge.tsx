@@ -32,7 +32,8 @@ export function SessionSourceBadge({ session }: { session: SessionInfo }) {
     )
   }
 
-  const handoff = bucket === DESKTOP_SOURCE ? handoffOriginSource(session.handoff_state, session.handoff_platform) : null
+  const handoff =
+    bucket === DESKTOP_SOURCE ? handoffOriginSource(session.handoff_state, session.handoff_platform) : null
   const platform = handoff ?? (bucket === DESKTOP_SOURCE ? null : bucket)
 
   if (!platform) {

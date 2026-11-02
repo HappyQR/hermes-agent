@@ -165,7 +165,10 @@ export function SessionStatusDot({ storedSessionId, session, branchStem, classNa
       </span>
       {/* A branch hangs off its parent: one stem glyph after the lead (prototype .stem). */}
       {branchStem ? (
-        <span aria-hidden className="-mr-0.5 shrink-0 font-mono text-[0.6875rem] leading-none text-(--ui-text-quaternary)">
+        <span
+          aria-hidden
+          className="-mr-0.5 shrink-0 font-mono text-[0.6875rem] leading-none text-(--ui-text-quaternary)"
+        >
           └
         </span>
       ) : null}

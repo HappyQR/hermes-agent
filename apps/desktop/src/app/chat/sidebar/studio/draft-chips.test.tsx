@@ -58,7 +58,15 @@ const project = (id: string, label: string, path: string) =>
   ({ id, isAuto: false, label, path, repos: [], sessionCount: 1 }) as unknown as SidebarProjectTree
 
 const profile = (name: string, isDefault = false) =>
-  ({ has_env: false, is_default: isDefault, model: null, name, path: `/p/${name}`, provider: null, skill_count: 0 }) as ProfileInfo
+  ({
+    has_env: false,
+    is_default: isDefault,
+    model: null,
+    name,
+    path: `/p/${name}`,
+    provider: null,
+    skill_count: 0
+  }) as ProfileInfo
 
 const renderChip = (chip: React.ReactNode) =>
   render(

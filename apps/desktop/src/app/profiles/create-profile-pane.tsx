@@ -45,10 +45,7 @@ export function CreateProfilePane({
   return (
     <form className="flex flex-col gap-3" onSubmit={event => void form.submit(event)}>
       <FormGroup>
-        <FormRow
-          description={p.nameHint}
-          title={<label htmlFor="sheet-new-profile-name">{p.nameLabel}</label>}
-        >
+        <FormRow description={p.nameHint} title={<label htmlFor="sheet-new-profile-name">{p.nameLabel}</label>}>
           <SanitizedInput
             aria-invalid={form.invalid}
             autoFocus

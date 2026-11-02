@@ -46,27 +46,9 @@ export const esStudioOverlaysAux: StudioOverlaysAuxTranslations = {
         'tramando…',
         'mmm…'
       ],
-      failed: [
-        'un tropiezo',
-        'vaya',
-        'se rompió',
-        'uf',
-        'atascado'
-      ],
-      waiting: [
-        'tu turno',
-        'todo tuyo',
-        'te toca',
-        'la pelota está en tu tejado',
-        'esperando órdenes'
-      ],
-      idle: [
-        'hola',
-        '¿necesitas algo?',
-        'todo tranquilo',
-        'a la espera',
-        '¿un descanso?'
-      ]
+      failed: ['un tropiezo', 'vaya', 'se rompió', 'uf', 'atascado'],
+      waiting: ['tu turno', 'todo tuyo', 'te toca', 'la pelota está en tu tejado', 'esperando órdenes'],
+      idle: ['hola', '¿necesitas algo?', 'todo tranquilo', 'a la espera', '¿un descanso?']
     }
   },
   boot: {

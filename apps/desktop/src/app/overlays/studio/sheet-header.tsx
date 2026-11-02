@@ -48,14 +48,13 @@ export function SheetHeader({
   const subtitleClass = 'm-0 mt-0.5 text-[0.78125rem] leading-snug text-(--ui-text-tertiary)'
 
   return (
-    <div className={cn('flex shrink-0 items-center gap-2.5 px-[1.125rem] pb-2.5 pt-4', className)} data-slot="sheet-header">
+    <div
+      className={cn('flex shrink-0 items-center gap-2.5 px-[1.125rem] pb-2.5 pt-4', className)}
+      data-slot="sheet-header"
+    >
       {lead ?? (glyph || icon ? <IconTile glyph={glyph} icon={icon} size={30} tone={tone} /> : null)}
       <div className="min-w-0 flex-1">
-        {inDialog ? (
-          <DialogTitle className={titleClass}>{title}</DialogTitle>
-        ) : (
-          <h2 className={titleClass}>{title}</h2>
-        )}
+        {inDialog ? <DialogTitle className={titleClass}>{title}</DialogTitle> : <h2 className={titleClass}>{title}</h2>}
         {subtitle ? (
           inDialog ? (
             <DialogDescription className={subtitleClass}>{subtitle}</DialogDescription>
@@ -99,10 +98,7 @@ export function SheetBody({ children, className }: { children: ReactNode; classN
 /** The footer row of a sheet (prototype .sh-foot): leading note, spacer, actions. */
 export function SheetFooter({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <div
-      className={cn('flex shrink-0 items-center gap-2 px-[1.125rem] pb-4 pt-3', className)}
-      data-slot="sheet-footer"
-    >
+    <div className={cn('flex shrink-0 items-center gap-2 px-[1.125rem] pb-4 pt-3', className)} data-slot="sheet-footer">
       {children}
     </div>
   )

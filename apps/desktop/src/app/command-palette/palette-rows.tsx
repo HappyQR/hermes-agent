@@ -67,7 +67,11 @@ export const PaletteGroups = memo(function PaletteGroups({
         <div className="py-6 text-center text-[0.8125rem] text-(--ui-text-tertiary)">{noResultsLabel}</div>
       )}
       {deferred.map((group, index) => (
-        <CommandGroup className={PAL_HEADING} heading={group.heading} key={group.key ?? group.heading ?? `palette-group-${index}`}>
+        <CommandGroup
+          className={PAL_HEADING}
+          heading={group.heading}
+          key={group.key ?? group.heading ?? `palette-group-${index}`}
+        >
           {group.items.map(item => (
             <PaletteRow
               bindings={bindings}

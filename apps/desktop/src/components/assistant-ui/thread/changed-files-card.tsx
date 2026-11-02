@@ -61,9 +61,16 @@ export const ChangedFilesCard: FC<{ parts: readonly unknown[] }> = ({ parts }) =
     >
       <div className="studio-files-head flex items-center gap-2">
         <StudioIcon className="shrink-0 text-(--ui-text-tertiary)" name="diff" size={15} />
-        <span className="min-w-0 truncate font-semibold text-(--ui-text-primary)">{copy.filesChanged(files.length)}</span>
+        <span className="min-w-0 truncate font-semibold text-(--ui-text-primary)">
+          {copy.filesChanged(files.length)}
+        </span>
         <DiffCount added={added} className="me-auto" removed={removed} />
-        <Button onClick={() => revealReview(scopeCwd, composerScope.target)} size="xs" type="button" variant="secondary">
+        <Button
+          onClick={() => revealReview(scopeCwd, composerScope.target)}
+          size="xs"
+          type="button"
+          variant="secondary"
+        >
           {copy.reviewChanges}
         </Button>
       </div>

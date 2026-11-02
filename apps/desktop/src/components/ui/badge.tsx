@@ -13,11 +13,9 @@ const badgeVariants = cva(
       variant: {
         default: 'bg-(--ui-accent-soft) text-(--ui-accent-text)',
         muted: 'bg-(--ui-fill-2) text-(--ui-text-secondary)',
-        success:
-          'bg-[color-mix(in_srgb,var(--ui-dot-green,var(--ui-green))_15%,transparent)] text-(--ui-green)',
+        success: 'bg-[color-mix(in_srgb,var(--ui-dot-green,var(--ui-green))_15%,transparent)] text-(--ui-green)',
         warn: 'bg-[color-mix(in_srgb,var(--ui-dot-orange,var(--ui-orange))_15%,transparent)] text-(--ui-orange)',
-        destructive:
-          'bg-[color-mix(in_srgb,var(--ui-dot-red,var(--dt-destructive))_13%,transparent)] text-(--ui-red)',
+        destructive: 'bg-[color-mix(in_srgb,var(--ui-dot-red,var(--dt-destructive))_13%,transparent)] text-(--ui-red)',
         outline: 'shadow-[inset_0_0_0_0.5px_var(--ui-line-2)] text-(--ui-text-secondary)',
         // Solid fill — icon-corner counts (titlebar unread, etc.).
         solid: 'bg-primary text-primary-foreground'

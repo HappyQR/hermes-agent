@@ -21,15 +21,7 @@ import {
 
 import { saveSelectedRosterBot } from './bot-state'
 import { ensureBotMetadata } from './canonical-chat'
-import {
-  $botMeta,
-  $lastRoster,
-  botSelectionKey,
-  isDefaultBot,
-  newBotChat,
-  ROSTER_KEY,
-  saveBotMeta
-} from './data'
+import { $botMeta, $lastRoster, botSelectionKey, isDefaultBot, newBotChat, ROSTER_KEY, saveBotMeta } from './data'
 import { botGroups } from './group-membership'
 import { fallbackSelectionAfterHide, isBotHidden, isBotPinned } from './hidden-bots'
 import { useBots } from './i18n'

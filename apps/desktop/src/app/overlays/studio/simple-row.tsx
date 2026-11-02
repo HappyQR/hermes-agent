@@ -7,7 +7,15 @@ import { cn } from '@/lib/utils'
  * left, value right, never stacking — for read-only lists in narrow columns
  * (shortcut maps, top models). Shares the group's hairline convention.
  */
-export function SimpleRow({ children, className, title }: { children?: ReactNode; className?: string; title: ReactNode }) {
+export function SimpleRow({
+  children,
+  className,
+  title
+}: {
+  children?: ReactNode
+  className?: string
+  title: ReactNode
+}) {
   return (
     <div
       className={cn(

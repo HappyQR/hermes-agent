@@ -180,7 +180,9 @@ describe('intlLocale', () => {
 
     setRuntimeI18nLocale(foreign)
 
-    expect(fmtClock.format(at)).toBe(new Intl.DateTimeFormat(foreign, { hour: 'numeric', minute: '2-digit' }).format(at))
+    expect(fmtClock.format(at)).toBe(
+      new Intl.DateTimeFormat(foreign, { hour: 'numeric', minute: '2-digit' }).format(at)
+    )
     expect(relativeTime(Date.now() - 3 * MINUTE)).toBe(
       new Intl.RelativeTimeFormat(foreign, { numeric: 'auto', style: 'short' }).format(-3, 'minute')
     )

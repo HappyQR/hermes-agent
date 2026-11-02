@@ -69,7 +69,9 @@ describe('SidebarViewOptions', () => {
     open(copy.sessions.viewOptions)
 
     fireEvent.click(within(screen.getByRole('group', { name: f.status })).getByRole('button', { name: f.needsInput }))
-    fireEvent.click(within(screen.getByRole('group', { name: copy.view.sources })).getByRole('button', { name: 'Telegram' }))
+    fireEvent.click(
+      within(screen.getByRole('group', { name: copy.view.sources })).getByRole('button', { name: 'Telegram' })
+    )
     fireEvent.click(screen.getByRole('switch', { name: copy.view.showArchived }))
     fireEvent.click(screen.getByRole('button', { name: copy.view.detailed }))
 

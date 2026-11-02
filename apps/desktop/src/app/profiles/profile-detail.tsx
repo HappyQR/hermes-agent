@@ -69,7 +69,9 @@ export function ProfileDetail({
         <ProfileAvatar profile={profile} size="xl" />
         <div className="min-w-0 flex-1">
           <div className="flex min-w-0 items-center gap-2">
-            <h3 className="m-0 truncate text-[1.1875rem] font-[650] tracking-tight text-(--ui-text-primary)">{label}</h3>
+            <h3 className="m-0 truncate text-[1.1875rem] font-[650] tracking-tight text-(--ui-text-primary)">
+              {label}
+            </h3>
             {profile.is_default && <Badge variant="success">{p.defaultBadge}</Badge>}
             {profile.has_env && <Badge variant="muted">.env</Badge>}
           </div>

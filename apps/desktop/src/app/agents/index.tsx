@@ -101,7 +101,13 @@ export function AgentsView({ onClose }: AgentsViewProps) {
   )
 
   return (
-    <OverlayView closeLabel={t.agents.close} onClose={onClose} rootClassName="h-[min(36rem,100%)]" size="wide" variant="sheet">
+    <OverlayView
+      closeLabel={t.agents.close}
+      onClose={onClose}
+      rootClassName="h-[min(36rem,100%)]"
+      size="wide"
+      variant="sheet"
+    >
       <SheetHeader
         closeLabel={t.agents.close}
         glyph="bot"

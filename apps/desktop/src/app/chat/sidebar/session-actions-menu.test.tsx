@@ -99,7 +99,12 @@ vi.mock('@/i18n', () => ({
           untitledPlaceholder: 'Untitled'
         }
       },
-      zones: { closeAll: 'Close all', closeOthers: 'Close others', closeToRight: 'Close to the right', reload: 'Reload' }
+      zones: {
+        closeAll: 'Close all',
+        closeOthers: 'Close others',
+        closeToRight: 'Close to the right',
+        reload: 'Reload'
+      }
     }
   })
 }))

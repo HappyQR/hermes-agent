@@ -142,7 +142,10 @@ export function PetBubble({ peek = false, showStatus = true }: PetBubbleProps = 
 
     return (
       <div
-        className={cn(BUBBLE_SURFACE, 'inline-flex w-max max-w-[13.75rem] flex-col gap-[3px] rounded-[12px] px-2.5 py-1.5 leading-[1.3]')}
+        className={cn(
+          BUBBLE_SURFACE,
+          'inline-flex w-max max-w-[13.75rem] flex-col gap-[3px] rounded-[12px] px-2.5 py-1.5 leading-[1.3]'
+        )}
         data-pet-plugin={pluginLine.pluginId}
         data-slot="pet-plugin-bubble"
       >

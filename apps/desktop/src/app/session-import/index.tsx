@@ -151,7 +151,12 @@ export function SessionImportView({ owner, onClose, onOpenSession }: SessionImpo
           tone="blue"
         />
         <div className="flex min-h-0 flex-1 gap-3.5 px-[1.125rem] pb-1 pt-1">
-          <aside className={cn('flex w-[15.625rem] shrink-0 flex-col gap-1.5 max-[760px]:w-full', selected && 'max-[760px]:hidden')}>
+          <aside
+            className={cn(
+              'flex w-[15.625rem] shrink-0 flex-col gap-1.5 max-[760px]:w-full',
+              selected && 'max-[760px]:hidden'
+            )}
+          >
             <SegmentedControl
               aria-label={studio.sourceLabel}
               className="auto-cols-auto"
@@ -309,8 +314,7 @@ function ImportList({
         const previous = rows[index - 1]
 
         const newDate =
-          !previous ||
-          new Date(previous.mtime * 1000).toDateString() !== new Date(row.mtime * 1000).toDateString()
+          !previous || new Date(previous.mtime * 1000).toDateString() !== new Date(row.mtime * 1000).toDateString()
 
         return (
           <div key={row.id}>

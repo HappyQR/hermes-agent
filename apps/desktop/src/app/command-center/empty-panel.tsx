@@ -1,7 +1,15 @@
 import type { ReactNode } from 'react'
 
 /** A quiet centered empty/error state inside a System Status tab. */
-export function EmptyPanel({ action, description, title }: { action?: ReactNode; description: string; title?: string }) {
+export function EmptyPanel({
+  action,
+  description,
+  title
+}: {
+  action?: ReactNode
+  description: string
+  title?: string
+}) {
   return (
     <div className="grid min-h-48 place-items-center px-6 text-center">
       <div>

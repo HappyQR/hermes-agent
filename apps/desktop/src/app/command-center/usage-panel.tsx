@@ -72,7 +72,13 @@ export function UsagePanel() {
   useRefreshHotkey(() => void refresh(period))
 
   const money = useMemo(
-    () => new Intl.NumberFormat(locale, { currency: 'USD', currencyDisplay: 'narrowSymbol', maximumFractionDigits: 2, style: 'currency' }),
+    () =>
+      new Intl.NumberFormat(locale, {
+        currency: 'USD',
+        currencyDisplay: 'narrowSymbol',
+        maximumFractionDigits: 2,
+        style: 'currency'
+      }),
     [locale]
   )
 
@@ -187,10 +193,7 @@ function DailyBars({ cacheHit, usage }: { cacheHit: null | number; usage: Analyt
             const output = entry.output_tokens || 0
 
             return (
-              <Tip
-                key={entry.day}
-                label={sys.dayDetail(entry.day, compactNumber(input), compactNumber(output))}
-              >
+              <Tip key={entry.day} label={sys.dayDetail(entry.day, compactNumber(input), compactNumber(output))}>
                 <div className="flex h-full min-w-0 flex-1 flex-col justify-end gap-px" tabIndex={-1}>
                   <i
                     className="block rounded-t-[3px] bg-primary opacity-85"

@@ -49,7 +49,9 @@ describe('tool-run summaries in the UI language', () => {
       expect(line, line).not.toMatch(/[A-Za-z]/)
     }
 
-    expect(summarizeToolRun([read('a.ts'), read('b.ts'), ...commands(3)], false)).toBe('探索了 2 个文件，运行了 3 条命令')
+    expect(summarizeToolRun([read('a.ts'), read('b.ts'), ...commands(3)], false)).toBe(
+      '探索了 2 个文件，运行了 3 条命令'
+    )
     expect(toolPresentVerb('terminal')).toBe('正在运行')
     // A compound command's tail is the locale's too.
     expect(summarizeToolRun([tool('terminal', { command: 'cd x && npm test && npm run lint' })], true)).toBe(
@@ -83,7 +85,9 @@ describe('tool-run summaries in the UI language', () => {
   })
 
   it('keeps English byte-identical', () => {
-    expect(summarizeToolRun([read('a.ts'), read('b.ts'), ...commands(3)], false)).toBe('Explored 2 files, ran 3 commands')
+    expect(summarizeToolRun([read('a.ts'), read('b.ts'), ...commands(3)], false)).toBe(
+      'Explored 2 files, ran 3 commands'
+    )
     expect(toolPresentVerb('terminal')).toBe('Running')
     expect(summarizeShellCommand('cd x && npm test && npm run lint')).toBe('npm test + 1 command')
     expect(summarizeToolRun([tool('terminal', { command: 'cd x && npm test && npm run lint' })], true)).toBe(

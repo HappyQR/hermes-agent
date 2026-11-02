@@ -37,9 +37,11 @@ afterEach(() => {
 describe('approval details', () => {
   it('shows the command with why it was flagged, or the description standing in for a synthetic label', () => {
     expect(approvalDetails(request())).toEqual({ details: 'rm -rf build', isCommand: true, why: 'recursive delete' })
-    expect(approvalDetails(request({ command: '<terminal> (plugin approval rule)', description: 'run pwd' }))).toEqual(
-      { details: 'run pwd', isCommand: false, why: '' }
-    )
+    expect(approvalDetails(request({ command: '<terminal> (plugin approval rule)', description: 'run pwd' }))).toEqual({
+      details: 'run pwd',
+      isCommand: false,
+      why: ''
+    })
   })
 
   it('offers only what the gateway allows', () => {

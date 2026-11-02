@@ -239,7 +239,15 @@ function ChipRow({ children, label }: { children: ReactNode; label: string }) {
   )
 }
 
-function FilterChoices({ copy, f, sources }: { copy: StudioCopy; f: SidebarCopy['filter']; sources: readonly string[] }) {
+function FilterChoices({
+  copy,
+  f,
+  sources
+}: {
+  copy: StudioCopy
+  f: SidebarCopy['filter']
+  sources: readonly string[]
+}) {
   const { t } = useI18n()
   const statusFilter = useStore($sidebarStatusFilter)
   const sourceFilter = useStore($sidebarSourceFilter)
@@ -308,7 +316,15 @@ function FilterChoices({ copy, f, sources }: { copy: StudioCopy; f: SidebarCopy[
 /** Kept, not in the prototype: per-profile and per-project chips (the scope
  *  chip is the primary project control), and "Show all sessions" for the
  *  project overview — under one disclosure so nothing is lost. */
-function MoreFilters({ copy, f, projectsLabel }: { copy: StudioCopy; f: SidebarCopy['filter']; projectsLabel: string }) {
+function MoreFilters({
+  copy,
+  f,
+  projectsLabel
+}: {
+  copy: StudioCopy
+  f: SidebarCopy['filter']
+  projectsLabel: string
+}) {
   const { t } = useI18n()
   const [open, setOpen] = useState(false)
   const showAllProfiles = useStore($showAllProfiles)

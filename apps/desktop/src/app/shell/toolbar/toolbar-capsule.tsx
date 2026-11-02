@@ -23,7 +23,13 @@ export function ToolbarCapsule() {
 
   return (
     <Capsule aria-label={copy.layoutMenu} data-slot="toolbar-capsule">
-      <ToolbarMenu align="end" ariaLabel={copy.layoutMenu} contentClassName="min-w-60" items={() => <LayoutMenuItems />} tip={copy.layoutMenu}>
+      <ToolbarMenu
+        align="end"
+        ariaLabel={copy.layoutMenu}
+        contentClassName="min-w-60"
+        items={() => <LayoutMenuItems />}
+        tip={copy.layoutMenu}
+      >
         <Button aria-label={copy.layoutMenu} size="icon-capsule" variant="ghost">
           <StudioIcon name="split" />
         </Button>

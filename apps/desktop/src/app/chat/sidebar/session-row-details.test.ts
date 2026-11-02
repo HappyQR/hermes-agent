@@ -32,9 +32,10 @@ describe('session row details', () => {
   })
 
   it('omits unavailable fields and falls back to the source when nothing else is known', () => {
-    expect(sessionRowDetails(session({ git_branch: null }), { projectLabel: null, sourceLabel: 'Telegram' })).toEqual(
-      { detail: 'gemini-3.1-pro', preview: 'Explore Gmail-like density tiers for session rows.' }
-    )
+    expect(sessionRowDetails(session({ git_branch: null }), { projectLabel: null, sourceLabel: 'Telegram' })).toEqual({
+      detail: 'gemini-3.1-pro',
+      preview: 'Explore Gmail-like density tiers for session rows.'
+    })
     expect(
       sessionRowDetails(session({ git_branch: null, model: null }), { projectLabel: null, sourceLabel: 'Telegram' })
         .detail

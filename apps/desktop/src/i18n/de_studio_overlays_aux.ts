@@ -46,27 +46,9 @@ export const deStudioOverlaysAux: StudioOverlaysAuxTranslations = {
         'hecke was aus…',
         'hmm…'
       ],
-      failed: [
-        'hakt',
-        'tja',
-        'kaputt',
-        'autsch',
-        'hängt fest'
-      ],
-      waiting: [
-        'du bist dran',
-        'gehört dir',
-        'an dich',
-        'dein Zug',
-        'warte auf Anweisungen'
-      ],
-      idle: [
-        'hallo',
-        'brauchst du was?',
-        'alles ruhig',
-        'bereit',
-        'Zeit für eine Pause?'
-      ]
+      failed: ['hakt', 'tja', 'kaputt', 'autsch', 'hängt fest'],
+      waiting: ['du bist dran', 'gehört dir', 'an dich', 'dein Zug', 'warte auf Anweisungen'],
+      idle: ['hallo', 'brauchst du was?', 'alles ruhig', 'bereit', 'Zeit für eine Pause?']
     }
   },
   boot: {

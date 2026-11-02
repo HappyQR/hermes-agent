@@ -76,7 +76,12 @@ export function DraftProjectChip() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button aria-label={copy.draft.projectAria(label)} className={CHIP} data-slot="draft-project-chip" type="button">
+        <button
+          aria-label={copy.draft.projectAria(label)}
+          className={CHIP}
+          data-slot="draft-project-chip"
+          type="button"
+        >
           <StudioIcon name="folder" size={13} />
           <span className="max-w-48 truncate">{label}</span>
           <StudioIcon name="chev-d" size={11} />

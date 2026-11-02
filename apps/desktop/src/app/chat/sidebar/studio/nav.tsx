@@ -163,7 +163,9 @@ function useCronMeta(studio: StudioCopy): { node: ReactNode; tip: string } | nul
 
   return {
     node: failing ? <span className="text-(--ui-orange)">{jobs.length}</span> : jobs.length,
-    tip: failing ? `${studio.nav.cronJobs(jobs.length)} · ${studio.nav.cronFailing(failing)}` : studio.nav.cronJobs(jobs.length)
+    tip: failing
+      ? `${studio.nav.cronJobs(jobs.length)} · ${studio.nav.cronFailing(failing)}`
+      : studio.nav.cronJobs(jobs.length)
   }
 }
 

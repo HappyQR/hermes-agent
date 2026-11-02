@@ -151,10 +151,9 @@ describe('VirtualSessionList on the sidebar scroller', () => {
 
     virtualItems = [{ index: 1, key: 's1', start: 0 }]
 
-    const { container } = render(
-      <VirtualSessionList {...defaultProps} scrollElement={() => scroller} />,
-      { container: content }
-    )
+    const { container } = render(<VirtualSessionList {...defaultProps} scrollElement={() => scroller} />, {
+      container: content
+    })
 
     const list = container.firstElementChild as HTMLElement
 

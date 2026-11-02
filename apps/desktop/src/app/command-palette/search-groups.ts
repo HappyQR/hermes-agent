@@ -224,8 +224,18 @@ export function capabilityGroups(mcpServers: readonly string[], { go, t }: Searc
 /** Apply a theme or switch light/dark/system straight from the search (live preview, palette stays open). */
 export function appearanceSearchGroups(ctx: ThemeRowsContext): PaletteGroup[] {
   return [
-    { heading: ctx.t.settings.appearance.themeTitle, items: themeItems(ctx, 'search-theme'), scope: 'actions', typedOnly: true },
-    { heading: ctx.t.settings.appearance.colorMode, items: modeItems(ctx, 'search-mode'), scope: 'actions', typedOnly: true }
+    {
+      heading: ctx.t.settings.appearance.themeTitle,
+      items: themeItems(ctx, 'search-theme'),
+      scope: 'actions',
+      typedOnly: true
+    },
+    {
+      heading: ctx.t.settings.appearance.colorMode,
+      items: modeItems(ctx, 'search-mode'),
+      scope: 'actions',
+      typedOnly: true
+    }
   ]
 }
 
@@ -262,7 +272,18 @@ const NON_CONFIG_SETTINGS: ReadonlyArray<{
   {
     glyph: 'server',
     // The Connections registry merged into the unified Gateways page.
-    keywords: ['connection', 'connections', 'messaging', 'remote', 'multi', 'instances', 'ssh', 'cloud', 'add gateway', 'registry'],
+    keywords: [
+      'connection',
+      'connections',
+      'messaging',
+      'remote',
+      'multi',
+      'instances',
+      'ssh',
+      'cloud',
+      'add gateway',
+      'registry'
+    ],
     labelKey: 'gateway',
     tab: 'gateway'
   },
@@ -328,7 +349,9 @@ export function settingsSearchGroups(catalog: SettingsCatalog, { go, t }: Search
     )
   ]
 
-  const result: PaletteGroup[] = [{ heading: t.commandCenter.settingsFields, items: fields, scope: 'settings', typedOnly: true }]
+  const result: PaletteGroup[] = [
+    { heading: t.commandCenter.settingsFields, items: fields, scope: 'settings', typedOnly: true }
+  ]
 
   if (catalog.pluginEntries.length > 0) {
     result.push({

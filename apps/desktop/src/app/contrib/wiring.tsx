@@ -121,13 +121,7 @@ import { RemoteFolderPicker } from '../right-sidebar/files/remote-picker'
 import { resetProjectTreeState } from '../right-sidebar/files/use-project-tree'
 import { PersistentTerminal } from '../right-sidebar/terminal/persistent'
 import { closeAllTerminals } from '../right-sidebar/terminal/terminals'
-import {
-  CRON_ROUTE,
-  routeSessionId,
-  sessionRoute,
-  SETTINGS_ROUTE,
-  syncWorkspaceRoute
-} from '../routes'
+import { CRON_ROUTE, routeSessionId, sessionRoute, SETTINGS_ROUTE, syncWorkspaceRoute } from '../routes'
 import { SessionImportView } from '../session-import'
 import { SessionPickerOverlay } from '../session-picker-overlay'
 import { SessionSwitcher } from '../session-switcher'

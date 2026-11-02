@@ -105,7 +105,13 @@ export function SystemPanel() {
       }
 
       if (!next) {
-        const pending = { exit_code: null, lines: [cc.actionStartedWaiting], name: started.name, pid: started.pid, running: true }
+        const pending = {
+          exit_code: null,
+          lines: [cc.actionStartedWaiting],
+          name: started.name,
+          pid: started.pid,
+          running: true
+        }
 
         setAction(pending)
         upsertDesktopActionTask(pending)
@@ -141,7 +147,9 @@ export function SystemPanel() {
 
       <FormGroup>
         <FormRow
-          description={<span className="capitalize">{platforms.length > 0 ? platforms.join(' · ') : sys.platformsNone}</span>}
+          description={
+            <span className="capitalize">{platforms.length > 0 ? platforms.join(' · ') : sys.platformsNone}</span>
+          }
           title={sys.statPlatforms}
         >
           {platforms.length > 0 && <Badge variant="success">{sys.platformsConnected(platforms.length)}</Badge>}
@@ -153,7 +161,8 @@ export function SystemPanel() {
         </FormRow>
         {action && (
           <FormCell className="text-[0.71875rem] text-(--ui-text-tertiary)">
-            {action.name} · {action.running ? cc.actionRunning : action.exit_code === 0 ? cc.actionDone : cc.actionFailed}
+            {action.name} ·{' '}
+            {action.running ? cc.actionRunning : action.exit_code === 0 ? cc.actionDone : cc.actionFailed}
           </FormCell>
         )}
         <FormRow title={cc.updateHermes}>

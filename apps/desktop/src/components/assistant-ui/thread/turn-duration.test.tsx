@@ -4,7 +4,13 @@ import { afterEach, describe, expect, it } from 'vitest'
 
 import { I18nProvider } from '@/i18n'
 
-import { assistantMessage, stubThreadEnvironment, stubThreadViewportSize, ThreadRuntime, userMessage } from '../test-utils'
+import {
+  assistantMessage,
+  stubThreadEnvironment,
+  stubThreadViewportSize,
+  ThreadRuntime,
+  userMessage
+} from '../test-utils'
 
 import { Thread } from '.'
 
@@ -47,9 +53,7 @@ describe('the reply footer turn time', () => {
   it('shows a reloaded turn its persisted span', async () => {
     const { container } = renderTurn([sent(SENT), reply({ timelineTimestamp: SENT + 2 }, SENT + 48)])
 
-    await waitFor(() =>
-      expect(container.querySelector('[data-slot="aui_turn-duration"]')?.textContent).toBe('48s')
-    )
+    await waitFor(() => expect(container.querySelector('[data-slot="aui_turn-duration"]')?.textContent).toBe('48s'))
   })
 
   it('shows only the clock time when the turn carries no timestamps', async () => {
@@ -62,17 +66,13 @@ describe('the reply footer turn time', () => {
   it('prefers the live-measured time', async () => {
     const { container } = renderTurn([sent(SENT), reply({ durationS: 12 }, SENT + 48)])
 
-    await waitFor(() =>
-      expect(container.querySelector('[data-slot="aui_turn-duration"]')?.textContent).toBe('12s')
-    )
+    await waitFor(() => expect(container.querySelector('[data-slot="aui_turn-duration"]')?.textContent).toBe('12s'))
   })
 
   it('rounds a sub-second turn up to a second, as the live time does', async () => {
     const { container } = renderTurn([sent(SENT), reply({}, SENT + 0.4)])
 
-    await waitFor(() =>
-      expect(container.querySelector('[data-slot="aui_turn-duration"]')?.textContent).toBe('1s')
-    )
+    await waitFor(() => expect(container.querySelector('[data-slot="aui_turn-duration"]')?.textContent).toBe('1s'))
   })
 
   it('shows nothing for a span that is not one turn', async () => {

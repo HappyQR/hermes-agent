@@ -41,7 +41,12 @@ export function FirstRunRemoteSetup({ onBack }: FirstRunRemoteSetupProps): React
   }
 
   return (
-    <div className={cn('fixed inset-0 z-(--z-setup) flex items-center justify-center overflow-y-auto p-5', BOOT_SURFACE_CLASS)}>
+    <div
+      className={cn(
+        'fixed inset-0 z-(--z-setup) flex items-center justify-center overflow-y-auto p-5',
+        BOOT_SURFACE_CLASS
+      )}
+    >
       <div className={cn(BOOT_COLUMN_CLASS, 'w-[min(36rem,100%)]')}>
         <BootHero lead={copy.remoteSetupDesc} title={copy.remoteSetupTitle} />
         <div className={cn('mt-1 w-full p-5 text-left', BOOT_CARD_CLASS)}>

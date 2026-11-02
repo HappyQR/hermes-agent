@@ -204,14 +204,24 @@ export function MaintenancePanel({ onManageMemory }: { onManageMemory?: () => vo
       )}
 
       <FormGroup>
-        <OpRow description={mm.doctorDesc} disabled={busy} label={mm.doctor} onRun={() => void launch(mm.doctor, runDoctor)} />
+        <OpRow
+          description={mm.doctorDesc}
+          disabled={busy}
+          label={mm.doctor}
+          onRun={() => void launch(mm.doctor, runDoctor)}
+        />
         <OpRow
           description={mm.securityAuditDesc}
           disabled={busy}
           label={mm.securityAudit}
           onRun={() => void launch(mm.securityAudit, runSecurityAudit)}
         />
-        <OpRow description={mm.backupDesc} disabled={busy} label={mm.backup} onRun={() => void launch(mm.backup, runBackup)} />
+        <OpRow
+          description={mm.backupDesc}
+          disabled={busy}
+          label={mm.backup}
+          onRun={() => void launch(mm.backup, runBackup)}
+        />
         <OpRow
           description={mm.debugShareDesc}
           disabled={sharing}

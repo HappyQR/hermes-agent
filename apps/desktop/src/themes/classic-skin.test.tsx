@@ -71,19 +71,22 @@ describe('Classic Hermes is an explicit Desktop pick, never inferred from stock 
   it.each([
     ['display.skin: default', stockDefaultSkin],
     ['display.skin unset', null]
-  ])('a stock user (%s) with no Desktop pick paints the Studio default on boot, connect and relaunch', async (_label, local) => {
-    let run = await launch(local)
-    expect(run.bootPaint).toBe('studio')
-    run.connect()
-    run.connect() // reconnect re-seed
-    expect(run.api.theme?.themeName).toBe('studio')
-    expect(paintedSkin()).toBe('studio')
+  ])(
+    'a stock user (%s) with no Desktop pick paints the Studio default on boot, connect and relaunch',
+    async (_label, local) => {
+      let run = await launch(local)
+      expect(run.bootPaint).toBe('studio')
+      run.connect()
+      run.connect() // reconnect re-seed
+      expect(run.api.theme?.themeName).toBe('studio')
+      expect(paintedSkin()).toBe('studio')
 
-    run = await launch(local)
-    expect(run.bootPaint).toBe('studio')
-    run.connect()
-    expect(paintedSkin()).toBe('studio')
-  })
+      run = await launch(local)
+      expect(run.bootPaint).toBe('studio')
+      run.connect()
+      expect(paintedSkin()).toBe('studio')
+    }
+  )
 
   it('a Classic pick paints gold/navy (dark mode) and survives connect, reconnect and relaunch; a later Nous pick sticks', async () => {
     let run = await launch(stockDefaultSkin)

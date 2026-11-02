@@ -137,7 +137,13 @@ export function buildShortcutGroups(input: ShortcutModelInput): ShortcutGroup[] 
         if (family) {
           if (!seenFamilies.has(family.prefix)) {
             seenFamilies.add(family.prefix)
-            rows.push(...familyRows(inCategory.filter(member => member.id.startsWith(family.prefix)), input, family))
+            rows.push(
+              ...familyRows(
+                inCategory.filter(member => member.id.startsWith(family.prefix)),
+                input,
+                family
+              )
+            )
           }
 
           continue

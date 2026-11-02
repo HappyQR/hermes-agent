@@ -106,7 +106,12 @@ export function ContextRingPill({ compact = false, onCompress, requestGateway }:
   const usage = useSurfaceUsage(runtimeId)
   const [open, setOpen] = useState(false)
 
-  const { breakdown, loading } = useContextBreakdown({ busy, enabled: paneVisible, requestGateway, sessionId: runtimeId })
+  const { breakdown, loading } = useContextBreakdown({
+    busy,
+    enabled: paneVisible,
+    requestGateway,
+    sessionId: runtimeId
+  })
   const gauge = useMemo(() => mergeGaugeUsage(usage, breakdown), [breakdown, usage])
 
   if (!runtimeId || !gauge.context_max) {

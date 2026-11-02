@@ -567,7 +567,10 @@ export function TreeGroup({
           data-panel-header=""
           style={
             topEdge
-              ? { background: band?.surface, height: TITLEBAR_HEIGHT + (tabsBelowControls && headerVisible ? tabsRowHeight : 0) }
+              ? {
+                  background: band?.surface,
+                  height: TITLEBAR_HEIGHT + (tabsBelowControls && headerVisible ? tabsRowHeight : 0)
+                }
               : undefined
           }
         >
@@ -904,7 +907,11 @@ export function TreeGroup({
             className="absolute inset-x-0 bottom-0 z-50 flex cursor-grab items-center justify-center outline-1 -outline-offset-2 outline-dashed backdrop-blur-[2px]"
             onPointerDown={e => startPaneDrag(activeId, e, undefined, undefined, tabText(activeId))}
             style={{
-              top: topEdge ? TITLEBAR_HEIGHT + (tabsBelowControls && headerVisible ? tabsRowHeight : 0) : headerVisible ? 28 : 0,
+              top: topEdge
+                ? TITLEBAR_HEIGHT + (tabsBelowControls && headerVisible ? tabsRowHeight : 0)
+                : headerVisible
+                  ? 28
+                  : 0,
               background:
                 'color-mix(in srgb, var(--ui-accent) 6%, color-mix(in srgb, var(--ui-bg-chrome) 55%, transparent))',
               outlineColor: 'color-mix(in srgb, var(--ui-accent) 55%, transparent)'

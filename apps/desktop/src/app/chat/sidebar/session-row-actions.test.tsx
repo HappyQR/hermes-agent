@@ -19,67 +19,65 @@ afterEach(cleanup)
 // propagates synthetic events through the logical parent (#85163).
 
 vi.mock('@/i18n', async () => {
-  const { enStudioSidebar } = await vi.importActual<typeof StudioSidebarCopy>(
-    '@/i18n/en_studio_sidebar'
-  )
+  const { enStudioSidebar } = await vi.importActual<typeof StudioSidebarCopy>('@/i18n/en_studio_sidebar')
 
   return {
-  useI18n: () => ({
-    locale: 'en',
-    t: {
-      studio: { sidebar: enStudioSidebar },
-      common: { cancel: 'Cancel', close: 'Close', delete: 'Delete', save: 'Save' },
-      assistant: {
-        thread: {
-          today: (time: string) => `Today, ${time}`,
-          yesterday: (time: string) => `Yesterday, ${time}`
-        }
-      },
-      sidebar: {
-        messageCount: (count: number) => `${count} messages`,
-        toolCallCount: (count: number) => `${count} tool calls`,
-        projects: {
-          menuAppearance: 'Appearance',
-          moveFailed: 'Could not move session',
-          moveNoProjects: 'No other projects',
-          movedTo: (name: string) => `Moved to ${name}`,
-          moveToProject: 'Move to project',
-          noColor: 'No color'
+    useI18n: () => ({
+      locale: 'en',
+      t: {
+        studio: { sidebar: enStudioSidebar },
+        common: { cancel: 'Cancel', close: 'Close', delete: 'Delete', save: 'Save' },
+        assistant: {
+          thread: {
+            today: (time: string) => `Today, ${time}`,
+            yesterday: (time: string) => `Yesterday, ${time}`
+          }
         },
-        row: {
-          ageMin: 'm',
-          ageNow: 'now',
-          archive: 'Archive',
-          backgroundRunning: 'Running in background',
-          branchFrom: 'Branch from here',
-          copyId: 'Copy ID',
-          copyIdFailed: 'Failed to copy ID',
-          deleteDesc: (title: string) => `Delete ${title}?`,
-          deleteTitle: 'Delete session?',
-          deleting: 'Deleting…',
-          deleted: 'Session deleted',
-          export: 'Export',
-          finishedUnread: 'Finished',
-          handoffOrigin: (platform: string) => `Started on ${platform}`,
-          hideTabBar: 'Hide tab bar',
+        sidebar: {
           messageCount: (count: number) => `${count} messages`,
-          needsInput: 'Needs input',
-          pin: 'Pin',
-          rename: 'Rename',
-          renameDesc: 'Leave empty to clear.',
-          renameFailed: 'Rename failed',
-          renameTitle: 'Rename session',
-          renamed: 'Renamed',
-          sessionActions: 'Session actions',
-          sessionRunning: 'Running',
-          unpin: 'Unpin',
-          untitledPlaceholder: 'Untitled',
-          waitingForAnswer: 'Waiting for answer'
-        }
-      },
-      zones: { closeAll: 'Close all', closeOthers: 'Close others', closeToRight: 'Close to the right' }
-    }
-  })
+          toolCallCount: (count: number) => `${count} tool calls`,
+          projects: {
+            menuAppearance: 'Appearance',
+            moveFailed: 'Could not move session',
+            moveNoProjects: 'No other projects',
+            movedTo: (name: string) => `Moved to ${name}`,
+            moveToProject: 'Move to project',
+            noColor: 'No color'
+          },
+          row: {
+            ageMin: 'm',
+            ageNow: 'now',
+            archive: 'Archive',
+            backgroundRunning: 'Running in background',
+            branchFrom: 'Branch from here',
+            copyId: 'Copy ID',
+            copyIdFailed: 'Failed to copy ID',
+            deleteDesc: (title: string) => `Delete ${title}?`,
+            deleteTitle: 'Delete session?',
+            deleting: 'Deleting…',
+            deleted: 'Session deleted',
+            export: 'Export',
+            finishedUnread: 'Finished',
+            handoffOrigin: (platform: string) => `Started on ${platform}`,
+            hideTabBar: 'Hide tab bar',
+            messageCount: (count: number) => `${count} messages`,
+            needsInput: 'Needs input',
+            pin: 'Pin',
+            rename: 'Rename',
+            renameDesc: 'Leave empty to clear.',
+            renameFailed: 'Rename failed',
+            renameTitle: 'Rename session',
+            renamed: 'Renamed',
+            sessionActions: 'Session actions',
+            sessionRunning: 'Running',
+            unpin: 'Unpin',
+            untitledPlaceholder: 'Untitled',
+            waitingForAnswer: 'Waiting for answer'
+          }
+        },
+        zones: { closeAll: 'Close all', closeOthers: 'Close others', closeToRight: 'Close to the right' }
+      }
+    })
   }
 })
 vi.mock('@/app/chat/profile-tag', () => ({ ProfileTag: () => null }))
